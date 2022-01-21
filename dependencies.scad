@@ -1,6 +1,6 @@
 
 
-function prism(sec,path)=[for(p=path)[for(p1=offst(sec,p.x))[p1.x,p1.y,p.y]]];
+function prism(sec,path)=[for(p=path)[for(p1=f_offset(sec,round(p.x*100)/100))[p1.x,p1.y,p.y]]];
     
 function surf(sec,path)=[for(p=path)[for(p1=sec)[p.x,p1.y,p.y]]];
              
@@ -12,18 +12,19 @@ function ang3d(v1,v2)=let(
 
             
 function q(vector=[1,0,0],point=[0,5,0],theta=0)=
-[
-let(
+
+let(t=theta,
 v=vector/norm(vector),
-p=[cos(theta/2),v*sin(theta/2)],
+p=[cos(t/2),v*sin(t/2)],
 p1=[p.x,-p.y],
 q=[0,len(point)==2?[point.x,point.y,0]:point],
 pq=[p.x*q.x-p.y*q.y,p.x*q.y+p.y*q.x+cross(p.y,q.y)],
 pqp1=[pq.x*p1.x-pq.y*p1.y,pq.x*p1.y+pq.y*p1.x+cross(pq.y,p1.y)],
 transformation=pqp1.y
-)each
+)
+//assert(!is_undef(transformation),str(v,theta,p.y,q.y))
 transformation
-];
+;
 
 function qmr1(s,r,pl,n=0)= n==len(s)?pl:
 qmr1(s,r,
@@ -122,7 +123,7 @@ function surf_extrude(sec,path)=[
              swp([[surf[i][j],surf[i+1][j],surf[i+1][j+1],surf[i][j+1]],[surf1[i][j],surf1[i+1][j],surf1[i+1][j+1],surf1[i][j+1]]]);}
              else if(o==2){ 
                  s1=prism(sec,path);
-                 s2=prism(offst(sec,t),path);
+                 s2=prism(f_offset(sec,t),path);
                  for(i=[0:len(s1)-2])
                      for(j=[0:len(s2[i])-2])
                  if(t>0)       
@@ -145,7 +146,7 @@ function surf_extrude(sec,path)=[
              swp([[surf[i][j],surf[i+1][j],surf[i+1][j+1],surf[i][j+1]],[surf1[i][j],surf1[i+1][j],surf1[i+1][j+1],surf1[i][j+1]]]);}
              else if(o==2){ 
                  s1=prism(sec,path);
-                 s2=prism(offst(sec,t),path);
+                 s2=prism(f_offset(sec,t),path);
                  for(i=[0:len(s1)-2])
                      for(j=[0:len(s1[i])-1])let(j_plus=j<len(s1[i])-1?j+1:0)
                  if(t>0)       
@@ -182,101 +183,8 @@ function near(sec,p)=let(
     b=min(a*[1,0]),
     c=lookup(b,a))sec[c];
 
-
-module sol(s1,s2){
-polyhedron([each s1,each s2],[[for(i=[0:len(s1)-1])i],each [for(i=[0:len(s1)-1])i<=len(s1)-2?[len(s1)+i,len(s1)+i+1,i+1,i]:[len(s1)-1,2*len(s1)-1,len(s1),0]],[for(i=[len(s1)-1:-1:0])i+len(s1)]]);}
-module sol1(s1,s2){
-polyhedron([each s1,each s2],[each [for(i=[0:len(s1)-1])i<=len(s1)-2?[len(s1)+i,len(s1)+i+1,i+1,i]:[len(s1)-1,2*len(s1)-1,len(s1),0]],[for(i=[len(s1)-1:-1:0])i+len(s1)]]);}
-
-//module swp(prism){
-//
-//    poly_h1(prism);
-//    }
     
-module solidify(srf02,srf04){   
-for(i=[0:len(srf02)-2])
-    for(j=[0:len(srf02[i])-2])
-        let(i_plus=i+1,j_plus=j+1,
-    p0=srf02[i][j],p1=srf02[i][j_plus],p2=srf02[i_plus][j],p3=srf02[i_plus][j_plus],
-    p00=srf04[i][j],p01=srf04[i][j_plus],p02=srf04[i_plus][j],p03=srf04[i_plus][j_plus]
-    ){
-    hull(){
-    translate(p0)cube(.001);
-    translate(p1)cube(.001);
-    translate(p2)cube(.001);
-    translate(p00)cube(.001);
-    translate(p01)cube(.001);
-    translate(p02)cube(.001);}
-    
-    hull(){
-    translate(p3)cube(.001);
-    translate(p1)cube(.001);
-    translate(p2)cube(.001);
-    translate(p03)cube(.001);
-    translate(p01)cube(.001);
-    translate(p02)cube(.001);}}}
-    
- function s1(s,v)=[[for(p=s)
-    
-let(ep=[.0000001,.0000001,.00000001],
-v1=v[1]-v[0]+ep,
-a=[p.x,p.y,0],
-b=-ang(norm([v1.x,v1.y]),v1.z),
-c=ang(v1.x,v1.y)
-)//if(is_num(norm(a)))
-v[0]+q([0,0,1],q([0,1,0],q([0,0,1],q([1,0,0],a,90),-90),b),c)]];
-
-function s2(s,v)=[for(i=[0:len(v)-2])[for(p=s)
-    
-let(ep=[.0000001,.0000001,.00000001],
-v1=v[i+1]-v[i]+ep,
-a=[p.x,p.y,0],
-b=-ang(norm([v1.x,v1.y]),v1.z),
-c=ang(v1.x,v1.y)
-)//if(is_num(norm(a)))
-v[i+1]+q([0,0,1],q([0,1,0],q([0,0,1],q([1,0,0],a,90),-90),b),c)]];
-
-function s21(s,v)=[for(i=[0:len(v)-1])[for(p=s)
-    
-let(ep=[.0000001,.0000001,.00000001],
-p0=v[i],p1=i<len(v)-1?v[i+1]:v[0]-[.01,.01,.01],
-v1=p1-p0+ep,
-a=[p.x,p.y,0],
-b=-ang(norm([v1.x,v1.y]),v1.z),
-c=ang(v1.x,v1.y)
-)//if(is_num(norm(a)))
-p1+q([0,0,1],q([0,1,0],q([0,0,1],q([1,0,0],a,90),-90),b),c)]];
-
-module p_extrude(sec,path) {
-    let(
-    s3=concat(s1(s=sec,v=path),s2(s=sec,v=path))
-    )
-    poly_h(s3);
-    }
-module p_extrudec(sec,path) {
-    let(
-    s3=concat(s1(s=sec,v=path),s21(s=sec,v=path))
-    )
-    poly_h(s3);
-    }
-    
-module s_extrude(sec,path) {
-    let(
-    s3=concat(s1(s=sec,v=path),s2(s=sec,v=path))
-    )
-    
-    sec_hull(s3);
-    }
-    
-function s_extrude_p(sec,path)=[let(
-    s3=concat(s1(s=sec,v=path),s2(s=sec,v=path))
-    )each s3];
-    
-function p_extrude_p(sec,path)=[let(
-    s3=concat(s1(s=sec,v=path),s2(s=sec,v=path))
-    )each s3];
-    
-function cytz(path)=[for(p=path)[p.x,0,p.y]+[.0001,.0001,.0001]];
+function cytz(path)=[for(p=path)[p.x,0,p.y]];
     
 function sort_p(sec,path)=[for(p=sec)near(path,p)];
     
@@ -290,16 +198,16 @@ module p_line(path,size=.5){
         let(p0=path[i],p1=i<len(path)-1?path[i+1]:path[0])
     
     hull(){
-    translate(p0)circle(size/2,true,$fn=20);
-    translate(p1)circle(size/2,true,$fn=20);}}
+    translate(p0)circle(size/2,$fn=20);
+    translate(p1)circle(size/2,$fn=20);}}
     
 module p_lineo(path,size=.5){
     for(i=[0:len(path)-2])
         let(p0=path[i],p1=path[i+1])
     
     hull(){
-    translate(p0)circle(size/2,true,$fn=20);
-    translate(p1)circle(size/2,true,$fn=20);}}
+    translate(p0)circle(size/2,$fn=20);
+    translate(p1)circle(size/2,$fn=20);}}
     
 module rd_line(path,size=.5){
     for(i=[0:len(path)-1])
@@ -333,6 +241,21 @@ t1=(i_m2d([[v1.x,-v2.x],[v1.y,-v2.y]])*[p2.x-p0.x,p2.y-p0.y])[0],
 pi=p0+v1*t1
 
 )pi;
+
+function i_p3d(l1,l2)=
+let(
+
+v1=l1[1]-l1[0],u1=v1/norm(v1),
+v2=l2[1]-l2[0],u2=v2/norm(v2),
+v3=l2[0]-l1[0],
+//l1[0]+v1*t1=l2[0]+v2*t2
+//v1*t1-v2*t2=v3 where v3=l2[0]-l1[0]
+t1=(i_m3d([[v1.x,-v2.x,1],
+           [v1.y,-v2.y,1],
+           [v1.z,-v2.z,1]])*
+      [v3.x,v3.y,v3.z])[0],
+ip=l1[0]+v1*t1
+)ip;
 
 function mode_sign(p,plus=0,minus=0,n=0)=n==len(p)?[plus,minus]:mode_sign(p,p[n]>0?plus+1:plus+0,p[n]<0?minus+1:minus+0,n+1);
 
@@ -465,7 +388,7 @@ p=p2+u2*rf*tan(theta1),
 cp=cw([p1,p2,p3])==-1?p-u2*rm(90)*rf:p-u2*rm(-90)*rf,
 a1=ang((p-cp).x,(p-cp).y),
 a2=cw([p1,p2,p3])==-1?a1+2*theta1:a1-2*theta1,
-arc=arc(rf,a1,a2,cp,s),
+arc=arc(rf,a1,a2,cp,s)
 
 )
 r1==0 || r1==undef||norm(u2-u3)<.2?[p2]:arc;
@@ -475,7 +398,7 @@ r1==0 || r1==undef||norm(u2-u3)<.2?[p2]:arc;
 function 2dfillet(pl,rl,s)=[for(i=[0:len(pl)-1])let(ep=[.0001,.0001],
 p0=i==0?pl[len(pl)-2]:i==1?pl[len(pl)-1]:pl[i-2],
 p1=i==0?pl[len(pl)-1]:pl[i-1],
-p2=pl[i]+ep,
+p2=pl[i],
 p3=i<len(pl)-1?pl[i+1]:pl[0],
 p4=i<len(pl)-2?pl[i+2]:i<len(pl)-1?pl[0]:pl[1],
 r0=i==0?rl[len(rl)-1]:rl[i-1],
@@ -497,7 +420,7 @@ ang5=ang(u5.x,u5.y),
 
 theta0=abs(180-((ang0<ang1?ang0+360:ang0)-ang1))/2,
 theta1=abs(180-((ang2<ang3?ang2+360:ang2)-ang3))/2,
-theta2=abs(180-((ang4<ang5?ang4+360:ang4)-ang5))/2,        
+theta2=abs(180-((ang4<ang5?ang4+360:ang4)-ang5))/2        
 
 
 )each 
@@ -512,7 +435,7 @@ rl=[for(i=[0:len(pl)-1])pl[i].z==undef?0:pl[i].z]
 
 function cr(pl,s=20)=let(
 sec=cr1(pl,s),
-sec1=[for(i=[0:len(sec)-1])if(norm(sec[i<len(sec)-1?i+1:0]-sec[i])>.01)sec[i]],
+sec1=[for(i=[0:len(sec)-1])if(norm(sec[i<len(sec)-1?i+1:0]-sec[i])>.01)sec[i]]
 //r=min_r(sec1),
 //sec01=[for(i=[0:len(sec1)-1])
 //let(
@@ -680,7 +603,7 @@ function ip2(prism,prism1)=
             nv1=cross(pb-pa,pc-pa),
             
             
-            t=(pa-p0)*nv1/((p1-p0)*nv1),
+            t=p1==[]?0:(pa-p0)*nv1/((p1-p0)*nv1),
             
             pe=p0+(p1-p0)*t,
             
@@ -692,7 +615,7 @@ function ip2(prism,prism1)=
             m2=[(pb-pa).x,(pb-pa).y,(pb-pa).z],
             
             t1=(i_m3d(m1)*m2).x,
-            t2=(i_m3d(m1)*m2).y,
+            t2=(i_m3d(m1)*m2).y
             
             )//echo(t1,t2,t3,t4);
             //if(t1>1&&t2>0&&t2<1&&t>0&&t<1)pe
@@ -791,7 +714,7 @@ function ipw(prism,prism1,r)=
             t1=(i_m3d(m1)*m2).x,
             t2=(i_m3d(m1)*m2).y,
             t3=(i_m3d(m3)*m4).x,
-            t4=(i_m3d(m3)*m4).y,
+            t4=(i_m3d(m3)*m4).y
             
 
             )//echo(t1,t2,t3,t4);
@@ -805,7 +728,7 @@ function ipw(prism,prism1,r)=
             p3=[for(i=[0:len(list)-1])list[i][2]],
             p4=[for(i=[0:len(list)-1])list[i][3]],
             p5=[for(i=[0:len(list)-1])list[i][4]],
-            p6=[for(i=[0:len(p1)-1])i<len(p1)-1?p1[i+1]:p1[0]],
+            p6=[for(i=[0:len(p1)-1])i<len(p1)-1?p1[i+1]:p1[0]]
             
             
             
@@ -872,13 +795,13 @@ function add_p1(p,p1=[0,0,0],n,i=0)= n==0?p1:add_p1(p,[p[i].x+p1.x,p[i].y+p1.y,p
 function pts1(p)=[for(n=[1:len(p)])add_p1(p=p,p1=[0,0,0],n=n,i=0)];
     
 module points(p,d=.5){
-    for(i=p)translate(i)cube(size=d,true);
+    for(i=p)translate(i)cube(size=d,center=true);
     
     }
  
  function offst(sec,r)=let(
-    rev_r=r<0?(min_r(sec)>abs(r)?r:-(min_r(sec)-.1)):r,
-
+//    rev_r=r<0?(min_r(sec)>abs(r)?r:-(min_r(sec)-.1)):r,
+rev_r=r,
 sec1=[for(i=[0:len(sec)-1])
     let(
 p0=i==0?sec[len(sec)-1]:sec[i-1],
@@ -951,7 +874,7 @@ s21=-(m12*m33-m32*m13),s22=m11*m33-m31*m13,s23=-(m11*m32-m31*m12),
 s31=m12*m23-m22*m13,s32=-(m11*m23-m21*m13),s33=m11*m22-m21*m12,
 
 d=m11*s11+m12*s12+m13*s13
-)1/d*[[s11,s21,s31],[s12,s22,s32],[s13,s23,s33]];
+) 1/d*[[s11,s21,s31],[s12,s22,s32],[s13,s23,s33]];
 
 
 function i_m2d(m)=let(
@@ -985,7 +908,7 @@ cp3=p0-u1*h*rm(90),
 v2=cp2-cp3,u2=v2/norm(v2),
 v3=cp1-cp3,u3=v3/norm(v3),
 ang1=ang(u2.x,u2.y),
-ang2=ang(u3.x,u3.y),
+ang2=ang(u3.x,u3.y)
 
 )arc(r,ang1,ang2,cp3);
     
@@ -998,7 +921,7 @@ v=p1-p3,u=v/norm(v),
 cp=p3+u*l*rm(cw==-1?-90:90),
 v1=p1-cp,v2=p2-cp,
 a1=ang(v1.x,v1.y),a2=ang(v2.x,v2.y),
-a3=cw==-1?(a2<a1?a2+360:a2):(a2<a1?a2:a2-360),
+a3=cw==-1?(a2<a1?a2+360:a2):(a2<a1?a2:a2-360)
 
 )arc(r,a1,a3,cp,s);
 
@@ -1011,7 +934,7 @@ v=p1-p3,u=v/norm(v),
 cp=p3+u*l*rm(cw==-1?-90:90),
 v1=p1-cp,v2=p2-cp,
 a1=ang(v1.x,v1.y),a2=ang(v2.x,v2.y),
-a3=cw==-1?(a2<a1?a2+360:a2):(a2<a1?a2:a2-360),
+a3=cw==-1?(a2<a1?a2+360:a2):(a2<a1?a2:a2-360)
 
 )cp;
 
@@ -1025,7 +948,7 @@ v=p1-p3,u=v/norm(v),
 cp=p3+u*l*rm(cw==-1?90:-90),
 v1=p1-cp,v2=p2-cp,
 a1=ang(v1.x,v1.y),a2=ang(v2.x,v2.y),
-a3=cw==-1?(a2<a1?a2+360:a2):(a2<a1?a2:a2-360),
+a3=cw==-1?(a2<a1?a2+360:a2):(a2<a1?a2:a2-360)
 
 )arc(r,a1,a3,cp,s);
 
@@ -1045,7 +968,7 @@ v3=p1-cp,v4=p2-cp,v5=p3-cp,
 a1=ang(v3.x,v3.y),
 a2=ang(v4.x,v4.y),
 a3=ang(v5.x,v5.y),
-a4=cw([p1,p2,p3])==-1?(a3<a1?a3+360:a3):(a3<a1?a3:a3-360),
+a4=cw([p1,p2,p3])==-1?(a3<a1?a3+360:a3):(a3<a1?a3:a3-360)
 
 )arc(r,a1,a4,cp,s);
 
@@ -1111,11 +1034,11 @@ max_y=len(rsz)==2?max(sec*[0,1]):max(sec*[0,1,0]),
 min_y=len(rsz)==2?min(sec*[0,1]):min(sec*[0,1,0]),
 
 r_x=rsz.x/(max_x-min_x),
-r_y=rsz.y/(max_y-min_y),
+r_y=rsz.y/(max_y-min_y)
 
 
 )[for(i=[0:len(sec)-1])let(
-p=avg+[r_x*(sec[i].x-avg.x),r_y*(sec[i].y-avg.y)-((min_y-avg.y)*r_y-(min_y-avg.y))],
+p=avg+[r_x*(sec[i].x-avg.x),r_y*(sec[i].y-avg.y)-((min_y-avg.y)*r_y-(min_y-avg.y))]
 
 )p];
 
@@ -1143,7 +1066,7 @@ v2=p3-p5,u2=v2/norm(v2),
 p6=p4+u1*rm(90),
 p7=p5+u2*rm(90),
 cp=i_p2d([p4,p6],[p5,p7]),
-r=norm(p1-cp),
+r=norm(p1-cp)
 
 )r;
 
@@ -1185,25 +1108,23 @@ path6=[for(i=[0:len(path2)-1])[path2[i].x,path2[i].y,path5[i].y]]
 )path6;
 
 
+//module swp(prism) let(
+//n=len(prism[0]),
+//points=[for(p=prism)each [for(p1=p)p1]],
+//faces1=[for(j=[0:n:len(points)-2*n])[for(i=[j:j+n-1])i]],
+//faces2=[for(j=[len(points)-n])[for(i=[j+n-1:-1:j])i]],
+//faces3=[for(j=[0:n:len(points)-2*n])[for(i=[j:j+n-2])[i,i+n,i+n+1,i+1]]],
+//faces4=[for(i=[0:n:len(points)-n-1])[i,i+n-1,i+2*n-1,i+n]]
+//)polyhedron(points,[each faces1,each faces2,each each faces3,each faces4],convexity=10);
+
 module swp(surf1)
-
-let(l=len(surf1[0]),
-p0=[for(j=[0:len(surf1)-1])each surf1[j]],
-p1=[each [for(j=[0:len(surf1)-1])if(j==0)[for(i=[0:l-1])i+j*l]],
-each [for(j=[0:len(surf1)-2])each [for(i=[0:l-1])let(i_plus=i<l-1?i+1:0)flip([i+l*j,i_plus+l*j,i_plus+l+l*j,i+l+l*j])]],
-each [for(j=[0:len(surf1)-1])if(j>0)[for(i=[l-1:-1:0])i+l*j]]
-    ],
-)
-polyhedron(p0,p1,convexity=10);
-
-module swp1(surf1)
 
 let(l=len(surf1[0]),
 p0=[for(j=[0:len(surf1)-1])each surf1[j]],
 p1=[each [for(j=[0:len(surf1)-1])if(j==0)[for(i=[l-1:-1:0])i+j*l]],
 each [for(j=[0:len(surf1)-2])each [for(i=[0:l-1])let(i_plus=i<l-1?i+1:0)[i+l*j,i_plus+l*j,i_plus+l+l*j,i+l+l*j]]],
 each [for(j=[0:len(surf1)-1])if(j>0)[for(i=[0:l-1])i+l*j]]
-    ],
+    ]
 )
 polyhedron(p0,p1,convexity=10);
 
@@ -1259,7 +1180,7 @@ p2=cir[i],p3=i<len(cir)-1?cir[i+1]:cir[0],
 int_p=i_p2d([p2,p3],[p0,p1]),
 v1=p3-p2,u1=v1/norm(v1),
 v2=int_p-p2,u2=v2/norm(v2),
-l1=norm(p3-p2),l2=norm(int_p-p2),
+l1=norm(p3-p2),l2=norm(int_p-p2)
 
 )//if(u1==u2&&l1>=l2)int_p
    if(l1>=l2&&norm(u1-u2)<.01)int_p ]
@@ -1270,7 +1191,7 @@ function offst_l(l,d)=
 let(
 v=l[1]-l[0],u=v/norm(v),
 p0=l[0]+u*d*rm(-90),
-p1=l[1]+u*d*rm(-90),
+p1=l[1]+u*d*rm(-90)
 )[p0,p1];
    
 function perp(line,point)=
@@ -1279,7 +1200,7 @@ v1=line[1]-line[0],
 slope1=v1.y/v1.x,
 slope2=-1/slope1,
 line1=[point,point+[1,slope2]],
-ip=i_p2d(line,line1),
+ip=i_p2d(line,line1)
 
 )[point,ip];
    
@@ -1297,24 +1218,20 @@ p3=cp2+u*r2*rm(-(90-theta1))
 
 function cvar(a)=
 let(
-b=a[0],
-c=[for(i=[1:len(a)-1])let(n=
-a[i]=="0"?0:
-a[i]=="1"?1:
-a[i]=="2"?2:
-a[i]=="3"?3:
-a[i]=="4"?4:
-a[i]=="5"?5:
-a[i]=="6"?6:
-a[i]=="7"?7:
-a[i]=="8"?8:
-a[i]=="9"?9:-1)n
-],
-d=c[0]==-1?[for(i=[1:len(c)-1])-c[i]]:c,
-e=len(d)==5?d*[10000,1000,100,10,1]:len(d)==4?d*[1000,100,10,1]:len(d)==3?d*[100,10,1]:len(d)==2?d*[10,1]:d[0]
-)[b,e];
+text=a[0],
+b=search("-",a)!=[]&&search(".",a)!=[]?[for(i=[2:len(a)-1])if(a[i]!=".")a[i]]:
+search("-",a)!=[]&&search(".",a)==[]?[for(i=[2:len(a)-1])a[i]]:
+search("-",a)==[]&&search(".",a)!=[]?[for(i=[1:len(a)-1])if(a[i]!=".")a[i]]:[for(i=[1:len(a)-1])a[i]],
+n=[["0"],["1"],["2"],["3"],["4"],["5"],["6"],["7"],["8"],["9"]],
+l=len(b),
+c=[for(i=[0:l-1])each search(b[i],n)],
+d=[for(i=[0:len(c)-1])10^(l-i-1)],
+e=c*d,
+f=search(".",a)!=[]&&search("-",a)!=[]?e*10^-(l-(search(".",a)[0]-2)):search(".",a)!=[]&&search("-",a)==[]?e*10^-(l-(search(".",a)[0]-1)):e,
+g=search("-",a)!=[]?f*-1:f
+)[text,g];
 
-function o_set(sec,d=1)=let(
+function o_set1(sec,d=1)=let(
 
 sec1=[for(i=[0:len(sec)-1])let(
 p0=i==0?sec[len(sec)-1]:sec[i-1],
@@ -1330,14 +1247,269 @@ p0=sec1[i],p1=i<len(sec1)-1?sec1[i+1]:sec1[0],
 v1=p1-p0,u1=v1/norm(v1),
 ip=[for(j=[0:len(sec1)-1])let(p2=sec1[j],p3=j<len(sec1)-1?sec1[j+1]:sec1[0])if(j!=i)i_p2d([p0,p1],[p2,p3])],
 l1=norm(p1-p0),
-ipf=[for(p=ip)let(u2=(p-p0)/norm(p-p0))if(norm(p-p0)<l1 && sign(u1.x)==sign(u2.x) && sign(u1.y)==sign(u2.y))p],
+ipf=[for(p=ip)let(u2=(p-p0)/norm(p-p0))if(norm(p-p0)<l1 && sign(u1.x)==sign(u2.x) && sign(u1.y)==sign(u2.y))p]
 
 )if (len(ipf)>0)each ipf else sec1[i]],
-//sec3=[for(p=sec2)each p],
-sec4=[for(p=sec2)if(min([for(p1=m_points(sec,1))norm(p-p1)])>abs(d))p],
-sec5=[for(p=sec)each search(min([for(p1=sec4)norm(p-p1)]),[for(p1=sec4)norm(p-p1)])],
-sec6=[for(i=[0:len(sec5)-1])sec4[sec5[i]]]
-)
-sec4;
+ sec3=[for(p=sec2)if(min([for(p1=m_points(sec,1))norm(p-p1)])>abs(d))p]
+
+)sort_points(sec,remove_extra_points(sec3));
+
+ 
+function o_set(sec,d=1)=abs(d)<=sec_r(sec)?offst(sec,d):o_set1(sec,d);
 
 //function offst(sec,d)=d<=0?(abs(d)>sec_r(sec)?o_set(sec,d):offst1(sec,d)):offst1(sec,d);
+
+function rot(axis,ang,sec)=[for(p=sec)let(point=len(p)==2?[p.x,p.y,0]:p)q(axis,point,ang)];
+ 
+function s_pnt(sec)=let(
+y_min=min(sec*[0,1]),
+loc=search(y_min,sec,0,1)[0]
+)sec[loc];
+
+function reduced_list(sec,list)=[for(p=sec)each [for(p1=list)if(norm(p-p1)>.01|| p1==[])p]];
+ 
+function list_of_points_to_omit(sec,point)=let(
+list=[for(i=[0:len(sec)-1])if(norm(sec[i]-point)<.001)i],
+list1=len(list)>1?[for(i=[1:len(list)-1])list[i]]:[]
+
+)list1;
+
+function revised_list(sec,index_list)=let(
+a=[for(i=[0:len(sec)-1]) if(search(0,[for(j=index_list)i-j],0)==[])i],
+sec1=[for(i=a)sec[i]]
+)sec1;
+
+function remove_extra_points(sec,n=0)=
+n==len(sec)?sec:remove_extra_points(
+let(
+a=list_of_points_to_omit(sec,sec[n]),
+b=revised_list(sec,a)
+)b,n+1
+);
+
+function sort_points(sec,list)=[if(list!=[])let(
+a=[for(p=sec)min([for(i=[0:len(list)-1])norm(list[i]-p)])],
+b=[for(p=sec)[for(i=[0:len(list)-1])norm(list[i]-p)]],
+c=[for(i=[0:len(sec)-1])each search(a[i],b[i])],
+d=[for(i=c)list[i]]
+)d][0];
+
+module swp_h(sec,path,t=-.5){
+a=p_extrude(sec,path);
+b=p_extrude(f_offset(sec,t),path);
+sec1=[each each a,each each b];
+
+let(
+n=len(sec),
+p=len(path),
+faces=[for(i=[0:n*p-n-1])each (i+1)%n==0?[
+ [i,i+1-n,i+1-n+n*p,i+n*p],
+ [i+n,i+n+n*p,i+1+n*p,i+1],
+ [i,i+n,i+1,i+1-n],
+ [i+1-n,i+1,i+1+n*p,i+1-n+n*p],
+ [i+1-n+n*p,i+1+n*p,i+n+n*p,i+n*p],
+ [i+n*p,i+n+n*p,i+n,i]]:[
+ [i,i+1,i+n*p+1,i+n*p],
+ [i+n,i+n*p+n,i+n*p+n+1,i+n+1],
+ [i,i+n,i+n+1,i+1],
+ [i+1,i+n+1,i+n*p+n+1,i+n*p+1],
+ [i+n*p+1,i+n*p+n+1,i+n*p+n,i+n*p],
+ [i+n*p,i+n*p+n,i+n,i]]]
+
+
+)polyhedron(sec1,faces,convexity=10);}
+
+function outer_offset(sec1,d)=d==0?(cw(sec)==1?flip(sec1):sec1):
+let(
+sec=cw(sec1)==1?flip(sec1):sec1,
+r=abs(d),
+op=[for(i=[0:len(sec)-1])let(
+p0=i==0?sec[len(sec)-1]:sec[i-1],
+p1=sec[i],
+p2=i<len(sec)-1?sec[i+1]:sec[0],
+v1=p0-p1, u1=v1/norm(v1),
+v2=p2-p1, u2=v2/norm(v2),
+theta=acos (u1*u2),
+alpha=180-theta,
+pa=p1+u1*r*tan(alpha/2),
+pb=p1+u2*r*tan(alpha/2),
+cp=2p_arc_cp([pa,pb],r,1),
+pc=p1+u1*r*rm(90),
+pd=p1+u2*r*rm(-90)
+) cw([p0,p1,p2])==-1?2p_arc([pc, pd],r,-1,s=norm(pc-pd)<1?0:5):[cp]],
+
+op01=[for(i=[0:len(sec)-1])let(
+p0=i==0?sec[len(sec)-1]:sec[i-1],
+p1=sec[i],
+p2=i<len(sec)-1?sec[i+1]:sec[0],
+radius=3p_r(p0,p1,p2)
+) if((radius>=r)||(cw( [p0,p1,p2])==-1))each op[i]],
+op02=[for(i=[0:len(op01)-1])let(
+p0=op01[i],p1=i<len (op01)-1?op01[i+1]:op01[0],
+v1=p1-p0, u1=v1/norm(v1),
+ip=[for(j=i==0?[len(op01)-2,i+2]:i==1?[len(op01)-1,i+2]:i==len(op01)-1?[i-2,1]:i==len(op01)-2?[i-2,0]:[i-2,i+2])let(p2=op01[j],p3=j==len(op01)-1?op01[0]:op01[j+1])i_p2d([p0,p1],[p2,p3])],
+l1=norm(p1-p0),
+ipf=[for(p=ip)let(u2=(p-p0)/norm(p-p0)) if(norm(p-p0)<l1 && sign(u1.x)==sign(u2.x) && sign(u1.y)==sign(u2.y))p]
+)if (len(ipf)>0) each ipf else op01[i]],
+op03=[for(p=op02) if(min([for(p1=m_points(sec,r))norm(p-p1)])>=abs(d)-.1)p]
+)sort_points(sec, remove_extra_points(op03));
+
+
+function inner_offset(sec1,d)=d==0?(cw(sec1)==1?flip(sec1):sec1):
+let(
+sec=cw(sec1)==1?flip(sec1):sec1,
+r=abs(d),
+op=[for(i=[0:len(sec)-1])let(
+p0=i==0?sec[len(sec)-1]:sec[i-1],
+p1=sec[i],
+p2=i<len(sec)-1?sec[i+1]:sec[0],
+v1=p0-p1, u1=v1/norm(v1),
+v2=p2-p1, u2=v2/norm(v2),
+theta=acos (u1*u2),
+alpha=180-theta,
+pa=p1+u1*r*tan(alpha/2),
+pb=p1+u2*r*tan(alpha/2),
+cp=2p_arc_cp([pa,pb],r,-1),
+pc=p1+u1*r*rm(-90),
+pd=p1+u2*r*rm(90)
+) cw( [p0, p1, p2])==-1?[cp]:2p_arc([pc, pd],r,1,s=norm(pc-pd)<1?0:5)],
+op01=[for(i=[0:len(sec)-1])let(
+p0=i==0?sec[len(sec)-1]:sec[i-1],
+p1=sec[i],
+p2=i<len(sec)-1?sec[i+1]:sec[0],
+radius=3p_r(p0, p1, p2)
+) if((radius>=r)||(cw( [p0, p1, p2])==1)) each op[i]],
+op02=[for(i=[0:len(op01)-1])let(
+p0=op01[i],p1=i<len(op01) -1?op01[i+1]: op01[0],
+v1=p1-p0, u1=v1/norm(v1),
+ip=[for(j=i==0?[len(op01)-2,i+2]:i==1?[len(op01)-1,i+2]:i==len(op01)-1?[i-2,1]:i==len(op01)-2?[i-2,0]:[i-2,i+2])let(p2=op01[j],p3=j==len(op01)-1?op01[0]:op01[j+1])i_p2d([p0,p1],[p2,p3])],
+l1=norm(p1-p0),
+ipf=[for(p=ip) let(u2=(p-p0)/norm(p-p0))if(norm(p-p0)<l1 && sign(u1.x) ==sign(u2.x) && sign(u1.y)==sign(u2.y))p])
+if (len(ipf)>0)each ipf else op01[i]],
+op03=[for(p=op02) if(min([for(p1=m_points (sec,r))norm(p-p1)])>=abs(d)-.001)p]
+) sort_points (sec, remove_extra_points (op03));
+
+function f_offset(sec,d)=d<=0?inner_offset(sec,d):outer_offset(sec,d);
+
+
+function p_extrude1(sec,path)=[for(i=[0:len(path)-2])let(
+p0=path[i],
+p1=path[i+1],
+v=p1-p0,
+u=[v.x,v.y,0]/norm([v.x,v.y,0]),
+u1=v/norm(v),
+theta=!is_num(u)?0:(u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u)),
+alpha=u1.z<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1)
+
+)trns(p0,q_rot(["x90","z90",str("y",-alpha),str("z",theta)],sec))];
+
+function p_extrudec1(sec,path)=[for(i=[0:len(path)-1])let(
+p0=path[i],
+p1=i<len(path)-1?path[i+1]:path[0],
+v=p1-p0,
+u=[v.x,v.y,0]/norm([v.x,v.y,0]),
+u1=v/norm(v),
+theta=!is_num(u)?0:(u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u)),
+alpha=u1.z<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1)
+
+)trns(p0,q_rot(["x90","z90",str("y",-alpha),str("z",theta)],sec))];
+
+module p_extrude1(sec,path) swp([for(i=[0:len(path)-2])let(
+p0=path[i],
+p1=path[i+1],
+v=p1-p0,
+u=[v.x,v.y,0]/norm([v.x,v.y,0]),
+u1=v/norm(v),
+theta=!is_num(u)?0:(u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u)),
+alpha=u1.z<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1)
+
+)trns(p0,q_rot(["x90","z90",str("y",-alpha),str("z",theta)],sec))]);
+
+module p_extrudec1(sec,path) swp([for(i=[0:len(path)-1])let(
+p0=path[i],
+p1=i<len(path)-1?path[i+1]:path[0],
+v=p1-p0,
+u=[v.x,v.y,0]/norm([v.x,v.y,0]),
+u1=v/norm(v),
+theta=!is_num(u)?0:(u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u)),
+alpha=u1.z<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1)
+
+)trns(p0,q_rot(["x90","z90",str("y",-alpha),str("z",theta)],sec))]);
+
+module p_extrudec(sec,path) swp([for(i=[0:len(path)])let(
+p0=i<=len(path)-1?path[i]:path[0]+(path[1]-path[0])*.1,
+p1=i<len(path)-1?path[i+1]:i==len(path)-1?path[0]+(path[0]-path[i])*.1:path[1]+(path[1]-path[0])*.1,
+v=p1-p0,
+u=v/norm(v),
+theta=u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u),
+prism=q_rot(["x90","z90"],sec)
+
+)each i<=len(path)-1?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism))]]);
+
+module p_extrude(sec,path) swp([for(i=[0:len(path)-2])let(
+p0=path[i],
+p1=path[i+1],
+v=p1-p0,
+u=v/norm(v),
+theta=u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u),
+prism=q_rot(["x90","z90"],sec)
+
+)each i<len(path)-2?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism))]]);
+
+function p_extrudec(sec,path)= [for(i=[0:len(path)])let(
+p0=i<=len(path)-1?path[i]:path[0]+(path[1]-path[0])*.1,
+p1=i<len(path)-1?path[i+1]:i==len(path)-1?path[0]+(path[0]-path[i])*.1:path[1]+(path[1]-path[0])*.1,
+v=p1-p0,
+u=v/norm(v),
+theta=u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u),
+prism=q_rot(["x90","z90"],sec)
+
+)each i<=len(path)-1?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism))]];
+
+function p_extrude(sec,path)= [for(i=[0:len(path)-2])let(
+p0=path[i],
+p1=path[i+1],
+v=p1-p0,
+u=v/norm(v),
+theta=u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u),
+prism=q_rot(["x90","z90"],sec)
+
+)each i<len(path)-2?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism))]];
+
+function 3p_3d_fillet(points=[p0, p1,p2],r=1, s=5)=
+let(
+v1=p0-p1, u1=v1/norm (v1),
+v2=p2-p1, u2=v2/norm(v2),
+n=cross (u1, u2),
+theta=acos (u1*u2),
+alpha= (180-theta)/2,
+pa=r*tan (alpha) *u1,
+pb=r*tan (alpha) *u2,
+pap=pa+q(n, u1,90),
+pbp=pb+q(n, u2,-90),
+l1=[pa, pap],
+l2=[pb, pbp],
+cp=i_p3d (l1,l2),
+arc=trns(p1+cp,[for(i=[0:alpha*2/s:alpha*2])q(n,pb-cp,i)])
+
+) arc;
+
+function 3p_3d_arc(points=[p0, p1,p2], s=5)=
+let(
+v1=p0-p1, u1=v1/norm(v1),
+v2=p2-p1, u2=v2/norm(v2),
+n=cross (u1, u2),
+alpha=acos(u1*u2),
+pa=v1/2,
+pb=v2/2,
+pap=pa+q(n,u1,90),
+pbp=pb+q(n,u2,-90),
+l1=[pa, pap],
+l2=[pb, pbp],
+cp=i_p3d (l1,l2),
+v3=p0-(p1+cp),u3=v3/norm(v3),
+v4=p2-(p1+cp),u4=v4/norm(v4),
+theta=alpha<90?360-acos(u3*u4):acos(u3*u4),
+radius=norm(pa-cp),
+arc=trns(p1+cp,[for(i=[0:theta/s:theta])q(n,p0-(p1+cp),-i)])
+)arc;
