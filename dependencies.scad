@@ -533,30 +533,18 @@ function ip(prism,prism1)=
             k_plus=k+1,l_plus=l+1,
             pa=prism[k][l],pb=prism[k][l_plus],pc=prism[k_plus][l],pd=prism[k_plus][l_plus],
             p0=prism1[i][j],p1=prism1[i+1][j],
+            v1=p1-p0,
+            v2=pb-pa,
+            v3=pc-pa,
             
-            nv1=cross(pb-pa,pc-pa),
-            nv2=cross(pc-pd,pb-pd),
             
-            t=(pa-p0)*nv1/((p1-p0)*nv1),
-            t0=(pd-p0)*nv2/((p1-p0)*nv2),
-            pe=p0+(p1-p0)*t,
-            pf=p0+(p1-p0)*t0,
-            v1=(pe-pa),
-            v2=(pc-pb),
-            v3=(pf-pd),
-            v4=(pb-pc),
-            //pa+v1*t1=pb+v2*t2
-            m1=[[v1.x,-v2.x,1],[v1.y,-v2.y,1],[v1.z,-v2.z,1]],
-            m2=[(pb-pa).x,(pb-pa).y,(pb-pa).z],
-            m3=[[v3.x,-v4.x,1],[v3.y,-v4.y,1],[v3.z,-v4.z,1]],
-            m4=[(pc-pd).x,(pc-pd).y,(pc-pd).z],
-            t1=(i_m3d(m1)*m2).x,
-            t2=(i_m3d(m1)*m2).y,
-            t3=(i_m3d(m3)*m4).x,
-            t4=(i_m3d(m3)*m4).y
-            )//echo(t1,t2,t3,t4);
-            each[if(t1>1&&t2>0&&t2<1&&t>0&&t<1)pe,if(t3>1&&t4>0&&t4<1&&t0>0&&t0<1)pf]
-];
+//            p0+v1*t1=pa+v2*t2+v3*t3
+//            p0-pa=-v1*t1+v2*t2+v3*t3
+         t1= cross(v2,v3)*(p0-pa)/(-v1*cross(v2,v3)),
+         t2=cross(v3,-v1)*(p0-pa)/(-v1*cross(v2,v3)),
+         t3=cross(-v1,v2)*(p0-pa)/(-v1*cross(v2,v3))
+            
+            )if(lim(t1,0,1)&&lim(t2,0,1)&&lim(t3,0,1))p0+v1*t1];
             
 function ip1(prism,prism1)=
 [for(i=[0:len(prism1)-2])
@@ -600,26 +588,14 @@ function ip2(prism,prism1)=
             pa=prism[0],pb=prism[1],pc=prism[2],
             p0=prism1[i],p1=prism1[i+1],
             
-            nv1=cross(pb-pa,pc-pa),
+            v1=p1-p0,v2=pb-pa,v3=pc-pa,
+            //p0+v1*t1=pa+v2*t2+v3*t3
+            //p0-pa=-v1*t1+v2*t2+v3*t3
+            t1= cross(v2,v3)*(p0-pa)/(-v1*cross(v2,v3)),
+            t2=cross(v3,-v1)*(p0-pa)/(-v1*cross(v2,v3)),
+            t3=cross(-v1,v2)*(p0-pa)/(-v1*cross(v2,v3))
             
-            
-            t=p1==[]?0:(pa-p0)*nv1/((p1-p0)*nv1),
-            
-            pe=p0+(p1-p0)*t,
-            
-            v1=(pe-pa),
-            v2=(pc-pb),
-            
-            //pa+v1*t1=pb+v2*t2
-            m1=[[v1.x,-v2.x,1],[v1.y,-v2.y,1],[v1.z,-v2.z,1]],
-            m2=[(pb-pa).x,(pb-pa).y,(pb-pa).z],
-            
-            t1=(i_m3d(m1)*m2).x,
-            t2=(i_m3d(m1)*m2).y
-            
-            )//echo(t1,t2,t3,t4);
-            //if(t1>1&&t2>0&&t2<1&&t>0&&t<1)pe
-            if(t>0&&t<1)pe
+            )if(lim(t1,0,1))p0+v1*t1
 ];
             
 function nv3d(v)=[
@@ -681,76 +657,49 @@ module p_line3dc(path,r,rec=0){
     
 function ipw(prism,prism1,r)=
 [for(i=[0:len(prism1)-2])
-    for(j=[0:len(prism1[i])-2])
+    for(j=[0:len(prism1[i])-1])
         for(k=[0:len(prism)-2])
             for(l=[0:len(prism[k])-2])
                 let(ep=[.0001,.0001,.0001],
             k_plus=k+1,l_plus=l+1,//l_plus2=l+2,
-            pa=prism[k][l]+ep,pb=prism[k][l_plus]+ep,pc=prism[k_plus][l]+ep,pd=prism[k_plus][l_plus]+ep,
+            pa=prism[k][l],pb=prism[k][l_plus],pc=prism[k_plus][l],pd=prism[k_plus][l_plus],
 
             p0=prism1[i][j],p1=prism1[i+1][j],
             p2=prism1[i][j+1],p3=prism1[i+1][j+1],
-            nv1=cross(pb-pa,pc-pa),
-            nv2=cross(pc-pd,pb-pd),
- 
-            t=(pa-p0)*nv1/((p1-p0)*nv1),
-            t0=(pd-p0)*nv2/((p1-p0)*nv2),
-
-            
-            pe=p0+(p1-p0)*t,
-            pf=p0+(p1-p0)*t0,
- 
-            v1=(pe-pa),
-            v2=(pc-pb),
-            v3=(pf-pd),
-            v4=(pb-pc),
-       
-            //pa+v1*t1=pb+v2*t2
-            m1=[[v1.x,-v2.x,1],[v1.y,-v2.y,1],[v1.z,-v2.z,1]],
-            m2=[(pb-pa).x,(pb-pa).y,(pb-pa).z],
-            m3=[[v3.x,-v4.x,1],[v3.y,-v4.y,1],[v3.z,-v4.z,1]],
-            m4=[(pc-pd).x,(pc-pd).y,(pc-pd).z],
-   
-            t1=(i_m3d(m1)*m2).x,
-            t2=(i_m3d(m1)*m2).y,
-            t3=(i_m3d(m3)*m4).x,
-            t4=(i_m3d(m3)*m4).y
-            
+            v1=p1-p0,v2=pb-pa,v3=pc-pa,
+            t1= cross(v2,v3)*(p0-pa)/(-v1*cross(v2,v3)),
+         t2=cross(v3,-v1)*(p0-pa)/(-v1*cross(v2,v3)),
+         t3=cross(-v1,v2)*(p0-pa)/(-v1*cross(v2,v3))
 
             )//echo(t1,t2,t3,t4);
-            each[if(t1>1&&t2>0&&t2<1&&t>0&&t<1)[pe,pe+(p1-p0)/norm(p1-p0)*r,pa,pb,pc],if(t3>1&&t4>0&&t4<1&&t0>0&&t0<1)[pf,pf+(p1-p0)/norm(p1-p0)*r,pb,pc,pd]]
-];
+            if(lim(t1,0,1)&&lim(t2,0,1)&&lim(t3,0,1)) [p0+v1*t1,p0+v1*t1+(p1-p0)/norm(p1-p0)*r,pa,pb,pc]];
             
             
- function ipr(prism,prism1,r,option,s=5)=let(list=ipw(prism,prism1,r),
+ function ipr(prism,prism1,r,option=0,s=5)=let(list=ipw(prism,prism1,r),
             p1=[for(i=[0:len(list)-1])list[i][0]],
             p2=[for(i=[0:len(list)-1])list[i][1]],
             p3=[for(i=[0:len(list)-1])list[i][2]],
             p4=[for(i=[0:len(list)-1])list[i][3]],
             p5=[for(i=[0:len(list)-1])list[i][4]],
-            p6=[for(i=[0:len(p1)-1])i<len(p1)-1?p1[i+1]:p1[0]]
+            //p6=[for(i=[0:len(p1)-1])i<len(p1)-1?p1[i+1]:p1[0]]
             
             
             
             )[for(i=[0:len(p1)-1])
-            let(
-            v1=p6[i]-p1[i],u1=v1/norm(v1),
-            v2=p4[i]-p3[i],u2=v2/norm(v2),
-            v3=p5[i]-p3[i],u3=v3/norm(v3),
-            cir=option==0?[for(j=[0:20:180])p1[i]+q(v1,p2[i]-p1[i],-j)]:[for(j=[0:20:180])p1[i]+q(v1,p2[i]-p1[i],j)],
-            p7=ip2([p3[i],p4[i],p5[i]],cir),
-            v4=p7[0]-p1[i],u4=v4/norm(v4),
-            theta=(180-ang3d(p2[i]-p1[i],v4)*2)/2,
-            p10=p1[i]+(p2[i]-p1[i])/norm(p2[i]-p1[i])*r*tan(theta),
-            p11=p1[i]+(p7[0]-p1[i])/norm(p7[0]-p1[i])*r*tan(theta),
-            cp=p10+q(cross(p7[0]-p1[i],p2[i]-p1[i]),(p1[i]-p2[i])/norm(p2[i]-p1[i])*r,90),
-            arc=[for(k=[0:(theta*2-0)/s:2*theta])cp+q(cross(p10-cp,p11-cp),p10-cp,k)]
+            let(i_plus=i<len(p1)-1?i+1:0,
+            v1=p1[i_plus]-p1[i],
+            //v2=p4[i]-p3[i],u2=v2/norm(v2),
+            //v3=p5[i]-p3[i],u3=v3/norm(v3),
+            cir=option==0?[for(j=[0:-20:-180])if(norm(v1)>.01) p1[i]+q(v1,p2[i]-p1[i],j)]:[for(j=[0:20:180])if(norm(v1)>.01)p1[i]+q(v1,p2[i]-p1[i],j)],
+            p7=norm(v1)>.01?ip2([p3[i],p4[i],p5[i]],cir):[]
             
-            )if(!is_undef(p7[0]))[p1[i],each arc]
+            
+            ) //[v1,p2[i]-p1[i],5]
+            if(! is_undef(p7[0]))3p_3d_fillet(p2[i],p1[i],p7[0],r,5)
             
             ];
   function ipf(prism,prism1,r,option=0,s=5)=let(sec=ipr(prism,prism1,r,option,s=s))
-            [for(i=[0:len(sec)])i==len(sec)?sec[0]:sec[i]];
+            [for(i=[0:len(sec)])i<=len(sec)-1?sec[i]:[for(p=sec[0])p+[.01,.01,.01]]];
                 
 function cyl(r1=1,r2=1,h=1,cp1=[0,0],cp2=[0,0],s=50,r,d,d1,d2,center=false)=let(
      ra=is_num(r)?r:is_num(d)?d/2:is_num(d1)?d1/2:r1,
@@ -785,7 +734,7 @@ prism1;
 
 function spr(r,cp=[0,0,0],s=50)=let(
 path=arc(r,-90,90,s=s),
-prism=[for(p=path)trns([0,0,p.y]+cp,cir(p.x))])
+prism=[for(p=path)trns([0,0,p.y]+cp,cir(p.x,s=s))])
     prism;
 
 function add_p(p,p1=[0,0],n,i=0)= n==0?p1:add_p(p,[p[i].x+p1.x,p[i].y+p1.y],n-1,i+1);
@@ -1476,9 +1425,9 @@ prism=q_rot(["x90","z90"],sec)
 
 )each i<len(path)-2?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism))]];
 
-function 3p_3d_fillet(points=[p0, p1,p2],r=1, s=5)=
+function 3p_3d_fillet(p0,p1,p2,r=1, s=5)=
 let(
-v1=p0-p1, u1=v1/norm (v1),
+v1=p0-p1, u1=v1/norm(v1),
 v2=p2-p1, u2=v2/norm(v2),
 n=cross (u1, u2),
 theta=acos (u1*u2),
@@ -1492,7 +1441,7 @@ l2=[pb, pbp],
 cp=i_p3d (l1,l2),
 arc=trns(p1+cp,[for(i=[0:alpha*2/s:alpha*2])q(n,pb-cp,i)])
 
-) arc;
+) [p1,each arc];
 
 function 3p_3d_arc(points=[p0, p1,p2], s=5)=
 let(
@@ -1513,3 +1462,20 @@ theta=alpha<90?360-acos(u3*u4):acos(u3*u4),
 radius=norm(pa-cp),
 arc=trns(p1+cp,[for(i=[0:theta/s:theta])q(n,p0-(p1+cp),-i)])
 )arc;
+
+function 3d_arc(v, r, theta1=0, theta2=180, cw=-1,s=50)=
+let(
+v=v+[0,0,.0001],
+u=v/norm (v),
+v1=[r,0,0], u1=v1/norm (v1),
+n=cross (v, v1),
+theta=90-acos (u*u1),
+alpha=u.y<0?360-acos ([1,0] * [u.x, u.y]): acos ([1,0]*[u
+.x,u.y]),
+v2=q(v,q(n, v1, theta),alpha),
+arc=[for (i=[theta1: (theta2-theta1)/s: theta2]) q(v,
+v2,-i*cw)])arc;
+
+function c2t3(sec)=trns([0,0,0],sec);
+
+ function lim(t,s=0,e=1)=t>s&&t<e;
