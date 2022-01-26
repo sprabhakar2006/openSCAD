@@ -191,7 +191,7 @@ function sort_p(sec,path)=[for(p=sec)near(path,p)];
 function shift_s(sec,dist)=[for(i=[0:len(sec)-1])
     [for(p=sec[i])p+dist]];
         
-function cir(r,p=[0,0],s=50)=[for(i=[0:360/s:360-360/s])[p.x+r*cos(i),p.y+r*sin(i)]];
+function cir(r,cp=[0,0],s=50)=[for(i=[0:360/s:360-360/s])[cp.x+r*cos(i),cp.y+r*sin(i)]];
 
 module p_line(path,size=.5){
     for(i=[0:len(path)-1])
@@ -528,57 +528,48 @@ function ip(prism,prism1)=
 [for(i=[0:len(prism1)-2])
     for(j=[0:len(prism1[i])-1])
         for(k=[0:len(prism)-2])
-            for(l=[0:len(prism[k])-2])
+            for(l=[0:len(prism[k])-1])
                 let(
-            k_plus=k+1,l_plus=l+1,
+            k_plus=k+1,l_plus=l<len(prism[k])-1?l+1:0,
             pa=prism[k][l],pb=prism[k][l_plus],pc=prism[k_plus][l],pd=prism[k_plus][l_plus],
             p0=prism1[i][j],p1=prism1[i+1][j],
-            v1=p1-p0,
-            v2=pb-pa,
-            v3=pc-pa,
-            
-            
+            v1=p1-p0,v2=pb-pa,v3=pc-pa,
+            v4=p1-p0,v5=pb-pd,v6=pc-pd,
 //            p0+v1*t1=pa+v2*t2+v3*t3
-//            p0-pa=-v1*t1+v2*t2+v3*t3
-         t1= cross(v2,v3)*(p0-pa)/(-v1*cross(v2,v3)),
-         t2=cross(v3,-v1)*(p0-pa)/(-v1*cross(v2,v3)),
-         t3=cross(-v1,v2)*(p0-pa)/(-v1*cross(v2,v3))
+//            p0-pa=-v1*t1+v2*t2+v3*t3           
+            t1=(i_m3d(t([-v1,v2,v3]))*(p0-pa)).x,
+            t2=(i_m3d(t([-v1,v2,v3]))*(p0-pa)).y,
+            t3=(i_m3d(t([-v1,v2,v3]))*(p0-pa)).z,
+            t4=(i_m3d(t([-v4,v5,v6]))*(p0-pd)).x,
+            t5=(i_m3d(t([-v1,v5,v6]))*(p0-pd)).y,
+            t6=(i_m3d(t([-v4,v5,v6]))*(p0-pd)).z
             
-            )if(lim(t1,0,1)&&lim(t2,0,1)&&lim(t3,0,1))p0+v1*t1];
+            )if(lim(t1,0,1)&&lim(t2,0,1)&&lim(t3,0,1)&&lim(t2+t3,0,1))p0+v1*t1
+            else if(lim(t4,0,1)&&lim(t5,0,1)&&lim(t6,0,1)&&lim(t5+t6,0,1))p0+v4*t4];
             
 function ip1(prism,prism1)=
 [for(i=[0:len(prism1)-2])
     
         for(k=[0:len(prism)-2])
-            for(l=[0:len(prism[k])-2])
+            for(l=[0:len(prism[k])-1])
                 let(
-            k_plus=k+1,l_plus=l+1,
+            k_plus=k+1,l_plus=l<len(prism[k])-1?l+1:0,
             pa=prism[k][l],pb=prism[k][l_plus],pc=prism[k_plus][l],pd=prism[k_plus][l_plus],
             p0=prism1[i],p1=prism1[i+1],
             
-            nv1=cross(pb-pa,pc-pa),
-            nv2=cross(pc-pd,pb-pd),
-            
-            t=(pa-p0)*nv1/((p1-p0)*nv1),
-            t0=(pd-p0)*nv2/((p1-p0)*nv2),
-            pe=p0+(p1-p0)*t,
-            pf=p0+(p1-p0)*t0,
-            v1=(pe-pa),
-            v2=(pc-pb),
-            v3=(pf-pd),
-            v4=(pb-pc),
-            //pa+v1*t1=pb+v2*t2
-            m1=[[v1.x,-v2.x,1],[v1.y,-v2.y,1],[v1.z,-v2.z,1]],
-            m2=[(pb-pa).x,(pb-pa).y,(pb-pa).z],
-            m3=[[v3.x,-v4.x,1],[v3.y,-v4.y,1],[v3.z,-v4.z,1]],
-            m4=[(pc-pd).x,(pc-pd).y,(pc-pd).z],
-            t1=(i_m3d(m1)*m2).x,
-            t2=(i_m3d(m1)*m2).y,
-            t3=(i_m3d(m3)*m4).x,
-            t4=(i_m3d(m3)*m4).y
-            )//echo(t1,t2,t3,t4);
-            each[if(t1>1&&t2>0&&t2<1&&t>0&&t<1)pe,if(t3>1&&t4>0&&t4<1&&t0>0&&t0<1)pf]
-];
+            v1=p1-p0,v2=pb-pa,v3=pc-pa,
+            v4=p1-p0,v5=pb-pd,v6=pc-pd,
+//            p0+v1*t1=pa+v2*t2+v3*t3
+//            p0-pa=-v1*t1+v2*t2+v3*t3           
+            t1=(i_m3d(t([-v1,v2,v3]))*(p0-pa)).x,
+            t2=(i_m3d(t([-v1,v2,v3]))*(p0-pa)).y,
+            t3=(i_m3d(t([-v1,v2,v3]))*(p0-pa)).z,
+            t4=(i_m3d(t([-v4,v5,v6]))*(p0-pd)).x,
+            t5=(i_m3d(t([-v1,v5,v6]))*(p0-pd)).y,
+            t6=(i_m3d(t([-v4,v5,v6]))*(p0-pd)).z
+
+            )if(lim(t1,0,1)&&lim(t2,0,1)&&lim(t3,0,1)&&lim(t2+t3,0,1))p0+v1*t1
+            else if(lim(t4,0,1)&&lim(t5,0,1)&&lim(t6,0,1)&&lim(t5+t6,0,1))p0+v4*t4];
             
 function ip2(prism,prism1)=
 [for(i=[0:len(prism1)-2])
@@ -659,20 +650,27 @@ function ipw(prism,prism1,r)=
 [for(i=[0:len(prism1)-2])
     for(j=[0:len(prism1[i])-1])
         for(k=[0:len(prism)-2])
-            for(l=[0:len(prism[k])-2])
+            for(l=[0:len(prism[k])-1])
                 let(ep=[.0001,.0001,.0001],
-            k_plus=k+1,l_plus=l+1,//l_plus2=l+2,
+            k_plus=k+1,l_plus=l<len(prism[k])-1?l+1:0,
             pa=prism[k][l],pb=prism[k][l_plus],pc=prism[k_plus][l],pd=prism[k_plus][l_plus],
 
             p0=prism1[i][j],p1=prism1[i+1][j],
             p2=prism1[i][j+1],p3=prism1[i+1][j+1],
             v1=p1-p0,v2=pb-pa,v3=pc-pa,
-            t1= cross(v2,v3)*(p0-pa)/(-v1*cross(v2,v3)),
-         t2=cross(v3,-v1)*(p0-pa)/(-v1*cross(v2,v3)),
-         t3=cross(-v1,v2)*(p0-pa)/(-v1*cross(v2,v3))
-
-            )//echo(t1,t2,t3,t4);
-            if(lim(t1,0,1)&&lim(t2,0,1)&&lim(t3,0,1)) [p0+v1*t1,p0+v1*t1+(p1-p0)/norm(p1-p0)*r,pa,pb,pc]];
+            v4=p1-p0,v5=pb-pd,v6=pc-pd,
+//            p0+v1*t1=pa+v2*t2+v3*t3
+//            p0-pa=-v1*t1+v2*t2+v3*t3           
+            t1=(i_m3d(t([-v1,v2,v3]))*(p0-pa)).x,
+            t2=(i_m3d(t([-v1,v2,v3]))*(p0-pa)).y,
+            t3=(i_m3d(t([-v1,v2,v3]))*(p0-pa)).z,
+            t4=(i_m3d(t([-v4,v5,v6]))*(p0-pd)).x,
+            t5=(i_m3d(t([-v1,v5,v6]))*(p0-pd)).y,
+            t6=(i_m3d(t([-v4,v5,v6]))*(p0-pd)).z
+            )
+            if(lim(t1,0,1)&&lim(t2,0,1)&&lim(t3,0,1)&&lim(t2+t3,0,1)) [p0+v1*t1,p0+v1*t1+(p1-p0)/norm(p1-p0)*r,pa,pb,pc]
+            else if(lim(t4,0,1)&&lim(t5,0,1)&&lim(t6,0,1)&&lim(t5+t6,0,1))[p0+v4*t4,p0+v4*t4+(p1-p0)/norm(p1-p0)*r,pd,pb,pc]
+            ];
             
             
  function ipr(prism,prism1,r,option=0,s=5)=let(list=ipw(prism,prism1,r),
@@ -695,19 +693,19 @@ function ipw(prism,prism1,r)=
             
             
             ) //[v1,p2[i]-p1[i],5]
-            if(! is_undef(p7[0]))3p_3d_fillet(p2[i],p1[i],p7[0],r,5)
+            if(! is_undef(p7[0]))3p_3d_fillet(p2[i],p1[i],p7[0],r,s)
             
             ];
   function ipf(prism,prism1,r,option=0,s=5)=let(sec=ipr(prism,prism1,r,option,s=s))
             [for(i=[0:len(sec)])i<=len(sec)-1?sec[i]:[for(p=sec[0])p+[.01,.01,.01]]];
                 
-function cyl(r1=1,r2=1,h=1,cp1=[0,0],cp2=[0,0],s=50,r,d,d1,d2,center=false)=let(
+function cyl(r1=1,r2=1,h=1,cp=[0,0],s=50,r,d,d1,d2,center=false)=let(
      ra=is_num(r)?r:is_num(d)?d/2:is_num(d1)?d1/2:r1,
      rb=is_num(r)?r:is_num(d)?d/2:is_num(d2)?d2/2:r2,
-     sec1=cir(ra,cp1,s),
-     sec2=cir(rb,cp2,s),
-
-    prism=center==true?trns([0,0,-h/2],[trns([cp1.x,cp1.y,0],sec1),trns([cp2.x,cp2.y,h],sec2)]):[trns([cp1.x,cp1.y,0],sec1),trns([cp2.x,cp2.y,h],sec2)])
+     sec=cir(ra,cp,s),
+     
+path=pts([[-ra+.1,0],[ra-.1,0],[rb-ra,h],[-rb+.1,0]]),
+    prism=center==true?trns([0,0,-h/2],prism(sec,path)):prism(sec,path))
     prism;
             
 function flip(sec)=[for(i=[len(sec)-1:-1:0])sec[i]];
@@ -728,9 +726,11 @@ let(
 m=is_num(p)?p:p.x,
 n=is_num(p)?p:p.y,
 o=is_num(p)?p:p.z,
-prism=[trns([0,0,0],sqr(p)),trns([0,0,o],sqr(p))],
-prism1=center==true?trns([-m/2,-n/2,-o/2],prism):prism)
-prism1;
+
+path=pts([[-m/2,0],[m/2,0],[0,o],[-m/2,0]]),
+prism=center==true?trns([-m/2,-n/2,-o/2],rsz3d(prism(sqr(m),path),[m,n,o])):rsz3d(prism(sqr(m),path),[m,n,o])
+)
+prism;
 
 function spr(r,cp=[0,0,0],s=50)=let(
 path=arc(r,-90,90,s=s),
@@ -1479,3 +1479,5 @@ v2,-i*cw)])arc;
 function c2t3(sec)=trns([0,0,0],sec);
 
  function lim(t,s=0,e=1)=t>s&&t<e;
+ 
+function t(m)=[[m.x.x,m.y.x,m.z.x],[m.x.y,m.y.y,m.z.y],[m.x.z,m.y.z,m.z.z]];
