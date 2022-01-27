@@ -1070,9 +1070,9 @@ module swp(surf1)
 
 let(l=len(surf1[0]),
 p0=[for(j=[0:len(surf1)-1])each surf1[j]],
-p1=[each [for(j=[0:len(surf1)-1])if(j==0)[for(i=[l-1:-1:0])i+j*l]],
-each [for(j=[0:len(surf1)-2])each [for(i=[0:l-1])let(i_plus=i<l-1?i+1:0)[i+l*j,i_plus+l*j,i_plus+l+l*j,i+l+l*j]]],
-each [for(j=[0:len(surf1)-1])if(j>0)[for(i=[0:l-1])i+l*j]]
+p1=[each [for(j=[0:len(surf1)-1])if(j==0)[for(i=[0:l-1])i+j*l]],
+each [for(j=[0:len(surf1)-2])each [for(i=[0:l-1])let(i_plus=i<l-1?i+1:0)[i+l*j,i+l+l*j,i_plus+l+l*j,i_plus+l*j]]],
+each [for(j=[0:len(surf1)-1])if(j==len(surf1)-1)[for(i=[l-1:-1:0])i+l*j]]
     ]
 )
 polyhedron(p0,p1,convexity=10);
