@@ -678,7 +678,7 @@ function ipw(prism,prism1,r)=
             p2=[for(i=[0:len(list)-1])list[i][1]],
             p3=[for(i=[0:len(list)-1])list[i][2]],
             p4=[for(i=[0:len(list)-1])list[i][3]],
-            p5=[for(i=[0:len(list)-1])list[i][4]],
+            p5=[for(i=[0:len(list)-1])list[i][4]]
             //p6=[for(i=[0:len(p1)-1])i<len(p1)-1?p1[i+1]:p1[0]]
             
             
@@ -1057,14 +1057,14 @@ path6=[for(i=[0:len(path2)-1])[path2[i].x,path2[i].y,path5[i].y]]
 )path6;
 
 
-//module swp(prism) let(
-//n=len(prism[0]),
-//points=[for(p=prism)each [for(p1=p)p1]],
-//faces1=[for(j=[0:n:len(points)-2*n])[for(i=[j:j+n-1])i]],
-//faces2=[for(j=[len(points)-n])[for(i=[j+n-1:-1:j])i]],
-//faces3=[for(j=[0:n:len(points)-2*n])[for(i=[j:j+n-2])[i,i+n,i+n+1,i+1]]],
-//faces4=[for(i=[0:n:len(points)-n-1])[i,i+n-1,i+2*n-1,i+n]]
-//)polyhedron(points,[each faces1,each faces2,each each faces3,each faces4],convexity=10);
+module swp1(prism) let(
+n=len(prism[0]),
+points=[for(p=prism)each [for(p1=p)p1]],
+faces1=[for(j=[0:n:len(points)-2*n])[for(i=[j:j+n-1])i]],
+faces2=[for(j=[len(points)-n])[for(i=[j+n-1:-1:j])i]],
+faces3=[for(j=[0:n:len(points)-2*n])[for(i=[j:j+n-2])[i,i+n,i+n+1,i+1]]],
+faces4=[for(i=[0:n:len(points)-n-1])[i,i+n-1,i+2*n-1,i+n]]
+)polyhedron(points,[each faces1,each faces2,each each faces3,each faces4],convexity=10);
 
 module swp(surf1)
 
@@ -1385,15 +1385,22 @@ alpha=u1.z<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1)
 
 )trns(p0,q_rot(["x90","z90",str("y",-alpha),str("z",theta)],sec))]);
 
-module p_extrudec(sec,path) swp([for(i=[0:len(path)])let(
-p0=i<=len(path)-1?path[i]:path[0]+(path[1]-path[0])*.1,
-p1=i<len(path)-1?path[i+1]:i==len(path)-1?path[0]+(path[0]-path[i])*.1:path[1]+(path[1]-path[0])*.1,
+module p_extrudec(sec,path) swp([for(i=[0:len(path)-1])let(
+p0=path[i],
+p1=i<len(path)-1?path[i+1]:path[0]-(path[1]-path[0])*.01,
 v=p1-p0,
 u=v/norm(v),
 theta=u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u),
-prism=q_rot(["x90","z90"],sec)
+prism=q_rot(["x90","z90"],sec),
 
-)each i<=len(path)-1?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism))]]);
+p2=path[0],
+p3=path[1],
+v1=p3-p2,
+u1=v1/norm(v1),
+theta1=u1.y<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1),
+prism1=q_rot(["x90","z90"],sec)
+
+)each i<len(path)-1?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism)),trns(p2+[.01,.01,.01],q_rot([str("z",theta1)],prism1))]]);
 
 module p_extrude(sec,path) swp([for(i=[0:len(path)-2])let(
 p0=path[i],
@@ -1405,15 +1412,22 @@ prism=q_rot(["x90","z90"],sec)
 
 )each i<len(path)-2?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism))]]);
 
-function p_extrudec(sec,path)= [for(i=[0:len(path)])let(
-p0=i<=len(path)-1?path[i]:path[0]+(path[1]-path[0])*.1,
-p1=i<len(path)-1?path[i+1]:i==len(path)-1?path[0]+(path[0]-path[i])*.1:path[1]+(path[1]-path[0])*.1,
+function p_extrudec(sec,path)= [for(i=[0:len(path)-1])let(
+p0=path[i],
+p1=i<len(path)-1?path[i+1]:path[0]-(path[1]-path[0])*.01,
 v=p1-p0,
 u=v/norm(v),
 theta=u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u),
-prism=q_rot(["x90","z90"],sec)
+prism=q_rot(["x90","z90"],sec),
 
-)each i<=len(path)-1?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism))]];
+p2=path[0],
+p3=path[1],
+v1=p3-p2,
+u1=v1/norm(v1),
+theta1=u1.y<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1),
+prism1=q_rot(["x90","z90"],sec)
+
+)each i<len(path)-1?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism)),trns(p2+[.01,.01,.01],q_rot([str("z",theta1)],prism1))]];
 
 function p_extrude(sec,path)= [for(i=[0:len(path)-2])let(
 p0=path[i],
