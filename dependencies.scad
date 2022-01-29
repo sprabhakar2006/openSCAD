@@ -697,7 +697,7 @@ function ipw(prism,prism1,r)=
             
             ];
   function ipf(prism,prism1,r,option=0,s=5)=let(sec=ipr(prism,prism1,r,option,s=s))
-            [for(i=[0:len(sec)])i<=len(sec)-1?sec[i]:[for(p=sec[0])p+[.01,.01,.01]]];
+            [for(i=[0:len(sec)-1])each i<len(sec)-1?[sec[i]]:[sec[i],sec[0]]];
                 
 function cyl(r1=1,r2=1,h=1,cp=[0,0],s=50,r,d,d1,d2,center=false)=let(
      ra=is_num(r)?r:is_num(d)?d/2:is_num(d1)?d1/2:r1,
@@ -1057,14 +1057,14 @@ path6=[for(i=[0:len(path2)-1])[path2[i].x,path2[i].y,path5[i].y]]
 )path6;
 
 
-module swp1(prism) let(
-n=len(prism[0]),
-points=[for(p=prism)each [for(p1=p)p1]],
-faces1=[for(j=[0:n:len(points)-2*n])[for(i=[j:j+n-1])i]],
-faces2=[for(j=[len(points)-n])[for(i=[j+n-1:-1:j])i]],
-faces3=[for(j=[0:n:len(points)-2*n])[for(i=[j:j+n-2])[i,i+n,i+n+1,i+1]]],
-faces4=[for(i=[0:n:len(points)-n-1])[i,i+n-1,i+2*n-1,i+n]]
-)polyhedron(points,[each faces1,each faces2,each each faces3,each faces4],convexity=10);
+//module swp1(prism) let(
+//n=len(prism[0]),
+//points=[for(p=prism)each [for(p1=p)p1]],
+//faces1=[for(j=[0:n:len(points)-2*n])[for(i=[j:j+n-1])i]],
+//faces2=[for(j=[len(points)-n])[for(i=[j+n-1:-1:j])i]],
+//faces3=[for(j=[0:n:len(points)-2*n])[for(i=[j:j+n-2])[i,i+n,i+n+1,i+1]]],
+//faces4=[for(i=[0:n:len(points)-n-1])[i,i+n-1,i+2*n-1,i+n]]
+//)polyhedron(points,[each faces1,each faces2,each each faces3,each faces4],convexity=10);
 
 module swp(surf1)
 
@@ -1073,6 +1073,17 @@ p0=[for(j=[0:len(surf1)-1])each surf1[j]],
 p1=[each [for(j=[0:len(surf1)-1])if(j==0)[for(i=[0:l-1])i+j*l]],
 each [for(j=[0:len(surf1)-2])each [for(i=[0:l-1])let(i_plus=i<l-1?i+1:0)[i+l*j,i+l+l*j,i_plus+l+l*j,i_plus+l*j]]],
 each [for(j=[0:len(surf1)-1])if(j==len(surf1)-1)[for(i=[l-1:-1:0])i+l*j]]
+    ]
+)
+polyhedron(p0,p1,convexity=10);
+
+module swp_c(surf1)
+
+let(l=len(surf1[0]),
+p0=[for(j=[0:len(surf1)-1])each surf1[j]],
+p1=[//each [for(j=[0:len(surf1)-1])if(j==0)[for(i=[0:l-1])i+j*l]],
+each [for(j=[0:len(surf1)-2])each [for(i=[0:l-1])let(i_plus=i<l-1?i+1:0)[i+l*j,i+l+l*j,i_plus+l+l*j,i_plus+l*j]]]//,
+//each [for(j=[0:len(surf1)-1])if(j==len(surf1)-1)[for(i=[l-1:-1:0])i+l*j]]
     ]
 )
 polyhedron(p0,p1,convexity=10);
@@ -1385,7 +1396,7 @@ alpha=u1.z<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1)
 
 )trns(p0,q_rot(["x90","z90",str("y",-alpha),str("z",theta)],sec))]);
 
-module p_extrudec(sec,path) swp([for(i=[0:len(path)-1])let(
+module p_extrudec(sec,path) swp_c([for(i=[0:len(path)-1])let(
 p0=path[i],
 p1=i<len(path)-1?path[i+1]:path[0]-(path[1]-path[0])*.01,
 v=p1-p0,
@@ -1400,7 +1411,7 @@ u1=v1/norm(v1),
 theta1=u1.y<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1),
 prism1=q_rot(["x90","z90"],sec)
 
-)each i<len(path)-1?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism)),trns(p2+[.01,.01,.01],q_rot([str("z",theta1)],prism1))]]);
+)each i<len(path)-1?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism)),trns(p2,q_rot([str("z",theta1)],prism1))]]);
 
 module p_extrude(sec,path) swp([for(i=[0:len(path)-2])let(
 p0=path[i],
@@ -1427,7 +1438,7 @@ u1=v1/norm(v1),
 theta1=u1.y<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1),
 prism1=q_rot(["x90","z90"],sec)
 
-)each i<len(path)-1?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism)),trns(p2+[.01,.01,.01],q_rot([str("z",theta1)],prism1))]];
+)each i<len(path)-1?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism)),trns(p2,q_rot([str("z",theta1)],prism1))]];
 
 function p_extrude(sec,path)= [for(i=[0:len(path)-2])let(
 p0=path[i],
@@ -1495,3 +1506,5 @@ function c2t3(sec)=trns([0,0,0],sec);
  function lim(t,s=0,e=1)=t>s&&t<e;
  
 function t(m)=[[m.x.x,m.y.x,m.z.x],[m.x.y,m.y.y,m.z.y],[m.x.z,m.y.z,m.z.z]];
+
+function loop(sec,a,b)=[for(i=[a:b])sec[i]];
