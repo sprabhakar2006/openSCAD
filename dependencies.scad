@@ -743,6 +743,9 @@ function pts(p)=[for(n=[1:len(p)])add_p(p=p,p1=[0,0],n=n,i=0)];
 function add_p1(p,p1=[0,0,0],n,i=0)= n==0?p1:add_p1(p,[p[i].x+p1.x,p[i].y+p1.y,p[i].z],n-1,i+1);
 function pts1(p)=[for(n=[1:len(p)])add_p1(p=p,p1=[0,0,0],n=n,i=0)];
     
+function add_p2(p,p1=[0,0,0,0],n,i=0)= n==0?p1:add_p2(p,[p[i][0]+p1[0],p[i][1]+p1[1],p[i][2]+p1[2],p[i][3]],n-1,i+1);
+function pts2(p)=[for(n=[1:len(p)])add_p2(p=p,p1=[0,0,0,0],n=n,i=0)];
+
 module points(p,d=.5){
     for(i=p)translate(i)cube(size=d,center=true);
     
@@ -1479,11 +1482,28 @@ arc=trns(p1+cp,[for(i=[0:alpha*2/s:alpha*2])q(n,pb-cp,i)])
 
 ) [p1,each arc];
 
-function 3p_3d_arc(points=[p0, p1,p2], s=5)=
+function 3p_3d_fillet_wo_pivot(p0,p1,p2,r=1, s=5)=[
 let(
 v1=p0-p1, u1=v1/norm(v1),
 v2=p2-p1, u2=v2/norm(v2),
-n=cross (u1, u2),
+n=cross (u1, u2)==[0,0,0]?nv3d(u2):cross (u1, u2),
+theta=acos (u1*u2),
+alpha= (180-theta)/2,
+pa=r*tan (alpha) *u1,
+pb=r*tan (alpha) *u2,
+pap=pa+q(n, u1,90),
+pbp=pb+q(n, u2,-90),
+l1=[pa, pap],
+l2=[pb, pbp],
+cp=i_p3d (l1,l2),
+arc=trns(p1+cp,[for(i=[0:alpha*2/s:alpha*2])q(n,pb-cp,i)])
+)each r==0?[p1]:arc];
+
+function 3p_3d_arc(points=[p0, p1,p2], s=5)=
+let(
+v1=points[0]-points[1], u1=v1/norm(v1),
+v2=points[2]-points[1], u2=v2/norm(v2),
+n=cross(u1, u2),
 alpha=acos(u1*u2),
 pa=v1/2,
 pb=v2/2,
@@ -1492,11 +1512,11 @@ pbp=pb+q(n,u2,-90),
 l1=[pa, pap],
 l2=[pb, pbp],
 cp=i_p3d (l1,l2),
-v3=p0-(p1+cp),u3=v3/norm(v3),
-v4=p2-(p1+cp),u4=v4/norm(v4),
+v3=points[0]-(points[1]+cp),u3=v3/norm(v3),
+v4=points[2]-(points[1]+cp),u4=v4/norm(v4),
 theta=alpha<90?360-acos(u3*u4):acos(u3*u4),
 radius=norm(pa-cp),
-arc=trns(p1+cp,[for(i=[0:theta/s:theta])q(n,p0-(p1+cp),-i)])
+arc=trns(points[1]+cp,[for(i=[0:theta/s:theta])q(n,points[0]-(points[1]+cp),-i)])
 )arc;
 
 function 3d_arc(v, r, theta1=0, theta2=180, cw=-1,s=50)=
@@ -1519,3 +1539,39 @@ function c2t3(sec)=trns([0,0,0],sec);
 function t(m)=[[m.x.x,m.y.x,m.z.x],[m.x.y,m.y.y,m.z.y],[m.x.z,m.y.z,m.z.z]];
 
 function loop(sec,a,b)=[for(i=[a:b])sec[i]];
+
+function cr3d(sec,s=10)=
+let(
+points=[for(p=sec)[p.x,p.y,p.z]],
+radius=[for(p=sec)is_undef(p[3])?0:p[3]],
+
+list=[for(i=[0:len(points)-1])let(
+i_minus=i==0?len(points)-1:i-1,
+i_plus=i<len(points)-1?i+1:0,
+p0=points[i_minus],r0=radius[i_minus],
+p1=points[i],r1=radius[i],
+p2=points[i_plus],r2=radius[i_plus],
+l1=norm(p1-p0),l2=norm(p2-p1),
+v1=p0-p1,v2=p2-p1,
+u1=v1/norm(v1),u2=v2/norm(v2),
+theta=(180-acos(u1*u2))/2,
+l3=r1*tan(theta),
+theta1=acos(u1*u2)
+)[l1,l2,l3,r1,theta]],
+
+r=[for(i=[0:len(points)-1])let(
+i_minus=i==0?len(points)-1:i-1,
+i_plus=i<len(points)-1?i+1:0,
+l1=list[i_minus][2],
+l2=list[i][2],
+r0=l1+l2<=list[i][0]?list[i][3]:list[i][0]/(l1+l2)*l2/list[i][4],
+l3=list[i_plus][2],
+r1=l2+l3<=list[i][1]?list[i][3]:list[i][0]/(l2+l3)*l2/list[i][4],
+r2=min(r0,r1)
+)r2]
+
+)[for(i=[0:len(points)-1])
+let(
+i_minus=i==0?len(points)-1:i-1,
+i_plus=i<len(points)-1?i+1:0,
+)each 3p_3d_fillet_wo_pivot(points[i_plus],points[i],points[i_minus],r[i],s=s)];
