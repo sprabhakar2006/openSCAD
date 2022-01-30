@@ -1378,12 +1378,15 @@ module p_extrude1(sec,path) swp([for(i=[0:len(path)-2])let(
 p0=path[i],
 p1=path[i+1],
 v=p1-p0,
-u=[v.x,v.y,0]/norm([v.x,v.y,0]),
+v1=[v.x,v.y,0],
+u=[v.x,v.y]/norm([v.x,v.y]),
 u1=v/norm(v),
-theta=!is_num(u)?0:(u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u)),
-alpha=u1.z<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1)
-
-)trns(p0,q_rot(["x90","z90",str("y",-alpha),str("z",theta)],sec))]);
+u2=v1/norm(v1),
+theta=!is_num(u.x)?0:(u.y<0?360-acos([1,0]*u):acos([1,0]*u)),
+a=u1.z<0?360-acos(u1*u2):acos(u1*u2),
+alpha=a-90,
+rev_sec=q_rot(["x90","z90",str("y",-a),str("z",theta)],sec)
+)each i<len(path)-2?[trns(p0,rev_sec)]:[trns(p0,rev_sec),trns(p1,rev_sec)]]);
 
 module p_extrudec1(sec,path) swp([for(i=[0:len(path)-1])let(
 p0=path[i],
@@ -1417,11 +1420,15 @@ module p_extrude(sec,path) swp([for(i=[0:len(path)-2])let(
 p0=path[i],
 p1=path[i+1],
 v=p1-p0,
-u=v/norm(v),
-theta=u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u),
-prism=q_rot(["x90","z90"],sec)
-
-)each i<len(path)-2?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism))]]);
+v1=[v.x,v.y,0],
+u=[v.x,v.y]/norm([v.x,v.y]),
+u1=v/norm(v),
+u2=v1/norm(v1),
+theta=!is_num(u.x)?0:(u.y<0?360-acos([1,0]*u):acos([1,0]*u)),
+a=u1.z<0?360-acos(u1*u2):acos(u1*u2),
+alpha=a-90,
+rev_sec=q_rot(["x90","z90",str("y",-a),str("z",theta)],sec)
+)each i<len(path)-2?[trns(p0,rev_sec)]:[trns(p0,rev_sec),trns(p1,rev_sec)]]);
 
 function p_extrudec(sec,path)= [for(i=[0:len(path)-1])let(
 p0=path[i],
@@ -1444,11 +1451,15 @@ function p_extrude(sec,path)= [for(i=[0:len(path)-2])let(
 p0=path[i],
 p1=path[i+1],
 v=p1-p0,
-u=v/norm(v),
-theta=u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u),
-prism=q_rot(["x90","z90"],sec)
-
-)each i<len(path)-2?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism))]];
+v1=[v.x,v.y,0],
+u=[v.x,v.y]/norm([v.x,v.y]),
+u1=v/norm(v),
+u2=v1/norm(v1),
+theta=!is_num(u.x)?0:(u.y<0?360-acos([1,0]*u):acos([1,0]*u)),
+a=u1.z<0?360-acos(u1*u2):acos(u1*u2),
+alpha=a-90,
+rev_sec=q_rot(["x90","z90",str("y",-a),str("z",theta)],sec)
+)each i<len(path)-2?[trns(p0,rev_sec)]:[trns(p0,rev_sec),trns(p1,rev_sec)]];
 
 function 3p_3d_fillet(p0,p1,p2,r=1, s=5)=
 let(
