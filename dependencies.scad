@@ -537,12 +537,12 @@ function ip(prism,prism1)=
             v4=p1-p0,v5=pb-pd,v6=pc-pd,
 //            p0+v1*t1=pa+v2*t2+v3*t3
 //            p0-pa=-v1*t1+v2*t2+v3*t3           
-            t1=(i_m3d(t([-v1,v2,v3]))*(p0-pa)).x,
-            t2=(i_m3d(t([-v1,v2,v3]))*(p0-pa)).y,
-            t3=(i_m3d(t([-v1,v2,v3]))*(p0-pa)).z,
-            t4=(i_m3d(t([-v4,v5,v6]))*(p0-pd)).x,
-            t5=(i_m3d(t([-v1,v5,v6]))*(p0-pd)).y,
-            t6=(i_m3d(t([-v4,v5,v6]))*(p0-pd)).z
+            t1=(p0-pa)*cross(v2,v3)/(-v1*cross(v2,v3)),
+            t2=(p0-pa)*cross(v3,-v1)/(-v1*cross(v2,v3)),
+            t3=(p0-pa)*cross(-v1,v2)/(-v1*cross(v2,v3)),
+            t4=(p0-pd)*cross(v5,v6)/(-v4*cross(v5,v6)),
+            t5=(p0-pd)*cross(v6,-v4)/(-v4*cross(v5,v6)),
+            t6=(p0-pd)*cross(-v4,v5)/(-v4*cross(v5,v6))
             
             )if(lim(t1,0,1)&&lim(t2,0,1)&&lim(t3,0,1)&&lim(t2+t3,0,1))p0+v1*t1
             else if(lim(t4,0,1)&&lim(t5,0,1)&&lim(t6,0,1)&&lim(t5+t6,0,1))p0+v4*t4];
@@ -561,12 +561,12 @@ function ip1(prism,prism1)=
             v4=p1-p0,v5=pb-pd,v6=pc-pd,
 //            p0+v1*t1=pa+v2*t2+v3*t3
 //            p0-pa=-v1*t1+v2*t2+v3*t3           
-            t1=(i_m3d(t([-v1,v2,v3]))*(p0-pa)).x,
-            t2=(i_m3d(t([-v1,v2,v3]))*(p0-pa)).y,
-            t3=(i_m3d(t([-v1,v2,v3]))*(p0-pa)).z,
-            t4=(i_m3d(t([-v4,v5,v6]))*(p0-pd)).x,
-            t5=(i_m3d(t([-v1,v5,v6]))*(p0-pd)).y,
-            t6=(i_m3d(t([-v4,v5,v6]))*(p0-pd)).z
+            t1=(p0-pa)*cross(v2,v3)/(-v1*cross(v2,v3)),
+            t2=(p0-pa)*cross(v3,-v1)/(-v1*cross(v2,v3)),
+            t3=(p0-pa)*cross(-v1,v2)/(-v1*cross(v2,v3)),
+            t4=(p0-pd)*cross(v5,v6)/(-v4*cross(v5,v6)),
+            t5=(p0-pd)*cross(v6,-v4)/(-v4*cross(v5,v6)),
+            t6=(p0-pd)*cross(-v4,v5)/(-v4*cross(v5,v6))
 
             )if(lim(t1,0,1)&&lim(t2,0,1)&&lim(t3,0,1)&&lim(t2+t3,0,1))p0+v1*t1
             else if(lim(t4,0,1)&&lim(t5,0,1)&&lim(t6,0,1)&&lim(t5+t6,0,1))p0+v4*t4];
@@ -661,12 +661,12 @@ function ipw(prism,prism1,r)=
             v4=p1-p0,v5=pb-pd,v6=pc-pd,
 //            p0+v1*t1=pa+v2*t2+v3*t3
 //            p0-pa=-v1*t1+v2*t2+v3*t3           
-            t1=(i_m3d(t([-v1,v2,v3]))*(p0-pa)).x,
-            t2=(i_m3d(t([-v1,v2,v3]))*(p0-pa)).y,
-            t3=(i_m3d(t([-v1,v2,v3]))*(p0-pa)).z,
-            t4=(i_m3d(t([-v4,v5,v6]))*(p0-pd)).x,
-            t5=(i_m3d(t([-v1,v5,v6]))*(p0-pd)).y,
-            t6=(i_m3d(t([-v4,v5,v6]))*(p0-pd)).z
+            t1=(p0-pa)*cross(v2,v3)/(-v1*cross(v2,v3)),
+            t2=(p0-pa)*cross(v3,-v1)/(-v1*cross(v2,v3)),
+            t3=(p0-pa)*cross(-v1,v2)/(-v1*cross(v2,v3)),
+            t4=(p0-pd)*cross(v5,v6)/(-v4*cross(v5,v6)),
+            t5=(p0-pd)*cross(v6,-v4)/(-v4*cross(v5,v6)),
+            t6=(p0-pd)*cross(-v4,v5)/(-v4*cross(v5,v6))
             )
             if(lim(t1,0,1)&&lim(t2,0,1)&&lim(t3,0,1)&&lim(t2+t3,0,1)) [p0+v1*t1,p0+v1*t1+(p1-p0)/norm(p1-p0)*r,pa,pb,pc]
             else if(lim(t4,0,1)&&lim(t5,0,1)&&lim(t6,0,1)&&lim(t5+t6,0,1))[p0+v4*t4,p0+v4*t4+(p1-p0)/norm(p1-p0)*r,pd,pb,pc]
