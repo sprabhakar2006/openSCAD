@@ -30,14 +30,14 @@ sec10=cr([[0,0,5],[b[0].x,b[0].y,2],each loop(b,1,len(b)-2),[b[len(b)-1].x,b[len
 module spoke2a(b){
 difference(){
 intersection(){
-p_extrude(b[4],b[7]);
+swp(p_extrude(b[4],b[7]));
 swp(l_extrude(b[1],300));
 swp(prism(b[6],b[10]));
 }
 swp(l_extrude(b[2],300));}
 
 intersection(){
-p_extrudec(b[3],b[9]);
+swp(p_extrudec(b[3],b[9]));
 swp(prism(b[6],b[10]));}
 
 intersection(){

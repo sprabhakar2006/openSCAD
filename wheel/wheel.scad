@@ -12,7 +12,7 @@ sec7=cir(245,s=72),
 
 path10=trns([0,0,185],q_rot(["y-5","z-15"],cytz(cr(pts1([[0,0],[130,30,1000],[260,-10,0]]),20)))),
 a=arc(300,-30,0,s=20),
-sec11=cr([[0,0,5],[a[0].x,a[0].y,5],[a[len(a)-1].x,a[len(a)-1].y,5]],10),
+sec11=cr([[0,0,10],[a[0].x,a[0].y,5],[a[len(a)-1].x,a[len(a)-1].y,5]],10),
 sec12=trns([50*cos(-15),50*sin(-15),0],cr([[0,0,25],[a[0].x,a[0].y,5],[a[len(a)-1].x,a[len(a)-1].y,5]],30)),
 
 path11=ip(p_extrude(sec,path10),l_extrude(m_points(sec12,10),300)),
@@ -48,8 +48,7 @@ p_extrudec(a[1],a[10]);
 swp_c(flip(ipf(p_extrude(a[0],a[8]),l_extrude(a[6],300),3,1)));
 }
 
-for(i=[0:60:300])rotate([0,0,i])
-spoke1a(a);
+
 
 //spoke 2
 
@@ -102,8 +101,7 @@ swp_c(ipf(p_extrude(b[0],b[7]),l_extrude(b[11],300),3,1));
 }
 
 b=spoke2a();
-for(i=[0:60:300])rotate([0,0,i])
-spoke2a(b);
+
 
 //spoke3
 
@@ -131,8 +129,7 @@ swp_c(a[4]);
 }
 
 c=spoke3a();
-for(i=[0:30:330])rotate([0,0,i])
-spoke3a(c);
+
 
 //hub and rim
 function hub_rim()=let(
@@ -154,4 +151,14 @@ translate([245,0,0])polygon(d[1]);}
 
 d=hub_rim();
 
-hub_rim(d);
+
+difference(){
+union(){
+for(i=[0:60:300])rotate([0,0,i]){
+spoke1a(a);
+spoke2a(b);}
+for(i=[0:30:330])rotate([0,0,i])
+spoke3a(c);
+hub_rim(d);}
+swp(cyl(r=20,h=300));
+}
