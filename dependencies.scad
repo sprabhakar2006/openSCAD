@@ -1355,16 +1355,21 @@ op03=[for(p=op02) if(min([for(p1=m_points (sec,r))norm(p-p1)])>=abs(d)-.001)p]
 function f_offset(sec,d)=d<=0?inner_offset(sec,d):outer_offset(sec,d);
 
 
-function p_extrude1(sec,path)=[for(i=[0:len(path)-2])let(
+function v_sec_extrude(sec,path,o)=[for(i=[0:len(path)-2])let(
+off=o/(len(path)-1),
+sec=f_offset(sec,off*i),
 p0=path[i],
 p1=path[i+1],
 v=p1-p0,
-u=[v.x,v.y,0]/norm([v.x,v.y,0]),
+v1=[v.x,v.y,0],
+u=[v.x,v.y]/norm([v.x,v.y]),
 u1=v/norm(v),
-theta=!is_num(u)?0:(u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u)),
-alpha=u1.z<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1)
-
-)trns(p0,q_rot(["x90","z90",str("y",-alpha),str("z",theta)],sec))];
+u2=v1/norm(v1),
+theta=!is_num(u.x)?0:(u.y<0?360-acos([1,0]*u):acos([1,0]*u)),
+a=u1==u2?0:u1.z<0?360-acos(u1*u2):acos(u1*u2),
+alpha=a-90,
+rev_sec=q_rot(["x90","z90",str("y",-a),str("z",theta)],sec)
+)each i<len(path)-2?[trns(p0,rev_sec)]:[trns(p0,rev_sec),trns(p1,rev_sec)]];
 
 function p_extrudec1(sec,path)=[for(i=[0:len(path)-1])let(
 p0=path[i],
@@ -1428,7 +1433,7 @@ u=[v.x,v.y]/norm([v.x,v.y]),
 u1=v/norm(v),
 u2=v1/norm(v1),
 theta=!is_num(u.x)?0:(u.y<0?360-acos([1,0]*u):acos([1,0]*u)),
-a=u1.z<0?360-acos(u1*u2):acos(u1*u2),
+a=u1==u2?0:u1.z<0?360-acos(u1*u2):acos(u1*u2),
 alpha=a-90,
 rev_sec=q_rot(["x90","z90",str("y",-a),str("z",theta)],sec)
 )each i<len(path)-2?[trns(p0,rev_sec)]:[trns(p0,rev_sec),trns(p1,rev_sec)]]);
@@ -1459,7 +1464,7 @@ u=[v.x,v.y]/norm([v.x,v.y]),
 u1=v/norm(v),
 u2=v1/norm(v1),
 theta=!is_num(u.x)?0:(u.y<0?360-acos([1,0]*u):acos([1,0]*u)),
-a=u1.z<0?360-acos(u1*u2):acos(u1*u2),
+a=u1==u2?0:u1.z<0?360-acos(u1*u2):acos(u1*u2),
 alpha=a-90,
 rev_sec=q_rot(["x90","z90",str("y",-a),str("z",theta)],sec)
 )each i<len(path)-2?[trns(p0,rev_sec)]:[trns(p0,rev_sec),trns(p1,rev_sec)]];
