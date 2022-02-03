@@ -118,7 +118,7 @@ function surf_extrude(sec,path)=[
      for(i=[0:len(surf)-2])
          for(j=[0:len(surf[i])-2])
            if(t>0)
-             swp(flip([[surf1[i][j],surf1[i+1][j],surf1[i+1][j+1],surf1[i][j+1]],[surf[i][j],surf[i+1][j],surf[i+1][j+1],surf[i][j+1]]]));
+             swp([[surf1[i][j],surf1[i+1][j],surf1[i+1][j+1],surf1[i][j+1]],[surf[i][j],surf[i+1][j],surf[i+1][j+1],surf[i][j+1]]]);
          else
              swp([[surf[i][j],surf[i+1][j],surf[i+1][j+1],surf[i][j+1]],[surf1[i][j],surf1[i+1][j],surf1[i+1][j+1],surf1[i][j+1]]]);}
              else if(o==2){ 
@@ -524,11 +524,11 @@ vector=cp0-cp,
 vector1=-vector*sl
 )trns(vector1,trns(vector,rev_pl))];
 
-function ip(prism,prism1)=
+function ipa(prism,prism1)=
 [for(i=[0:len(prism1)-2])
     for(j=[0:len(prism1[i])-1])
         for(k=[0:len(prism)-2])
-            for(l=[0:len(prism[k])-1])
+            for(l=[0:len(prism[k])-2])
                 let(
             k_plus=k+1,l_plus=l<len(prism[k])-1?l+1:0,
             pa=prism[k][l],pb=prism[k][l_plus],pc=prism[k_plus][l],pd=prism[k_plus][l_plus],
@@ -546,6 +546,8 @@ function ip(prism,prism1)=
             
             )if(lim(t1,0,1)&&lim(t2,0,1)&&lim(t3,0,1)&&lim(t2+t3,0,1))p0+v1*t1
             else if(lim(t4,0,1)&&lim(t5,0,1)&&lim(t6,0,1)&&lim(t5+t6,0,1))p0+v4*t4];
+            
+function ip(prism,prism1)=let(sec=ipa(prism,prism1))[for(i=[0:len(sec)-1])let(i_plus=i<len(sec)-1?i+1:0)if(norm(sec[i]-sec[i_plus])>.1)sec[i]];
             
 function ip1(prism,prism1)=
 [for(i=[0:len(prism1)-2])
@@ -650,7 +652,7 @@ function ipw(prism,prism1,r)=
 [for(i=[0:len(prism1)-2])
     for(j=[0:len(prism1[i])-1])
         for(k=[0:len(prism)-2])
-            for(l=[0:len(prism[k])-1])
+            for(l=[0:len(prism[k])-2])
                 let(ep=[.0001,.0001,.0001],
             k_plus=k+1,l_plus=l<len(prism[k])-1?l+1:0,
             pa=prism[k][l],pb=prism[k][l_plus],pc=prism[k_plus][l],pd=prism[k_plus][l_plus],
@@ -672,7 +674,7 @@ function ipw(prism,prism1,r)=
             else if(lim(t4,0,1)&&lim(t5,0,1)&&lim(t6,0,1)&&lim(t5+t6,0,1))[p0+v4*t4,p0+v4*t4+(p1-p0)/norm(p1-p0)*r,pd,pb,pc]
             ];
             
-            
+           
  function ipr(prism,prism1,r,option=0,s=5)=let(list=ipw(prism,prism1,r),
             p1=[for(i=[0:len(list)-1])list[i][0]],
             p2=[for(i=[0:len(list)-1])list[i][1]],
@@ -696,7 +698,36 @@ function ipw(prism,prism1,r)=
             if(! is_undef(p7[0]))3p_3d_fillet(p2[i],p1[i],p7[0],r,s)
             
             ];
+            
+ function ipr1(prism,prism1,r,option=0,s=5)=let(list=ipw(prism,prism1,r),
+            p1=[for(i=[0:len(list)-1])list[i][0]],
+            p2=[for(i=[0:len(list)-1])list[i][1]],
+            p3=[for(i=[0:len(list)-1])list[i][2]],
+            p4=[for(i=[0:len(list)-1])list[i][3]],
+            p5=[for(i=[0:len(list)-1])list[i][4]]
+            //p6=[for(i=[0:len(p1)-1])i<len(p1)-1?p1[i+1]:p1[0]]
+            
+            
+            
+            )[for(i=[0:len(p1)-1])
+            let(i_plus=i<len(p1)-1?i+1:0,
+            v1=p1[i_plus]-p1[i],
+            //v2=p4[i]-p3[i],u2=v2/norm(v2),
+            //v3=p5[i]-p3[i],u3=v3/norm(v3),
+            cir=option==0?[for(j=[0:-20:-180])if(norm(v1)>.01) p1[i]+q(v1,p2[i]-p1[i],j)]:[for(j=[0:20:180])if(norm(v1)>.01)p1[i]+q(v1,p2[i]-p1[i],j)],
+            p7=norm(v1)>.01?ip2([p3[i],p4[i],p5[i]],cir):[]
+            
+            
+            ) //[v1,p2[i]-p1[i],5]
+            if(! is_undef(p7[0]))3p_3d_fillet_wo_pivot(p2[i],p1[i],p7[0],r,s)
+            
+            ];
+ 
+ 
   function ipf(prism,prism1,r,option=0,s=5)=let(sec=ipr(prism,prism1,r,option,s=s))
+            [for(i=[0:len(sec)-1])each i<len(sec)-1?[sec[i]]:[sec[i],sec[0]]];
+            
+ function ipe(prism,prism1,r,option=0,s=5)=let(sec=ipr1(prism,prism1,r,option,s=s))
             [for(i=[0:len(sec)-1])each i<len(sec)-1?[sec[i]]:[sec[i],sec[0]]];
                 
 function cyl(r1=1,r2=1,h=1,cp=[0,0],s=50,r,d,d1,d2,center=false)=let(
@@ -1539,7 +1570,7 @@ v2,-i*cw)])arc;
 
 function c2t3(sec)=trns([0,0,0],sec);
 
- function lim(t,s=0,e=1)=t>s&&t<e;
+ function lim(t,s=0,e=1)=t>=s&&t<=e;
  
 function t(m)=[[m.x.x,m.y.x,m.z.x],[m.x.y,m.y.y,m.z.y],[m.x.z,m.y.z,m.z.z]];
 
