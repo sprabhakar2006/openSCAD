@@ -1601,3 +1601,4 @@ i_minus=i==0?len(points)-1:i-1,
 i_plus=i<len(points)-1?i+1:0,
 )each 3p_3d_fillet_wo_pivot(points[i_plus],points[i],points[i_minus],r[i],s=s)];
 
+function uv(v)=v/norm(v);
