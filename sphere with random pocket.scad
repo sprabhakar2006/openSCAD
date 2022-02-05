@@ -5,7 +5,7 @@ seca=cir(20,s=5);
 secb=c3t2(q_rot(["z36"],cir(5,s=5)));
 
 r=2;
-secc=cr([for(i=[0:len(seca)-1])each[[seca[i].x,seca[i].y,r],[secb[i].x,secb[i].y,r]]],5);
+secc=cr([for(i=[0:len(seca)-1])each[[seca[i].x,seca[i].y,r],[secb[i].x,secb[i].y,r]]],15);
 
 prism=l_extrude(m_points(secc,1),50);
 difference(){
@@ -14,8 +14,8 @@ swp(spr(18));
 swp(prism);
 }
 
-path1=ip(spr(20),prism);
-path2=ip(spr(18),prism);
+path1=ip(q_rot(["y90"],spr(20)),prism);
+path2=ip(q_rot(["y90"],spr(18)),prism);
 
 //points(path1,.5);
 //points(path2,.5);
