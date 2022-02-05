@@ -21,3 +21,6 @@ examples:
 
 
 <img width="780" alt="Screenshot 2022-01-29 at 10 15 24 PM" src="https://user-images.githubusercontent.com/55306937/152633277-ca3a6f40-27db-4b56-b47e-81551b69b764.png">
+
+<img width="373" alt="Screenshot 2022-02-05 at 1 57 38 PM" src="https://user-images.githubusercontent.com/55306937/152634517-cad50753-4b44-4f16-a1b7-1ac0aeeaa760.png">
+
