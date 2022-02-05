@@ -12,3 +12,6 @@ examples:
 
 
 <img width="502" alt="Screenshot 2022-02-05 at 12 23 04 PM" src="https://user-images.githubusercontent.com/55306937/152632165-6f31fa7e-d76c-444e-a963-a1524acdf38a.png">
+
+
+<img width="572" alt="Screenshot 2022-02-05 at 12 41 28 PM" src="https://user-images.githubusercontent.com/55306937/152632540-4fd35838-33e3-43c7-b726-d18403b3d03d.png">
