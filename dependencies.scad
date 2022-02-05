@@ -1289,29 +1289,18 @@ d=[for(i=c)list[i]]
 )d][0];
 
 module swp_h(sec,path,t=-.5){
-a=p_extrude(sec,path);
-b=p_extrude(f_offset(sec,t),path);
-sec1=[each each a,each each b];
-
+prism1=p_extrude(sec,path);
+prism2=p_extrude(f_offset(sec,t),path);
+prism3=[each each prism1,each each prism2];
 let(
 n=len(sec),
 p=len(path),
-faces=[for(i=[0:n*p-n-1])each (i+1)%n==0?[
- [i,i+1-n,i+1-n+n*p,i+n*p],
- [i+n,i+n+n*p,i+1+n*p,i+1],
- [i,i+n,i+1,i+1-n],
- [i+1-n,i+1,i+1+n*p,i+1-n+n*p],
- [i+1-n+n*p,i+1+n*p,i+n+n*p,i+n*p],
- [i+n*p,i+n+n*p,i+n,i]]:[
- [i,i+1,i+n*p+1,i+n*p],
- [i+n,i+n*p+n,i+n*p+n+1,i+n+1],
- [i,i+n,i+n+1,i+1],
- [i+1,i+n+1,i+n*p+n+1,i+n*p+1],
- [i+n*p+1,i+n*p+n+1,i+n*p+n,i+n*p],
- [i+n*p,i+n*p+n,i+n,i]]]
-
-
-)polyhedron(sec1,faces,convexity=10);}
+faces1=[for(i=[0:n-1])i<n-1?[i,i+1,i+1+n*p,i+n*p]:[i,i+1-n,n*p,i+n*p]],
+faces2=[for(i=[0:n*p-n-1])(i+1)%n==0?[i,i+n,i+1,i+1-n]:[i,i+n,i+1+n,i+1]],
+faces3=[for(i=[n*p:2*n*p-1-n])(i+1)%n==0?[i,i+1-n,i+1,i+n]:[i,i+1,i+1+n,i+n]],
+faces4=[for(i=[n*p-n:n*p-1])i<n*p-1?[i,i+n*p,i+1+n*p,i+1]:[i,i+n*p,i+1-n+n*p,i+1-n]]
+)polyhedron(prism3,[each faces1,each faces2, each faces3, each faces4]);
+}
 
 function outer_offset(sec1,d)=d==0?(cw(sec)==1?flip(sec1):sec1):
 let(
@@ -1611,3 +1600,4 @@ let(
 i_minus=i==0?len(points)-1:i-1,
 i_plus=i<len(points)-1?i+1:0,
 )each 3p_3d_fillet_wo_pivot(points[i_plus],points[i],points[i_minus],r[i],s=s)];
+
