@@ -1288,6 +1288,7 @@ c=[for(i=[0:len(sec)-1])each search(a[i],b[i])],
 d=[for(i=c)list[i]]
 )d][0];
 
+
 module swp_h(sec,path,t=-.5){
 prism1=p_extrude(sec,path);
 prism2=p_extrude(f_offset(sec,t),path);
@@ -1489,6 +1490,20 @@ alpha=a-90,
 rev_sec=q_rot(["x90","z90",str("y",-a),str("z",theta)],sec)
 )each i<len(path)-2?[trns(p0,rev_sec)]:[trns(p0,rev_sec),trns(p1,rev_sec)]];
 
+function p_ex(sec,path)= [for(i=[0:len(path)-2])let(
+p0=path[i],
+p1=path[i+1],
+v=p1-p0,
+v1=[v.x,v.y,0],
+u=[v.x,v.y]/norm([v.x,v.y]),
+u1=v/norm(v),
+u2=v1/norm(v1),
+theta=!is_num(u.x)?0:(u.y<0?360-acos([1,0]*u):acos([1,0]*u)),
+a=u1==u2?0:u1.z<0?360-acos(u1*u2):acos(u1*u2),
+alpha=a-90,
+rev_sec=q_rot(["x90","z90",str("y",-a),str("z",theta)],sec)
+) trns(p0,rev_sec)];
+
 function 3p_3d_fillet(p0,p1,p2,r=1, s=5)=
 let(
 v1=p0-p1, u1=v1/norm(v1),
@@ -1544,6 +1559,25 @@ radius=norm(pa-cp),
 arc=trns(points[1]+cp,[for(i=[0:theta/s:theta])q(n,points[0]-(points[1]+cp),-i)])
 )arc;
 
+function 3p_3d_r(points=[p0, p1,p2])=
+let(
+v1=points[0]-points[1], u1=v1/norm(v1),
+v2=points[2]-points[1], u2=v2/norm(v2),
+n=cross(u1, u2),
+alpha=acos(u1*u2),
+pa=v1/2,
+pb=v2/2,
+pap=pa+q(n,u1,90),
+pbp=pb+q(n,u2,-90),
+l1=[pa, pap],
+l2=[pb, pbp],
+cp=i_p3d (l1,l2),
+v3=points[0]-(points[1]+cp),u3=v3/norm(v3),
+v4=points[2]-(points[1]+cp),u4=v4/norm(v4),
+theta=alpha<90?360-acos(u3*u4):acos(u3*u4),
+radius=norm(pa-cp))
+radius;
+
 function 3d_arc(v, r, theta1=0, theta2=180, cw=-1,s=50)=
 let(
 v=v+[0,0,.0001],
@@ -1592,3 +1626,11 @@ i_minus=i==0?len(p)-1:i-1,i_plus=i<len(p)-1?i+1:0)3p_3d_fillet_wo_pivot(p[i_plus
 
 
 function uv(v)=v/norm(v);
+
+function sum(list)=[for(i=[0:len(list)-1])1]*list;
+
+function cumsum(list)=[for(i=[0:len(list)-1])sum([for(j=[0:i])list[j]])];
+
+function add_p3(p,p1=[0,0,0,0,list],n,i=0)= n==0?p1:add_p3(p,[p[i][0]+p1[0],p[i][1]+p1[1],p[i][2]+p1[2],p[i][3],p[i][4]],n-1,i+1);
+function pts3(p)=[for(n=[1:len(p)])add_p3(p=p,p1=[0,0,0,0],n=n,i=0)];
+
