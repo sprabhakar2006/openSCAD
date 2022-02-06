@@ -1565,40 +1565,30 @@ function t(m)=[[m.x.x,m.y.x,m.z.x],[m.x.y,m.y.y,m.z.y],[m.x.z,m.y.z,m.z.z]];
 
 function loop(sec,a,b)=[for(i=[a:b])sec[i]];
 
-function cr3d(sec,s=10)=
-let(
-points=[for(p=sec)[p.x,p.y,p.z]],
-radius=[for(p=sec)is_undef(p[3])?0:p[3]],
+function cr3d(l,s=5)=let(
+p=[for(i=[0:len(l)-1])[l[i].x,l[i].y,l[i].z]],
 
-list=[for(i=[0:len(points)-1])let(
-i_minus=i==0?len(points)-1:i-1,
-i_plus=i<len(points)-1?i+1:0,
-p0=points[i_minus],r0=radius[i_minus],
-p1=points[i],r1=radius[i],
-p2=points[i_plus],r2=radius[i_plus],
-l1=norm(p1-p0),l2=norm(p2-p1),
+r=[for(i=[0:len(l)-1])is_undef(l[i][3])?0:l[i][3]],
+
+theta=[for(i=[0:len(p)-1])let(
+i_minus=i==0?len(p)-1:i-1,i_plus=i<len(p)-1?i+1:0,
+p0=p[i_minus],p1=p[i],p2=p[i_plus],
 v1=p0-p1,v2=p2-p1,
-u1=v1/norm(v1),u2=v2/norm(v2),
-theta=(180-acos(u1*u2))/2,
-l3=r1*tan(theta),
-theta1=acos(u1*u2)
-)[l1,l2,l3,r1,theta]],
+alpha=acos(uv(v1)*uv(v2))
+)(180-alpha)/2],
 
-r=[for(i=[0:len(points)-1])let(
-i_minus=i==0?len(points)-1:i-1,
-i_plus=i<len(points)-1?i+1:0,
-l1=list[i_minus][2],
-l2=list[i][2],
-r0=l1+l2<=list[i][0]?list[i][3]:list[i][0]/(l1+l2)*l2/list[i][4],
-l3=list[i_plus][2],
-r1=l2+l3<=list[i][1]?list[i][3]:list[i][0]/(l2+l3)*l2/list[i][4],
-r2=min(r0,r1)
-)r2]
+l1=[for(i=[0:len(p)-1])let(
+i_minus=i==0?len(p)-1:i-1,
+p0=p[i_minus],p1=p[i]
+)norm(p0-p1)],
 
-)[for(i=[0:len(points)-1])
-let(
-i_minus=i==0?len(points)-1:i-1,
-i_plus=i<len(points)-1?i+1:0,
-)each 3p_3d_fillet_wo_pivot(points[i_plus],points[i],points[i_minus],r[i],s=s)];
+l2=[for(i=[0:len(p)-1])let(
+i_minus=i==0?len(p)-1:i-1)r[i_minus]*tan(theta[i_minus])+r[i]*tan(theta[i])],
+compare=[for(i=[0:len(p)-1])l1[i]>=l2[i]],
+
+arcs=[for(i=[0:len(p)-1])each assert(compare[i],"radius too big")let(
+i_minus=i==0?len(p)-1:i-1,i_plus=i<len(p)-1?i+1:0)3p_3d_fillet_wo_pivot(p[i_plus],p[i],p[i_minus],r[i],s=s)]
+)arcs;
+
 
 function uv(v)=v/norm(v);
