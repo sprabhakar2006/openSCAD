@@ -1634,3 +1634,42 @@ function cumsum(list)=[for(i=[0:len(list)-1])sum([for(j=[0:i])list[j]])];
 function add_p3(p,p1=[0,0,0,0,list],n,i=0)= n==0?p1:add_p3(p,[p[i][0]+p1[0],p[i][1]+p1[1],p[i][2]+p1[2],p[i][3],p[i][4]],n-1,i+1);
 function pts3(p)=[for(n=[1:len(p)])add_p3(p=p,p1=[0,0,0,0],n=n,i=0)];
 
+function rsz3d_enc(prism,rsz=[1,1,1])=
+let(
+max_x=max([for(i=[0:len(prism)-1])
+    let(x=max(prism[i]*[1,0,0]))x]),
+max_y=max([for(i=[0:len(prism)-1])
+    let(y=max(prism[i]*[0,1,0]))y]),
+max_z=max([for(i=[0:len(prism)-1])
+    let(z=max(prism[i]*[0,0,1]))z]),
+min_x=min([for(i=[0:len(prism)-1])
+    let(x=min(prism[i]*[1,0,0]))x]),
+min_y=min([for(i=[0:len(prism)-1])
+    let(y=min(prism[i]*[0,1,0]))y]),
+min_z=min([for(i=[0:len(prism)-1])
+    let(z=min(prism[i]*[0,0,1]))z]),
+avg=avg_v3d(prism),
+
+r_x=rsz.x/(max_x-min_x),
+r_y=rsz.y/(max_y-min_y),
+r_z=rsz.z/(max_z-min_z)
+)[for(i=[0:len(prism)-1])
+    [for(p=prism[i])avg+[r_x*(p.x-avg.x),r_y*(p.y-avg.y),r_z*(p.z-avg.z)]]];
+    
+ function rsz3d_offset(prism,d=1)=
+let(
+rev_prism=[for(i=[0:len(prism)-2])[for(j=[0:len(prism[i])-1])
+let(
+j_plus=j<len(prism[i])-1?j+1:0,
+p0=prism[i][j],p1=prism[i][j_plus],p2=prism[i+1][j],
+v1=p1-p0,v2=p2-p0,
+v3=cross(uv(v1),uv(v2))*d,
+rev_p=p0+v3
+)rev_p
+]]
+)rev_prism;
+
+function bb(prism)=
+let(
+p=[for(p=prism)each p],
+bb=[max(p*[0,1,0])-min(p*[0,1,0]),max(p*[0,1,0])-min(p*[0,1,0]),max(p*[0,1,0])-min(p*[0,1,0])])bb;
