@@ -1,6 +1,6 @@
 
 
-function prism(sec,path)=[for(p=path)[for(p1=f_offset(sec,round(p.x*100)/100))[p1.x,p1.y,p.y]]];
+function prism(sec,path,m_points=100)=[for(p=path)[for(p1=sort_points(m_points(sec,m_points),m_points(f_offset(sec,round(p.x*100)/100),m_points)))[p1.x,p1.y,p.y]]];
     
 function surf(sec,path)=[for(p=path)[for(p1=sec)[p.x,p1.y,p.y]]];
              
