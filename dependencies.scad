@@ -1303,6 +1303,19 @@ faces4=[for(i=[n*p-n:n*p-1])i<n*p-1?[i,i+n*p,i+1+n*p,i+1]:[i,i+n*p,i+1-n+n*p,i+1
 )polyhedron(prism3,[each faces1,each faces2, each faces3, each faces4]);
 }
 
+module swp_prism_h(prism,prism1){
+
+prism2=[each each prism,each each prism1];
+let(
+n=len(prism[0]),
+p=len(prism),
+faces1=[for(i=[0:n-1])i<n-1?[i,i+1,i+1+n*p,i+n*p]:[i,i+1-n,n*p,i+n*p]],
+faces2=[for(i=[0:n*p-n-1])(i+1)%n==0?[i,i+n,i+1,i+1-n]:[i,i+n,i+1+n,i+1]],
+faces3=[for(i=[n*p:2*n*p-1-n])(i+1)%n==0?[i,i+1-n,i+1,i+n]:[i,i+1,i+1+n,i+n]],
+faces4=[for(i=[n*p-n:n*p-1])i<n*p-1?[i,i+n*p,i+1+n*p,i+1]:[i,i+n*p,i+1-n+n*p,i+1-n]]
+)polyhedron(prism2,[each faces1,each faces2, each faces3, each faces4]);
+}
+
 function outer_offset(sec1,d)=d==0?(cw(sec)==1?flip(sec1):sec1):
 let(
 sec=cw(sec1)==1?flip(sec1):sec1,
