@@ -49,3 +49,6 @@ Surface cylinder fillet:
 
 <img width="400" alt="Screenshot 2022-02-07 at 8 59 35 PM" src="https://user-images.githubusercontent.com/55306937/152818899-26bcf636-667d-496f-b803-b52a2bd73858.png">
 
+Rounded C-section
+
+<img width="400" alt="Screenshot 2022-02-12 at 8 49 57 PM" src="https://user-images.githubusercontent.com/55306937/153717282-156a1b18-b681-4a76-aff8-381b974685c5.png">
