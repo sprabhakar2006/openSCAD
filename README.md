@@ -52,3 +52,8 @@ Surface cylinder fillet:
 Rounded C-section
 
 <img width="400" alt="Screenshot 2022-02-12 at 8 49 57 PM" src="https://user-images.githubusercontent.com/55306937/153717282-156a1b18-b681-4a76-aff8-381b974685c5.png">
+
+swp prism hollow example
+
+<img width="400" alt="Screenshot 2022-02-12 at 9 24 28 PM" src="https://user-images.githubusercontent.com/55306937/153718365-656046d9-5a63-4d48-9519-82ddba260b90.png">
+
