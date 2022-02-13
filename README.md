@@ -2,9 +2,8 @@
 Dependencies has a lot of function which help in making complex 3d objects.
 examples:
 
-Mouse:
 
-!["mouse"]<img width="400"  alt="Screenshot 2022-02-03 at 10 18 59 PM" src="https://user-images.githubusercontent.com/55306937/152389289-9529ce24-5a3c-4f4b-a3bb-4239575f2917.png">
+Mouse:<img width="400"  alt="Screenshot 2022-02-03 at 10 18 59 PM" src="https://user-images.githubusercontent.com/55306937/152389289-9529ce24-5a3c-4f4b-a3bb-4239575f2917.png">
 
 Sine wave pots:
 
