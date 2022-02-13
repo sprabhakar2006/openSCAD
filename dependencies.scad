@@ -157,25 +157,25 @@ function surf_extrude(sec,path)=[
                  }
      }
      
-function avg_v(vector)=
-let( 
- x=len(vector[0])==3?vector*[1,0,0]:vector*[1,0],
- mx=[for(i=[0:len(x)-1])1],
-avg_x=(x*mx)/len(x),
+//function avg_v(vector)=
+//let( 
+// x=len(vector[0])==3?vector*[1,0,0]:vector*[1,0],
+// mx=[for(i=[0:len(x)-1])1],
+//avg_x=(x*mx)/len(x),
+// 
+// y=len(vector[0])==3?vector*[0,1,0]:vector*[0,1],
+// my=[for(i=[0:len(y)-1])1],
+//avg_y=(y*my)/len(y),
+// 
+// z=len(vector[0])==3?vector*[0,0,1]:vector*[0,0],
+// mz=[for(i=[0:len(z)-1])1],
+//avg_z=(z*mz)/len(z)
+// )len(vector[0])==3?[avg_x,avg_y,avg_z]:[avg_x,avg_y];
  
- y=len(vector[0])==3?vector*[0,1,0]:vector*[0,1],
- my=[for(i=[0:len(y)-1])1],
-avg_y=(y*my)/len(y),
- 
- z=len(vector[0])==3?vector*[0,0,1]:vector*[0,0],
- mz=[for(i=[0:len(z)-1])1],
-avg_z=(z*mz)/len(z)
- )len(vector[0])==3?[avg_x,avg_y,avg_z]:[avg_x,avg_y];
- 
- function avg_v3d(vector)=let(
-v=[for(i=[0:len(vector)-1])avg_v(vector[i])],
-max_z=max(v*[0,0,1]),
-min_z=min(v*[0,0,1]))[avg_v(v).x,avg_v(v).y,(max_z-min_z)/2];
+// function avg_v3d(vector)=let(
+//v=[for(i=[0:len(vector)-1])avg_v(vector[i])],
+//max_z=max(v*[0,0,1]),
+//min_z=min(v*[0,0,1]))[avg_v(v).x,avg_v(v).y,(max_z-min_z)/2];
 
 
 function near(sec,p)=let(
@@ -605,7 +605,7 @@ let(v1=[v.x,v.y]*[[0,1],[-1,0]])
             
 function c3t2(sec)=[for(p=sec)[p.x,p.y]];
 function sum_v2d(v,n=0,s=[0,0])=n==len(v)-1?s:sum_v2d(v,n+1,s+v[n]);
-function avg_v2d(sec)=sum_v2d(sec)/len(sec);
+//function avg_v2d(sec)=sum_v2d(sec)/len(sec);
 
 function 2ctp(r1,r2,cp1,cp2)=
 let(
@@ -980,33 +980,29 @@ a6=ang(v7.x,v7.y)>a5?ang(v7.x,v7.y)-360:ang(v7.x,v7.y)
 )
 [p1,each arc(r2,a1,a2,cp2),each arc(r1,a3,a4,cp1),each arc(r2,a5,a6,cp3),p2];
 
-function avg_v3d(vector)=let(
-v=[for(i=[0:len(vector)-1])avg_v(vector[i])],
-max_z=max(v*[0,0,1]),
-min_z=min(v*[0,0,1]))[avg_v(v).x,avg_v(v).y,(max_z-min_z)/2];
+function avg_v(vector)=let(
+x=len(vector[0])==3?sum(vector*[1,0,0])/len(vector):sum(vector*[1,0])/len(vector),
+y=len(vector[0])==3?sum(vector*[0,1,0])/len(vector):sum(vector*[0,1])/len(vector),
+z=len(vector[0])==3?sum(vector*[0,0,1])/len(vector):[],
+)len(vector[0])==3?[x,y,z]:[x,y];
 
 
 function rsz3d(prism,rsz=[1,1,1])=
 let(
-max_x=max([for(i=[0:len(prism)-1])
-    let(x=max(prism[i]*[1,0,0]))x]),
-max_y=max([for(i=[0:len(prism)-1])
-    let(y=max(prism[i]*[0,1,0]))y]),
-max_z=max([for(i=[0:len(prism)-1])
-    let(z=max(prism[i]*[0,0,1]))z]),
-min_x=min([for(i=[0:len(prism)-1])
-    let(x=min(prism[i]*[1,0,0]))x]),
-min_y=min([for(i=[0:len(prism)-1])
-    let(y=min(prism[i]*[0,1,0]))y]),
-min_z=min([for(i=[0:len(prism)-1])
-    let(z=min(prism[i]*[0,0,1]))z]),
-avg=avg_v3d(prism),
+rev_p_list=[for(p=prism) each[for(p1=p)p1]],
+max_x=max(rev_p_list*[1,0,0]),
+max_y=max(rev_p_list*[0,1,0]),
+max_z=max(rev_p_list*[0,0,1]),
+min_x=min(rev_p_list*[1,0,0]),
+min_y=min(rev_p_list*[0,1,0]),
+min_z=min(rev_p_list*[0,0,1]),
+avg=avg_v(rev_p_list),
 
 r_x=rsz.x/(max_x-min_x),
 r_y=rsz.y/(max_y-min_y),
 r_z=rsz.z/(max_z-min_z)
 )[for(i=[0:len(prism)-1])
-    [for(p=prism[i])avg+[r_x*(p.x-avg.x),r_y*(p.y-avg.y)+(avg.y-min_y)*r_y-(avg.y-min_y),r_z*(p.z-avg.z)+(avg.z-min_z)*r_z-(avg.z-min_z)]]];
+    [for(p=prism[i])avg+[r_x*(p.x-avg.x),r_y*(p.y-avg.y),r_z*(p.z-avg.z)+(avg.z-min_z)*r_z-(avg.z-min_z)]]];
         
  function rsz(sec,rsz=[1,1,1])=
 let(
@@ -1649,25 +1645,24 @@ function pts3(p)=[for(n=[1:len(p)])add_p3(p=p,p1=[0,0,0,0],n=n,i=0)];
 
 function rsz3d_enc(prism,rsz=[1,1,1])=
 let(
-max_x=max([for(i=[0:len(prism)-1])
-    let(x=max(prism[i]*[1,0,0]))x]),
-max_y=max([for(i=[0:len(prism)-1])
-    let(y=max(prism[i]*[0,1,0]))y]),
-max_z=max([for(i=[0:len(prism)-1])
-    let(z=max(prism[i]*[0,0,1]))z]),
-min_x=min([for(i=[0:len(prism)-1])
-    let(x=min(prism[i]*[1,0,0]))x]),
-min_y=min([for(i=[0:len(prism)-1])
-    let(y=min(prism[i]*[0,1,0]))y]),
-min_z=min([for(i=[0:len(prism)-1])
-    let(z=min(prism[i]*[0,0,1]))z]),
-avg=avg_v3d(prism),
-
-r_x=rsz.x/(max_x-min_x),
-r_y=rsz.y/(max_y-min_y),
-r_z=rsz.z/(max_z-min_z)
-)[for(i=[0:len(prism)-1])
-    [for(p=prism[i])avg+[r_x*(p.x-avg.x),r_y*(p.y-avg.y),r_z*(p.z-avg.z)]]];
+rev_points_list=[for(p=prism)each[for(p1=p)p1]],
+x=max(rev_points_list*[1,0,0])-min(rev_points_list*[1,0,0])+rsz.x,
+y=max(rev_points_list*[0,1,0])-min(rev_points_list*[0,1,0])+rsz.y,
+z=max(rev_points_list*[0,0,1])-min(rev_points_list*[0,0,1])+rsz.z,
+rev_prism=rsz3d(prism,[x,y,z]),
+//avg of prism
+x1=(max(rev_points_list*[1,0,0])+min(rev_points_list*[1,0,0]))/2,
+y1=(max(rev_points_list*[0,1,0])+min(rev_points_list*[0,1,0]))/2,
+z1=(max(rev_points_list*[0,0,1])+min(rev_points_list*[0,0,1]))/2,
+avg=[x1,y1,z1],
+//avg of rev_prism
+rev_p_list=[for(p=rev_prism) each[for(p1=p)p1]],
+x2=(max(rev_p_list*[1,0,0])+min(rev_p_list*[1,0,0]))/2,
+y2=(max(rev_p_list*[0,1,0])+min(rev_p_list*[0,1,0]))/2,
+z2=(max(rev_p_list*[0,0,1])+min(rev_p_list*[0,0,1]))/2,
+avg_rev=[x2,y2,z2],
+)trns(avg-avg_rev,rev_prism)
+    ;
     
  function rsz3d_offset(prism,d=1)=
 let(
@@ -1684,5 +1679,14 @@ rev_p=p0+v3
 
 function bb(prism)=
 let(
-p=[for(p=prism)each p],
-bb=[max(p*[0,1,0])-min(p*[0,1,0]),max(p*[0,1,0])-min(p*[0,1,0]),max(p*[0,1,0])-min(p*[0,1,0])])bb;
+p=[for(p=prism)each[for(p1=p) p1]],
+bb=[max(p*[1,0,0])-min(p*[1,0,0]),max(p*[0,1,0])-min(p*[0,1,0]),max(p*[0,0,1])-min(p*[0,0,1])])bb;
+
+function avg_prism(prism)=
+let(
+rev_points_list=[for(p=prism)each each[for(p1=p)p1]],
+avg_x=sum(rev_points_list*[1,0,0])/len(rev_points_list),
+avg_y=sum(rev_points_list*[0,1,0])/len(rev_points_list),
+avg_z=sum(rev_points_list*[0,0,1])/len(rev_points_list)
+
+)[avg_x,avg_y,avg_z];
