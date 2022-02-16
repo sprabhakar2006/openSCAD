@@ -1690,3 +1690,29 @@ avg_y=sum(rev_points_list*[0,1,0])/len(rev_points_list),
 avg_z=sum(rev_points_list*[0,0,1])/len(rev_points_list)
 
 )[avg_x,avg_y,avg_z];
+
+function align_xy(sec,nv)=
+let(
+v1=[nv.x,nv.y],
+u1=uv(v1),
+theta=u1.y<0?360-acos([1,0]*u1):acos([1,0]*u1),
+v2=q([0,0,1],nv,-theta),u2=uv(v2),
+theta1=u2.x>0?360-acos([0,0,1]*u2):acos([0,0,1]*u2),
+v3=q([0,1,0],v2,theta1),
+aligned_sec=c3t2(q_rot([str("z",-theta),str("y",theta1)],sec))
+)aligned_sec;
+
+function 3d_offset(sec,nv,o=1)=
+let(
+v1=[nv.x,nv.y],
+u1=uv(v1),
+theta=u1.y<0?360-acos([1,0]*u1):acos([1,0]*u1),
+v2=q([0,0,1],nv,-theta),u2=uv(v2),
+theta1=u2.x>0?360-acos([0,0,1]*u2):acos([0,0,1]*u2),
+v3=q([0,1,0],v2,theta1),
+z_value=q_rot([str("z",-theta),str("y",theta1)],sec)[0].z,
+a_sec=f_offset(c3t2(q_rot([str("z",-theta),str("y",theta1)],sec)),o),
+rev_align=trns([0,0,z_value],a_sec),
+back=q_rot([str("y",-theta1),str("z",theta)],rev_align)
+
+)back;
