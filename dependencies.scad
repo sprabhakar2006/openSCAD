@@ -1716,3 +1716,5 @@ rev_align=trns([0,0,z_value],a_sec),
 back=q_rot([str("y",-theta1),str("z",theta)],rev_align)
 
 )back;
+
+function nv(sec)= cross(sec[0]-sec[1],sec[2]-sec[1]);
