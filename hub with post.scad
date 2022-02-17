@@ -14,4 +14,4 @@ swp(prism1);
 
 prism3=ipf(prism,prism1,2,1);
 
-swp_c(prism3);
+swp_c(flip(prism3));
