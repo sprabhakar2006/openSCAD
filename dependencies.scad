@@ -1731,3 +1731,5 @@ v1=p0-p1,v2=p2-p1,
 u1=uv(v1),u2=uv(v2),
 theta=acos(u1*u2)
 )[p1.x,p1.y,.1]],5);
+
+function path_offset(path,d)=[for(i=[0:len(path)-2])let(p0=path[i],p1=path[i+1],line=[p0,p1],rev_point=offst_l(line,d))each i<len(path)-2?[rev_point[0]]:rev_point];
