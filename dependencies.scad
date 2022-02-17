@@ -1382,7 +1382,7 @@ if (len(ipf)>0)each ipf else op01[i]],
 op03=[for(p=op02) if(min([for(p1=m_points (sec,r))norm(p-p1)])>=abs(d)-.001)p]
 ) sort_points (sec, remove_extra_points (op03));
 
-function f_offset(sec,d)=d<=0?inner_offset(sec,d):outer_offset(sec,d);
+function f_offset(sec,d)=d<=0?inner_offset(rnd(sec),d):outer_offset(rnd(sec),d);
 
 
 function v_sec_extrude(sec,path,o)=[for(i=[0:len(path)-2])let(
@@ -1702,11 +1702,13 @@ v3=q([0,1,0],v2,theta1),
 aligned_sec=c3t2(q_rot([str("z",-theta),str("y",theta1)],sec))
 )aligned_sec;
 
-function 3d_offset(sec,nv,o=1)=
+function 3d_offset_input(sec,nv,o)=
 let(
+
 v1=[nv.x,nv.y],
 u1=uv(v1),
 theta=u1.y<0?360-acos([1,0]*u1):acos([1,0]*u1),
+//nv1=v1==[0,0]?nv+[.001,.001,0]:nv,
 v2=q([0,0,1],nv,-theta),u2=uv(v2),
 theta1=u2.x>0?360-acos([0,0,1]*u2):acos([0,0,1]*u2),
 v3=q([0,1,0],v2,theta1),
@@ -1717,4 +1719,15 @@ back=q_rot([str("y",-theta1),str("z",theta)],rev_align)
 
 )back;
 
+function 3d_offset(sec,nv,o=1)=3d_offset_input(sec,nv+[0.00001,.00001,0],o);
+
 function nv(sec)= cross(sec[0]-sec[1],sec[2]-sec[1]);
+
+function rnd(sec1)=cr([for(i=[0:len(sec1)-1])
+let(
+i_minus=i==0?len(sec1)-1:i-1,i_plus=i<len(sec1)-1?i+1:0,
+p0=sec1[i_minus],p1=sec1[i],p2=sec1[i_plus],
+v1=p0-p1,v2=p2-p1,
+u1=uv(v1),u2=uv(v2),
+theta=acos(u1*u2)
+)[p1.x,p1.y,.1]],5);
