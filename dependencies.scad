@@ -478,6 +478,30 @@ rev_pl=[for(p=rev_sec)p+[0,len3,0]]
 
 )rev_pl;
 
+function scl2d_c(sec,sl)=let(
+sec1=len(sec[0])==2?[for(p=sec)[p.x,p.y,0]]:sec,
+xmin=min(sec1*[1,0,0]),
+xmax=max(sec1*[1,0,0]),
+ymin=min(sec1*[0,1,0]),
+ymax=max(sec1*[0,1,0]),
+
+cp=[xmin,ymin]+[(xmax-xmin)/2,(ymax-ymin)/2,0],
+x_rev=[for(p=sec1)let(
+p0=[cp.x,0,0],p1=[p.x,0,0],
+p2=p0+(p1-p0)*sl
+)p2],
+y_rev=[for(p=sec1)let(
+p0=[0,cp.y,0],p1=[0,p.y,0],
+p2=p0+(p1-p0)*sl
+)p2],
+rev_sec=[for(i=[0:len(sec1)-1])x_rev[i]+y_rev[i]],
+len1=norm([0,cp.y,0]-[0,ymin,0]),
+len2=len1*sl,
+len3=len2-len1,
+rev_pl=[for(p=rev_sec)p+[0,len3,0]]
+
+)rev_sec;
+
 function scl3d(sec,sl)=[for(i=[0:len(sec)-1])let(
 sec0=len(sec[0][0])==2?[for(p=sec[0])[p.x,p.y,0]]:sec[0],
 x0min=min(sec0*[1,0,0]),
@@ -1733,3 +1757,4 @@ theta=acos(u1*u2)
 )[p1.x,p1.y,.1]],5);
 
 function path_offset(path,d)=[for(i=[0:len(path)-2])let(p0=path[i],p1=path[i+1],line=[p0,p1],rev_point=offst_l(line,d))each i<len(path)-2?[rev_point[0]]:rev_point];
+function fillet(p1,p2,p3,r)=[for(i=[0:len(p1)-1])each i<len(p1)-1?[3p_3d_fillet(p3[i],p1[i],p2[i],r)]:[3p_3d_fillet(p3[i],p1[i],p2[i],r),3p_3d_fillet(p3[0],p1[0],p2[0],r)]];
