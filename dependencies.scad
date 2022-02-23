@@ -1420,7 +1420,7 @@ i_minus=i==0?len(p)-1:i-1)r[i_minus]*tan(theta[i_minus])+r[i]*tan(theta[i])],
 compare=[for(i=[0:len(p)-1])l1[i]>=l2[i]],
 
 arcs=[for(i=[0:len(p)-1])each assert(compare[i],"radius too big")let(
-i_minus=i==0?len(p)-1:i-1,i_plus=i<len(p)-1?i+1:0)3p_3d_fillet_wo_pivot(p[i_plus],p[i],p[i_minus],r[i],s=s)]
+i_minus=i==0?len(p)-1:i-1,i_plus=i<len(p)-1?i+1:0)3d_3p_fillet(p[i_minus],p[i],p[i_plus],r[i],s=s)]
 )arcs;
 
 
@@ -1525,3 +1525,15 @@ theta=acos(u1*u2)
 function path_offset(path,d)=[for(i=[0:len(path)-2])let(p0=path[i],p1=path[i+1],line=[p0,p1],rev_point=offst_l(line,d))each i<len(path)-2?[rev_point[0]]:rev_point];
 
 function fillet(p1,p2,p3,r)=[for(i=[0:len(p1)-1])each i<len(p1)-1?[3p_3d_fillet(p3[i],p1[i],p2[i],r)]:[3p_3d_fillet(p3[i],p1[i],p2[i],r),3p_3d_fillet(p3[0],p1[0],p2[0],r)]];
+
+function 3d_3p_fillet(p0,p1,p2,r,s=5)=
+let(
+n=nv([p0,p1,p2]),
+theta=(180-acos(uv(p0-p1)*uv(p2-p1)))/2,
+alpha=acos(uv(p0-p1)*uv(p2-p1)),
+l=r*tan(theta),
+cp=assert(l<=norm(p0-p1)&&l<=norm(p2-p1),str("radius :",r," is too big"))p1+q(n,uv(p0-p1)*r/cos(theta),alpha/2),
+pa=p1+uv(p0-p1)*l,
+arc=[for(i=[0:theta*2/s:theta*2])cp+q(n,pa-cp,-i)]
+)arc;
+
