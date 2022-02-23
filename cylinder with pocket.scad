@@ -32,4 +32,4 @@ i<len(fillet)-1?[fillet[i]]:[fillet[i],fillet[0]]
 ];
 
 
-swp_c(flip(fillet));
+swp_c(fillet);
