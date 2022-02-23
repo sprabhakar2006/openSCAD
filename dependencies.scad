@@ -599,7 +599,7 @@ function ipw(prism,prism1,r)=
             
             
             ) //[v1,p2[i]-p1[i],5]
-            if(! is_undef(p7[0]))3p_3d_fillet_wo_pivot(p2[i],p1[i],p7[0],r,s)
+            if(! is_undef(p7[0]))3d_3p_fillet(p7[0],p1[i],p2[i],r,s)
             
             ];
  
@@ -1305,21 +1305,14 @@ rev_sec=q_rot(["x90","z90",str("y",-a),str("z",theta)],sec)
 
 function 3p_3d_fillet(p0,p1,p2,r=1, s=5)=
 let(
-v1=p0-p1, u1=v1/norm(v1),
-v2=p2-p1, u2=v2/norm(v2),
-n=cross (u1, u2),
-theta=acos (u1*u2),
-alpha= (180-theta)/2,
-pa=r*tan (alpha) *u1,
-pb=r*tan (alpha) *u2,
-pap=pa+q(n, u1,90),
-pbp=pb+q(n, u2,-90),
-l1=[pa, pap],
-l2=[pb, pbp],
-cp=i_p3d (l1,l2),
-arc=trns(p1+cp,[for(i=[0:alpha*2/s:alpha*2])q(n,pb-cp,i)])
-
-) [p1,each arc];
+n=nv([p0,p1,p2]),
+theta=(180-acos(uv(p0-p1)*uv(p2-p1)))/2,
+alpha=acos(uv(p0-p1)*uv(p2-p1)),
+l=r*tan(theta),
+cp=p1+q(n,uv(p0-p1)*r/cos(theta),alpha/2),
+pa=p1+uv(p0-p1)*l,
+arc=[for(i=[0:theta*2/s:theta*2])cp+q(n,pa-cp,-i)]
+)[p1,each arc];
 
 function 3p_3d_fillet_wo_pivot(p0,p1,p2,r=1, s=5)=[
 let(
