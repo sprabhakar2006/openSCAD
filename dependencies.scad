@@ -923,11 +923,21 @@ sec1=lnth>sl?l1([p0,p1],lnth/sl):[p0],
 sec2=[for(i=[0:len(sec1)-1])if(sec1[i]!=sec1[i<len(sec1)?i+1:0])sec1[i]])
 each sec2];
 
-function m_points_s(sec1,s)=
+function m_points_sc(sec1,s)=
 let(
 l=[for(i=[0:len(sec1)-1])
 let(
 i_plus=i<len(sec1)-1?i+1:0,
+l=norm(sec1[i_plus]-sec1[i]),
+u=uv(sec1[i_plus]-sec1[i])
+)for(j=[0:l/s:l])sec1[i]+j*u]
+)l;
+
+function m_points_so(sec1,s)=
+let(
+l=[for(i=[0:len(sec1)-1])
+let(
+i_plus=i+1,
 l=norm(sec1[i_plus]-sec1[i]),
 u=uv(sec1[i_plus]-sec1[i])
 )for(j=[0:l/s:l])sec1[i]+j*u]
