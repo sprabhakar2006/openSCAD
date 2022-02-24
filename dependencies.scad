@@ -935,7 +935,7 @@ u=uv(sec1[i_plus]-sec1[i])
 
 function m_points_so(sec1,s)=
 let(
-l=[for(i=[0:len(sec1)-1])
+l=[for(i=[0:len(sec1)-2])
 let(
 i_plus=i+1,
 l=norm(sec1[i_plus]-sec1[i]),
