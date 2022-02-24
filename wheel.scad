@@ -42,7 +42,7 @@ p_extrudec(a[1],a[8]);
 swp_c(ipf(surf_extrude(a[0],a[7]),l_extrude(m_points(f_offset(a[3],-2.5),10),300),3));}
 swp(prism(a[2],a[6]));}
 p_extrudec(a[1],a[9]);
-swp_c(flip(ipf(surf_extrude(a[0],a[7]),l_extrude(a[5],300),3,1)));
+swp_c(ipf(surf_extrude(a[0],a[7]),l_extrude(a[5],300),3,1));
 }
 
 
@@ -90,7 +90,7 @@ intersection(){
 swp_c(ipf(surf_extrude(b[0],b[7]),l_extrude(m_points(f_offset(b[1],-2.5),10),300),3));
 swp(prism(b[6],b[10]));}
 
-swp_c(flip(ipf(surf_extrude(b[0],b[7]),l_extrude(b[11],300),3,1)));
+swp_c(ipf(surf_extrude(b[0],b[7]),l_extrude(b[11],300),3,1));
 }
 
 b=spoke2a();
@@ -108,19 +108,19 @@ prism2=q_rot(["z30"],prism(sec2,path2)),
 
 sec3=cr(pts1([[0,0],[2.5,0,2.5],[0,45,2.5],[-5,0,2.5],[0,-45,2.5]]),5),
 path3=[[0,0],[0,300]],
-prism3=trns([20,0,205],q_rot(["x90","z90"],prism(sec3,path3,1))),
+prism3=trns([20,0,205],q_rot(["x90","z90"],prism(sec3,path3,20))),
 
 prism4=ipf(prism1,flip(prism3),2),
 p5=ip(prism2,prism3),
 p6=sort_points(p5,ip(q_rot(["z30"],prism(sec2,path_offset(path2,2))),prism3)),
-p7=sort_points(p5,ip(prism2,trns([20,0,205],q_rot(["x90","z90"],prism(f_offset(sec3,2),path3,1))))),
+p7=sort_points(p5,ip(prism2,trns([20,0,205],q_rot(["x90","z90"],prism(f_offset(sec3,2),path3,20))))),
 p8=[for(i=[0:len(p5)-1])each i<len(p5)-1?[3p_3d_fillet(p6[i],p5[i],p7[i],2)]:[3p_3d_fillet(p6[i],p5[i],p7[i],2),3p_3d_fillet(p6[0],p5[0],p7[0],2)]]
 )[prism4,p8,prism3,prism1];
 
 c=s3();
 
 module s3(data){
-swp_c(flip(c[1]));
+swp_c(c[1]);
 swp_c(c[0]);
 intersection(){
 swp(c[2]);
@@ -130,18 +130,19 @@ swp(c[3]);
 
 
 //hub and rim
-let(
-sec7=cir(245,s=144),
 
-path7=cr(pts1([[5,0],[0,5,1],[-13,20,5],[0,20,5],[-12,20,5],[0,78,5],[12,20,5],[0,64,5],[13,20,3],[0,5]]),5),
-sec8=cir(45),
-path8=cr(pts1([[0,200],[5,0,5],[0,40,5],[-25,15,5],[-24.5,0]]),5),
-prism8=prism(sec8,path8)
+let(
+
+sec=cr(pts1([[0,0],[0,5,1],[-13,20,5],[0,20,5],[-12,20,5],[0,78,5],[12,20,5],[0,64,5],[13,20,3],[0,5]]),5),
+sec1=concat(sec,c3t2(trns([5,0,0],flip(sec)))),
+
+sec2=cr(pts1([[0,200],[50,0,5],[0,40,5],[-25,15,5],[-25,0]]),5),
+
 ){
 difference(){
-swp(prism8);
+rotate_extrude($fn=72) polygon(sec2);
 cylinder(r=20,h=300);}
-surf_extrudec(sec7,path7,-5,2);
+rotate_extrude($fn=144) translate([245,0,0])polygon(sec1);
 }
 
 difference(){
