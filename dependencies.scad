@@ -1,6 +1,6 @@
 
 
-function prism(sec,path,m_points=100)=[for(p=path)[for(p1=sort_points(m_points(sec,m_points),m_points(f_offset(sec,round(p.x*100)/100),m_points)))[p1.x,p1.y,p.y]]];
+function prism(sec,path,m_points=1)=[for(p=path)[for(p1=sort_points(m_points_sc(sec,m_points),m_points_sc(f_offset(sec,round(p.x*100)/100),m_points)))[p1.x,p1.y,p.y]]];
     
 function surf(sec,path)=[for(p=path)[for(p1=sec)[p.x,p1.y,p.y]]];
              
@@ -923,6 +923,15 @@ sec1=lnth>sl?l1([p0,p1],lnth/sl):[p0],
 sec2=[for(i=[0:len(sec1)-1])if(sec1[i]!=sec1[i<len(sec1)?i+1:0])sec1[i]])
 each sec2];
 
+function m_points_o(sec,sl=20)=
+[for(i=[0:len(sec)-2])let(
+p0=sec[i],
+p1=sec[i+1],
+lnth=norm(p1-p0),
+sec1=lnth>sl?l1([p0,p1],lnth/sl):[p0],
+sec2=[for(i=[0:len(sec1)-1])if(sec1[i]!=sec1[i<len(sec1)?i+1:0])sec1[i]])
+each sec2];
+
 function m_points_sc(sec1,s)=
 let(
 l=[for(i=[0:len(sec1)-1])
@@ -930,7 +939,7 @@ let(
 i_plus=i<len(sec1)-1?i+1:0,
 l=norm(sec1[i_plus]-sec1[i]),
 u=uv(sec1[i_plus]-sec1[i])
-)for(j=[0:l/s:l])sec1[i]+j*u]
+)each l/s>=.5?[for(j=[0:l/s:l])sec1[i]+j*u]:[sec1[i]]]
 )l;
 
 function m_points_so(sec1,s)=
@@ -940,7 +949,7 @@ let(
 i_plus=i+1,
 l=norm(sec1[i_plus]-sec1[i]),
 u=uv(sec1[i_plus]-sec1[i])
-)for(j=[0:l/s:l])sec1[i]+j*u]
+)each l/s>=.5?[for(j=[0:l/s:l])sec1[i]+j*u]:[sec1[i]]]
 )l;
 
 function cum_sum(list,list1,n,s=1)=n==0?list1:cum_sum(list,[for(i=[0:s])list[i]]*[for(i=[0:s])1],n-1,s+1);
