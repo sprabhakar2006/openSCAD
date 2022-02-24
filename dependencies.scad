@@ -924,10 +924,7 @@ sec2=[for(i=[0:len(sec1)-1])if(sec1[i]!=sec1[i<len(sec1)?i+1:0])sec1[i]])
 each sec2];
 
 function m_points_s(sec1,s)=
-let(s=5,
-rad=[for(i=[0:len(sec1)-1])let(i_minus=i==0?len(sec1)-1:i-1,
-i_plus=i<len(sec1)-1?i+1:0
-)3p_r(sec1[i_minus],sec1[i],sec1[i_plus])],
+let(
 l=[for(i=[0:len(sec1)-1])
 let(
 i_plus=i<len(sec1)-1?i+1:0,
