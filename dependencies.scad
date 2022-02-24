@@ -923,6 +923,19 @@ sec1=lnth>sl?l1([p0,p1],lnth/sl):[p0],
 sec2=[for(i=[0:len(sec1)-1])if(sec1[i]!=sec1[i<len(sec1)?i+1:0])sec1[i]])
 each sec2];
 
+function m_points_s(sec1,s)=
+let(s=5,
+rad=[for(i=[0:len(sec1)-1])let(i_minus=i==0?len(sec1)-1:i-1,
+i_plus=i<len(sec1)-1?i+1:0
+)3p_r(sec1[i_minus],sec1[i],sec1[i_plus])],
+l=[for(i=[0:len(sec1)-1])
+let(
+i_plus=i<len(sec1)-1?i+1:0,
+l=norm(sec1[i_plus]-sec1[i]),
+u=uv(sec1[i_plus]-sec1[i])
+)for(j=[0:l/s:l])sec1[i]+j*u]
+)l;
+
 function cum_sum(list,list1,n,s=1)=n==0?list1:cum_sum(list,[for(i=[0:s])list[i]]*[for(i=[0:s])1],n-1,s+1);
 
 function add_paths(path1,path2)=
