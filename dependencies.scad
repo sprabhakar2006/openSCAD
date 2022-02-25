@@ -1551,3 +1551,17 @@ pa=p1+uv(p0-p1)*l,
 arc=[for(i=[0:theta*2/s:theta*2])cp+q(n,pa-cp,-i)]
 )arc;
 
+function cir_v(r,cp,v)=
+let(r=3,
+u=uv(v),
+p0=[0,0],
+p1=p0+u*100000,
+p=perp([p0,p1],cp),
+a=norm(p-cp)<.1?(u.y<0?360-acos([1,0]*u)+90:acos([1,0]*u)+90):(uv(p-cp).y<0?360-acos([1,0]*uv(p-cp)):acos([1,0]*uv(p-cp))),
+
+tp=cp+[r,0]*rm(a),
+p2=tp+v,
+tp1=cp+[r,0]*rm(a+180),
+p3=tp1+v,
+
+)[[tp,p2],[tp1,p3]];
