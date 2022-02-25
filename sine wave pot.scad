@@ -4,14 +4,16 @@ include<dependencies.scad>
 sec=cir(15);
 path=[for(i=[0:30])[5*sin(12*i),i]];
 prism=prism(sec,path);
+
+
 //function line x=sin(y)
 linear_extrude(.5)p_lineo(path);
 
-surf_extrudec(sec,path,2,2);
+surf_extrudec(sec,path,-2,2);
 
-sec1=cr(pts1([[-15,-15,6],[30,0,6],[0,30,6],[-30,0,6]]),10);
+sec1=cr(pts1([[-15,-15,8],[30,0,8],[0,30,8],[-30,0,8]]),10);
 translate([50,0,0])
-surf_extrudec(sec1,path,1,2);
+surf_extrudec(sec1,path,-1,2);
 
 translate([0,50,0])
 swp(prism);
