@@ -93,12 +93,7 @@ function surf_extrude(sec,path)=[
              else if(o==2){ 
                  s1=prism(sec,path);
                  s2=prism(f_offset(sec,t),path);
-                 for(i=[0:len(s1)-2])
-                     for(j=[0:len(s1[i])-1])let(j_plus=j<len(s1[i])-1?j+1:0)
-                 if(t>0)       
-                 swp([[s1[i][j],s2[i][j],s2[i][j_plus],s1[i][j_plus]],[s1[i+1][j],s2[i+1][j],s2[i+1][j_plus],s1[i+1][j_plus]]]);
-                  else
-                 swp([[s1[i+1][j],s2[i+1][j],s2[i+1][j_plus],s1[i+1][j_plus]],[s1[i][j],s2[i][j],s2[i][j_plus],s1[i][j_plus]]]);
+                 swp_prism_h(s1,s2);
                  
                  }
      }
