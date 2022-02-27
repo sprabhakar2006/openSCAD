@@ -55,7 +55,7 @@ function surf_extrude(sec,path)=[
     sec1=trns(p0,q_rot(["x90","z-90",str("y",-a2),str("z",a1)],sec)),
     sec2=trns(p1,q_rot(["x90","z-90",str("y",-a2),str("z",a1)],sec))
 
-    )i<len(path)-2?sec1:sec2];
+    )each i<len(path)-2?[sec1]:[sec1,sec2]];
     
  module surf_extrude(sec,path,t=.01,o=1){
      if(o==1){
