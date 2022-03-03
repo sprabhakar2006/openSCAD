@@ -937,7 +937,7 @@ let(
 i_plus=i<len(sec1)-1?i+1:0,
 l=norm(sec1[i_plus]-sec1[i]),
 u=uv(sec1[i_plus]-sec1[i])
-)each l/s>=.5?[for(j=[0:l/s:l])sec1[i]+j*u]:[sec1[i]]]
+)each l/s>=.1?[for(j=[0:l/s:l])sec1[i]+j*u]:[sec1[i]]]
 )l;
 
 function m_points_so(sec1,s)=
@@ -1274,17 +1274,22 @@ prism1=q_rot(["x90","z90"],sec)
 
 module p_extrude(sec,path) swp([for(i=[0:len(path)-2])let(
 p0=path[i],
-p1=path[i+1],
+p1=i<len(path)-1?path[i+1]:path[0]-(path[1]-path[0])*.01,
 v=p1-p0,
-v1=[v.x,v.y,0],
-u=[v.x,v.y]/norm([v.x,v.y]),
-u1=v/norm(v),
-u2=v1/norm(v1),
-theta=!is_num(u.x)?0:(u.y<0?360-acos([1,0]*u):acos([1,0]*u)),
-a=u1==u2?0:u1.z<0?360-acos(u1*u2):acos(u1*u2),
-alpha=a-90,
-rev_sec=q_rot(["x90","z90",str("y",-a),str("z",theta)],sec)
-)each i<len(path)-2?[trns(p0,rev_sec)]:[trns(p0,rev_sec),trns(p1,rev_sec)]]);
+u=v/norm(v),
+theta=u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u),
+prism=q_rot(["x90","z90"],sec),
+
+p2=path[0],
+p3=path[1],
+v1=p3-p2,
+u1=v1/norm(v1),
+theta1=u1.y<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1),
+prism1=q_rot(["x90","z90"],sec)
+
+)each i<len(path)-2?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism))]]);
+
+
 
 function p_extrudec(sec,path)= [for(i=[0:len(path)-1])let(
 p0=path[i],
@@ -1305,17 +1310,20 @@ prism1=q_rot(["x90","z90"],sec)
 
 function p_extrude(sec,path)= [for(i=[0:len(path)-2])let(
 p0=path[i],
-p1=path[i+1],
+p1=i<len(path)-1?path[i+1]:path[0]-(path[1]-path[0])*.01,
 v=p1-p0,
-v1=[v.x,v.y,0],
-u=[v.x,v.y]/norm([v.x,v.y]),
-u1=v/norm(v),
-u2=v1/norm(v1),
-theta=!is_num(u.x)?0:(u.y<0?360-acos([1,0]*u):acos([1,0]*u)),
-a=u1==u2?0:u1.z<0?360-acos(u1*u2):acos(u1*u2),
-alpha=a-90,
-rev_sec=q_rot(["x90","z90",str("y",-a),str("z",theta)],sec)
-)each i<len(path)-2?[trns(p0,rev_sec)]:[trns(p0,rev_sec),trns(p1,rev_sec)]];
+u=v/norm(v),
+theta=u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u),
+prism=q_rot(["x90","z90"],sec),
+
+p2=path[0],
+p3=path[1],
+v1=p3-p2,
+u1=v1/norm(v1),
+theta1=u1.y<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1),
+prism1=q_rot(["x90","z90"],sec)
+
+)each i<len(path)-2?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism))]];
 
 function p_ex(sec,path)= [for(i=[0:len(path)-2])let(
 p0=path[i],
@@ -1594,3 +1602,18 @@ c_hull1(list=list,
 s_pnt=s_pnt(list),
 n_pnt=n_pnt(list,s_pnt(list)),
 revised_list=[s_pnt(list),n_pnt(list,s_pnt(list)).x]);
+
+function f_surf(list,list1)=let(
+index=[for(p=list1)each each search([p],c3t2(list),0)]
+)[for(i=index)list[i]];
+
+module partial_surf(surf,t){
+     
+     surf1=trns([0,0,t],surf);
+     for(i=[0:len(surf)-2])
+         for(j=[0:len(surf[i])-1])
+         let(j_plus=j<len(surf[i])-1?j+1:0){
+           if(t>0)
+             swp([[surf1[i][j],surf1[i+1][j],surf1[i+1][j_plus],surf1[i][j_plus]],[surf[i][j],surf[i+1][j],surf[i+1][j_plus],surf[i][j_plus]]]);
+         else
+             swp([[surf[i][j],surf[i+1][j],surf[i+1][j_plus],surf[i][j_plus]],[surf1[i][j],surf1[i+1][j],surf1[i+1][j_plus],surf1[i][j_plus]]]);}}
