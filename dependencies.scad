@@ -1066,12 +1066,13 @@ p1=l[1]+u*d*rm(-90)
 function perp(line,point)=
 let(
 v1=line[1]-line[0],
-slope1=v1.y/v1.x,
-slope2=-1/slope1,
-line1=[point,point+[1,slope2]],
+u=uv(v1),
+u1=u*rm(90),
+
+line1=[point,point+u1],
 ip=i_p2d(line,line1)
 
-)[point,ip];
+)ip;
    
 function 2cir_tangent(r1,r2,cp1,cp2)=
 let(
@@ -1108,7 +1109,7 @@ y_min=min(sec*[0,1]),
 loc=search(y_min,sec,0,1)[0]
 )sec[loc];
 
-function reduced_list(sec,list)=[for(p=sec)each [for(p1=list)if(norm(p-p1)>.01|| p1==[])p]];
+function reduced_list(list,list1)=revised_list(list,[for(p=list1)each each search([p],list,0)]);
  
 function list_of_points_to_omit(sec,point)=let(
 list=[for(i=[0:len(sec)-1])if(norm(sec[i]-point)<.001)i],
@@ -1572,3 +1573,24 @@ theta=acos(uv(p0-cp)*uv(p1-cp)),
 r1=norm(p0-cp),r2=norm(p1-cp),
 arc=assert(abs(norm((p0-cp))-norm((p1-cp)))<.1,str("radiuses ",r1," and ",r2," are unequal"))[for(i=[0:theta/s:theta])cp+q(n,p0-cp,i)]
 )arc;
+
+function n_pnt(list,s_pnt,a=0)=let(
+r_list=reduced_list(list,[s_pnt]),
+n_pnt=[for(p=r_list)ang((p-s_pnt).x,(p-s_pnt).y)],
+index=search(min([for(p=n_pnt)if(p>=a)p]),n_pnt,0)[0]
+
+)[r_list[index],n_pnt[index]];
+
+
+function c_hull1(list,s_pnt,n_pnt,revised_list)= 
+n_pnt.x==s_pnt?revised_list:c_hull1(
+list,s_pnt,
+n_pnt=n_pnt(list,n_pnt.x,n_pnt.y),
+revised_list=concat(revised_list,[n_pnt.x])
+);
+
+function c_hull(list)=
+c_hull1(list=list,
+s_pnt=s_pnt(list),
+n_pnt=n_pnt(list,s_pnt(list)),
+revised_list=[s_pnt(list),n_pnt(list,s_pnt(list)).x]);
