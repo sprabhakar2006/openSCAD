@@ -1617,3 +1617,12 @@ module partial_surf(surf,t){
              swp([[surf1[i][j],surf1[i+1][j],surf1[i+1][j_plus],surf1[i][j_plus]],[surf[i][j],surf[i+1][j],surf[i+1][j_plus],surf[i][j_plus]]]);
          else
              swp([[surf[i][j],surf[i+1][j],surf[i+1][j_plus],surf[i][j_plus]],[surf1[i][j],surf1[i+1][j],surf1[i+1][j_plus],surf1[i][j_plus]]]);}}
+             
+function resurf1(list,c_hull,revised_list)=
+    len(list)<=2?revised_list:
+    resurf1(list=reduced_list(list,c_hull),
+    c_hull=c_hull(list),
+    revised_list=concat(revised_list,[c_hull]))
+;
+
+function resurf(list)=resurf1(list=list,c_hull=c_hull(list),revised_list=[c_hull(list)]);
