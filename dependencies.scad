@@ -1626,3 +1626,27 @@ function resurf1(list,c_hull,revised_list)=
 ;
 
 function resurf(list)=resurf1(list=list,c_hull=c_hull(list),revised_list=[c_hull(list)]);
+
+//function: intersection between section and point
+function ibsap(sec,pnt)=let( 
+ip=[for(i=[0:len(sec)-1])let(ep=[0,.00001],
+i_plus=i<len(sec)-1?i+1:0,
+p0=sec[i],p1=sec[i_plus],
+p2=pnt,p3=p2+[1,0],
+v1=p1-p0+ep,v2=p3-p2-ep,u1=uv(v1),u2=uv(v2),
+//p0+v1*t1=p2+v2*t2
+//v1*t1-v2*t2=p2-p0
+t1=(i_m2d(t([v1,-v2]))*(p2-p0))[0],
+ip=p0+v1*t1,
+v3=ip-p2,u3=uv(v3)
+)if((lim(t1,0,1)&&sign(u2.x)==sign(u3.x)))ip]
+)ip;
+
+//function: points inside enclosed section
+function pies(pnts,sec)=let(
+pwir=[for(p=pnts)let(
+ip=ibsap(sec,p),
+
+)if(ip!=[]&&len(ip)%2==1)p]
+
+)pwir;
