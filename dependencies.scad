@@ -1,12 +1,15 @@
 
-
+//function to make a prism with combination of 2d section and 2d path
 function prism(sec,path,m_points=1)=[for(p=path)[for(p1=sort_points(m_points_sc(sec,m_points),m_points_sc(f_offset(sec,round(p.x*100)/100),m_points)))[p1.x,p1.y,p.y]]];
     
+
 function surf(sec,path)=[for(p=path)[for(p1=sec)[p.x,p1.y,p.y]]];
-             
+
+//function to calculate angle of a 2d vector starting from origin and end point with x and y co-ordinates
+ 
 function ang(x,y)= x>=0&&y>=0?atan(y/x):x<0&&y>=0?180-abs(atan(y/x)):x<0&&y<0?180+abs(atan(y/x)):360-abs(atan(y/x));
 
-            
+//function to rotate a point around a vector(axis) with angle theta           
 function q(vector=[1,0,0],point=[0,5,0],theta=0)=
 
 let(t=theta,
@@ -21,28 +24,34 @@ transformation=pqp1.y
 //assert(!is_undef(transformation),str(v,theta,p.y,q.y))
 transformation
 ;
-
+// function is input to another function q_rot
 function qmr1(s,r,pl,n=0)= n==len(s)?pl:
 qmr1(s,r,
     let(
     v1=s[n]=="x"?[1,0,0]:s[n]=="y"?[0,1,0]:[0,0,1],
     r1=r[n]==undef?0:r[n])
     [for(p=pl)q(v1,p,r1)],n+1);
-
+//function is input to another function q_rot
 function qmr2(s,r,pl,n=0)= n==len(s)?pl:qmr2(s,r,let(
     v1=s[n]=="x"?[1,0,0]:s[n]=="y"?[0,1,0]:[0,0,1],
     r1=r[n]==undef?0:r[n])
 [for(i=[0:len(pl)-1])[for(p=pl[i])q(v1,p,r1)]],n+1);
-    
+  
+//function to rotate a group of points "pl" around a series of axis with defined angles e.g q_rot(s=["z20","x40","y80"],pl=[[2,0],[10,2]])=> will rotate the line first around z axis by 20 deg then around x axis by 40 degrees and then around y axis by 80 degrees.  
 function q_rot(s,pl)= is_num(pl[0][0])?qmr1([for(p=s)cvar(p)[0]],[for(p=s)cvar(p)[1]],pl):qmr2([for(p=s)cvar(p)[0]],[for(p=s)cvar(p)[1]],pl);
 
-function sort(list,n=0)=
+//function used as input to sort
+function sort1(list,n=0)=
 let(
 list1=[for(i=[0:len(list)-1])[list[i]+i*.0000000001,i]],
 a=lookup(min(list1*[1,0]),list1),
 list2=[for(i=[0:len(list1)-1])if (lookup(list1[i].x,list1)!=a)list1[i]]
-)n==0?min(list1*[1,0]):sort(list2*[1,0],n-1);
-        
+)n==0?min(list1*[1,0]):sort1(list2*[1,0],n-1);
+
+// function to sort a list of real numbers in ascending order
+function sort(list)=[for(i=[0:len(list)-1])sort1(list,i)];
+       
+//function to make surface with a polyline 2d sketch and a 3d path(there is no render here but points can be visualised with following command for(p=surf_extrude(sec,path))points(p,.2);) 
 function surf_extrude(sec,path)=[
 
     for(i=[0:len(path)-2])
@@ -57,31 +66,10 @@ function surf_extrude(sec,path)=[
 
     )each i<len(path)-2?[sec1]:[sec1,sec2]];
     
- module surf_extrude(sec,path,t=.01,o=1){
-     if(o==1){
-     surf=surf_extrude(sec,path);
-     surf1=trns([0,0,t],surf);
-     for(i=[0:len(surf)-2])
-         for(j=[0:len(surf[i])-2])
-           if(t>0)
-             swp([[surf1[i][j],surf1[i+1][j],surf1[i+1][j+1],surf1[i][j+1]],[surf[i][j],surf[i+1][j],surf[i+1][j+1],surf[i][j+1]]]);
-         else
-             swp([[surf[i][j],surf[i+1][j],surf[i+1][j+1],surf[i][j+1]],[surf1[i][j],surf1[i+1][j],surf1[i+1][j+1],surf1[i][j+1]]]);}
-             else if(o==2){ 
-                 s1=prism(sec,path);
-                 s2=prism(f_offset(sec,t),path);
-                 for(i=[0:len(s1)-2])
-                     for(j=[0:len(s2[i])-2])
-                 if(t>0)       
-                 swp(flip([[s1[i][j],s2[i][j],s2[i][j+1],s1[i][j+1]],[s1[i+1][j],s2[i+1][j],s2[i+1][j+1],s1[i+1][j+1]]]));
-                  else
-                 swp(flip([[s1[i+1][j],s2[i+1][j],s2[i+1][j+1],s1[i+1][j+1]],[s1[i][j],s2[i][j],s2[i][j+1],s1[i][j+1]]]));
-                 
-                 }
-     }
+//module to render surface with a polyline 2d sketch and a 3d path. thickness of the surface can be set with parameter "t". positive and negative value creates thickness towards +z and -z directions respectively 
     
- module surf_extrudec(sec,path,t=.01,o=1){
-     if(o==1){
+ module surf_extrude(sec,path,t=.01){
+     
      surf=surf_extrude(sec,path);
      surf1=trns([0,0,t],surf);
      for(i=[0:len(surf)-2])
@@ -90,19 +78,16 @@ function surf_extrude(sec,path)=[
              swp([[surf1[i][j],surf1[i+1][j],surf1[i+1][j+1],surf1[i][j+1]],[surf[i][j],surf[i+1][j],surf[i+1][j+1],surf[i][j+1]]]);
          else
              swp([[surf[i][j],surf[i+1][j],surf[i+1][j+1],surf[i][j+1]],[surf1[i][j],surf1[i+1][j],surf1[i+1][j+1],surf1[i][j+1]]]);}
-             else if(o==2){ 
-                 s1=prism(sec,path);
-                 s2=prism(f_offset(sec,t),path);
-                 swp_prism_h(s1,s2);
-                 
-                 }
-     }
-
+              
+    
+//function to convert the y co-ordinates to z co-ordinates e.g.[x,y]=>[x,0,y]. 2d to 3d coordinate system
     
 function cytz(path)=[for(p=path)[p.x,0,p.y]];
-            
+
+//function for creating points in circle with radius "r", center point "cp" and number of segments "s"           
 function cir(r,cp=[0,0],s=50)=[for(i=[0:360/s:360-360/s])[cp.x+r*cos(i),cp.y+r*sin(i)]];
 
+//function for drawing a closed 2d polyline from a group of points "path" and width of the polyline is defined by parameter "size".
 module p_line(path,size=.5){
     for(i=[0:len(path)-1])
         let(p0=path[i],p1=i<len(path)-1?path[i+1]:path[0])
@@ -111,6 +96,7 @@ module p_line(path,size=.5){
     translate(p0)circle(size/2,$fn=20);
     translate(p1)circle(size/2,$fn=20);}}
     
+//function for drawing an open 2d polyline from a group of points "path" and width of the polyline is defined by parameter "size".
 module p_lineo(path,size=.5){
     for(i=[0:len(path)-2])
         let(p0=path[i],p1=path[i+1])
@@ -127,6 +113,7 @@ module rd_line(path,size=.5){
     translate(p0)sphere(size,true,$fn=30);
     translate(p1)sphere(size,true,$fn=30);}}
     
+    
 function list_ang(sec)=[for(i=[0:len(sec)-1])
     let(
 p0=sec[i],p1=i<len(sec)-1?sec[i+1]:sec[0],p2=i<len(sec)-2?sec[i+2]:i<len(sec)-1?sec[0]:sec[1],
@@ -135,10 +122,12 @@ angle1=ang(v1.x,v1.y),angle2=ang(v2.x,v2.y),
 angle=angle2-angle1
 
 )if(is_num(angle))angle];
+//function to identify whether the section is clockwise or counter clockwise. cw(sec)==1 means clockwise and -1 means counterclockwise. e.g. echo(cw([[0,0],[4,0],[0,4],[-4,0]]));// -1
 
 function cw(sec)=let(p=mode_sign(list_ang(sec)))
 p[0]>p[1]?-1:1;
 
+//function to calculate the intersection point between 2 lines e.g. echo(i_p2d(l1=[[0,0],[1,4]],l2=[[10,0],[7,2]])); => //ECHO: [1.42857, 5.71429]
 function i_p2d(l1,l2)=let(
 p0=l1[0],p1=l1[1],
 p2=l2[0],p3=l2[1],
@@ -152,6 +141,7 @@ pi=p0+v1*t1
 
 )pi;
 
+//function to calculate intersection point between 2 lines in 3d space (mostly if these lines lie on the same plane)
 function i_p3d(l1,l2)=
 let(
 
@@ -167,12 +157,14 @@ t1=(i_m3d([[v1.x,-v2.x,1],
 ip=l1[0]+v1*t1
 )ip;
 
+
 function mode_sign(p,plus=0,minus=0,n=0)=n==len(p)?[plus,minus]:mode_sign(p,p[n]>0?plus+1:plus+0,p[n]<0?minus+1:minus+0,n+1);
 
+//function to draw points in circular arc with radius, start angle "ang1" , end angle "ang2", center point of the arc "cp" and number of segments required in the arc "s". e.g. following code will draw an arc of radius 5 from 0 to 90 degrees centered at [0,0] with 20 segments in the arc: p_lineo(arc(radius=5,ang1=0,ang2=90,cp=[0,0],s=20),.1);
     
 function arc(radius,ang1=0,ang2=355,cp=[0,0],s=20)=[for(i=[ang1:(ang2-ang1)/s:ang2])cp+[radius*cos(i),radius*sin(i)]];
     
-
+//function to draw the fillet radius "r" between the 2 circle with radiuses "r1" and "r2" centered at "c1" and "c2" respectively.
     
 function 2cir_fillet(r1=10,r2=10,c1=[0,0],c2=[20,0],r=10)=
 let(
@@ -199,6 +191,10 @@ arc4=arc(r1,a5,a6<a5?a6+360:a6,c1)
 )
 concat(arc2,arc1);
 
+//function to draw the fillet radius "r" between the 2 circle with radiuses "r1" and "r2" centered at "c1" and "c2" respectively.This function gives an additional flexibility for drawing fillet only one side. e.g try following example
+//fillet=2cir_filleto(r1=10,r2=10,c1=[0,0],c2=[20,0],r=10);
+//p_lineo(fillet[0],.1);
+
 function 2cir_filleto(r1=10,r2=10,c1=[0,0],c2=[20,0],r=10)=
 let(
 l1=norm(c2-c1),l2=r1+r,l3=r2+r,
@@ -216,7 +212,6 @@ a6=ang((p2-c1).x,(p2-c1).y),
 a7=ang((p1-c2).x,(p1-c2).y),
 a8=ang((p2-c2).x,(p2-c2).y),
 
-
 arc1=arc(r,a2<a1?360+a2:a2,a1,p1),
 arc2=arc(r,a4<a3?360+a4:a4,a3,p2),
 arc3=arc(r2,a7<a8?a7+360:a7,a8,c2),
@@ -224,7 +219,15 @@ arc4=arc(r1,a5,a6<a5?a6+360:a6,c1)
 )
 [arc2,arc1];
 
+//function to rotate a vector by "theta" degrees e.g. try following code:
+//line=[[0,0],[5,3]];
+//line1=line*rm(30);
+//
+//p_lineo(line,.1);
+//p_lineo(line1,.1);
+
 function rm(theta)=[[cos(theta),sin(theta)],[-sin(theta),cos(theta)]];
+
 
 function 2df(p1,p2,p3,r0,r1,r2,theta0,theta1,theta2,u2,u3,s)=let(
 l1=norm(p1-p2),
@@ -284,6 +287,10 @@ rl=[for(i=[0:len(pl)-1])pl[i].z==undef?0:pl[i].z]
 
 )2dfillet(pl1,rl,s);
 
+//function to create section with corner radiuses. e.g. following code has 3 points at [0,0],[10,0] and [7,15] and radiuses of 0.5,2 and 1 respectively,s=5 represent the number of segments at each corner radius.
+//sec=cr(pl=[[0,0,.5],[10,0,2],[7,15,1]],s=5);
+//p_line(sec,.1);
+
 function cr(pl,s=20)=let(
 sec=cr1(pl,s),
 sec1=[for(i=[0:len(sec)-1])if(norm(sec[i<len(sec)-1?i+1:0]-sec[i])>.01)sec[i]]
@@ -299,106 +306,72 @@ sec1=[for(i=[0:len(sec)-1])if(norm(sec[i<len(sec)-1?i+1:0]-sec[i])>.01)sec[i]]
 
 )sec1;
 
+
 function tr1(tm,sec)=[for(p=sec)(len(tm)==2?[tm.x,tm.y,0]:tm) + (len(p)==2?[p.x,p.y,0]:p)];
     
 function tr2(tm,sec)=[for(i=[0:len(sec)-1])[for(p=sec[i])(len(tm)==2?[tm.x,tm.y,0]:tm) + (len(p)==2?[p.x,p.y,0]:p)]];
     
+//function to translate a group of points "sl" by "m" distance defined in [x,y,z].e.g. try following code:
+//sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5);
+//p_line3dc(trns([2,5,10],sec),.1);
+ 
 function trns(m,sec)=is_num(sec[0][0])?tr1(m,sec):tr2(m,sec);
 
+//function to scale a 2d section by an amount "sl" which has to be >0 (keeps the y-coordinates same). e.g.following code scales the section by 0.7 (70% of the original shape)
+//sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5);
+//p_line(sec,.1);
+//p_line(scl2d(sec,.7),.1);
+
 function scl2d(sec,sl)=let(
-sec1=len(sec[0])==2?[for(p=sec)[p.x,p.y,0]]:sec,
-xmin=min(sec1*[1,0,0]),
-xmax=max(sec1*[1,0,0]),
-ymin=min(sec1*[0,1,0]),
-ymax=max(sec1*[0,1,0]),
+ cp=avg_v(sec),
+ rev=[for(p=sec)cp+(p-cp)*sl],
+ y1=cp-[0,each min(sec*[0,1])],
+ y2=cp-[0,each min(rev*[0,1])],
+ d=y2-y1
+ )c3t2(trns(d,rev));
 
-cp=[xmin,ymin]+[(xmax-xmin)/2,(ymax-ymin)/2,0],
-x_rev=[for(p=sec1)let(
-p0=[cp.x,0,0],p1=[p.x,0,0],
-p2=p0+(p1-p0)*sl
-)p2],
-y_rev=[for(p=sec1)let(
-p0=[0,cp.y,0],p1=[0,p.y,0],
-p2=p0+(p1-p0)*sl
-)p2],
-rev_sec=[for(i=[0:len(sec1)-1])x_rev[i]+y_rev[i]],
-len1=norm([0,cp.y,0]-[0,ymin,0]),
-len2=len1*sl,
-len3=len2-len1,
-rev_pl=[for(p=rev_sec)p+[0,len3,0]]
-
-)rev_pl;
-
+ //function to scale a 2d section by an amount "sl" which has to be >0 (keeps the revised section in center). e.g.following code scales the section by 0.7 (70% of the original shape)
+//sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5);
+//p_line(sec,.1);
+//p_line(scl2d_c(sec,.7),.1);
+ 
 function scl2d_c(sec,sl)=let(
-sec1=len(sec[0])==2?[for(p=sec)[p.x,p.y,0]]:sec,
-xmin=min(sec1*[1,0,0]),
-xmax=max(sec1*[1,0,0]),
-ymin=min(sec1*[0,1,0]),
-ymax=max(sec1*[0,1,0]),
+ cp=avg_v(sec),
+ rev=[for(p=sec)cp+(p-cp)*sl]
+ )rev;
 
-cp=[xmin,ymin]+[(xmax-xmin)/2,(ymax-ymin)/2,0],
-x_rev=[for(p=sec1)let(
-p0=[cp.x,0,0],p1=[p.x,0,0],
-p2=p0+(p1-p0)*sl
-)p2],
-y_rev=[for(p=sec1)let(
-p0=[0,cp.y,0],p1=[0,p.y,0],
-p2=p0+(p1-p0)*sl
-)p2],
-rev_sec=[for(i=[0:len(sec1)-1])x_rev[i]+y_rev[i]],
-len1=norm([0,cp.y,0]-[0,ymin,0]),
-len2=len1*sl,
-len3=len2-len1,
-rev_pl=[for(p=rev_sec)p+[0,len3,0]]
+// function to scale a 3d prism keeping the base z-coordinate same. takes 2 arguments "prism" to scale and the scaling factor "s". scale factor can take any real number negative values will scale the prism and turn the prism upside down.
+// try the following code to understand better:
+// sec=cir(10);
+// path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5);
+// prism=prism(sec,path);
+// %swp(prism);
+// swp(scl3d(prism,.7));
 
-)rev_sec;
+function scl3d(prism,s=1)=let(
+cp=avg_v(prism),
+rev=[for(p=prism)[for(p1=p)cp+(p1-cp)*s]],
+flat_p1=[for(p=prism)each p],
+flat_p2=[for(p1=rev)each p1],
+z1=min(flat_p1*[0,0,1]),
+z2=min(flat_p2*[0,0,1]),
+d=z1-z2
+)trns([0,0,d],rev);
 
-function scl3d(sec,sl)=[for(i=[0:len(sec)-1])let(
-sec0=len(sec[0][0])==2?[for(p=sec[0])[p.x,p.y,0]]:sec[0],
-x0min=min(sec0*[1,0,0]),
-x0max=max(sec0*[1,0,0]),
-y0min=min(sec0*[0,1,0]),
-y0max=max(sec0*[0,1,0]),
-z0min=min(sec0*[0,0,1]),
-z0max=max(sec0*[0,0,1]),   
+// function to scale a 3d prism keeping the prism centered. takes 2 arguments "prism" to scale and the scaling factor "s". scale factor can take any real number negative values will scale the prism and turn the prism upside down.
+// try the following code to understand better:
+// sec=cir(10);
+// path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5);
+// prism=prism(sec,path);
+// %swp(prism);
+// swp(scl3d_c(prism,.7));
 
-cp0=[x0min,y0min,z0min]+[(x0max-x0min)/2,(y0max-y0min)/2,(z0max-z0min)/2],
+function scl3d_c(prism,s=1)=let(
+cp=avg_v(prism),
+rev=[for(p=prism)[for(p1=p)cp+(p1-cp)*s]]
+)rev;
 
-sec1=len(sec[i][0])==2?[for(p=sec[i])[p.x,p.y,0]]:sec[i],
-   
-xmin=min(sec1*[1,0,0]),
-xmax=max(sec1*[1,0,0]),
-ymin=min(sec1*[0,1,0]),
-ymax=max(sec1*[0,1,0]),
-zmin=min(sec1*[0,0,1]),
-zmax=max(sec1*[0,0,1]),
-
-cp=[xmin,ymin,zmin]+[(xmax-xmin)/2,(ymax-ymin)/2,(zmax-zmin)/2],
-
-x_rev=[for(p=sec1)let(
-p0=[cp.x,0,0],p1=[p.x,0,0],
-p2=p0+(p1-p0)*sl
-)p2],
-
-y_rev=[for(p=sec1)let(
-p0=[0,cp.y,0],p1=[0,p.y,0],
-p2=p0+(p1-p0)*sl
-)p2],
-
-z_rev=[for(p=sec1)let(
-p0=[0,0,cp.z],p1=[0,0,p.z],
-p2=p0+(p1-p0)*sl
-)p2],
-
-rev_sec=[for(i=[0:len(sec1)-1])x_rev[i]+y_rev[i]+z_rev[i]],
-len1=norm([0,0,cp.z]-[0,0,zmin]),
-len2=len1*sl,
-len3=len2-len1,
-rev_pl=[for(p=rev_sec)p+[0,0,len3]],
-vector=cp0-cp,
-vector1=-vector*sl
-)trns(vector1,trns(vector,rev_pl))];
-
+// used as input for function ip()
 function ipa(prism,prism1)=
 [for(i=[0:len(prism1)-2])
     for(j=[0:len(prism1[i])-1])
@@ -421,9 +394,23 @@ function ipa(prism,prism1)=
             
             )if(lim(t1,0,1)&&lim(t2,0,1)&&lim(t3,0,1)&&lim(t2+t3,0,1))p0+v1*t1
             else if(lim(t4,0,1)&&lim(t5,0,1)&&lim(t6,0,1)&&lim(t5+t6,0,1))p0+v4*t4];
-            
+
+// function to calculate intersection point between two 3d prisms. "prism" is the 3d object which is intersected with "prism1".
+// try below code for better understanding:
+// sec=cir(10);
+// path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-9.9,0]]),5);
+// prism=prism(sec,path);
+// prism1=q_rot(["y40"],cyl(r=3,h=15,s=30));
+//
+// %swp(prism);
+// %swp(prism1);
+// ip=ip(prism,prism1);
+// points(ip,.2);
+          
 function ip(prism,prism1)=let(sec=ipa(prism,prism1))[for(i=[0:len(sec)-1])let(i_plus=i<len(sec)-1?i+1:0)if(norm(sec[i]-sec[i_plus])>.1)sec[i]];
-            
+
+//This function is not very often used and may get removed
+          
 function ip1(prism,prism1)=
 [for(i=[0:len(prism1)-2])
     
@@ -448,6 +435,8 @@ function ip1(prism,prism1)=
             )if(lim(t1,0,1)&&lim(t2,0,1)&&lim(t3,0,1)&&lim(t2+t3,0,1))p0+v1*t1
             else if(lim(t4,0,1)&&lim(t5,0,1)&&lim(t6,0,1)&&lim(t5+t6,0,1))p0+v4*t4];
             
+// used as input to another function
+
 function ip2(prism,prism1)=
 [for(i=[0:len(prism1)-2])
     
@@ -465,7 +454,8 @@ function ip2(prism,prism1)=
             
             )if(lim(t1,0,1))p0+v1*t1
 ];
-            
+    
+// function to draw normal vector to a given vector "v". Not used very often and may be removed    
 function nv3d(v)=[
 v.x==0&&v.y==0&&v.z>0?[-1,0,0]:
 v.x==0&&v.y==0&&v.z<0?[1,0,0]:
@@ -477,10 +467,28 @@ let(v1=[v.x,v.y]*[[0,1],[-1,0]])
 [v1.x,v1.y,0]
 
 ].x;
-            
+ 
+//function to convert 3d to 2d, it just removes the z-coordinate from the points list 
 function c3t2(sec)=[for(p=sec)[p.x,p.y]];
-function sum_v2d(v,n=0,s=[0,0])=n==len(v)-1?s:sum_v2d(v,n+1,s+v[n]);
-//function avg_v2d(sec)=sum_v2d(sec)/len(sec);
+
+// function to calculate the cumulative sum of all the points of a 2d or 3d points list.
+// e.g.
+// sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5);
+// echo(sum_v(sec)); //[95.9558, 82.3332]
+
+function sum_v(prism)=let(
+decision=is_num(prism.x.x)?0:1,
+sum=decision==0?
+[sum(sec*[1,0]),sum(sec*[0,1])]:
+let(cg=[for(p=prism)[sum(p*[1,0,0]),sum(p*[0,1,0]),sum(p*[0,0,1])]])[sum(cg*[1,0,0]),sum(cg*[0,1,0]),sum(cg*[0,0,1])]
+)sum;
+
+//function to draw tangent line joining 2 circles with radiuses "r1" and "r2" with center points "cp1" and "cp2" respectively. This function draws tangent line only one side
+// e.g. try this code below:
+// sec=2ctp(r1=10,r2=5,cp1=[0,0],cp2=[15,6]);
+// p_line(cir(10),.1);
+// p_line(cir(5,[15,6]),.1);
+// p_line(sec,.1);
 
 function 2ctp(r1,r2,cp1,cp2)=
 let(
@@ -494,6 +502,13 @@ t2=cp2+u1*r2*rm(90+ang1),
 t3=cp1+u1*r1*rm(-90-ang1),
 t4=cp2+u1*r2*rm(-90-ang1))[t1,t2];
 
+//function to draw tangent line joining 2 circles with radiuses "r1" and "r2" with center points "cp1" and "cp2" respectively. This function draws tangent line on both the sides
+// e.g. try this code below:
+// sec=2ctpf(r1=10,r2=5,cp1=[0,0],cp2=[15,6]);
+// p_line(cir(10),.1);
+// p_line(cir(5,[15,6]),.1);
+// p_line(sec,.1);
+
 function 2ctpf(r1,r2,cp1,cp2)=
 let(
 v1=cp2-cp1,
@@ -505,6 +520,11 @@ t2=cp2+u1*r2*rm(90+ang1),
 
 t3=cp1+u1*r1*rm(-90-ang1),
 t4=cp2+u1*r2*rm(-90-ang1))[t1,t2,t4,t3];
+
+//module to draw a polyline in 3d space (loop not closed)
+// e.g. try following code:
+// sec=trns([5,10,6],q_rot(["x45"],cir(10)));
+// p_line3d(sec,.2);
     
 module p_line3d(path,r,rec=0){
     for(i=[0:len(path)-2])
@@ -513,6 +533,12 @@ module p_line3d(path,r,rec=0){
     translate(path[i])if(rec==0)sphere(r); else cube(r*2,true);
     translate(path[i+1])if(rec==0)sphere(r);else cube(r*2,true);
     }}
+
+//module to draw a polyline in 3d space (loop closed)
+// e.g. try following code:
+// sec=trns([5,10,6],q_rot(["x45"],cir(10)));
+// p_line3dc(sec,.2);    
+
 module p_line3dc(path,r,rec=0){
     for(i=[0:len(path)-1])
         let(
@@ -522,7 +548,9 @@ module p_line3dc(path,r,rec=0){
     translate(path[i])if(rec==0)sphere(r); else cube(r*2,true);
     translate(path[i_plus])if(rec==0)sphere(r);else cube(r*2,true);
     }}
-    
+  
+//function used as input to another function
+  
 function ipw(prism,prism1,r)=
 [for(i=[0:len(prism1)-2])
     for(j=[0:len(prism1[i])-1])
@@ -549,7 +577,8 @@ function ipw(prism,prism1,r)=
             else if(lim(t4,0,1)&&lim(t5,0,1)&&lim(t6,0,1)&&lim(t5+t6,0,1))[p0+v4*t4,p0+v4*t4+(p1-p0)/norm(p1-p0)*r,pd,pb,pc]
             ];
             
-           
+//function used as input to another function 
+ 
  function ipr(prism,prism1,r,option=0,s=5)=let(list=ipw(prism,prism1,r),
             p1=[for(i=[0:len(list)-1])list[i][0]],
             p2=[for(i=[0:len(list)-1])list[i][1]],
@@ -573,6 +602,8 @@ function ipw(prism,prism1,r)=
             if(! is_undef(p7[0]))3p_3d_fillet(p2[i],p1[i],p7[0],r,s)
             
             ];
+            
+// function used as input to another function
             
  function ipr1(prism,prism1,r,option=0,s=5)=let(list=ipw(prism,prism1,r),
             p1=[for(i=[0:len(list)-1])list[i][0]],
@@ -598,16 +629,32 @@ function ipw(prism,prism1,r)=
             
             ];
  
- 
+// function for creating fillet: this function first finds the intersection point between prism and prism1 and then calculates the fillet with radius "r". option "0" and "1" creates fillet either outside or inside.parameter "s" is for number of segments in the fillet
+// an example below will be more clear (try changing option from 1 =>0 or flip the direction of prism1 by flip(prism1))
+// try below code for better understanding:
+// sec=cir(10);
+// path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-9.9,0]]),5);
+// prism=prism(sec,path);
+// prism1=q_rot(["y40"],cyl(r=3,h=15,s=30));
+//
+// %swp(prism);
+// %swp(prism1);
+// fillet=ipf(prism,prism1,r=1,option=1,s=5);
+// swp_c(fillet);
+
   function ipf(prism,prism1,r,option=0,s=5)=let(sec=ipr(prism,prism1,r,option,s=s))
             [for(i=[0:len(sec)-1])each i<len(sec)-1?[sec[i]]:[sec[i],sec[0]]];
             
+ // experimental, need more work before use
+ 
  function ipe(prism,prism1,r,option=0,s=5)=
  let(
  sec=ipr1(prism,prism1,r,option,s=s),
  sec1=[for(i=[0:len(sec[0])-1])[for(p=sec)p[i]]]
  )sec1;
-                
+
+// draws a cylinder try swp(cyl(r=5,h=15)); 
+
 function cyl(r1=1,r2=1,h=1,cp=[0,0],s=50,r,d,d1,d2,center=false)=let(
      ra=is_num(r)?r:is_num(d)?d/2:is_num(d1)?d1/2:r1,
      rb=is_num(r)?r:is_num(d)?d/2:is_num(d2)?d2/2:r2,
@@ -616,11 +663,22 @@ function cyl(r1=1,r2=1,h=1,cp=[0,0],s=50,r,d,d1,d2,center=false)=let(
 path=pts([[-ra+.1,0],[ra-.1,0],[rb-ra,h],[-rb+.1,0]]),
     prism=center==true?trns([0,0,-h/2],prism(sec,path)):prism(sec,path))
     prism;
+    
+// function flips the direction of points of 2d section or 3d prism
             
 function flip(sec)=[for(i=[len(sec)-1:-1:0])sec[i]];
      
+// function for linear extrude a section by height "h", also the section can be rotated by an angle "a" in number of steps "steps"
+// try following code for better understanding (also try changing "a" and "steps"):
+// sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5);
+// prism=l_extrude(sec,h=15,a=0,steps=1);
+// swp(prism);
+
 function l_extrude(sec,h=1,a=0,steps=1)=[for(i=[0:a==0?1:(a-0)/steps:a==0?1:a])
     trns([0,0,a==0?h*i:h/a*i],q_rot([str("z",a==0?0:i)],sec))];
+ 
+// function to draw a rectangle
+// e.g. p_line(sqr([10,5]),.1); or polygon(sqr([10,5]));
  
 function sqr(s,center=false)=
 let(
@@ -630,6 +688,9 @@ sec=[[0,0],[m,0],[m,n],[0,n]],
 sec1=center==true?[for(p=sec)p-[m/2,n/2]]:sec)
     sec1;
 
+// function to draw cube
+// swp(cub(p=[10,5,4]));
+    
 function cub(p,center=false)=
 let(
 m=is_num(p)?p:p.x,
@@ -641,45 +702,76 @@ prism=center==true?trns([-m/2,-n/2,-o/2],rsz3d(prism(sqr(m),path),[m,n,o])):rsz3
 )
 prism;
 
+// function for creating sphere with radius "r", center point "cp" and number of segments "s".
+// try following code:
+// swp(spr(r=3,cp=[4,5,6],s=30));
+
 function spr(r,cp=[0,0,0],s=50)=let(
 path=arc(r,-90,90,s=s),
 prism=[for(p=path)trns([0,0,p.y]+cp,cir(p.x,s=s))])
     prism;
 
+//function is used as input to another function    
+    
 function add_p(p,p1=[0,0],n,i=0)= n==0?p1:add_p(p,[p[i].x+p1.x,p[i].y+p1.y],n-1,i+1);
+
+// function is used like a turtle move to create 2d shapes.
+// following example will create a rectangle with sides 10 x 5:
+// sec=pts([[0,0],[10,0],[0,5],[-10,0]]); // starts at [0,0] then moves 10 units to +x direction then moves 5 units towards +y direction and then moves 10 units to -x direction
+// p_line(sec,.1);
+
 function pts(p)=[for(n=[1:len(p)])add_p(p=p,p1=[0,0],n=n,i=0)];
+
+// function is used as input to another function
     
 function add_p1(p,p1=[0,0,0],n,i=0)= n==0?p1:add_p1(p,[p[i].x+p1.x,p[i].y+p1.y,p[i].z],n-1,i+1);
+
+//same as pts(p) with only difference that it keeps the z value unchanged
+// for example:
+// sec=pts1([[0,0,1],[10,0,1],[0,5,1],[-10,0,1]]); // starts at [0,0] then moves 10 units to +x direction then moves 5 units towards +y direction and then moves 10 units to -x direction
+//  echo(sec); // ECHO: [[0, 0, 1], [10, 0, 1], [10, 5, 1], [0, 5, 1]]
+//  this function is mainly used with function cr(pl,s) (please see the example of function cr(pl,s))
+
 function pts1(p)=[for(n=[1:len(p)])add_p1(p=p,p1=[0,0,0],n=n,i=0)];
-    
+ 
+// function is used as input to another function
+ 
 function add_p2(p,p1=[0,0,0,0],n,i=0)= n==0?p1:add_p2(p,[p[i][0]+p1[0],p[i][1]+p1[1],p[i][2]+p1[2],p[i][3]],n-1,i+1);
+
+// same as pts and pts1 and is used as a turtle movement in 3d space and keeps the 4th point same to be used as radius for rounding in function cr3d() (check example fo function cr3d()
+
 function pts2(p)=[for(n=[1:len(p)])add_p2(p=p,p1=[0,0,0,0],n=n,i=0)];
 
+// module for rendering points along the various shapes 2d or 3d. parameter "d" is the size of cube which is used as point. a list has to be provided for parameter "p"
+// try following code:
+// sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5);
+// prism=l_extrude(sec,h=15,a=90,steps=20);
+// %swp(prism);
+// for(p=prism) points(p,.2);
+ 
 module points(p,d=.5){
     for(i=p)translate(i)cube(size=d,center=true);
     
     }
  
+// function to get the minimum radius for a defined section
+// example:
+// sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5);
+// echo(sec_r(sec)); //=>ECHO: 0.5
+
 
 function sec_r(sec)=let(
 
-sec1=[for(i=[0:len(sec)-1])
-let(
-p0=i==0?sec[len(sec)-1]:sec[i-1],
-p1=sec[i],
-p2=i<len(sec)-1?sec[i+1]: sec[0],
-v1=p0-p1,u1=v1/norm(v1),
-v2=p2-p1,u2=v2/norm(v2),
-p3=p0-u1*rm(90),
-p4=p2-u2*rm(-90),
-p5=i_p2d([p0,p3],[p2,p4]),
-length=norm(p5-p0)
-)length
-],
-minimum_r=min(sec1)
+list_of_radius=[for(i=[0:len(sec)-1])
+  let(
+  i_minus=i==0?len(sec)-1:i-1,
+  i_plus=i<len(sec)-1?i+1:0,
+  p0=sec[i_minus],p1=sec[i],p2=sec[i_plus],
+  r=3p_r(p0,p1,p2))r]
+)
+min(list_of_radius);
 
-
-)minimum_r;
+// math function to calculate the determinant of a 3 x 3 matrix
 
 function det3d(m)=let(
 m11=m[0][0],m12=m[0][1],m13=m[0][2],
@@ -693,7 +785,7 @@ s31=m12*m23-m22*m13,s32=-(m11*m23-m21*m13),s33=m11*m22-m21*m12,
 d=m11*s11+m12*s12+m13*s13
 )d;
 
-
+// math function to calculate the determinant of a 2 x 2 matrix
 
 function det2d(m)=let(
 m11=m[0][0],m12=m[0][1],
@@ -705,7 +797,12 @@ s21=-m12,s22=m11,
 d=m11*m22-m21*m12
 )d;
 
-
+// math function to calculate the inverse of a 3 x 3 matrix
+// example:
+// v1=[2,3,4];
+// v2=[3,4,1];
+// v3=[4,5,6];
+// echo(i_m3d(t([v1,v2,v3])));// =>ECHO: [[-2.375, 1.75, 0.125], [-0.25, 0.5, -0.25], [1.625, -1.25, 0.125]]
 
 function i_m3d(m)=let(
 m11=m[0][0],m12=m[0][1],m13=m[0][2],
@@ -719,6 +816,11 @@ s31=m12*m23-m22*m13,s32=-(m11*m23-m21*m13),s33=m11*m22-m21*m12,
 d=m11*s11+m12*s12+m13*s13
 ) 1/d*[[s11,s21,s31],[s12,s22,s32],[s13,s23,s33]];
 
+// math function to calculate the inverse of a 2 x 2 matrix
+// example:
+// v1=[2,3];
+// v2=[3,4];
+// echo(i_m2d(t([v1,v2]))); //=> ECHO: [[-4, 3], [3, -2]]
 
 function i_m2d(m)=let(
 m11=m[0][0],m12=m[0][1],
@@ -730,9 +832,27 @@ s21=-m12,s22=m11,
 d=m11*m22-m21*m12
 )1/d*[[s11,s21],[s12,s22]];
 
+// function is used as input to bezier curve function
+
 function add_v(v,s=[0,0],n=0)=n==len(v)?s:add_v(v,s+v[n],n+1);
+
+// math function to calculate factorial of a number
+
 function fact(n,m=1)=n==0?m:fact(n-1,m*n);
+
+// math function to calculate number of possible combinations for "n" items with "i" selected items
+
 function comb(n,i)=fact(n)/(fact(i)*fact(n-i));
+
+//function for calculating bezier curve with control points "p" and with number of segments 1/s
+// example:
+// p=[[0,0],[10,5],[0,15],[12,20]]; 
+// b=bez(p,.1); 
+// points(b,.5);
+// //control points
+// color("green")
+// points(p,.5);
+
 function bez(p,s=.1)=[for(t=[0:s:1])
     let(n=len(p)-1)add_v([for(i=[0:n])comb(n,i)*(1-t)^(n-i)*t^i*p[i]])];
 
@@ -840,11 +960,12 @@ a6=ang(v7.x,v7.y)>a5?ang(v7.x,v7.y)-360:ang(v7.x,v7.y)
 )
 [p1,each arc(r2,a1,a2,cp2),each arc(r1,a3,a4,cp1),each arc(r2,a5,a6,cp3),p2];
 
-function avg_v(vector)=let(
-x=len(vector[0])==3?sum(vector*[1,0,0])/len(vector):sum(vector*[1,0])/len(vector),
-y=len(vector[0])==3?sum(vector*[0,1,0])/len(vector):sum(vector*[0,1])/len(vector),
-z=len(vector[0])==3?sum(vector*[0,0,1])/len(vector):[],
-)len(vector[0])==3?[x,y,z]:[x,y];
+function avg_v(prism)=let(
+decision=is_num(prism.x.x)?0:1,
+cp=decision==0?
+[sum(prism*[1,0])/len(prism),sum(prism*[0,1])/len(prism)]:
+let(cg=[for(p=prism)[sum(p*[1,0,0])/len(p),sum(p*[0,1,0])/len(p),sum(p*[0,0,1])/len(p)]])[sum(cg*[1,0,0])/len(cg),sum(cg*[0,1,0])/len(cg),sum(cg*[0,0,1])/len(cg)]
+)cp;
 
 
 function rsz3d(prism,rsz=[1,1,1])=
@@ -856,13 +977,15 @@ max_z=max(rev_p_list*[0,0,1]),
 min_x=min(rev_p_list*[1,0,0]),
 min_y=min(rev_p_list*[0,1,0]),
 min_z=min(rev_p_list*[0,0,1]),
-avg=avg_v(rev_p_list),
+avg=avg_v(prism),
 
 r_x=rsz.x/(max_x-min_x),
 r_y=rsz.y/(max_y-min_y),
-r_z=rsz.z/(max_z-min_z)
-)[for(i=[0:len(prism)-1])
-    [for(p=prism[i])avg+[r_x*(p.x-avg.x),r_y*(p.y-avg.y),r_z*(p.z-avg.z)+(avg.z-min_z)*r_z-(avg.z-min_z)]]];
+r_z=rsz.z/(max_z-min_z),
+rev_prism=[for(i=[0:len(prism)-1])
+    [for(p=prism[i])avg+[r_x*(p.x-avg.x),r_y*(p.y-avg.y),r_z*(p.z-avg.z)]]],
+t=(bb(rev_prism)-bb(prism))/2
+    )trns(t,rev_prism);
         
  function rsz(sec,rsz=[1,1,1])=
 let(
