@@ -1,5 +1,6 @@
 
 //function to make a prism with combination of 2d section and 2d path
+
 function prism(sec,path,m_points=1)=[for(p=path)[for(p1=sort_points(m_points_sc(sec,m_points),m_points_sc(f_offset(sec,round(p.x*100)/100),m_points)))[p1.x,p1.y,p.y]]];
     
 
@@ -856,7 +857,15 @@ function comb(n,i)=fact(n)/(fact(i)*fact(n-i));
 function bez(p,s=.1)=[for(t=[0:s:1])
     let(n=len(p)-1)add_v([for(i=[0:n])comb(n,i)*(1-t)^(n-i)*t^i*p[i]])];
 
+// function for creating arc which is tangent to 2 circles
+// try this code as an example:
+// sec=2cir_tarc(10,5,[0,0],[20,5],20);
+// p_lineo(sec,.2);
+// p_line(cir(10),.2);
+// p_line(cir(5,[20,5]),.2);
+    
 function 2cir_tarc(r1,r2,cp1,cp2,r)=
+assert(r>=(r1+r2+norm(cp2-cp1))/2,str("arc radius : ",r," is smaller than the minimum required radius of ",(r1+r2+norm(cp2-cp1))/2))
 let(
 l1=norm(cp2-cp1),
 l2=r-r1,
@@ -875,8 +884,14 @@ ang2=ang(u3.x,u3.y)
 
 )arc(r,ang1,ang2,cp3);
     
-function 2p_arc(l,r,cw=1,s=20)=let(
-p1=l[0],p2=l[1],
+// function creates a shortest 2d arc with 2 points with a radius "r" and number of segments "s". parameter cw(clockwise=1 and counter clockwise=-1) defines the order of arc
+//try this example for better understanding:
+// sec=2p_arc(p1=[2,3],p2=[6,5],r=2.25,cw=-1,s=20);
+// p_lineo(sec,.2);
+    
+function 2p_arc(p1,p2,r,cw=1,s=20)=
+assert(r>=norm(p2-p1)/2,str("radius : ",r," is smaller than ",norm(p2-p1)/2))
+let(
 p3=p1+(p2-p1)/2,
 d=norm(p3-p1),
 l=sqrt(r^2-d^2),
@@ -888,8 +903,14 @@ a3=cw==-1?(a2<a1?a2+360:a2):(a2<a1?a2:a2-360)
 
 )arc(r,a1,a3,cp,s);
 
-function 2p_arc_cp(l,r,cw=1,s=20)=let(
-p1=l[0],p2=l[1],
+// function to calculate the center point for arc where 2 points "p1" and "p2" and radius "r" are known (clockwise and counter clockwise will have different center points
+// example:
+// pnt=2p_arc_cp(p1=[2,3],p2=[6,5],r=5,cw=-1);
+// points([pnt],.5);
+
+function 2p_arc_cp(p1,p2,r,cw=1)=
+assert(r>=norm(p2-p1)/2,str("radius : ",r," is smaller than ",norm(p2-p1)/2))
+let(
 p3=p1+(p2-p1)/2,
 d=norm(p3-p1),
 l=sqrt(r^2-d^2),
@@ -898,12 +919,14 @@ cp=p3+u*l*rm(cw==-1?-90:90),
 v1=p1-cp,v2=p2-cp,
 a1=ang(v1.x,v1.y),a2=ang(v2.x,v2.y),
 a3=cw==-1?(a2<a1?a2+360:a2):(a2<a1?a2:a2-360)
-
 )cp;
 
+// function creates a longest 2d arc with 2 points with a radius "r" and number of segments "s". parameter cw(clockwise=1 and counter clockwise=-1) defines the order of arc
+//try this example for better understanding:
+// sec=2r(p1=[2,3],p2=[6,5],r=3,cw=-1,s=20);
+// p_lineo(sec,.2);
 
-function 2r(l,r,cw=1,s=20)=let(
-p1=l[0],p2=l[1],
+function 2r(p1,p2,r,cw=1,s=20)=let(
 p3=p1+(p2-p1)/2,
 d=norm(p3-p1),
 l=sqrt(r^2-d^2),
@@ -915,10 +938,15 @@ a3=cw==-1?(a2<a1?a2+360:a2):(a2<a1?a2:a2-360)
 
 )arc(r,a1,a3,cp,s);
 
-function 3p_arc(l,s=30)=
+// function to create arc with 3 points in 2d
+// example:
+// sec=3p_arc([1,2],[3,7],[7,3]);
+// p_lineo(sec,.2);
+// points([[1,2],[3,7],[7,3]],.5);
+
+function 3p_arc(p1,p2,p3,s=30)=
 
 let(
-p1=l[0],p2=l[1],p3=l[2],
 p4=p1+(p2-p1)/2,
 p5=p2+(p3-p2)/2,
 v1=p2-p4,u1=v1/norm(v1),
@@ -935,10 +963,20 @@ a4=cw([p1,p2,p3])==-1?(a3<a1?a3+360:a3):(a3<a1?a3:a3-360)
 
 )arc(r,a1,a4,cp,s);
 
+// function to draw an ellipse with semi-major and semi-minor axis "r1" and "r2" respectively and with center "cp" and number of segment "s"
+// example:
+// sec=ellipse(r1=5,r2=3,cp=[2,3],s=30);
+// p_line(sec,.2);
+
 function ellipse(r1,r2,cp,s=30)=
 let(
 sec=[for(i=[0:360/s:360-360/s])cp+[r1*cos(i),r2*sin(i)]]
 )sec;
+
+// experimental function
+// example:
+// sec=l_cir_fillet(line=[[0,0],[0,20]],r1=5,r2=1,cp=[5,10]);
+// p_lineo(sec,.2);
 
 function l_cir_fillet(line,r1,r2,cp)=let(
 p1=line[0],p2=line[1],
@@ -960,6 +998,16 @@ a6=ang(v7.x,v7.y)>a5?ang(v7.x,v7.y)-360:ang(v7.x,v7.y)
 )
 [p1,each arc(r2,a1,a2,cp2),each arc(r1,a3,a4,cp1),each arc(r2,a5,a6,cp3),p2];
 
+// function to calculate average of a group of points either 2d or 3d
+// example:
+// sec=cir(10);
+// path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5);
+// prism=prism(sec,path);
+// %swp(prism);
+// avg=avg_v(prism);
+// echo(avg);
+// points([avg],.5);
+ 
 function avg_v(prism)=let(
 decision=is_num(prism.x.x)?0:1,
 cp=decision==0?
@@ -967,6 +1015,14 @@ cp=decision==0?
 let(cg=[for(p=prism)[sum(p*[1,0,0])/len(p),sum(p*[0,1,0])/len(p),sum(p*[0,0,1])/len(p)]])[sum(cg*[1,0,0])/len(cg),sum(cg*[0,1,0])/len(cg),sum(cg*[0,0,1])/len(cg)]
 )cp;
 
+// function to calculate the resized prism
+//example:
+// sec=cir(10);
+// path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5);
+// prism=prism(sec,path);
+// %swp(prism);
+// resized_prism=rsz3d(prism,[5,5,7]);
+// swp(resized_prism);
 
 function rsz3d(prism,rsz=[1,1,1])=
 let(
@@ -986,24 +1042,84 @@ rev_prism=[for(i=[0:len(prism)-1])
     [for(p=prism[i])avg+[r_x*(p.x-avg.x),r_y*(p.y-avg.y),r_z*(p.z-avg.z)]]],
 t=(bb(rev_prism)-bb(prism))/2
     )trns(t,rev_prism);
-        
- function rsz(sec,rsz=[1,1,1])=
+ 
+// function to calculate the resized prism- centered
+//example:
+// sec=cir(10);
+// path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5);
+// prism=prism(sec,path);
+// %swp(prism);
+// resized_prism=rsz3dc(prism,[5,5,7]);
+// swp(resized_prism);
+ 
+function rsz3dc(prism,rsz=[1,1,1])=
 let(
-avg=avg_v(sec),
-max_x=len(rsz)==2?max(sec*[1,0]):max(sec*[1,0,0]),
-min_x=len(rsz)==2?min(sec*[1,0]):min(sec*[1,0,0]),
-max_y=len(rsz)==2?max(sec*[0,1]):max(sec*[0,1,0]),
-min_y=len(rsz)==2?min(sec*[0,1]):min(sec*[0,1,0]),
+rev_p_list=[for(p=prism) each[for(p1=p)p1]],
+max_x=max(rev_p_list*[1,0,0]),
+max_y=max(rev_p_list*[0,1,0]),
+max_z=max(rev_p_list*[0,0,1]),
+min_x=min(rev_p_list*[1,0,0]),
+min_y=min(rev_p_list*[0,1,0]),
+min_z=min(rev_p_list*[0,0,1]),
+avg=avg_v(prism),
 
 r_x=rsz.x/(max_x-min_x),
-r_y=rsz.y/(max_y-min_y)
+r_y=rsz.y/(max_y-min_y),
+r_z=rsz.z/(max_z-min_z),
+rev_prism=[for(i=[0:len(prism)-1])
+    [for(p=prism[i])avg+[r_x*(p.x-avg.x),r_y*(p.y-avg.y),r_z*(p.z-avg.z)]]],
+t=(bb(rev_prism)-bb(prism))/2
+    )rev_prism;
 
+// function to calculate 2d resized section - placed at minimum y value
+// example:
+// sec=cir(10);
+// rsz_sec=rsz(sec,[5,3]);
+// %p_line(sec,.2);
+// p_line(rsz_sec,.2);
+    
+function rsz(sec,rsz=[1,1,1])=
+  let(
+  avg=avg_v(sec),
+  max_x=len(rsz)==2?max(sec*[1,0]):max(sec*[1,0,0]),
+  min_x=len(rsz)==2?min(sec*[1,0]):min(sec*[1,0,0]),
+  max_y=len(rsz)==2?max(sec*[0,1]):max(sec*[0,1,0]),
+  min_y=len(rsz)==2?min(sec*[0,1]):min(sec*[0,1,0]),
 
-)[for(i=[0:len(sec)-1])let(
-p=avg+[r_x*(sec[i].x-avg.x),r_y*(sec[i].y-avg.y)-((min_y-avg.y)*r_y-(min_y-avg.y))]
+  r_x=rsz.x/(max_x-min_x),
+  r_y=rsz.y/(max_y-min_y)
 
-)p];
+  )[for(i=[0:len(sec)-1])let(
+  p=avg+[r_x*(sec[i].x-avg.x),r_y*(sec[i].y-avg.y)-((min_y-avg.y)*r_y-(min_y-avg.y))]
+  )p];
 
+// function to calculate 2d resized section - centered
+// example:
+// sec=cir(10);
+// rsz_sec=rsz_c(sec,[5,3]);
+// %p_line(sec,.2);
+// p_line(rsz_sec,.2);
+  
+function rsz_c(sec,rsz=[1,1,1])=
+  let(
+  avg=avg_v(sec),
+  max_x=len(rsz)==2?max(sec*[1,0]):max(sec*[1,0,0]),
+  min_x=len(rsz)==2?min(sec*[1,0]):min(sec*[1,0,0]),
+  max_y=len(rsz)==2?max(sec*[0,1]):max(sec*[0,1,0]),
+  min_y=len(rsz)==2?min(sec*[0,1]):min(sec*[0,1,0]),
+
+  r_x=rsz.x/(max_x-min_x),
+  r_y=rsz.y/(max_y-min_y)
+
+  )[for(i=[0:len(sec)-1])let(
+  p=avg+[r_x*(sec[i].x-avg.x),r_y*(sec[i].y-avg.y)]
+  )p];
+
+// function to create a line with number of segments "s"
+// example:
+// line=l([[0,0],[4,3]],10);
+// points(line,.2);  
+  
 function l(l,s=20)=
 let(
 p0=l[0],p1=l[1],
@@ -1011,69 +1127,105 @@ v=p1-p0,u=v/norm(v),
 length=norm(v)
 )[for(i=[0:length/s:length])p0+u*i];
     
-function l1(l,s=20)=
-let(
-p0=l[0],p1=l[1],
-v=p1-p0,u=v/norm(v),
-length=norm(v)
-)[for(i=[0:length/s:length])p0+u*i];
+// function to find radius of arc with 3 known points in 2d
+// example:
+// radius=3p_r([1,2],[3,7],[7,3]);
+// echo(radius); //=> ECHO: 3.30892
     
 function 3p_r(p1,p2,p3)=
+  let(
+  p4=p1+(p2-p1)/2,
+  p5=p2+(p3-p2)/2,
+  v1=p2-p4,u1=v1/norm(v1),
+  v2=p3-p5,u2=v2/norm(v2),
+  p6=p4+u1*rm(90),
+  p7=p5+u2*rm(90),
+  cp=i_p2d([p4,p6],[p5,p7]),
+  r=norm(p1-cp)
+  )r;
 
-let(
-p4=p1+(p2-p1)/2,
-p5=p2+(p3-p2)/2,
-v1=p2-p4,u1=v1/norm(v1),
-v2=p3-p5,u2=v2/norm(v2),
-p6=p4+u1*rm(90),
-p7=p5+u2*rm(90),
-cp=i_p2d([p4,p6],[p5,p7]),
-r=norm(p1-cp)
-
-)r;
-
+// function to get the minimum radius for a defined section
+// example:
+// sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5);
+// echo(min_r(sec)); //=>ECHO: 0.5
+  
+  
 function min_r(sec)=
 min([for(i=[0:len(sec)-1])3p_r(sec[i==0?len(sec)-1:i-1],sec[i],sec[i<len(sec)-1?i+1:0])]);
+    
+// function for placing multiple points on the straight line segments of a closed loop section. parameter "sl" is for placing points with pitch distance defined by "sl"
+// example:
+// sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5);
+// points(sec,.2);
+// 
+// translate([15,0])
+// points(m_points(sec,2),.2);// segment length=> 2 units  
     
 function m_points(sec,sl=20)=
 [for(i=[0:len(sec)-1])let(
 p0=sec[i],
 p1=sec[i<len(sec)-1?i+1:0],
 lnth=norm(p1-p0),
-sec1=lnth>sl?l1([p0,p1],lnth/sl):[p0],
+sec1=lnth>sl?l([p0,p1],lnth/sl):[p0],
 sec2=[for(i=[0:len(sec1)-1])if(sec1[i]!=sec1[i<len(sec1)?i+1:0])sec1[i]])
 each sec2];
+
+// function for placing multiple points on the straight line segments of an open section. parameter "sl" is for placing points with pitch distance defined by "sl"
+// example:
+// sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5);
+// points(sec,.2);
+// 
+// translate([15,0])
+// points(m_points_o(sec,2),.2);// segment length=> 2 units
 
 function m_points_o(sec,sl=20)=
 [for(i=[0:len(sec)-2])let(
 p0=sec[i],
 p1=sec[i+1],
 lnth=norm(p1-p0),
-sec1=lnth>sl?l1([p0,p1],lnth/sl):[p0],
+sec1=lnth>sl?l([p0,p1],lnth/sl):[p0],
 sec2=[for(i=[0:len(sec1)-1])if(sec1[i]!=sec1[i<len(sec1)?i+1:0])sec1[i]])
 each sec2];
 
-function m_points_sc(sec1,s)=
+// function for calculating multiple points on the straight line segments of a closed section. sec-> closed section; s -> number of segments for each straight line segment of closed section; m-> minimum segment length, if the derived segment length < m, then it is omitted
+// sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5);
+// points(sec,.2);
+// 
+// translate([15,0])
+// points(m_points_sc(sec,s=5,m=.5),.2);// number of segments=> 5
+
+function m_points_sc(sec1,s,m=.5)=
 let(
 l=[for(i=[0:len(sec1)-1])
 let(
 i_plus=i<len(sec1)-1?i+1:0,
 l=norm(sec1[i_plus]-sec1[i]),
 u=uv(sec1[i_plus]-sec1[i])
-)each l/s>=.1?[for(j=[0:l/s:l])sec1[i]+j*u]:[sec1[i]]]
+)each l/s>=m?[for(j=[0:l/s:l])sec1[i]+j*u]:[sec1[i]]]
 )l;
 
-function m_points_so(sec1,s)=
+// function for calculating multiple points on the straight line segments of an open section. sec-> closed section; s -> number of segments for each straight line segment of closed section; m-> minimum segment length, if the derived segment length < m, then it is omitted
+// sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5);
+// points(sec,.2);
+// 
+// translate([15,0])
+// points(m_points_so(sec,s=5,m=.5),.2);// number of segments=> 5
+
+function m_points_so(sec1,s,m=.5)=
 let(
 l=[for(i=[0:len(sec1)-2])
 let(
 i_plus=i+1,
 l=norm(sec1[i_plus]-sec1[i]),
 u=uv(sec1[i_plus]-sec1[i])
-)each l/s>=.5?[for(j=[0:l/s:l])sec1[i]+j*u]:[sec1[i]]]
+)each l/s>=m?[for(j=[0:l/s:l])sec1[i]+j*u]:[sec1[i]]]
 )l;
 
+// used as input to another function
+
 function cum_sum(list,list1,n,s=1)=n==0?list1:cum_sum(list,[for(i=[0:s])list[i]]*[for(i=[0:s])1],n-1,s+1);
+
+// experimental and need more work
 
 function add_paths(path1,path2)=
 let(
@@ -1099,6 +1251,23 @@ path6=[for(i=[0:len(path2)-1])[path2[i].x,path2[i].y,path5[i].y]]
 
 )path6;
 
+// module for rendering various 3d prism 
+// //example1:
+// sec=cir(10);
+// path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5);
+// prism=prism(sec,path);
+// swp(prism);
+// //example2:
+// prism1=l_extrude(sqr([10,6]),15);
+// translate([13,0,0])
+// swp(prism1);
+// //example3:
+// sec2=cr(pts1([[0,0,1],[5,0,1],[-2.5,4,1]]),5);
+// path2=[for(i=[0:5:360*5])[10*cos(i),10*sin(i),i/360*5]]; 
+// prism2=p_extrude(sec2,path2);
+// translate([35,0,0])
+// swp(prism2);
+
 module swp(surf1)
 
 let(l=len(surf1[0]),
@@ -1110,6 +1279,18 @@ each [for(j=[0:len(surf1)-1])if(j==len(surf1)-1)[for(i=[l-1:-1:0])i+l*j]]
 )
 polyhedron(p0,p1,convexity=10);
 
+// module for rendering 3d prisms with closed section
+// example:
+// sec=cir(10);
+// path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-9.9,0]]),5);
+// prism=prism(sec,path);
+// prism1=q_rot(["y40"],cyl(r=3,h=15,s=30));
+//
+// %swp(prism);
+// %swp(prism1);
+// fillet=ipf(prism,prism1,r=1,option=1,s=5);
+// swp_c(fillet);
+
 module swp_c(surf1)
 
 let(l=len(surf1[0]),
@@ -1119,6 +1300,8 @@ each [for(j=[0:len(surf1)-2])each [for(i=[0:l-1])let(i_plus=i<l-1?i+1:0)[i+l*j,i
     ]
 )
 polyhedron(p0,p1,convexity=10);
+
+
 
 function 2cyl_fillet(r1,r2,cp1,cp2,r,path)=[for(p=path)trns([0,0,p.y],2cir_fillet(r1+p.x,r2+p.x,cp1,cp2,r))];
     
@@ -1302,10 +1485,10 @@ theta=acos (u1*u2),
 alpha=180-theta,
 pa=p1+u1*r*tan(alpha/2),
 pb=p1+u2*r*tan(alpha/2),
-cp=2p_arc_cp([pa,pb],r,1),
+cp=2p_arc_cp(pa,pb,r,1),
 pc=p1+u1*r*rm(90),
 pd=p1+u2*r*rm(-90)
-) cw([p0,p1,p2])==-1?2p_arc([pc, pd],r,-1,s=norm(pc-pd)<1?0:5):[cp]],
+) cw([p0,p1,p2])==-1?2p_arc(pc, pd,r,-1,s=norm(pc-pd)<1?0:5):[cp]],
 
 op01=[for(i=[0:len(sec)-1])let(
 p0=i==0?sec[len(sec)-1]:sec[i-1],
@@ -1338,10 +1521,10 @@ theta=acos (u1*u2),
 alpha=180-theta,
 pa=p1+u1*r*tan(alpha/2),
 pb=p1+u2*r*tan(alpha/2),
-cp=2p_arc_cp([pa,pb],r,-1),
+cp=2p_arc_cp(pa,pb,r,-1),
 pc=p1+u1*r*rm(-90),
 pd=p1+u2*r*rm(90)
-) cw( [p0, p1, p2])==-1?[cp]:2p_arc([pc, pd],r,1,s=norm(pc-pd)<1?0:5)],
+) cw( [p0, p1, p2])==-1?[cp]:2p_arc(pc, pd,r,1,s=norm(pc-pd)<1?0:5)],
 op01=[for(i=[0:len(sec)-1])let(
 p0=i==0?sec[len(sec)-1]:sec[i-1],
 p1=sec[i],
