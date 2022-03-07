@@ -165,7 +165,12 @@ function mode_sign(p,plus=0,minus=0,n=0)=n==len(p)?[plus,minus]:mode_sign(p,p[n]
     
 function arc(radius,ang1=0,ang2=355,cp=[0,0],s=20)=[for(i=[ang1:(ang2-ang1)/s:ang2])cp+[radius*cos(i),radius*sin(i)]];
     
-//function to draw the fillet radius "r" between the 2 circle with radiuses "r1" and "r2" centered at "c1" and "c2" respectively.
+//function to create 2d fillet between 2 circles, where r1,r2 and c1,c2 are radiuses and enter points of the 2 circles respectively. r-> fillet radius
+////example:
+//%p_line(cir(5),.2);
+//%p_line(cir(3,[7,0]),.2);
+//fillet=2cir_fillet(r1=5,r2=3,c1=[0,0],c2=[7,0],r=1);
+//p_line(fillet,.2);
     
 function 2cir_fillet(r1=10,r2=10,c1=[0,0],c2=[20,0],r=10)=
 let(
@@ -1301,9 +1306,21 @@ each [for(j=[0:len(surf1)-2])each [for(i=[0:l-1])let(i_plus=i<l-1?i+1:0)[i+l*j,i
 )
 polyhedron(p0,p1,convexity=10);
 
-
+//function for creating fillet between 2 cylinders. r1, r2 and cp1,cp2 are the radiuses and center points of 2 cylinders respectively. r -> is the fillet radius. path -> is given for rounding the cylinder edges
+//// example
+// path=[[0,0],[0,10]];
+// %swp(cyl(r=5,h=15));
+// %swp(cyl(r=3,h=10,cp=[7,0]));
+// swp(2cyl_fillet(5,3,[0,0],[7,0],1,path));
 
 function 2cyl_fillet(r1,r2,cp1,cp2,r,path)=[for(p=path)trns([0,0,p.y],2cir_fillet(r1+p.x,r2+p.x,cp1,cp2,r))];
+
+//function to create 2d fillet between 2 circles (creates fillet only one side), where r1,r2 and c1,c2 are radiuses and enter points of the 2 circles respectively. r-> fillet radius
+////example:
+//%p_line(cir(5),.2);
+//%p_line(cir(3,[7,0]),.2);
+//fillet=2cir_fillet1(r1=5,r2=3,c1=[0,0],c2=[7,0],r=1);
+//p_line(fillet,.2);
     
 function 2cir_fillet1(r1,r2,c1,c2,r)=
 let(
@@ -1331,6 +1348,14 @@ arc4=arc(r1,a5,a6<a5?a6+360:a6,c1)
 )
 [p10,each arc2];
 
+// function for creating fillet between 2 spheres. r1, r2 and cp1,cp2 are the radiuses and center points of 2 spheres. r-> fillet radius.
+//// example:
+// swp(spr(r=5,cp=[0,0,0]));
+// swp(spr(r=3,cp=[7,0,0]));
+//
+// fillet=2spr_fillet(r1=5,r2=3,cp1=[0,0,0],cp2=[7,0,0],1);
+// swp(fillet);
+
 function 2spr_fillet(r1,r2,cp1,cp2,r)=
 let(
 v=cp2-cp1,u=v/norm(v),
@@ -1339,35 +1364,63 @@ c1=[0,0],
 c2=[l,0],
 a1=u==[0,0,1]?90:u==[0,0,-1]?-90:ang(sqrt(v.x^2+v.y^2),v.z),
 a2=u==[0,0,1]||u==[0,0,-1]?0:ang(v.x,v.y),
-
-
+ 
 sec=2cir_fillet1(r1,r2,c1,c2,r),
-prism=trns(cp1,q_rot([str("y",-a1),str("z",a2)],[for(i=[0:5:360])[for(p=sec)q([1,0,0],[p.x,p.y,0],i)]]))
-    
-)flip(prism);
+prism=trns(cp1,q_rot([str("y",-a1),str("z",a2)],[for(i=[0:5:360])[for(p=sec)q([1,0,0],[p.x,p.y,0],i)]]))    
+ )flip(prism);
 
-function l_cir_ip(cir,line)=
+ // function to get intersection point between a line and circle
+ // example
+//  line=[[0,0],[3,5]];
+//  cir=cir(5);
+//  %p_line(line,.2);
+//  %p_line(cir,.2);
+//
+//  pnt=l_cir_ip(line,cir);
+//  color("green")
+//  points(pnt,.5);
+//  echo(pnt);
+
+function l_cir_ip(line,cir)=
 let(
-p0=line[0],p1=line[1],
-v=p1-p0,u=v/norm(v),
 ip=[for(i=[0:len(cir)-1])let(
-p2=cir[i],p3=i<len(cir)-1?cir[i+1]:cir[0],
-int_p=i_p2d([p2,p3],[p0,p1]),
-v1=p3-p2,u1=v1/norm(v1),
-v2=int_p-p2,u2=v2/norm(v2),
-l1=norm(p3-p2),l2=norm(int_p-p2)
+i_plus=i<len(cir)-1?i+1:0,
+p0=cir[i],p1=cir[i_plus],
+pa=line[0],pb=line[1],
+v1=p1-p0,v2=pb-pa,
 
-)//if(u1==u2&&l1>=l2)int_p
-   if(l1>=l2&&norm(u1-u2)<.01)int_p ]
-
+//p0+v1*t1=pa+v2*t2
+//v1*t1-v2*t2=pa-p0
+t1=(i_m2d(t([v1,-v2]))*(pa-p0))[0],
+ip=p0+v1*t1,
+u1=uv(v2),u2=uv(ip-pa)
+)if(lim(t1,0,1)&&u1==u2)ip]
 )ip;
-   
+ 
+// function to offset a line "l" by distance "d" 
+//  example
+//  line=[[0,0],[3,5]];
+//  %p_line(line,.2);
+//  p_line(offst_l(line,2),.2);
+
 function offst_l(l,d)=
 let(
 v=l[1]-l[0],u=v/norm(v),
 p0=l[0]+u*d*rm(-90),
 p1=l[1]+u*d*rm(-90)
 )[p0,p1];
+   
+// function to find intersection point at a shortest distance between a point and a line
+// example
+// line=[[0,0],[3,5]];
+// point=[-3,5];
+//
+// %p_line(line,.2);
+// %points([point],.3);
+//
+// p=perp(line,point);
+// points([p],.5);
+// echo(p);
    
 function perp(line,point)=
 let(
@@ -1379,7 +1432,8 @@ line1=[point,point+u1],
 ip=i_p2d(line,line1)
 
 )ip;
-   
+  
+  
 function 2cir_tangent(r1,r2,cp1,cp2)=
 let(
 v=cp2-cp1,u=v/norm(v),
