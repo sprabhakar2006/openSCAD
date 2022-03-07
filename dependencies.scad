@@ -1694,7 +1694,7 @@ u2=v1/norm(v1),
 theta=!is_num(u.x)?0:(u.y<0?360-acos([1,0]*u):acos([1,0]*u)),
 a=u1==u2?0:u1.z<0?360-acos(u1*u2):acos(u1*u2),
 alpha=a-90,
-rev_sec=q_rot(["x90","z90",str("y",-a),str("z",theta)],sec)
+rev_sec=q_rot(["x90","z-90",str("y",-a),str("z",theta)],sec)
 )each i<len(path)-2?[trns(p0,rev_sec)]:[trns(p0,rev_sec),trns(p1,rev_sec)]];
 
 
