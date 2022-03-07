@@ -1668,6 +1668,18 @@ op03=[for(p=op02) if(min([for(p1=m_points(sec,r))norm(p-p1)])>=abs(d)-.001)p]
 
 function f_offset(sec,d)=d<=0?inner_offset(sec,d):outer_offset(sec,d);
 
+// function to extrude a section along a path by varying section defined by offset "o"
+// example:
+// sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5);
+//
+// path=c2t3(arc(20,0,120,s=20));
+//
+// p_line3d(path,.2);
+//
+// prism=v_sec_extrude(sec,path,-2);
+//
+// swp(prism);
+
 
 function v_sec_extrude(sec,path,o)=[for(i=[0:len(path)-2])let(
 off=o/(len(path)-1),
