@@ -1138,16 +1138,18 @@ length=norm(v)
 // echo(radius); //=> ECHO: 3.30892
     
 function 3p_r(p1,p2,p3)=
-  let(
-  p4=p1+(p2-p1)/2,
-  p5=p2+(p3-p2)/2,
-  v1=p2-p4,u1=v1/norm(v1),
-  v2=p3-p5,u2=v2/norm(v2),
-  p6=p4+u1*rm(90),
-  p7=p5+u2*rm(90),
-  cp=i_p2d([p4,p6],[p5,p7]),
-  r=norm(p1-cp)
-  )r;
+
+let(
+p4=p1+(p2-p1)/2,
+p5=p2+(p3-p2)/2,
+v1=p2-p4,u1=v1/norm(v1),
+v2=p3-p5,u2=v2/norm(v2),
+p6=p4+u1*rm(90),
+p7=p5+u2*rm(90),
+cp=i_p2d([p4,p6],[p5,p7]),
+r=norm(p1-cp)
+
+)r;
 
 // function to get the minimum radius for a defined section
 // example:
@@ -1433,7 +1435,13 @@ ip=i_p2d(line,line1)
 
 )ip;
   
-  
+// function to create tangent between 2 circle where r1, r2 and cp1, cp2 are the radiuses and center points of the 2 circles respectively. 
+// example:
+//  tangent=2cir_tangent(5,3,[0,0],[7,0]);
+//  %p_line(cir(5),.2);
+//  %p_line(cir(3,[7,0]),.2);
+//  p_line(tangent,.2);
+ 
 function 2cir_tangent(r1,r2,cp1,cp2)=
 let(
 v=cp2-cp1,u=v/norm(v),
@@ -1445,6 +1453,8 @@ p2=cp1+u*r1*rm(-(90-theta1)),
 p3=cp2+u*r2*rm(-(90-theta1))
 
 )[p0,p1,p2,p3];
+
+// function used as input for another function
 
 function cvar(a)=
 let(
@@ -1461,15 +1471,40 @@ f=search(".",a)!=[]&&search("-",a)!=[]?e*10^-(l-(search(".",a)[0]-2)):search("."
 g=search("-",a)!=[]?f*-1:f
 )[text,g];
 
+// function to rotate an object around any arbitrary axis
+// example
+//  sec=cir(10);
+//  path=cr(pts1([[2,0],[-2,0,2],[-1,5,3],[-4,0]]),5);
+//  prism=trns([15,0],prism(sec,path));
+//  prism1=rot([3,4,7],prism,180);
+//  swp(prism);
+//  swp(prism1);
+//  p_line([[0,0,0],[3,4,7]*10],.2);
 
-function rot(axis,ang,sec)=[for(p=sec)let(point=len(p)==2?[p.x,p.y,0]:p)q(axis,point,ang)];
+function rot(axis,prism,ang)=let(
+decision=is_num(prism.x.x)?0:1,
+rot=decision==0?
+[for(p=prism)q(axis,p,ang)]:
+[for(p=prism)[for(p1=p)let(pc=len(p1)==2?[p1.x,p1.y,0]:p1)q(axis,pc,ang)]]
+)rot;
+ 
+// function used as input to another function c_hull
  
 function s_pnt(sec)=let(
 y_min=min(sec*[0,1]),
 loc=search(y_min,sec,0,1)[0]
 )sec[loc];
 
+// function to subtract points from a list of points
+// example:
+// list=[[1,2,2],[3,4,5],[10,2,9],[11,1,9]];
+// list1=[[1,2,2],[10,2,9]];
+// revised_list=reduced_list(list,list1);
+// echo(revised_list); //=> ECHO: [[3, 4, 5], [11, 1, 9]]
+
 function reduced_list(list,list1)=revised_list(list,[for(p=list1)each each search([p],list,0)]);
+ 
+ // function used as input to another function
  
 function list_of_points_to_omit(sec,point)=let(
 list=[for(i=[0:len(sec)-1])if(norm(sec[i]-point)<.001)i],
@@ -1477,10 +1512,14 @@ list1=len(list)>1?[for(i=[1:len(list)-1])list[i]]:[]
 
 )list1;
 
+// function used as input to another function
+
 function revised_list(sec,index_list)=let(
 a=[for(i=[0:len(sec)-1]) if(search(0,[for(j=index_list)i-j],0)==[])i],
 sec1=[for(i=a)sec[i]]
 )sec1;
+
+// function used as input to another function
 
 function remove_extra_points(sec,n=0)=
 n==len(sec)?sec:remove_extra_points(
@@ -1490,6 +1529,18 @@ b=revised_list(sec,a)
 )b,n+1
 );
 
+// function to match the number of points between 2 sections
+// example:
+// sec=cr(pts1([[-2.5,-2.5,1],[5,0,1],[0,5,1],[-5,0,1]]),5);
+// cir=cir(5);
+// echo(len(sec), len(cir));
+//
+// sec1=sort_points(cir,sec);
+// echo(len(sec1),len(cir));
+//
+// points(sec1,.2);
+// points(cir,.2);
+
 function sort_points(sec,list)=[if(list!=[])let(
 a=[for(p=sec)min([for(i=[0:len(list)-1])norm(list[i]-p)])],
 b=[for(p=sec)[for(i=[0:len(list)-1])norm(list[i]-p)]],
@@ -1497,6 +1548,7 @@ c=[for(i=[0:len(sec)-1])each search(a[i],b[i])],
 d=[for(i=c)list[i]]
 )d][0];
 
+// experimental and not yet mature
 
 module swp_h(sec,path,t=-.5){
 prism1=p_extrude(sec,path);
@@ -1512,6 +1564,14 @@ faces4=[for(i=[n*p-n:n*p-1])i<n*p-1?[i,i+n*p,i+1+n*p,i+1]:[i,i+n*p,i+1-n+n*p,i+1
 )polyhedron(prism3,[each faces1,each faces2, each faces3, each faces4]);
 }
 
+// module to create a hollow prism with defined 2 prisms. first prism is the outer one and the second one is the inner one. number of points of the outer and inner prism should be exactly same.
+// example:
+// sec=cir(10);
+// prism=l_extrude(sec,15);
+// prism1=l_extrude(f_offset(sec,-1),15);
+//
+// swp_prism_h(prism,prism1);
+
 module swp_prism_h(prism,prism1){
 
 prism2=[each each prism,each each prism1];
@@ -1524,6 +1584,8 @@ faces3=[for(i=[n*p:2*n*p-1-n])(i+1)%n==0?[i,i+1-n,i+1,i+n]:[i,i+1,i+1+n,i+n]],
 faces4=[for(i=[n*p-n:n*p-1])i<n*p-1?[i,i+n*p,i+1+n*p,i+1]:[i,i+n*p,i+1-n+n*p,i+1-n]]
 )polyhedron(prism2,[each faces1,each faces2, each faces3, each faces4]);
 }
+
+// function is used as input to another function
 
 function outer_offset(sec1,d)=d==0?(cw(sec)==1?flip(sec1):sec1):
 let(
@@ -1560,6 +1622,7 @@ ipf=[for(p=ip)let(u2=(p-p0)/norm(p-p0)) if(norm(p-p0)<l1 && sign(u1.x)==sign(u2.
 op03=[for(p=op02) if(min([for(p1=m_points(sec,r))norm(p-p1)])>=abs(d)-.1)p]
 )sort_points(sec, remove_extra_points(op03));
 
+// function is used as input for another function
 
 function inner_offset(sec1,d)=d==0?(cw(sec1)==1?flip(sec1):sec1):
 let(
@@ -1592,10 +1655,18 @@ ip=[for(j=i==0?[len(op01)-2,i+2]:i==1?[len(op01)-1,i+2]:i==len(op01)-1?[i-2,1]:i
 l1=norm(p1-p0),
 ipf=[for(p=ip) let(u2=(p-p0)/norm(p-p0))if(norm(p-p0)<l1 && sign(u1.x) ==sign(u2.x) && sign(u1.y)==sign(u2.y))p])
 if (len(ipf)>0)each ipf else op01[i]],
-op03=[for(p=op02) if(min([for(p1=m_points (sec,r))norm(p-p1)])>=abs(d)-.001)p]
+op03=[for(p=op02) if(min([for(p1=m_points(sec,r))norm(p-p1)])>=abs(d)-.001)p]
 ) sort_points (sec, remove_extra_points (op03));
 
-function f_offset(sec,d)=d<=0?inner_offset(rnd(sec),d):outer_offset(rnd(sec),d);
+// function for creating offset of a defined section
+// example:
+// sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5);
+// p_line(sec,.2);
+//
+// sec1=f_offset(sec,-1);
+// p_line(sec1,.2);
+
+function f_offset(sec,d)=d<=0?inner_offset(sec,d):outer_offset(sec,d);
 
 
 function v_sec_extrude(sec,path,o)=[for(i=[0:len(path)-2])let(
