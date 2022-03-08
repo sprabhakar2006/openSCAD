@@ -1,7 +1,7 @@
 
 //function to make a prism with combination of 2d section and 2d path
 
-function prism(sec,path,m_points=1)=[for(p=path)[for(p1=sort_points(m_points_sc(sec,m_points),m_points_sc(f_offset(sec,round(p.x*100)/100),m_points)))[p1.x,p1.y,p.y]]];
+function prism(sec,path,m_points=0)=[for(p=path)[for(p1=sort_points(m_points_sc(sec,m_points),m_points_sc(f_offset(sec,round(p.x*100)/100),m_points)))[p1.x,p1.y,p.y]]];
     
 
 function surf(sec,path)=[for(p=path)[for(p1=sec)[p.x,p1.y,p.y]]];
