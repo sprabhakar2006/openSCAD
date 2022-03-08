@@ -2093,3 +2093,5 @@ ip=ibsap(sec,p),
 )if(ip!=[]&&len(ip)%2==1)p]
 
 )pwir;
+
+function flat(dia=10,cp[0,0,0])=trns(cp,[cir(.001),cir(dia/2)]);
