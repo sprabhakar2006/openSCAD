@@ -1850,6 +1850,19 @@ pa=p1+uv(p0-p1)*l,
 arc=[for(i=[0:theta*2/s:theta*2])cp+q(n,pa-cp,-i)]
 )[p1,each arc];
 
+// function to create a fillet with 3 known points with radius "r" and number of segments "s". point p1 is omitted while drawing the arc
+// example
+// p0=[2,3,5];
+// p1=[3,7,2];
+// p2=[5,8,3];
+// 
+// r=2;
+// s=10;
+// 
+// fillet=3p_3d_fillet_wo_pivot(p0,p1,p2,r,s);
+// $fn=20;
+// p_line3d(fillet,.1);
+
 function 3p_3d_fillet_wo_pivot(p0,p1,p2,r=1, s=5)=
 let(
 n=nv([p0,p1,p2]),
@@ -1861,7 +1874,17 @@ pa=p1+uv(p0-p1)*l,
 arc=[for(i=[0:theta*2/s:theta*2])cp+q(n,pa-cp,-i)]
 )arc;
 
-function 3p_3d_arc(points=[p0, p1,p2], s=5)=
+// function for creating 3d arc with 3 known points.
+// example:
+// p0=[2,3,5];
+// p1=[3,7,2];
+// p2=[5,8,3];
+// points([p0,p1,p2],.3);
+// fillet=3p_3d_arc([p0,p1,p2],s=20);
+// $fn=20;
+// p_line3d(fillet,.1);
+
+function 3p_3d_arc(points=[p0,p1,p2], s=5)=
 let(
 v1=points[0]-points[1], u1=v1/norm(v1),
 v2=points[2]-points[1], u2=v2/norm(v2),
@@ -1880,6 +1903,13 @@ theta=alpha<90?360-acos(u3*u4):acos(u3*u4),
 radius=norm(pa-cp),
 arc=trns(points[1]+cp,[for(i=[0:theta/s:theta])q(n,points[0]-(points[1]+cp),-i)])
 )arc;
+
+// function to find the radius with 3 known points in 3d space.
+// example:
+// p0=[2,3,5];
+// p1=[3,7,2];
+// p2=[5,8,3];
+// echo(3p_3d_r([p0,p1,p2])); //=> ECHO: 1.89252
 
 function 3p_3d_r(points=[p0, p1,p2])=
 let(
@@ -1900,6 +1930,13 @@ theta=alpha<90?360-acos(u3*u4):acos(u3*u4),
 radius=norm(pa-cp))
 radius;
 
+// function to draw a 3d arc on a plane defined by a normal vector "n" with radius "r" from angle "theta1" to "theta2". Rotation of the arc can be defined as clockwise (cw=1) or counter clockwise (cw=-1). Number of segments of the arc can be defined with "s".
+// Example:
+// nv=[3,7,5];
+// arc=3d_arc(v=nv,r=10,theta1=0,theta2=180,cw=-1,s=50);
+// p_line3d(arc,.2);
+// p_line3d([o(),nv],.2);
+
 function 3d_arc(v, r, theta1=0, theta2=180, cw=-1,s=50)=
 let(
 v=v+[0,0,.0001],
@@ -1913,13 +1950,48 @@ v2=q(v,q(n, v1, theta),alpha),
 arc=[for (i=[theta1: (theta2-theta1)/s: theta2]) q(v,
 v2,-i*cw)])arc;
 
+// function to convert a 2d section to 3d
+// example:
+// sec=cr([[0,0,.5],[10,0,2],[7,15,1]],10);
+// path=c2t3(arc(20,0,355,s=72));
+//
+// p_line3d(path,.2);
+//
+// prism=p_extrude(sec,path);
+//
+// swp(prism);
+
 function c2t3(sec)=trns([0,0,0],sec);
+
+// Boolean function which returns "true" ot "false" if the value of a variable "t" is between "s" and "e".
+// example:
+// t=.5;
+// echo(lim(t,0,1)); // => true
+// echo(lim(t,10,20)); // => false
 
 function lim(t,s=0,e=1)=t>=s&&t<=e;
  
+// function to transpose a 3 x 3 matrix
+// example:
+// v1=[2,3,5];
+// v2=[7,8,9];
+// v3=[10,11,12];
+// echo(t([v1,v2,v3])); // => ECHO: [[2, 7, 10], [3, 8, 11], [5, 9, 12]]
+ 
 function t(m)=[[m.x.x,m.y.x,m.z.x],[m.x.y,m.y.y,m.z.y],[m.x.z,m.y.z,m.z.z]];
 
+// function to select in between points of a section
+// example:
+// sec=arc(10,0,70,s=10);
+// %points(sec,.5);
+// points(loop(sec,1,9),.3);
+
 function loop(sec,a,b)=[for(i=[a:b])sec[i]];
+
+// function to create 3d path
+// example:
+// path=cr3d(pts2([[0,0,0],[5,3,2,1],[3,3,8,2],[-7,4,1]]),10);
+// p_line3d(path,.2);
 
 function cr3d(l,s=5)=let(
 p=[for(i=[0:len(l)-1])[l[i].x,l[i].y,l[i].z]],
@@ -1946,63 +2018,44 @@ arcs=[for(i=[0:len(p)-1])each assert(compare[i],"radius too big")let(
 i_minus=i==0?len(p)-1:i-1,i_plus=i<len(p)-1?i+1:0)3d_3p_fillet(p[i_minus],p[i],p[i_plus],r[i],s=s)]
 )arcs;
 
+// function to calculate a unit vector for a given vector
+// example: 
+// echo(uv([2,3,4])); // => ECHO: [0.371391, 0.557086, 0.742781]
 
 function uv(v)=v/norm(v);
 
+// function to find sum of a list of numbers
+// example:
+// echo(sum([1,3,2,5,7])); //=> echo: 18
+
+
 function sum(list)=[for(i=[0:len(list)-1])1]*list;
+
+// function to find cumsum of a list of numbers
+// example:
+// echo(cumsum([1,3,2,5,7])); //=> echo: [1, 4, 6, 11, 18]
 
 function cumsum(list)=[for(i=[0:len(list)-1])sum([for(j=[0:i])list[j]])];
 
+// experimental
+
 function add_p3(p,p1=[0,0,0,0,list],n,i=0)= n==0?p1:add_p3(p,[p[i][0]+p1[0],p[i][1]+p1[1],p[i][2]+p1[2],p[i][3],p[i][4]],n-1,i+1);
+
+// experimental
+
 function pts3(p)=[for(n=[1:len(p)])add_p3(p=p,p1=[0,0,0,0],n=n,i=0)];
 
-function rsz3d_enc(prism,rsz=[1,1,1])=
-let(
-rev_points_list=[for(p=prism)each[for(p1=p)p1]],
-x=max(rev_points_list*[1,0,0])-min(rev_points_list*[1,0,0])+rsz.x,
-y=max(rev_points_list*[0,1,0])-min(rev_points_list*[0,1,0])+rsz.y,
-z=max(rev_points_list*[0,0,1])-min(rev_points_list*[0,0,1])+rsz.z,
-rev_prism=rsz3d(prism,[x,y,z]),
-//avg of prism
-x1=(max(rev_points_list*[1,0,0])+min(rev_points_list*[1,0,0]))/2,
-y1=(max(rev_points_list*[0,1,0])+min(rev_points_list*[0,1,0]))/2,
-z1=(max(rev_points_list*[0,0,1])+min(rev_points_list*[0,0,1]))/2,
-avg=[x1,y1,z1],
-//avg of rev_prism
-rev_p_list=[for(p=rev_prism) each[for(p1=p)p1]],
-x2=(max(rev_p_list*[1,0,0])+min(rev_p_list*[1,0,0]))/2,
-y2=(max(rev_p_list*[0,1,0])+min(rev_p_list*[0,1,0]))/2,
-z2=(max(rev_p_list*[0,0,1])+min(rev_p_list*[0,0,1]))/2,
-avg_rev=[x2,y2,z2],
-)trns(avg-avg_rev,rev_prism)
-    ;
     
- function rsz3d_offset(prism,d=1)=
-let(
-rev_prism=[for(i=[0:len(prism)-2])[for(j=[0:len(prism[i])-1])
-let(
-j_plus=j<len(prism[i])-1?j+1:0,
-p0=prism[i][j],p1=prism[i][j_plus],p2=prism[i+1][j],
-v1=p1-p0,v2=p2-p0,
-v3=cross(uv(v1),uv(v2))*d,
-rev_p=p0+v3
-)rev_p
-]]
-)rev_prism;
+// function to calculate the bounding box dimensions of a prism
+// example:
+// echo(bb(rsz3d(spr(4),[5,5,8]))); // => ECHO: [5, 5, 8]
 
 function bb(prism)=
 let(
 p=[for(p=prism)each[for(p1=p) p1]],
 bb=[max(p*[1,0,0])-min(p*[1,0,0]),max(p*[0,1,0])-min(p*[0,1,0]),max(p*[0,0,1])-min(p*[0,0,1])])bb;
 
-function avg_prism(prism)=
-let(
-rev_points_list=[for(p=prism)each each[for(p1=p)p1]],
-avg_x=sum(rev_points_list*[1,0,0])/len(rev_points_list),
-avg_y=sum(rev_points_list*[0,1,0])/len(rev_points_list),
-avg_z=sum(rev_points_list*[0,0,1])/len(rev_points_list)
-
-)[avg_x,avg_y,avg_z];
+// function is used as input to another function
 
 function align_xy(sec,nv)=
 let(
@@ -2014,6 +2067,8 @@ theta1=u2.x>0?360-acos([0,0,1]*u2):acos([0,0,1]*u2),
 v3=q([0,1,0],v2,theta1),
 aligned_sec=c3t2(q_rot([str("z",-theta),str("y",theta1)],sec))
 )aligned_sec;
+
+// function is used as input to another function
 
 function 3d_offset_input(sec,nv,o)=
 let(
@@ -2032,7 +2087,18 @@ back=q_rot([str("y",-theta1),str("z",theta)],rev_align)
 
 )back;
 
+// function to calculate an offset of sectio  in 3d space
+// example:
+// sec=trns([7,8,20],align_v([2,3,5],cir(5)));
+// p_line3dc(sec,.2);
+// p_line3dc(3d_offset(sec,nv(sec),1),.2);
+
 function 3d_offset(sec,nv,o=1)=3d_offset_input(sec,nv+[0.00001,.00001,0],o);
+
+// function to calculate the normal vector of a known section
+// example:
+// sec=trns([7,8,20],align_v([2,3,5],cir(5)));
+// echo(nv(sec)); // =>ECHO: [-0.0160329, -0.0240482, -0.0400802]
 
 function nv(sec)= cross(sec[0]-sec[1],sec[2]-sec[1]);
 
@@ -2044,6 +2110,13 @@ v1=p0-p1,v2=p2-p1,
 u1=uv(v1),u2=uv(v2),
 theta=acos(u1*u2)
 )[p1.x,p1.y,.1]],5);
+
+// function to offset a given 2d path
+// example:
+// path=cr(pts1([[2,0],[-2,0,2],[-1,10,2],[-2,0]]),5);
+// p_lineo(path,.2);
+// p_lineo(path_offset(path,1),.2);
+
 
 function path_offset(path,d)=[for(i=[0:len(path)-2])let(p0=path[i],p1=path[i+1],line=[p0,p1],rev_point=offst_l(line,d))each i<len(path)-2?[rev_point[0]]:rev_point];
 
