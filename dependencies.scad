@@ -1697,6 +1697,15 @@ alpha=a-90,
 rev_sec=q_rot(["x90","z-90",str("y",-a),str("z",theta)],sec)
 )each i<len(path)-2?[trns(p0,rev_sec)]:[trns(p0,rev_sec),trns(p1,rev_sec)]];
 
+// module to extrude a section along a closed loop path. 2d section "sec" and a 3d path "path" are the 2 arguments to be filled.
+// example
+// sec=cr([[0,0,.5],[10,0,2],[7,15,1]],10);
+//
+// path=c2t3(arc(20,0,355,s=72));
+//
+// p_line3d(path,.2);
+//
+// p_extrudec(sec,path);
 
 module p_extrudec(sec,path) swp_c([for(i=[0:len(path)-1])let(
 p0=path[i],
@@ -1715,6 +1724,17 @@ prism1=q_rot(["x90","z90"],sec)
 
 )each i<len(path)-1?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism)),trns(p2,q_rot([str("z",theta1)],prism1))]]);
 
+// module to extrude a section along a open loop path. 2d section "sec" and a 3d path "path" are the 2 arguments to be filled.
+// example
+// sec=cr([[0,0,.5],[10,0,2],[7,15,1]],10);
+//
+// path=c2t3(arc(20,0,355,s=72));
+//
+// p_line3d(path,.2);
+//
+// p_extrude(sec,path);
+
+
 module p_extrude(sec,path) swp([for(i=[0:len(path)-2])let(
 p0=path[i],
 p1=i<len(path)-1?path[i+1]:path[0]-(path[1]-path[0])*.01,
@@ -1732,7 +1752,17 @@ prism1=q_rot(["x90","z90"],sec)
 
 )each i<len(path)-2?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism))]]);
 
-
+// function to extrude a section along a closed loop path. 2d section "sec" and a 3d path "path" are the 2 arguments to be filled.
+// example
+// sec=cr([[0,0,.5],[10,0,2],[7,15,1]],10);
+//
+// path=c2t3(arc(20,0,355,s=72));
+//
+// p_line3d(path,.2);
+// 
+// prism=p_extrudec(sec,path);
+//
+// swp_c(prism);
 
 function p_extrudec(sec,path)= [for(i=[0:len(path)-1])let(
 p0=path[i],
@@ -1751,6 +1781,18 @@ prism1=q_rot(["x90","z90"],sec)
 
 )each i<len(path)-1?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism)),trns(p2,q_rot([str("z",theta1)],prism1))]];
 
+// function to extrude a section along a open loop path. 2d section "sec" and a 3d path "path" are the 2 arguments to be filled.
+// example
+// sec=cr([[0,0,.5],[10,0,2],[7,15,1]],10);
+//
+// path=c2t3(arc(20,0,355,s=72));
+//
+// p_line3d(path,.2);
+//
+// prism=p_extrude(sec,path);
+//
+// swp(prism);
+
 function p_extrude(sec,path)= [for(i=[0:len(path)-2])let(
 p0=path[i],
 p1=i<len(path)-1?path[i+1]:path[0]-(path[1]-path[0])*.01,
@@ -1768,6 +1810,8 @@ prism1=q_rot(["x90","z90"],sec)
 
 )each i<len(path)-2?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism))]];
 
+// experimental
+
 function p_ex(sec,path)= [for(i=[0:len(path)-2])let(
 p0=path[i],
 p1=path[i+1],
@@ -1781,6 +1825,19 @@ a=u1==u2?0:u1.z<0?360-acos(u1*u2):acos(u1*u2),
 alpha=a-90,
 rev_sec=q_rot(["x90","z90",str("y",-a),str("z",theta)],sec)
 ) trns(p0,rev_sec)];
+
+// function to create a fillet with 3 known points with radius "r" and number of segments "s"
+// example
+// p0=[2,3,5];
+// p1=[3,7,2];
+// p2=[5,8,3];
+// 
+// r=2;
+// s=10;
+// 
+// fillet=3p_3d_fillet(p0,p1,p2,r,s);
+// $fn=20;
+// p_line3dc(fillet,.1);
 
 function 3p_3d_fillet(p0,p1,p2,r=1, s=5)=
 let(
