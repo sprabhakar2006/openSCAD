@@ -2160,3 +2160,14 @@ sec1=3d_arc(nv,.01,0,360,-1),
 sec2=3d_arc(nv,dia/2,0,360,-1),
 plane=[sec1,sec2]
 )plane;
+
+function o()=[0,0,0];
+
+function align_v(v,prism)=let(
+v=v+[.0001,0,0],
+theta1=ang(v.x,v.y),
+theta2=ang(norm([v.x,v.y]),v.z),
+avg=avg_v(prism),
+t=[avg.x,avg.y],
+rev_prism=trns(t-o(),q_rot([str("y",90-theta2),str("z",theta1)],trns(o()-t,prism)))
+)rev_prism;
