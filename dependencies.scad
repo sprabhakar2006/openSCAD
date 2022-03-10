@@ -2094,4 +2094,4 @@ ip=ibsap(sec,p),
 
 )pwir;
 
-function flat(dia=10,cp[0,0,0])=trns(cp,[cir(.001),cir(dia/2)]);
+function flat(dia=10,cp=[0,0,0])=trns(cp,[cir(.001),cir(dia/2)]);
