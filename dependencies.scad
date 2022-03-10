@@ -2152,3 +2152,5 @@ ip=ibsap(sec,p),
 )pwir;
 
 function flat(dia=10,cp=[0,0,0])=trns(cp,[cir(.001),cir(dia/2)]);
+
+function helix(dia=10,pitch=3,turns=5)=[for(i=[0:5:360*turns])[dia/2*cos(i),dia/2*sin(i),i/360*pitch]];
