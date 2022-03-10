@@ -2154,3 +2154,9 @@ ip=ibsap(sec,p),
 function flat(dia=10,cp=[0,0,0])=trns(cp,[cir(.001),cir(dia/2)]);
 
 function helix(dia=10,pitch=3,turns=5)=[for(i=[0:5:360*turns])[dia/2*cos(i),dia/2*sin(i),i/360*pitch]];
+
+function plane(nv, dia)=let(
+sec1=3d_arc(nv,.01,0,360,-1),
+sec2=3d_arc(nv,dia/2,0,360,-1),
+plane=[sec1,sec2]
+)plane;
