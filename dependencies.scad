@@ -1713,14 +1713,14 @@ p1=i<len(path)-1?path[i+1]:path[0]-(path[1]-path[0])*.01,
 v=p1-p0,
 u=v/norm(v),
 theta=u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u),
-prism=q_rot(["x90","z90"],sec),
+prism=q_rot(["x90","z-90"],sec),
 
 p2=path[0],
 p3=path[1],
 v1=p3-p2,
 u1=v1/norm(v1),
 theta1=u1.y<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1),
-prism1=q_rot(["x90","z90"],sec)
+prism1=q_rot(["x90","z-90"],sec)
 
 )each i<len(path)-1?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism)),trns(p2,q_rot([str("z",theta1)],prism1))]]);
 
@@ -1741,14 +1741,14 @@ p1=i<len(path)-1?path[i+1]:path[0]-(path[1]-path[0])*.01,
 v=p1-p0,
 u=v/norm(v),
 theta=u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u),
-prism=q_rot(["x90","z90"],sec),
+prism=q_rot(["x90","z-90"],sec),
 
 p2=path[0],
 p3=path[1],
 v1=p3-p2,
 u1=v1/norm(v1),
 theta1=u1.y<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1),
-prism1=q_rot(["x90","z90"],sec)
+prism1=q_rot(["x90","z-90"],sec)
 
 )each i<len(path)-2?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism))]]);
 
@@ -1770,14 +1770,14 @@ p1=i<len(path)-1?path[i+1]:path[0]-(path[1]-path[0])*.01,
 v=p1-p0,
 u=v/norm(v),
 theta=u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u),
-prism=q_rot(["x90","z90"],sec),
+prism=q_rot(["x90","z-90"],sec),
 
 p2=path[0],
 p3=path[1],
 v1=p3-p2,
 u1=v1/norm(v1),
 theta1=u1.y<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1),
-prism1=q_rot(["x90","z90"],sec)
+prism1=q_rot(["x90","z-90"],sec)
 
 )each i<len(path)-1?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism)),trns(p2,q_rot([str("z",theta1)],prism1))]];
 
@@ -1799,14 +1799,14 @@ p1=i<len(path)-1?path[i+1]:path[0]-(path[1]-path[0])*.01,
 v=p1-p0,
 u=v/norm(v),
 theta=u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u),
-prism=q_rot(["x90","z90"],sec),
+prism=q_rot(["x90","z-90"],sec),
 
 p2=path[0],
 p3=path[1],
 v1=p3-p2,
 u1=v1/norm(v1),
 theta1=u1.y<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1),
-prism1=q_rot(["x90","z90"],sec)
+prism1=q_rot(["x90","z-90"],sec)
 
 )each i<len(path)-2?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism))]];
 
@@ -1823,7 +1823,7 @@ u2=v1/norm(v1),
 theta=!is_num(u.x)?0:(u.y<0?360-acos([1,0]*u):acos([1,0]*u)),
 a=u1==u2?0:u1.z<0?360-acos(u1*u2):acos(u1*u2),
 alpha=a-90,
-rev_sec=q_rot(["x90","z90",str("y",-a),str("z",theta)],sec)
+rev_sec=q_rot(["x90","z-90",str("y",-a),str("z",theta)],sec)
 ) trns(p0,rev_sec)];
 
 // function to create a fillet with 3 known points with radius "r" and number of segments "s"
