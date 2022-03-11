@@ -1,13 +1,21 @@
 
 //function to make a prism with combination of 2d section and 2d path
+// Example:
+// sec=cir(10);
+// path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5);
+// prism=prism(sec,path);
+// swp(prism);
 
 function prism(sec,path,m_points=0)=[for(p=path)[for(p1=sort_points(m_points_sc(sec,m_points),m_points_sc(f_offset(sec,round(p.x*100)/100),m_points)))[p1.x,p1.y,p.y]]];
-    
-
-function surf(sec,path)=[for(p=path)[for(p1=sec)[p.x,p1.y,p.y]]];
 
 //function to calculate angle of a 2d vector starting from origin and end point with x and y co-ordinates
- 
+// example:
+// p1=[3,4];p2=[-3,2];
+// v=p2-p1;
+// p_lineo([p1,p2],.2);
+// ang= ang(v.x,v.y);
+// echo(ang);
+
 function ang(x,y)= x>=0&&y>=0?atan(y/x):x<0&&y>=0?180-abs(atan(y/x)):x<0&&y<0?180+abs(atan(y/x)):360-abs(atan(y/x));
 
 //function to rotate a point around a vector(axis) with angle theta           
