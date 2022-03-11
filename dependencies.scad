@@ -2122,6 +2122,16 @@ function path_offset(path,d)=[for(i=[0:len(path)-2])let(p0=path[i],p1=path[i+1],
 
 function fillet(p1,p2,p3,r)=[for(i=[0:len(p1)-1])each i<len(p1)-1?[3p_3d_fillet(p3[i],p1[i],p2[i],r)]:[3p_3d_fillet(p3[i],p1[i],p2[i],r),3p_3d_fillet(p3[0],p1[0],p2[0],r)]];
 
+// function to create a fillet with 3 known points
+// example:
+// p0=[2,3,5];
+// p1=[3,7,2];
+// p2=[5,8,3];
+//
+// arc=3d_3p_fillet(p0,p1,p2,r=2,s=10);
+// p_line3d(arc,.1);
+// points([p0,p1,p2],.2);
+
 function 3d_3p_fillet(p0,p1,p2,r,s=5)=
 let(
 n=nv([p0,p1,p2]),
@@ -2148,12 +2158,25 @@ p3=tp1+v,
 
 )[[tp,p2],[tp1,p3]];
 
+// function to create arc with 2 points and center. parameter "s" is to define number of segments in the arc
+// example
+// p0=[2,3,5];
+// p1=[7,8,9];
+// cp=(p0+p1)/2+[0.001,0,0];
+//
+// points([p0,p1,cp],.3);
+//
+// arc=2pnc_arc(p0,p1,cp,20);
+// p_line3d(arc,.2);
+
 function 2pnc_arc(p0,p1,cp,s)=let(
 n=uv(nv(len(p0)==2?c2t3([p0,cp,p1]):[p0,cp,p1])),
 theta=acos(uv(p0-cp)*uv(p1-cp)),
 r1=norm(p0-cp),r2=norm(p1-cp),
 arc=assert(abs(norm((p0-cp))-norm((p1-cp)))<.1,str("radiuses ",r1," and ",r2," are unequal"))[for(i=[0:theta/s:theta])cp+q(n,p0-cp,i)]
 )arc;
+
+// function used as input to function c_hull
 
 function n_pnt(list,s_pnt,a=0)=let(
 r_list=reduced_list(list,[s_pnt]),
@@ -2162,6 +2185,7 @@ index=search(min([for(p=n_pnt)if(p>=a)p]),n_pnt,0)[0]
 
 )[r_list[index],n_pnt[index]];
 
+// function used as input to function c_hull
 
 function c_hull1(list,s_pnt,n_pnt,revised_list)= 
 n_pnt.x==s_pnt?revised_list:c_hull1(
@@ -2169,6 +2193,16 @@ list,s_pnt,
 n_pnt=n_pnt(list,n_pnt.x,n_pnt.y),
 revised_list=concat(revised_list,[n_pnt.x])
 );
+
+// function to create a convex hull of a group of points
+// example:
+// a=rands(0,10,30);
+// b=rands(0,7,30);
+// pnts=[for(i=[0:len(a)-1])[a[i],b[i]]];
+// points(pnts,.3);
+// c_hull=c_hull(pnts);
+// color("green")
+// p_line(c_hull,.2);
 
 function c_hull(list)=
 c_hull1(list=list,
@@ -2226,7 +2260,24 @@ ip=ibsap(sec,p),
 
 function flat(dia=10,cp=[0,0,0])=trns(cp,[cir(.001),cir(dia/2)]);
 
+// function to draw a helix with diameter "dia", pitch "pitch" and number of turns "turns"
+// example:
+// helix=helix(dia=20,pitch=5,turns=7);
+// p_line3d(helix,.2);
+
 function helix(dia=10,pitch=3,turns=5)=[for(i=[0:5:360*turns])[dia/2*cos(i),dia/2*sin(i),i/360*pitch]];
+
+// function to define a plane with normal vector "nv" and diameter of the surface "dia"
+// example:
+// plane= plane(nv=[2,3,5],dia=20);
+// swp(plane);
+//
+// example 2:
+// prism=l_extrude(cir(5,s=50),50);
+// p1=ipe(trns([0,0,0],plane([0,0,1],50)),prism,1);
+// p2=ipe(trns([0,0,50],plane([0,0,1],50)),flip(prism),1,1);
+// swp([each p1,each flip(p2)]);
+
 
 function plane(nv, dia)=let(
 sec1=3d_arc(nv,.01,0,360,-1),
@@ -2234,7 +2285,20 @@ sec2=3d_arc(nv,dia/2,0,360,-1),
 plane=[sec1,sec2]
 )plane;
 
+// function to define origin
+// example:
+// v=[2,3,5];
+// p_line3d([o(),v],.2,$fn=20);
+
 function o()=[0,0,0];
+
+// function to align any shape "prism" with a vector "v"
+// example:
+// v=[20,30,50];
+// prism=l_extrude(cir(1),50);
+// aligned_prism=align_v(v,prism);
+// %swp(aligned_prism);
+// p_line3d([o(),v],.2);
 
 function align_v(v,prism)=let(
 v=v+[.0001,0,0],
