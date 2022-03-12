@@ -1,6 +1,6 @@
 include<dependencies.scad>
 sketch=cr(pts1([[-25,0],[25,20,100],[25,-20]]),20);
-path=cr(pts1([[0,-5],[50,30,50],[20,-25]]),20);
+path=cytz(cr(pts1([[0,-5],[50,30,50],[20,-25]]),20));
 surf=surf_extrude(sketch,path);
 
 sec=cr(pts1([[10,-20,20],[60,0,20],[0,40,20],[-60,0,20]]),30);
