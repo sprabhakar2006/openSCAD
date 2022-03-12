@@ -2316,3 +2316,14 @@ avg=avg_v(prism),
 t=[avg.x,avg.y],
 rev_prism=trns(t-o(),q_rot([str("y",90-theta2),str("z",theta1)],trns(o()-t,prism)))
 )rev_prism;
+
+ module surf_base(surf,h=0){
+     surf1=trns([0,0,h],[for(p=surf)[for(p1=p)[p1.x,p1.y]]]);
+
+         for(i=[0:len(surf)-2])
+         for(j=[0:len(surf[i])-2])
+           if(surf1.x.x.z>surf.x.x.z)
+             swp([[surf1[i][j],surf1[i+1][j],surf1[i+1][j+1],surf1[i][j+1]],[surf[i][j],surf[i+1][j],surf[i+1][j+1],surf[i][j+1]]]);
+         else
+             swp([[surf[i][j],surf[i+1][j],surf[i+1][j+1],surf[i][j+1]],[surf1[i][j],surf1[i+1][j],surf1[i+1][j+1],surf1[i][j+1]]]);}
+   
