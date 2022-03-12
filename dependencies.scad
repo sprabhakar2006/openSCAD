@@ -2260,7 +2260,7 @@ v3=ip-p2,u3=uv(v3)
 //function: points inside enclosed section
 function pies(pnts,sec)=let(
 pwir=[for(p=pnts)let(
-ip=ibsap(sec,p),
+ip=ibsap(sec,p)
 
 )if(ip!=[]&&len(ip)%2==1)p]
 
