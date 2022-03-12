@@ -2320,7 +2320,7 @@ rev_prism=trns(t-o(),q_rot([str("y",90-theta2),str("z",theta1)],trns(o()-t,prism
 // module to create a solid with base on x-y plane for a surface, produced with function surf_extrude(). Parameter "h" gives distance of base from x-y plane e.g. -ve value of "h" meansthe base is below the x-y plane and +ve value means it is above the x-y plane.
 // example:
 // sketch=cr(pts1([[-25,0],[25,20,100],[25,-20]]),20);
-// path=cr(pts1([[0,-5],[50,30,50],[20,-25]]),20);
+// path=cytz(cr(pts1([[0,-5],[50,30,50],[20,-25]]),20));
 // surf=surf_extrude(sketch,path);
 // surf_base(surf,h=-10);
 
