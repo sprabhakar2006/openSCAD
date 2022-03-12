@@ -2162,7 +2162,7 @@ a=norm(p-cp)<.1?(u.y<0?360-acos([1,0]*u)+90:acos([1,0]*u)+90):(uv(p-cp).y<0?360-
 tp=cp+[r,0]*rm(a),
 p2=tp+v,
 tp1=cp+[r,0]*rm(a+180),
-p3=tp1+v,
+p3=tp1+v
 
 )[[tp,p2],[tp1,p3]];
 
