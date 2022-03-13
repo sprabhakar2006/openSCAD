@@ -1888,11 +1888,11 @@ arc=[for(i=[0:theta*2/s:theta*2])cp+q(n,pa-cp,-i)]
 // p1=[3,7,2];
 // p2=[5,8,3];
 // points([p0,p1,p2],.3);
-// fillet=3p_3d_arc([p0,p1,p2],s=20);
+// arc=3p_3d_arc([p0,p1,p2],s=20);
 // $fn=20;
-// p_line3d(fillet,.1);
+// p_line3d(arc,.1);
 
-function 3p_3d_arc(points=[p0,p1,p2], s=5)=
+function 3p_3d_arc(points, s=5)=
 let(
 v1=points[0]-points[1], u1=v1/norm(v1),
 v2=points[2]-points[1], u2=v2/norm(v2),
@@ -1919,7 +1919,7 @@ arc=trns(points[1]+cp,[for(i=[0:theta/s:theta])q(n,points[0]-(points[1]+cp),-i)]
 // p2=[5,8,3];
 // echo(3p_3d_r([p0,p1,p2])); //=> ECHO: 1.89252
 
-function 3p_3d_r(points=[p0, p1,p2])=
+function 3p_3d_r(points)=
 let(
 v1=points[0]-points[1], u1=v1/norm(v1),
 v2=points[2]-points[1], u2=v2/norm(v2),
