@@ -6,4 +6,5 @@ examples:
 <img width="200" alt="Screenshot 2022-02-17 at 9 38 42 PM" src="https://user-images.githubusercontent.com/55306937/154522816-e4e4e5ba-7ec4-484d-9460-2c1fb1be4a83.png" title="wheel"> <img width="200" alt="Screenshot 2022-02-18 at 7 03 48 AM" src="https://user-images.githubusercontent.com/55306937/154600866-2b630b2b-fe7b-4f56-a4fc-0f0ba1440606.png" title="hub section fillet"> 
 <img width="200" alt="Screenshot 2022-02-24 at 11 09 21 PM" src="https://user-images.githubusercontent.com/55306937/155578133-df3f7889-0be7-4b7a-a171-fd73e2199fd3.png" title="m10"> 
 <img width="200" alt="Screenshot 2022-03-12 at 7 50 44 PM" src="https://user-images.githubusercontent.com/55306937/158021710-be8622a2-7a38-4c99-a650-dfd8eb9a6340.png" title="surface"> 
-<img width="200" alt="Screenshot 2022-03-12 at 8 07 58 PM" src="https://user-images.githubusercontent.com/55306937/158022323-d251ab86-49a2-4f12-9b3f-fe41573e97ac.png" title="surf_base example">
+<img width="200" alt="Screenshot 2022-03-12 at 8 07 58 PM" src="https://user-images.githubusercontent.com/55306937/158022323-d251ab86-49a2-4f12-9b3f-fe41573e97ac.png" title="surf_base example"> 
+<img width="200" alt="Screenshot 2022-03-13 at 9 29 14 AM" src="https://user-images.githubusercontent.com/55306937/158044480-f94394d7-e13c-4194-a7ee-a36d3104c9b0.png" title="surface method2">
