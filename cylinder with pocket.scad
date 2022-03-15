@@ -5,9 +5,7 @@ path=[[0,0,0],[0,50,0]];
 
 d=25;
 prism=trns([0,25,0],l_extrude(m_points(cr(pts1([[-d/2,-d/2,4],[d,0,4],[0,d,4],[-d,0,4]]),10),1),50));
-difference(){
-swp_h(sec,path,-2);
-swp(prism);}
+
 
 path1=ip(q_rot(["x-90"],cyl(r=20,h=50)),prism);
 path2=ip(q_rot(["x-90"],cyl(r=18,h=50)),prism);
@@ -31,5 +29,11 @@ i<len(fillet)-1?[fillet[i]]:[fillet[i],fillet[0]]
 
 ];
 
-
+rotate([90,0,0]){
+difference(){
+swp_h(sec,path,-2);
+swp(prism);}
+intersection(){
+swp_h(sec,path,-2);
 swp_c(fillet);
+}}
