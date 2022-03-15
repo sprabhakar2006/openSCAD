@@ -28,7 +28,7 @@ fillet=3p_3d_arc([p0,p1,p2],s=10)
 i<len(fillet)-1?[fillet[i]]:[fillet[i],fillet[0]]
 
 ];
-
+render(){
 rotate([90,0,0]){
 difference(){
 swp_h(sec,path,-2);
@@ -36,4 +36,4 @@ swp(prism);}
 intersection(){
 swp_h(sec,path,-2);
 swp_c(fillet);
-}}
+}}}
