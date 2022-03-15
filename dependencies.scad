@@ -2337,3 +2337,6 @@ rev_prism=trns(t-o(),q_rot([str("y",90-theta2),str("z",theta1)],trns(o()-t,prism
          else
              swp([[surf[i][j],surf[i+1][j],surf[i+1][j+1],surf[i][j+1]],[surf1[i][j],surf1[i+1][j],surf1[i+1][j+1],surf1[i][j+1]]]);}
    
+function remove_duplicate(path)=[for(i=[0:len(path)-1])let(
+p0=path[i],p1=i<len(path)-1?path[i+1]:path[i]+path[i]*100
+)if(norm(p1-p0)>.01)p0];
