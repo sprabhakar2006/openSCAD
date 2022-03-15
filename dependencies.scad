@@ -2189,9 +2189,12 @@ arc=assert(abs(norm((p0-cp))-norm((p1-cp)))<.1,str("radiuses ",r1," and ",r2," a
 function n_pnt(list,s_pnt,a=0)=let(
 r_list=reduced_list(list,[s_pnt]),
 n_pnt=[for(p=r_list)ang((p-s_pnt).x,(p-s_pnt).y)],
-index=search(min([for(p=n_pnt)if(p>=a)p]),n_pnt,0)[0]
+index=search(min([for(p=n_pnt)if(p>=a)p]),n_pnt,0),
+pnt=[for(i=index)norm(s_pnt-r_list[i])],
+i=search(min(pnt),pnt,0),
+f_index=index[i.x]
 
-)[r_list[index],n_pnt[index]];
+)[r_list[f_index],n_pnt[f_index]];
 
 // function used as input to function c_hull
 
