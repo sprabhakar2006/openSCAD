@@ -7,5 +7,5 @@ examples:
 <img width="200" alt="Screenshot 2022-02-24 at 11 09 21 PM" src="https://user-images.githubusercontent.com/55306937/155578133-df3f7889-0be7-4b7a-a171-fd73e2199fd3.png" title="m10"> 
 <img width="200" alt="Screenshot 2022-03-12 at 7 50 44 PM" src="https://user-images.githubusercontent.com/55306937/158021710-be8622a2-7a38-4c99-a650-dfd8eb9a6340.png" title="surface"> 
 <img width="200" alt="Screenshot 2022-03-12 at 8 07 58 PM" src="https://user-images.githubusercontent.com/55306937/158022323-d251ab86-49a2-4f12-9b3f-fe41573e97ac.png" title="surf_base example"> 
-<img width="200" alt="Screenshot 2022-03-13 at 9 29 14 AM" src="https://user-images.githubusercontent.com/55306937/158044480-f94394d7-e13c-4194-a7ee-a36d3104c9b0.png" title="surface method2"> 
-<img width="200" alt="Screenshot 2022-03-17 at 8 40 46 PM" src="https://user-images.githubusercontent.com/55306937/158833600-38717028-7c62-46fd-89e3-0297e70da4b1.png" title="convex hull">
+<img width="200" alt="Screenshot 2022-03-17 at 8 40 46 PM" src="https://user-images.githubusercontent.com/55306937/158833600-38717028-7c62-46fd-89e3-0297e70da4b1.png" title="convex hull"> 
+<img width="200" alt="Screenshot 2022-03-17 at 8 58 39 PM" src="https://user-images.githubusercontent.com/55306937/158834677-47baa02d-1773-4eab-b318-07e77e92def6.png" title="surface method3">
