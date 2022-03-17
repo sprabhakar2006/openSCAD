@@ -1499,9 +1499,14 @@ rot=decision==0?
 // function used as input to another function c_hull
  
 function s_pnt(sec)=let(
-y_min=min(sec*[0,1]),
-loc=search(y_min,sec,0,1)[0]
-)sec[loc];
+y=sec*[0,1],
+loc=[for(i=[0:len(y)-1])if(abs(min(y)-y[i])<.001)i],
+x=[for(i=loc)sec[i]],
+x_min=min(x*[1,0]),
+i=search(x_min,x,0,0)[0],
+pnt=x[i]
+
+)pnt;//sec[loc];
 
 // function to subtract points from a list of points
 // example:
@@ -2189,20 +2194,26 @@ arc=assert(abs(norm((p0-cp))-norm((p1-cp)))<.1,str("radiuses ",r1," and ",r2," a
 function n_pnt(list,s_pnt,a=0)=let(
 a1=a==0||a==360?0:a,
 r_list=reduced_list(list,[s_pnt]),
-n_pnt=[for(p=r_list)ang((p-s_pnt).x,(p-s_pnt).y)],
-index=search(min([for(p=n_pnt)if(p>=a1)p]),n_pnt,0),
-pnt=[for(i=index)norm(s_pnt-r_list[i])],
-i=search(min(pnt),pnt,0),
-f_index=index[i.x]
+n_pnt=[for(p=r_list)let(v=uv(p-s_pnt),ang=v.y<0?360-acos(v*[1,0]):acos(v*[1,0]),ang1=ang==360||ang<.001?0:ang)round(ang1*1000)/1000],
+n1=[for(i=[0:len(n_pnt)-1])if(n_pnt[i]>=a1)round(n_pnt[i]*1000)/1000],
+n2=search(min(n1),n_pnt,0),
+n3=[for(i=n2)norm(s_pnt-r_list[i])],
+n4=search(min(n3),n3,0)[0],
+point=r_list[n2[n4]],
+//n2=search(n11[0],n_pnt,0)[0],
+//point=r_list[n2],
+v=point-s_pnt,
+ang=round(ang(v.x,v.y)*1000)/1000,
+ang1=ang==360||ang<.001?0:ang
 
-)[r_list[f_index],n_pnt[f_index]];
+)[point,ang1];
 
 // function used as input to function c_hull
 
 function c_hull1(list,s_pnt,n_pnt,revised_list)= 
 n_pnt.x==s_pnt?revised_list:c_hull1(
 list,s_pnt,
-n_pnt=n_pnt(list,n_pnt.x,n_pnt.y),
+n_pnt=n_pnt(list,n_pnt.x,n_pnt.y-.1),
 revised_list=concat(revised_list,[n_pnt.x])
 );
 
