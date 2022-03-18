@@ -2255,6 +2255,26 @@ function resurf1(list,c_hull,revised_list)=
     revised_list=concat(revised_list,[c_hull]))
 ;
 
+// function to reorganise a set of random points
+// example:
+// sketch=cr(pts1([[-25,0],[25,20,100],[25,-20]]),20);
+// path=cytz(cr(pts1([[0,-5],[50,30,50],[20,-25]]),20));
+// surf=surf_extrude(sketch,path);
+//
+// sec=cr(pts1([[10,-20,20],[60,0,20],[0,40,20],[-60,0,20]]),30);
+//
+// p_surf=[for(p=surf)each [for(p1=p)[p1.x,p1.y]]];
+// p_pnts=pies(p_surf,sec);
+//
+// //points(p_surf,.3);
+//
+// //%p_line(sec,.2);
+// color("green")
+// points(p_pnts,.5);
+//
+// resurf=resurf(p_pnts);
+// for(p=resurf)p_line(p,.2);
+
 function resurf(list)=resurf1(list=list,c_hull=c_hull(list),revised_list=[c_hull(list)]);
 
 //function: intersection between section and point
@@ -2273,6 +2293,22 @@ v3=ip-p2,u3=uv(v3)
 )ip;
 
 //function: points inside enclosed section
+// example:
+// sketch=cr(pts1([[-25,0],[25,20,100],[25,-20]]),20);
+// path=cytz(cr(pts1([[0,-5],[50,30,50],[20,-25]]),20));
+// surf=surf_extrude(sketch,path);
+//
+// sec=cr(pts1([[10,-20,20],[60,0,20],[0,40,20],[-60,0,20]]),30);
+//
+// p_surf=[for(p=surf)each [for(p1=p)[p1.x,p1.y]]];
+// p_pnts=pies(p_surf,sec);
+//
+// points(p_surf,.3);
+//
+// p_line(sec,.2);
+// color("green")
+// points(p_pnts,.5);
+
 function pies(pnts,sec)=let(
 pwir=[for(p=pnts)let(
 ip=ibsap(sec,p)
@@ -2353,6 +2389,13 @@ function remove_duplicate(path)=[for(i=[0:len(path)-1])let(
 p0=path[i],p1=i<len(path)-1?path[i+1]:path[i]+path[i]*100
 )if(norm(p1-p0)>.01)p0];
 
+// function to find the tanget to a circle from a point outside the circle
+// example:
+// point=[10,0];
+// cir=cir(r=7.5,cp=[22.5,15]);
+// p_line([point,p_cir_t(point,cir)],.2);
+// p_line(cir,.2);
+
 function p_cir_t(pnt,cir)=let(
 ang=[for(i=[0:len(cir)-1])let(
 i_plus=i<len(cir)-1?i+1:0,
@@ -2378,6 +2421,12 @@ i=search(ang1,ang,0)[0],
 
 point=cir[i+1]
 )point;
+// function to find the tanget from a circle to a point outside the circle
+// example:
+// point=[10,0];
+// cir=cir(r=7.5,cp=[22.5,15]);
+// p_line([cir_p_t(cir,point),point],.2);
+// p_line(cir,.2);
 
 function cir_p_t(cir,pnt)=let(
 ang=[for(i=[0:len(cir)-1])let(
@@ -2405,5 +2454,13 @@ i=search(ang1,ang,0)[0],
 point=cir[i]
 )point;
 
+// function to find the angle of a 2d vector with [1,0]
+// example
+//  point=[10,0];
+//  cir=cir(r=7.5,cp=[22.5,15]);
+//  tangent_point=p_cir_t(point,cir);
+//  v=tangent_point-point;
+//  ang=ang_v(v);
+//  echo(ang); // ECHO: 27.6865
 
 function ang_v(v)=ang(v.x,v.y);
