@@ -10,6 +10,6 @@ examples:
 <img width="200" alt="Screenshot 2022-03-17 at 8 40 46 PM" src="https://user-images.githubusercontent.com/55306937/158833600-38717028-7c62-46fd-89e3-0297e70da4b1.png" title="convex hull"> 
 <img width="200" alt="Screenshot 2022-03-17 at 8 58 39 PM" src="https://user-images.githubusercontent.com/55306937/158834677-47baa02d-1773-4eab-b318-07e77e92def6.png" title="surface method3"> 
 <img width="200" alt="Screenshot 2022-03-19 at 11 16 35 AM" src="https://user-images.githubusercontent.com/55306937/159109020-2a161626-95fe-470b-93b7-e44c0ca8959e.png" title="m35"> 
-<img width="200" alt="Screenshot 2022-03-19 at 8 36 55 PM" src="https://user-images.githubusercontent.com/55306937/159126572-b8761cb8-e096-434f-9de3-db86dd55a9a6.png" title="m36">
+<img width="589" alt="Screenshot 2022-03-19 at 9 09 49 PM" src="https://user-images.githubusercontent.com/55306937/159127968-d3137082-d630-49b5-8bf2-55f4a846709c.png">
 
 
