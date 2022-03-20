@@ -1454,7 +1454,7 @@ function 2cir_tangent(r1,r2,cp1,cp2)=
 let(
 v=cp2-cp1,u=v/norm(v),
 theta=ang(v.x,v.y),
-theta1=atan((r1-r2)/norm(v)),
+theta1=asin((r1-r2)/norm(v)),
 p1=cp1+u*r1*rm(90-theta1),
 p0=cp2+u*r2*rm(90-theta1),
 p2=cp1+u*r1*rm(-(90-theta1)),
