@@ -2182,7 +2182,7 @@ p3=tp1+v
 // arc=2pnc_arc(p0,p1,cp,20);
 // p_line3d(arc,.2);
 
-function 2pnc_arc(p0,p1,cp,cw=-1,s=20)=let(
+function 2pnc_arc(p0,p1,cp,cw,s)=let(
 n=uv(nv(len(p0)==2?c2t3([p0,cp,p1]):[p0,cp,p1])),
 theta=acos(uv(p0-cp)*uv(p1-cp)),
 r1=norm(p0-cp),r2=norm(p1-cp),
