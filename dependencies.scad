@@ -96,7 +96,7 @@ function cytz(path)=[for(p=path)[p.x,0,p.y]];
 //function for creating points in circle with radius "r", center point "cp" and number of segments "s"           
 function cir(r,cp=[0,0],s=50)=[for(i=[0:360/s:360-360/s])[cp.x+r*cos(i),cp.y+r*sin(i)]];
 
-//function for drawing a closed 2d polyline from a group of points "path" and width of the polyline is defined by parameter "size".
+//module for drawing a closed 2d polyline from a group of points "path" and width of the polyline is defined by parameter "size".
 module p_line(path,size=.5){
     for(i=[0:len(path)-1])
         let(p0=path[i],p1=i<len(path)-1?path[i+1]:path[0])
@@ -105,7 +105,7 @@ module p_line(path,size=.5){
     translate(p0)circle(size/2,$fn=20);
     translate(p1)circle(size/2,$fn=20);}}
     
-//function for drawing an open 2d polyline from a group of points "path" and width of the polyline is defined by parameter "size".
+//module for drawing an open 2d polyline from a group of points "path" and width of the polyline is defined by parameter "size".
 module p_lineo(path,size=.5){
     for(i=[0:len(path)-2])
         let(p0=path[i],p1=path[i+1])
@@ -344,7 +344,7 @@ function scl2d(sec,sl)=let(
  d=y2-y1
  )c3t2(trns(d,rev));
 
- //function to scale a 2d section by an amount "sl" which has to be >0 (keeps the revised section in center). e.g.following code scales the section by 0.7 (70% of the original shape)
+// //function to scale a 2d section by an amount "sl" which has to be >0 (keeps the revised section in center). e.g.following code scales the section by 0.7 (70% of the original shape)
 //sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5);
 //p_line(sec,.1);
 //p_line(scl2d_c(sec,.7),.1);
@@ -1379,8 +1379,8 @@ sec=2cir_fillet1(r1,r2,c1,c2,r),
 prism=trns(cp1,q_rot([str("y",-a1),str("z",a2)],[for(i=[0:5:360])[for(p=sec)q([1,0,0],[p.x,p.y,0],i)]]))    
  )flip(prism);
 
- // function to get intersection point between a line and circle
- // example
+// // function to get intersection point between a line and circle
+// // example
 //  line=[[0,0],[3,5]];
 //  cir=cir(5);
 //  %p_line(line,.2);
@@ -1860,8 +1860,9 @@ alpha=acos(uv(p0-p1)*uv(p2-p1)),
 l=r*tan(theta),
 cp=p1+q(n,uv(p0-p1)*r/cos(theta),alpha/2),
 pa=p1+uv(p0-p1)*l,
-arc=[for(i=[0:theta*2/s:theta*2])cp+q(n,pa-cp,-i)]
-)[p1,each arc];
+arc=[for(i=[0:theta*2/s:theta*2])cp+q(n,pa-cp,-i)],
+a=arc[0],b=loop(arc,1,s-1),c=arc[s]
+)cr3d([p1,[a.x,a.y,a.z,.01],each b,[c.x,c.y,c.z,.01]],5);
 
 // function to create a fillet with 3 known points with radius "r" and number of segments "s". point p1 is omitted while drawing the arc
 // example
