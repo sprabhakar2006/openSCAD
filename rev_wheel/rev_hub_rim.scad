@@ -9,7 +9,7 @@ polygon(path2);
 sec4=cir(50);
 path4=cr(pts1([[-5,200],[5,0,5],[0,35,5],[-25,20,5],[-5,0]]),10);
 prism7=prism(sec4,path4);
-prism8=cyl(r=20,h=300);
+prism8=cyl(r=18,h=300);
 
 difference(){
 swp(prism7);
