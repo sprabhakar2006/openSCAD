@@ -1720,22 +1720,8 @@ rev_sec=q_rot(["x90","z-90",str("y",-a),str("z",theta)],sec)
 //
 // p_extrudec(sec,path);
 
-module p_extrudec(sec,path) swp_c([for(i=[0:len(path)-1])let(
-p0=path[i],
-p1=i<len(path)-1?path[i+1]:path[0]-(path[1]-path[0])*.01,
-v=p1-p0,
-u=v/norm(v),
-theta=u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u),
-prism=q_rot(["x90","z-90"],sec),
-
-p2=path[0],
-p3=path[1],
-v1=p3-p2,
-u1=v1/norm(v1),
-theta1=u1.y<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1),
-prism1=q_rot(["x90","z-90"],sec)
-
-)each i<len(path)-1?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism)),trns(p2,q_rot([str("z",theta1)],prism1))]]);
+module p_extrudec(sec,path) 
+swp_c(p_extrudec(sec,path));
 
 // module to extrude a section along a open loop path. 2d section "sec" and a 3d path "path" are the 2 arguments to be filled.
 // example
@@ -1748,22 +1734,7 @@ prism1=q_rot(["x90","z-90"],sec)
 // p_extrude(sec,path);
 
 
-module p_extrude(sec,path) swp([for(i=[0:len(path)-2])let(
-p0=path[i],
-p1=i<len(path)-1?path[i+1]:path[0]-(path[1]-path[0])*.01,
-v=p1-p0,
-u=v/norm(v),
-theta=u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u),
-prism=q_rot(["x90","z-90"],sec),
-
-p2=path[0],
-p3=path[1],
-v1=p3-p2,
-u1=v1/norm(v1),
-theta1=u1.y<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1),
-prism1=q_rot(["x90","z-90"],sec)
-
-)each i<len(path)-2?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism))]]);
+module p_extrude(sec,path) swp(p_extrude(sec,path));
 
 // function to extrude a section along a closed loop path. 2d section "sec" and a 3d path "path" are the 2 arguments to be filled.
 // example
@@ -1777,22 +1748,9 @@ prism1=q_rot(["x90","z-90"],sec)
 //
 // swp_c(prism);
 
-function p_extrudec(sec,path)= [for(i=[0:len(path)-1])let(
-p0=path[i],
-p1=i<len(path)-1?path[i+1]:path[0]-(path[1]-path[0])*.01,
-v=p1-p0,
-u=v/norm(v),
-theta=u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u),
-prism=q_rot(["x90","z-90"],sec),
-
-p2=path[0],
-p3=path[1],
-v1=p3-p2,
-u1=v1/norm(v1),
-theta1=u1.y<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1),
-prism1=q_rot(["x90","z-90"],sec)
-
-)each i<len(path)-1?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism)),trns(p2,q_rot([str("z",theta1)],prism1))]];
+function p_extrudec(sec,path)= let(
+prism=p_extrude(sec,path)
+)[for(i=[0:len(path)-1])each i<len(path)-1?[prism[i]]:[prism[i],prism[0]]];
 
 // function to extrude a section along a open loop path. 2d section "sec" and a 3d path "path" are the 2 arguments to be filled.
 // example
@@ -1806,22 +1764,14 @@ prism1=q_rot(["x90","z-90"],sec)
 //
 // swp(prism);
 
-function p_extrude(sec,path)= [for(i=[0:len(path)-2])let(
+function p_extrude(sec,path)= [for(i=[0:len(path)-1])let(
 p0=path[i],
-p1=i<len(path)-1?path[i+1]:path[0]-(path[1]-path[0])*.01,
+p1=i<len(path)-1?path[i+1]:path[0],
 v=p1-p0,
 u=v/norm(v),
 theta=u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u),
-prism=q_rot(["x90","z-90"],sec),
-
-p2=path[0],
-p3=path[1],
-v1=p3-p2,
-u1=v1/norm(v1),
-theta1=u1.y<0?360-acos([1,0,0]*u1):acos([1,0,0]*u1),
-prism1=q_rot(["x90","z-90"],sec)
-
-)each i<len(path)-2?[trns(p0,q_rot([str("z",theta)],prism))]:[trns(p0,q_rot([str("z",theta)],prism)),trns(p1,q_rot([str("z",theta)],prism))]];
+prism=trns(p0,q_rot(["x90","z-90",str("z",theta)],sec))
+)prism];
 
 // experimental
 
