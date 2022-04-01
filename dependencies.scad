@@ -1749,8 +1749,16 @@ module p_extrude(sec,path) swp(p_extrude(sec,path));
 // swp_c(prism);
 
 function p_extrudec(sec,path)= let(
-prism=p_extrude(sec,path)
-)[for(i=[0:len(path)-1])each i<len(path)-1?[prism[i]]:[prism[i],prism[0]]];
+prism=[for(i=[0:len(path)-1])let(
+p0=path[i],
+p1=i<len(path)-1?path[i+1]:path[0],
+v=p1-p0,
+u=uv([v.x,v.y]),
+theta=u.y<0?360-acos([1,0]*u):acos([1,0]*u),
+prism=trns(p0,q_rot(["x90","z-90",str("z",theta)],sec))
+)prism],
+prism1=[for(i=[0:len(path)-1])each i<len(path)-1?[prism[i]]:[prism[i],prism[0]]]
+)prism1;
 
 // function to extrude a section along a open loop path. 2d section "sec" and a 3d path "path" are the 2 arguments to be filled.
 // example
@@ -1764,14 +1772,15 @@ prism=p_extrude(sec,path)
 //
 // swp(prism);
 
-function p_extrude(sec,path)= [for(i=[0:len(path)-1])let(
+function p_extrude(sec,path)= [for(i=[0:len(path)-2])let(
 p0=path[i],
-p1=i<len(path)-1?path[i+1]:path[0],
+p1=path[i+1],
 v=p1-p0,
-u=v/norm(v),
-theta=u.y<0?360-acos([1,0,0]*u):acos([1,0,0]*u),
-prism=trns(p0,q_rot(["x90","z-90",str("z",theta)],sec))
-)prism];
+u=uv([v.x,v.y]),
+theta=u.y<0?360-acos([1,0]*u):acos([1,0]*u),
+prism=i<len(path)-2?[trns(p0,q_rot(["x90","z-90",str("z",theta)],sec))]:[trns(p0,q_rot(["x90","z-90",str("z",theta)],sec)),trns(p1,q_rot(["x90","z-90",str("z",theta)],sec))]
+
+)each prism];
 
 // experimental
 
