@@ -1821,7 +1821,7 @@ cp=p1+q(n,uv(p0-p1)*r/cos(theta),alpha/2),
 pa=p1+uv(p0-p1)*l,
 arc=[for(i=[0:theta*2/s:theta*2])cp+q(n,pa-cp,-i)],
 a=arc[0],b=loop(arc,1,s-1),c=arc[s]
-)cr3d([p1,[a.x,a.y,a.z,.01],each b,[c.x,c.y,c.z,.01]],5);
+)[p1,each arc];//cr3d([p1,[a.x,a.y,a.z,.01],each b,[c.x,c.y,c.z,.01]],5);
 
 // function to create a fillet with 3 known points with radius "r" and number of segments "s". point p1 is omitted while drawing the arc
 // example
