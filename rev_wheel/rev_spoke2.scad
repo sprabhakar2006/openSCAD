@@ -47,7 +47,7 @@ prism13=[c2t3(c3t2(prism12[0])),each prism12])
 b=spk2();
 
 module spk2(){
-render(){
+render()scale(1.002){
 difference(){
 intersection(){
 intersection(){
