@@ -30,13 +30,13 @@ prism7=rsz3dc(prism3,bb(prism3)+[1,1,0])
 c=spk3();
 
 module spk3(){
-//difference(){
+render()scale(1.002){
 intersct(){
 swp(c[5]);
 swp(c[0]);
 swp_c(c[3]);
 swp_c(c[4]);
-}
+}}
 
 module intersct(){
 for(i=[1:$children-1])
@@ -45,7 +45,7 @@ children(i);
 children(0);
 }}
 //swp(c[2]);
-//}
+
 
 }
 

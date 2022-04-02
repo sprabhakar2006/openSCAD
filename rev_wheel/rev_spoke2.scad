@@ -74,7 +74,8 @@ swp_c(b[8]);
 }
 
 swp_c(b[9]);
-swp_c(flip(b[10]));}
+swp_c(flip(b[10]));
+}
 //swp(prism7);
 module intersct(){
 for(i=[1:$children-1])

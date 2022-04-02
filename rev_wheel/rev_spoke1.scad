@@ -9,7 +9,7 @@ prism1=q_rot(["z90"],prism(f_offset(sec,5),path)),
 //swp_prism_h(prism,prism1),
 
 sketch=cr(pts1([[-100,0],[100,30,500],[100,-30]]),20),
-path1=trns([0,0,187],q_rot(["y-4"],cytz(cr(pts1([[0,0],[130,30,1000],[260,-10,0]]),20)))),
+path1=trns([0,0,185],q_rot(["y-4"],cytz(cr(pts1([[0,0],[130,30,1000],[260,-10,0]]),20)))),
 arc1=arc(300,-15,15,s=30),
 sec1=f_offset(cr([[0,0,10],c2t3([arc1[0]]).x+[0,0,10],each loop(arc1,2,28),c2t3([arc1[30]]).x+[0,0,10] ],10),-2.5),
 sec2=trns([50,0,0],f_offset(cr([[0,0,30],c2t3([arc1[0]]).x+[0,0,10],each loop(arc1,2,28),c2t3([arc1[30]]).x+[0,0,10] ],20),-2.5)),
@@ -49,7 +49,7 @@ fillet2,fillet3,fillet4];
 a=spk1();
 
 module spk1(){
-render(){
+render()scale(1.002){
 difference(){
 intersection(){
 difference(){
