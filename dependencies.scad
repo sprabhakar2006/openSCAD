@@ -483,7 +483,7 @@ let(v1=[v.x,v.y]*[[0,1],[-1,0]])
 ].x;
  
 //function to convert 3d to 2d, it just removes the z-coordinate from the points list 
-function c3t2(sec)=[for(p=sec)[p.x,p.y]];
+function c3t2(sec)=is_undef(sec.x.x)?[sec.x,sec.y]:[for(p=sec)[p.x,p.y]];
 
 // function to calculate the cumulative sum of all the points of a 2d or 3d points list.
 // e.g.
@@ -1934,7 +1934,7 @@ v2,-i*cw)])arc;
 //
 // swp(prism);
 
-function c2t3(sec)=trns([0,0,0],sec);
+function c2t3(sec)=is_undef(sec.x.x)?[sec.x,sec.y,0]:trns([0,0,0],sec);
 
 // Boolean function which returns "true" ot "false" if the value of a variable "t" is between "s" and "e".
 // example:
