@@ -2426,15 +2426,20 @@ point=cir[i]
 function ang_v(v)=ang(v.x,v.y);
 
 ////function to change the orientation of points of a prism. for example check prism and prism1
-//
 //sec=cr(pts1([[5,20],[20,10,50],[20,-7]]),20);
+//sec1=trns([0,-.05,0],sec);
 //prism=[for(i=[0:5:355])rot([1,0,0],sec,i)];
 //prism1=cpo(prism);
+//
 //translate([-60,0,0])
 //for(p=prism)points(p,.5);
-//swp(prism);
+//for(p=prism)p_line3d(p,.2);
 //translate([60,0,0])
-//swp(prism1);
+//for(p=prism1)p_line3d(p,.2);
+//
+//translate([-60,0,30])rotate([90,0,0])text("points");
+//translate([0,0,30])rotate([90,0,0])text("prism");
+//translate([60,0,30])rotate([90,0,0])text("prism1");
 
 function cpo(prism)=[for(i=[0:len(prism[0])-1])[for(p=prism)p[i]]];
 
