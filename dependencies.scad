@@ -2424,3 +2424,8 @@ point=cir[i]
 //  echo(ang); // ECHO: 27.6865
 
 function ang_v(v)=ang(v.x,v.y);
+
+// function to change the orientation of points in a prism
+
+function cpo(prism)=[for(i=[0:len(prism[0])-1])[for(p=prism)p[i]]];
+
