@@ -148,7 +148,7 @@ render(){
 difference(){
 for(i=[0:60:300])rotate([0,0,i]){
 scale(1.002)spoke1a(a);
-scale(1.002)spoke2a(b);}
+spoke2a(b);}
 cylinder(r=20,h=300);}
 
 for(i=[0:30:330])rotate([0,0,i])
