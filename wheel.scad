@@ -67,6 +67,8 @@ sec1=cr([[0,0,10],[a[0].x,a[0].y,10],[a[len(a)-1].x,a[len(a)-1].y,10]],10),
 sec2=trns([50*cos(15),50*sin(15),0],cr([[0,0,10],[a[0].x,a[0].y,5],[a[len(a)-1].x,a[len(a)-1].y,5]],20)),
 
 path3=ip(p_extrude(sec,path),l_extrude(m_points(sec2,10),300)),
+prism=ipe(trns([0,0,-5],surf_extrude(sec,path)),l_extrude(m_points(sec2,10),300),2,1),
+prism1=[c2t3(c3t2(prism[0])),each prism],
 sec3=cr(pts1([[3,0],[0,3,1.5],[-3,0,1.5],[0,-3]]),5),
 
 path4=[for(i=[0:len(path3)-2])if(norm(path3[i]-path3[i+1])>.1)path3[i]],
@@ -79,8 +81,10 @@ path7=cr(pts1([[0,0],[0,5],[-13,20],[0,20],[-12,20],[0,78],[12,20],[0,64],[13,20
 sec7=cir(245,s=72),
 b=arc(50,0,30,s=10),
 sec10=cr([[0,0,5],[b[0].x,b[0].y,2],each loop(b,1,len(b)-2),[b[len(b)-1].x,b[len(b)-1].y,5]],5))
-[sec,sec1,sec2,sec3,sec5,sec6,sec7,path,path3,path4,path7,sec10];
-//0    1     2   3   4    5      6   7   8       9   10   11
+[sec,sec1,sec2,sec3,sec5,sec6,sec7,path,path3,path4,path7,sec10, prism1];
+//0    1     2   3   4    5      6   7   8       9   10   11        12
+
+b=spoke2a();
 
 module spoke2a(b){
 difference(){
@@ -89,7 +93,9 @@ surf_extrude(b[0],b[7],-5);
 swp(l_extrude(b[1],300));
 swp(prism(b[6],b[10]));
 }
-swp(l_extrude(b[2],300));}
+swp(l_extrude(b[2],300));
+swp(b[12]);
+}
 
 intersection(){
 p_extrudec(b[3],b[9]);
@@ -99,10 +105,13 @@ intersection(){
 swp_c(ipf(surf_extrude(b[0],b[7]),l_extrude(m_points(f_offset(b[1],-2.5),10),300),3));
 swp(prism(b[6],b[10]));}
 
-swp_c(ipf(surf_extrude(b[0],b[7]),l_extrude(b[11],300),3,1));
-}
+intersection(){
+swp_c(ipf(trns([0,0,-5],surf_extrude(b[0],b[7])),flip(l_extrude(m_points(f_offset(b[1],-2.5),10),300)),3,1));
+swp(prism(b[6],b[10]));}
 
-b=spoke2a();
+swp_c(ipf(surf_extrude(b[0],b[7]),l_extrude(b[11],300),3,1));
+swp_c(ipf(trns([0,0,-5],surf_extrude(b[0],b[7])),flip(l_extrude(b[11],300)),3));
+}
 
 //spoke3
 
