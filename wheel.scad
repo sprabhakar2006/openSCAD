@@ -16,12 +16,15 @@ sec12=trns([50*cos(-15),50*sin(-15),0],cr([[0,0,25],[a[0].x,a[0].y,5],[a[len(a)-
 path11=ip(surf_extrude(sec,path10),l_extrude(m_points(sec12,10),300)),
 
 path13=ip(surf_extrude(sec,path10),cyl(r=10,h=300,cp=[85*cos(-15),85*sin(-15)])),
-
+prism=ipe(trns([0,0,-5],surf_extrude(sec,path10)),l_extrude(cir(10,[85*cos(-15),85*sin(-15)]),300),2,1),
+prism1=[c2t3(c3t2(prism[0])),each prism],
+prism2=ipe(trns([0,0,-5],surf_extrude(sec,path10)),l_extrude(m_points(sec12,10),300),2,1),
+prism3=[c2t3(c3t2(prism2[0])),each prism2],
 b=arc(50,-30,0,s=10),
 sec15=cr([[0,0,5],[b[0].x,b[0].y,2],each loop(b,1,len(b)-2),[b[len(b)-1].x,b[len(b)-1].y,2]]),
 sec16=cr(pts1([[-100,0],[100,30,500],[100,-30]]),20))
-[sec,sec3,sec7,sec11,sec12,sec15,path7,path10,path11,path13,sec16];
-// 0   1    2     3   4       5   6       7   8       9       10    11
+[sec,sec3,sec7,sec11,sec12,sec15,path7,path10,path11,path13,sec16,prism1, prism3];
+// 0   1    2     3   4       5   6       7   8       9       10    11  12    
 a=spoke1a();
 
 module spoke1a(a){
@@ -32,17 +35,23 @@ surf_extrude(a[0],a[7],-5);
 swp(l_extrude(a[3],300));
 }
 swp(trns([85*cos(-15),85*sin(-15)],cyl(r=10,h=300)));
-swp(l_extrude(a[4],300));}
+swp(l_extrude(a[4],300));
+swp(a[11]);
+swp(a[12]);
+}
 
 swp(prism(a[2],a[6]));}
 
 intersection(){
 union(){
 p_extrudec(a[1],a[8]);
-swp_c(ipf(surf_extrude(a[0],a[7]),l_extrude(m_points(f_offset(a[3],-2.5),10),300),3));}
+swp_c(ipf(surf_extrude(a[0],a[7]),l_extrude(m_points(f_offset(a[3],-2.5),10),300),3));
+swp_c(ipf(trns([0,0,-5],surf_extrude(a[0],a[7])),flip(l_extrude(m_points(f_offset(a[3],-2.5),10),300)),3,1));
+}
 swp(prism(a[2],a[6]));}
 p_extrudec(a[1],a[9]);
 swp_c(ipf(surf_extrude(a[0],a[7]),l_extrude(a[5],300),3,1));
+swp_c(ipf(trns([0,0,-5],surf_extrude(a[0],a[7])),flip(l_extrude(a[5],300)),3));
 }
 
 
