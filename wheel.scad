@@ -154,7 +154,7 @@ let(
 sec=cr(pts1([[0,0],[0,5],[-13,20,5],[0,20,5],[-12,20,5],[0,78,5],[12,20,5],[0,64,5],[13,20,3],[0,5]]),5),
 sec1=concat(sec,c3t2(trns([5,0,0],flip(sec)))),
 
-sec2=cr(pts1([[0,200],[50,0,5],[0,40,5],[-25,15,5],[-25,0]]),5),
+sec2=cr(pts1([[0,197],[50,0,5],[0,43,5],[-25,15,5],[-25,0]]),5),
 
 ){
 difference(){
@@ -165,7 +165,8 @@ rotate_extrude($fn=144) translate([245,0,0])polygon(sec1);
 render(){
 difference(){
 for(i=[0:60:300])rotate([0,0,i]){
-scale(1.002)spoke1a(a);
+//scale(1.002)
+spoke1a(a);
 spoke2a(b);}
 cylinder(r=20,h=300);}
 
