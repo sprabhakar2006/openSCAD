@@ -1681,6 +1681,30 @@ op03=[for(p=op02) if(min([for(p1=m_points(sec,r))norm(p-p1)])>=abs(d)-.001)p]
 
 function f_offset(sec,d)=d<=0?inner_offset(sec,d):outer_offset(sec,d);
 
+// function for offset for very simple use cases where there are no corner radiuses
+// example:
+//sec=pts([[-15,0],[0,15],[30,0],[0,-15],[5,0],[0,20],[-40,0],[0,-20]]);
+//p_line(sec,.2);
+//p_line(offst(sec,2),.2);
+
+function offst(sec,r)=let(
+    rev_r=r<0?(min_r(sec)>abs(r)?r:-(min_r(sec)-.1)):r,
+
+sec1=[for(i=[0:len(sec)-1])
+    let(
+p0=i==0?sec[len(sec)-1]:sec[i-1],
+p1=sec[i],
+p2=i<len(sec)-1?sec[i+1]:sec[0],
+v1=p0-p1,u1=v1/norm(v1),
+v2=p2-p1,u2=v2/norm(v2),
+a1=ang(u1.x,u1.y),
+a2=ang(u2.x,u2.y),
+a=cw(sec)==-1?(a1>a2?a1:a1+360)-a2:(a2>a1?a2:a2+360)-a1,
+p3=p1+u2*rev_r/cos((180-a)/2)*cw(sec)*rm(a/2)
+)p3]  
+
+)sec1;
+
 // function to extrude a section along a path by varying section defined by offset "o"
 // example:
 // sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5);
