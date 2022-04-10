@@ -1632,7 +1632,7 @@ ip=[for(j=i==0?[len(op01)-2,i+2]:i==1?[len(op01)-1,i+2]:i==len(op01)-1?[i-2,1]:i
 l1=norm(p1-p0),
 ipf=[for(p=ip)let(u2=(p-p0)/norm(p-p0)) if(norm(p-p0)<l1 && sign(u1.x)==sign(u2.x) && sign(u1.y)==sign(u2.y))p]
 )if (len(ipf)>0) each ipf else op01[i]],
-op03=[for(p=op02) if(min([for(p1=m_points(sec,r))norm(p-p1)])>=abs(d)-.1)p]
+op03=[for(p=op02) if(min([for(p1=m_points_sc(sec,10,.2))norm(p-p1)])>=abs(d)-.1)p]
 )sort_points(sec, remove_extra_points(op03));
 
 // function is used as input for another function
@@ -1668,7 +1668,7 @@ ip=[for(j=i==0?[len(op01)-2,i+2]:i==1?[len(op01)-1,i+2]:i==len(op01)-1?[i-2,1]:i
 l1=norm(p1-p0),
 ipf=[for(p=ip) let(u2=(p-p0)/norm(p-p0))if(norm(p-p0)<l1 && sign(u1.x) ==sign(u2.x) && sign(u1.y)==sign(u2.y))p])
 if (len(ipf)>0)each ipf else op01[i]],
-op03=[for(p=op02) if(min([for(p1=m_points(sec,r))norm(p-p1)])>=abs(d)-.001)p]
+op03=[for(p=op02) if(min([for(p1=m_points_sc(sec,10,.2))norm(p-p1)])>=abs(d)-.1)p]
 ) sort_points (sec, remove_extra_points (op03));
 
 // function for creating offset of a defined section
