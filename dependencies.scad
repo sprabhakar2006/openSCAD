@@ -2467,3 +2467,20 @@ function ang_v(v)=ang(v.x,v.y);
 
 function cpo(prism)=[for(i=[0:len(prism[0])-1])[for(p=prism)p[i]]];
 
+function surf_offset(prism,d)=
+[for(i=[0:len(prism)-1])[for(j=[0:len(prism[0])-1])
+let(
+j_plus=j<len(prism[0])-1?j+1:0,
+p0=prism[i][j],
+p1=i<len(prism)-1?prism[i][]j_plus:prism[i-1][j],
+p2=i<len(prism)-1?prism[i+1][j]:prism[i][j_plus],
+v1=p1-p0,v2=p2-p0,
+u1=uv(v1),u2=uv(v2),
+
+p3=cross(u1,u2)*d
+
+)p0+p3
+]];
+
+
+
