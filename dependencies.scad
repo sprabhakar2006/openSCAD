@@ -2477,7 +2477,7 @@ p2=i<len(prism)-1?prism[i+1][j]:prism[i][j_plus],
 v1=p1-p0,v2=p2-p0,
 u1=uv(v1),u2=uv(v2),
 
-p3=cross(u1,u2)*-d
+p3=cross(u1,u2)*d
 
 )p0+p3
 ]];
