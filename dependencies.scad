@@ -1636,7 +1636,7 @@ op03=[for(p=op02) if(min([for(p1=m_points_sc(sec,10,.2))norm(p-p1)])>=abs(d)-.1)
 )sort_points(sec, remove_extra_points(op03));
 
 // function is used as input for another function
-
+/*
 function inner_offset(s,r)=
 let(
 sec=[for(i=[0:len(s)-1])
@@ -1695,9 +1695,9 @@ u3=uv(v3),u4=uv(v4)
 
 sec4=[for(p=sec3)if(min([for(p1=m_points_sc(s,10,.2))norm(p-p1)])>=abs(r)-.1 && min([for(p1=m_points_sc(s,10,.2))norm(p-p1)])<=abs(r)*1.1 )p])
 sec4;
+*/
 
-
-/*function inner_offset(sec1,d)=d==0?(cw(sec1)==1?flip(sec1):sec1):
+function inner_offset(sec1,d)=d==0?(cw(sec1)==1?flip(sec1):sec1):
 let(
 sec=cw(sec1)==1?flip(sec1):sec1,
 r=abs(d),
@@ -1729,7 +1729,7 @@ l1=norm(p1-p0),
 ipf=[for(p=ip) let(u2=(p-p0)/norm(p-p0))if(norm(p-p0)<l1 && sign(u1.x) ==sign(u2.x) && sign(u1.y)==sign(u2.y))p])
 if (len(ipf)>0)each ipf else op01[i]],
 op03=[for(p=op02) if(min([for(p1=m_points_sc(sec,10,.2))norm(p-p1)])>=abs(d)-.1)p]
-) sort_points (sec, remove_extra_points (op03));*/
+) sort_points (sec, remove_extra_points (op03));
 
 // function for creating offset of a defined section
 // example:
