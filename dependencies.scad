@@ -867,7 +867,7 @@ function comb(n,i)=fact(n)/(fact(i)*fact(n-i));
 // color("green")
 // points(p,.5);
 
-function bez(p,s=.1)=[for(t=[0:s:1])
+function bez(p,s=10)=[for(t=[0:1/s:1])
     let(n=len(p)-1)add_v([for(i=[0:n])comb(n,i)*(1-t)^(n-i)*t^i*p[i]])];
 
 // function for creating arc which is tangent to 2 circles
@@ -1637,7 +1637,67 @@ op03=[for(p=op02) if(min([for(p1=m_points_sc(sec,10,.2))norm(p-p1)])>=abs(d)-.1)
 
 // function is used as input for another function
 
-function inner_offset(sec1,d)=d==0?(cw(sec1)==1?flip(sec1):sec1):
+function inner_offset(s,r)=
+let(
+sec=[for(i=[0:len(s)-1])
+let(
+i_minus=i==0?len(s)-1:i-1,
+i_plus=i<len(s)-1?i+1:0,
+p0=s[i_minus],
+p1=s[i],
+p2=s[i_plus],
+r1=3p_r(p0,p1,p2),
+cw=cw([p0,p1,p2])
+)if((r1-abs(r))>.1 || cw==1)[p1,i]],
+
+sec1=[for(i=[0:len(sec)-1])
+let(
+i_minus=i==0?len(sec)-1:i-1,
+ip=i<len(sec)-1?i+1:0,
+ipp=i<len(sec)-2?i+2:0,
+p0=sec[i_minus].x,p1=sec[i].x,p2=sec[ip].x,p3=sec[ipp].x,
+l1=[p0,p1],l2=[p2,p3],
+p4=i_p2d(l1,l2)
+
+)if(i<len(sec)-1&&abs(sec[ip].y-sec[i].y)>1)p4 else p1],
+
+sec2=[for(i=[0:len(sec1)-1])let(
+i_minus=i==0?len(sec1)-1:i-1,
+i_plus=i<len(sec1)-1?i+1:0,
+p0=sec1[i_minus],
+p1=sec1[i],
+p2=sec1[i_plus],
+l1=offst_l([p0,p1],r),l2=offst_l([p1,p2],r),
+p3=i_p2d(l1,l2),
+cw=cw([p0,p1,p2])
+)if(is_num(p3.x))p3],
+
+sec3=remove_duplicate([for(i=[0:len(sec2)-1])each [for(j=[0:len(sec2)-1])let(
+j_minus=j==0?len(sec2)-1:j-1,
+j_plus=j<len(sec2)-1?j+1:0,
+i_minus=i==0?len(sec2)-1:i-1,
+i_plus=i<len(sec2)-1?i+1:0,
+l1=[sec2[i],sec2[i_plus]],
+l2=[sec2[j],sec2[j_plus]],
+ip=i_p2d(l1,l2),
+v1=sec2[i_plus]-sec2[i],
+v2=ip-sec2[i],
+u1=uv(v1),u2=uv(v2),
+m1=norm(ip-sec2[i]),
+m2=norm(sec2[i_plus]-sec2[i]),
+m3=norm(ip-sec2[j]),
+m4=norm(sec2[j_plus]-sec2[j]),
+v3=sec2[j_plus]-sec2[j],
+v4=ip-sec2[j],
+u3=uv(v3),u4=uv(v4)
+)each is_num(ip.x)&&norm(u1-u2)<.01 && norm(u3-u4)<0.01 && m1<=m2 && m3<=m4?[sec2[i],ip]:[sec2[i]]
+]]),
+
+sec4=[for(p=sec3)if(min([for(p1=m_points_sc(s,10,.2))norm(p-p1)])>=abs(r)-.1 && min([for(p1=m_points_sc(s,10,.2))norm(p-p1)])<=abs(r)*1.1 )p])
+sec4;
+
+
+/*function inner_offset(sec1,d)=d==0?(cw(sec1)==1?flip(sec1):sec1):
 let(
 sec=cw(sec1)==1?flip(sec1):sec1,
 r=abs(d),
@@ -1669,7 +1729,7 @@ l1=norm(p1-p0),
 ipf=[for(p=ip) let(u2=(p-p0)/norm(p-p0))if(norm(p-p0)<l1 && sign(u1.x) ==sign(u2.x) && sign(u1.y)==sign(u2.y))p])
 if (len(ipf)>0)each ipf else op01[i]],
 op03=[for(p=op02) if(min([for(p1=m_points_sc(sec,10,.2))norm(p-p1)])>=abs(d)-.1)p]
-) sort_points (sec, remove_extra_points (op03));
+) sort_points (sec, remove_extra_points (op03));*/
 
 // function for creating offset of a defined section
 // example:
@@ -1688,7 +1748,7 @@ function f_offset(sec,d)=d<=0?inner_offset(sec,d):outer_offset(sec,d);
 //p_line(offst(sec,2),.2);
 
 function offst(sec,r)=let(
-    rev_r=r<0?(min_r(sec)>abs(r)?r:-(min_r(sec)-.1)):r,
+    rev_r=r,//<0?(min_r(sec)>abs(r)?r:-(min_r(sec)-.1)):r,
 
 sec1=[for(i=[0:len(sec)-1])
     let(
@@ -2170,7 +2230,7 @@ function 2pnc_arc(p0,p1,cp,cw=-1,s=20)=let(
 n=uv(nv(len(p0)==2?c2t3([p0,cp,p1]):[p0,cp,p1])),
 theta=acos(uv(p0-cp)*uv(p1-cp)),
 r1=norm(p0-cp),r2=norm(p1-cp),
-arc=assert(abs(norm((p0-cp))-norm((p1-cp)))<.1,str("radiuses ",r1," and ",r2," are unequal"))cw==-1?[for(i=[0:theta/s:theta])cp+q(n,p0-cp,i)]:[for(i=[0:(360-theta)/s:(360-theta)])cp+q(n,p0-cp,-i)]
+arc=assert(abs(norm((p0-cp))-norm((p1-cp)))<.1,str("radiuses ",r1," and ",r2," are unequal"))cw==1?[for(i=[0:theta/s:theta])cp+q(n,p0-cp,i)]:[for(i=[0:(360-theta)/s:(360-theta)])cp+q(n,p0-cp,-i)]
 )arc;
 
 // function used as input to function c_hull
@@ -2481,6 +2541,3 @@ p3=cross(u1,u2)*d
 
 )p0+p3
 ]];
-
-
-
