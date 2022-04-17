@@ -8,6 +8,10 @@
 
 function prism(sec,path,m_points=0)=[for(p=path)[for(p1=sort_points(m_points_sc(sec,m_points),m_points_sc(f_offset(sec,round(p.x*100)/100),m_points)))[p1.x,p1.y,p.y]]];
 
+// very time consuming but high quality prism
+
+function prism1(sec,path)=[for(p=path)trns([0,0,p.y],offset(sec,rnd(p.x,3)))];
+
 //function to calculate angle of a 2d vector starting from origin and end point with x and y co-ordinates
 // example:
 // p1=[3,4];p2=[-3,2];
@@ -1636,66 +1640,7 @@ op03=[for(p=op02) if(min([for(p1=m_points_sc(sec,10,.2))norm(p-p1)])>=abs(d)-.1)
 )sort_points(sec, remove_extra_points(op03));
 
 // function is used as input for another function
-/*
-function inner_offset(s,r)=
-let(
-sec=[for(i=[0:len(s)-1])
-let(
-i_minus=i==0?len(s)-1:i-1,
-i_plus=i<len(s)-1?i+1:0,
-p0=s[i_minus],
-p1=s[i],
-p2=s[i_plus],
-r1=3p_r(p0,p1,p2),
-cw=cw([p0,p1,p2])
-)if((r1-abs(r))>.1 || cw==1)[p1,i]],
 
-sec1=[for(i=[0:len(sec)-1])
-let(
-i_minus=i==0?len(sec)-1:i-1,
-ip=i<len(sec)-1?i+1:0,
-ipp=i<len(sec)-2?i+2:0,
-p0=sec[i_minus].x,p1=sec[i].x,p2=sec[ip].x,p3=sec[ipp].x,
-l1=[p0,p1],l2=[p2,p3],
-p4=i_p2d(l1,l2)
-
-)if(i<len(sec)-1&&abs(sec[ip].y-sec[i].y)>1)p4 else p1],
-
-sec2=[for(i=[0:len(sec1)-1])let(
-i_minus=i==0?len(sec1)-1:i-1,
-i_plus=i<len(sec1)-1?i+1:0,
-p0=sec1[i_minus],
-p1=sec1[i],
-p2=sec1[i_plus],
-l1=offst_l([p0,p1],r),l2=offst_l([p1,p2],r),
-p3=i_p2d(l1,l2),
-cw=cw([p0,p1,p2])
-)if(is_num(p3.x))p3],
-
-sec3=remove_duplicate([for(i=[0:len(sec2)-1])each [for(j=[0:len(sec2)-1])let(
-j_minus=j==0?len(sec2)-1:j-1,
-j_plus=j<len(sec2)-1?j+1:0,
-i_minus=i==0?len(sec2)-1:i-1,
-i_plus=i<len(sec2)-1?i+1:0,
-l1=[sec2[i],sec2[i_plus]],
-l2=[sec2[j],sec2[j_plus]],
-ip=i_p2d(l1,l2),
-v1=sec2[i_plus]-sec2[i],
-v2=ip-sec2[i],
-u1=uv(v1),u2=uv(v2),
-m1=norm(ip-sec2[i]),
-m2=norm(sec2[i_plus]-sec2[i]),
-m3=norm(ip-sec2[j]),
-m4=norm(sec2[j_plus]-sec2[j]),
-v3=sec2[j_plus]-sec2[j],
-v4=ip-sec2[j],
-u3=uv(v3),u4=uv(v4)
-)each is_num(ip.x)&&norm(u1-u2)<.01 && norm(u3-u4)<0.01 && m1<=m2 && m3<=m4?[sec2[i],ip]:[sec2[i]]
-]]),
-
-sec4=[for(p=sec3)if(min([for(p1=m_points_sc(s,10,.2))norm(p-p1)])>=abs(r)-.1 && min([for(p1=m_points_sc(s,10,.2))norm(p-p1)])<=abs(r)*1.1 )p])
-sec4;
-*/
 
 function inner_offset(sec1,d)=d==0?(cw(sec1)==1?flip(sec1):sec1):
 let(
@@ -2159,14 +2104,14 @@ function 3d_offset(sec,nv,o=1)=3d_offset_input(sec,nv+[0.00001,.00001,0],o);
 
 function nv(sec)= cross(sec[0]-sec[1],sec[2]-sec[1]);
 
-function rnd(sec1)=cr([for(i=[0:len(sec1)-1])
+/*function rnd(sec1)=cr([for(i=[0:len(sec1)-1])
 let(
 i_minus=i==0?len(sec1)-1:i-1,i_plus=i<len(sec1)-1?i+1:0,
 p0=sec1[i_minus],p1=sec1[i],p2=sec1[i_plus],
 v1=p0-p1,v2=p2-p1,
 u1=uv(v1),u2=uv(v2),
 theta=acos(u1*u2)
-)[p1.x,p1.y,.1]],5);
+)[p1.x,p1.y,.1]],5);*/
 
 // function to offset a given 2d path
 // example:
@@ -2541,3 +2486,90 @@ p3=cross(u1,u2)*d
 
 )p0+p3
 ]];
+
+function rnd_v(v,n)=[for(p=v)round(p*10^n)/10^n];
+function rnd(v,n)=round(v*10^n)/10^n;
+function udef(s)=[if(s!=undef)s else []].x;
+
+function io(s,r)=let(
+sec=[for(i=[0:len(s)-1])let(
+i_minus=i==0?len(s)-1:i-1,
+i_plus=i<len(s)-1?i+1:0,
+p0=s[i_minus],
+p1=s[i],
+p2=s[i_plus],
+l1=offst_l([p1,p2],r)
+)each l1],
+
+sec1=[for(i=[0:len(sec)-1])each [for(j=[0:len(sec)-1])let(
+i_minus=i==0?len(sec)-1:i-1,
+i_plus=i<len(sec)-1?i+1:0,
+j_minus=j==0?len(sec)-1:j-1,
+j_plus=j<len(sec)-1?j+1:0,
+
+l1=[sec[i],sec[i_plus]],
+l2=[sec[j],sec[j_plus]],
+ip=i_p2d(l1,l2),
+d1=rnd(norm(ip-sec[i]),3),d2=rnd(norm(sec[i_plus]-sec[i]),3),
+d3=rnd(norm(ip-sec[j]),3),d4=rnd(norm(sec[j_plus]-sec[j]),3),
+u1=rnd_v(uv(ip-sec[i]),3),u2=rnd_v(uv(sec[i_plus]-sec[i]),3),
+u3=rnd_v(uv(ip-sec[j]),3),u4=rnd_v(uv(sec[j_plus]-sec[j]),3),
+cw=cw([sec[i_minus],sec[i],sec[i_plus]])
+) if(i!=j&&d1<=d2&&d3<=d4&&u1==u2&&u3==u4)ip else if(cw==1)sec[i]]],
+
+sec3=sort_points(s,[for(p=sec1)if(min([for(i=[0:len(s)-1])let(
+i_minus=i==0?len(s)-1:i-1,
+i_plus=i<len(s)-1?i+1:0,
+p0=s[i_minus],
+p1=s[i],
+p2=s[i_plus],
+l1=[p1,p2],
+p3=perp(l1,p),
+d=rnd(norm(p3-p),3),
+d1=rnd(norm(p3-p1),3),d2=rnd(norm(p2-p1),3),
+u1=rnd_v(uv(p3-p1),3),u2=rnd_v(uv(p2-p1),3),
+)if(d1<=d2&&u1==u2)d else 10^5])==abs(r))p])
+)sec3;
+
+function oo(s,r)=let(
+sec=[for(i=[0:len(s)-1])let(
+i_minus=i==0?len(s)-1:i-1,
+i_plus=i<len(s)-1?i+1:0,
+p0=s[i_minus],
+p1=s[i],
+p2=s[i_plus],
+l1=offst_l([p1,p2],r)
+)each l1],
+
+sec1=[for(i=[0:len(sec)-1])each [for(j=[0:len(sec)-1])let(
+i_minus=i==0?len(sec)-1:i-1,
+i_plus=i<len(sec)-1?i+1:0,
+
+j_minus=j==0?len(sec)-1:j-1,
+j_plus=j<len(sec)-1?j+1:0,
+
+l1=[sec[i],sec[i_plus]],
+l2=[sec[j],sec[j_plus]],
+ip=i_p2d(l1,l2),
+d1=rnd(norm(ip-sec[i]),3),d2=rnd(norm(sec[i_plus]-sec[i]),3),
+d3=rnd(norm(ip-sec[j]),3),d4=rnd(norm(sec[j_plus]-sec[j]),3),
+u1=rnd_v(uv(ip-sec[i]),3),u2=rnd_v(uv(sec[i_plus]-sec[i]),3),
+u3=rnd_v(uv(ip-sec[j]),3),u4=rnd_v(uv(sec[j_plus]-sec[j]),3),
+cw=cw([sec[i_minus],sec[i],sec[i_plus]])
+) if(i!=j&&d1<=d2&&d3<=d4&&u1==u2&&u3==u4)ip else if(cw==-1)sec[i]]],
+
+sec3=sort_points(s,[for(p=sec1)if(min([for(i=[0:len(s)-1])let(
+i_minus=i==0?len(s)-1:i-1,
+i_plus=i<len(s)-1?i+1:0,
+p0=s[i_minus],
+p1=s[i],
+p2=s[i_plus],
+l1=[p1,p2],
+p3=perp(l1,p),
+d=rnd(norm(p3-p),3),
+d1=rnd(norm(p3-p1),3),d2=rnd(norm(p2-p1),3),
+u1=rnd_v(uv(p3-p1),3),u2=rnd_v(uv(p2-p1),3),
+)if(d1<=d2&&u1==u2)d else 10^5])==abs(r))p])
+)sec3;
+
+function offset(s,r)=r<=0?io(s,r):oo(s,r);
