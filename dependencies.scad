@@ -2499,23 +2499,26 @@ p0=s[i_minus],
 p1=s[i],
 p2=s[i_plus],
 l1=offst_l([p1,p2],r)
-)each l1],
+) l1],
 
-sec1=[for(i=[0:len(sec)-1])each [for(j=[0:len(sec)-1])let(
+sec1=[for(i=[0:len(sec)-1])each remove_extra_points([for(j=[0:len(sec)-1])let(
 i_minus=i==0?len(sec)-1:i-1,
 i_plus=i<len(sec)-1?i+1:0,
 j_minus=j==0?len(sec)-1:j-1,
 j_plus=j<len(sec)-1?j+1:0,
 
-l1=[sec[i],sec[i_plus]],
-l2=[sec[j],sec[j_plus]],
-ip=i_p2d(l1,l2),
-d1=rnd(norm(ip-sec[i]),3),d2=rnd(norm(sec[i_plus]-sec[i]),3),
-d3=rnd(norm(ip-sec[j]),3),d4=rnd(norm(sec[j_plus]-sec[j]),3),
-u1=rnd_v(uv(ip-sec[i]),3),u2=rnd_v(uv(sec[i_plus]-sec[i]),3),
-u3=rnd_v(uv(ip-sec[j]),3),u4=rnd_v(uv(sec[j_plus]-sec[j]),3),
-cw=cw([sec[i_minus],sec[i],sec[i_plus]])
-) if(i!=j&&d1<=d2&&d3<=d4&&u1==u2&&u3==u4)ip else if(cw==1)sec[i]]],
+l1=sec[i],
+l2=sec[j],
+p0=l1.x,
+v1=l1.y-l1.x,
+p1=l2.x,
+v2=l2.y-l2.x,
+im=i_m2d(t([v1,-v2])),
+t=(im*(p1-p0)).x,
+u=(im*(p1-p0)).y,
+p2=p0+v1*t,
+cw=cw([l1.x,l1.y,sec[i_plus].y])
+)each if(is_num(p2.x)&&lim(t,0,1)&&lim(u,0,1))[p2] else if(cw==1)sec[i]])],
 
 sec3=sort_points(s,[for(p=sec1)if(min([for(i=[0:len(s)-1])let(
 i_minus=i==0?len(s)-1:i-1,
@@ -2526,9 +2529,9 @@ p2=s[i_plus],
 l1=[p1,p2],
 p3=perp(l1,p),
 d=rnd(norm(p3-p),3),
-d1=rnd(norm(p3-p1),3),d2=rnd(norm(p2-p1),3),
-u1=rnd_v(uv(p3-p1),3),u2=rnd_v(uv(p2-p1),3),
-)if(d1<=d2&&u1==u2)d else 10^5])==abs(r))p])
+v=p2-p1,
+t=((p3.x-p3.y)-(p1.x-p1.y))/(v.x-v.y)
+)lim(t,0,1)d:10^5])==abs(r))p])
 )sec3;
 
 function oo(s,r)=let(
@@ -2539,24 +2542,27 @@ p0=s[i_minus],
 p1=s[i],
 p2=s[i_plus],
 l1=offst_l([p1,p2],r)
-)each l1],
+) l1],
 
-sec1=[for(i=[0:len(sec)-1])each [for(j=[0:len(sec)-1])let(
+sec1=[for(i=[0:len(sec)-1])each remove_extra_points([for(j=[0:len(sec)-1])let(
 i_minus=i==0?len(sec)-1:i-1,
 i_plus=i<len(sec)-1?i+1:0,
-
 j_minus=j==0?len(sec)-1:j-1,
 j_plus=j<len(sec)-1?j+1:0,
 
-l1=[sec[i],sec[i_plus]],
-l2=[sec[j],sec[j_plus]],
+l1=sec[i],
+l2=sec[j],
 ip=i_p2d(l1,l2),
-d1=rnd(norm(ip-sec[i]),3),d2=rnd(norm(sec[i_plus]-sec[i]),3),
-d3=rnd(norm(ip-sec[j]),3),d4=rnd(norm(sec[j_plus]-sec[j]),3),
-u1=rnd_v(uv(ip-sec[i]),3),u2=rnd_v(uv(sec[i_plus]-sec[i]),3),
-u3=rnd_v(uv(ip-sec[j]),3),u4=rnd_v(uv(sec[j_plus]-sec[j]),3),
-cw=cw([sec[i_minus],sec[i],sec[i_plus]])
-) if(i!=j&&d1<=d2&&d3<=d4&&u1==u2&&u3==u4)ip else if(cw==-1)sec[i]]],
+p0=l1.x,
+v1=l1.y-l1.x,
+p1=l2.x,
+v2=l2.y-l2.x,
+im=i_m2d(t([v1,-v2])),
+t=(im*(p1-p0)).x,
+u=(im*(p1-p0)).y,
+p2=p0+v1*t,
+cw=cw([l1.x,l1.y,sec[i_plus].y])
+)each if(is_num(p2.x)&&lim(t,0,1)&&lim(u,0,1))[p2] else if(cw==-1)sec[i]])],
 
 sec3=sort_points(s,[for(p=sec1)if(min([for(i=[0:len(s)-1])let(
 i_minus=i==0?len(s)-1:i-1,
@@ -2567,9 +2573,9 @@ p2=s[i_plus],
 l1=[p1,p2],
 p3=perp(l1,p),
 d=rnd(norm(p3-p),3),
-d1=rnd(norm(p3-p1),3),d2=rnd(norm(p2-p1),3),
-u1=rnd_v(uv(p3-p1),3),u2=rnd_v(uv(p2-p1),3),
-)if(d1<=d2&&u1==u2)d else 10^5])==abs(r))p])
+v=p2-p1,
+t=((p3.x-p3.y)-(p1.x-p1.y))/(v.x-v.y)
+)lim(t,0,1)d:10^5])==abs(r))p])
 )sec3;
 
 function offset(s,r)=r<=0?io(s,r):oo(s,r);
