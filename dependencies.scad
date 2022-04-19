@@ -2531,7 +2531,7 @@ p3=perp(l1,p),
 d=rnd(norm(p3-p),3),
 v=p2-p1,
 t=((p3.x-p3.y)-(p1.x-p1.y))/(v.x-v.y)
-)lim(t,0,1)d:10^5])==abs(r))p])
+)lim(t,0,1)?d:10^5])==abs(r))p])
 )sec3;
 
 function oo(s,r)=let(
@@ -2575,7 +2575,7 @@ p3=perp(l1,p),
 d=rnd(norm(p3-p),3),
 v=p2-p1,
 t=((p3.x-p3.y)-(p1.x-p1.y))/(v.x-v.y)
-)lim(t,0,1)d:10^5])==abs(r))p])
+)lim(t,0,1)?d:10^5])==abs(r))p])
 )sec3;
 
 function offset(s,r)=r<=0?io(s,r):oo(s,r);
