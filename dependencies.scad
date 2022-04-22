@@ -1693,7 +1693,7 @@ function f_offset(sec,d)=d<=0?inner_offset(sec,d):outer_offset(sec,d);
 //p_line(offst(sec,2),.2);
 
 function offst(sec,r)=let(
-    rev_r=r,//<0?(min_r(sec)>abs(r)?r:-(min_r(sec)-.1)):r,
+    rev_r=r<0?(min_r(sec)>abs(r)?r:-(min_r(sec)-.1)):r,
 
 sec1=[for(i=[0:len(sec)-1])
     let(
@@ -2501,23 +2501,33 @@ p2=s[i_plus],
 l1=offst_l([p1,p2],r)
 )each l1],
 
-sec1=remove_duplicate([for(i=[0:len(sec)-1]) each [for(j=[0:len(sec)-1])let(
-i_minus=i==0?len(sec)-1:i-1,
+sec1=remove_extra_points([for(i=[0:len(sec)-1])each [for(j=[0:len(sec)-1])let(
 i_plus=i<len(sec)-1?i+1:0,
-j_minus=j==0?len(sec)-1:j-1,
 j_plus=j<len(sec)-1?j+1:0,
-
 l1=[sec[i],sec[i_plus]],
 l2=[sec[j],sec[j_plus]],
-ip=i_p2d(l1,l2),
-d1=rnd(norm(ip-sec[i]),3),d2=rnd(norm(sec[i_plus]-sec[i]),3),
-d3=rnd(norm(ip-sec[j]),3),d4=rnd(norm(sec[j_plus]-sec[j]),3),
-u1=rnd_v(uv(ip-sec[i]),3),u2=rnd_v(uv(sec[i_plus]-sec[i]),3),
-u3=rnd_v(uv(ip-sec[j]),3),u4=rnd_v(uv(sec[j_plus]-sec[j]),3),
-cw=cw([sec[i_minus],sec[i],sec[i_plus]])
-) if(i!=j&&d1<=d2&&d3<=d4&&u1==u2&&u3==u4)ip else if(cw==1)sec[i]]]),
+v1=l1.y-l1.x,v2=l2.y-l2.x,
+im=i_m2d(t([v1,-v2])),
+t=(im*(l2.x-l1.x)).x,
+u=(im*(l2.x-l1.x)).y,
+)if(i!=j&&lim(t,0,1)&&lim(u,0,1))l1.x+t*v1]]),
 
-sec3=sort_points(s,[for(p=sec1)if(min([for(i=[0:len(s)-1])let(
+sec2=sort_points(s,[for(p=sec1)if(min([for(i=[0:len(s)-1])let(
+i_plus=i<len(s)-1?i+1:0,
+l1=[s[i],s[i_plus]],
+v1=l1.y-l1.x,
+v2=p-l1.x,
+u1=uv(v1),
+d=v1*v2/norm(v1),
+t=rnd(d/norm(v1),3),
+p3=l1.x+u1*d
+)lim(t,0,1)?rnd(norm(p-p3),3):10^5])==abs(r))p])
+)sec2;
+
+
+function offset(s,r)=r==0?s:r<0?io(s,r):outer_offset(s,r);
+
+function sec_d(s,p,r)=[if(min([for(i=[0:len(s)-1])let(
 i_minus=i==0?len(s)-1:i-1,
 i_plus=i<len(s)-1?i+1:0,
 p0=s[i_minus],
@@ -2528,49 +2538,4 @@ p3=perp(l1,p),
 d=rnd(norm(p3-p),3),
 d1=rnd(norm(p3-p1),3),d2=rnd(norm(p2-p1),3),
 u1=rnd_v(uv(p3-p1),3),u2=rnd_v(uv(p2-p1),3),
-)if(d1<=d2&&u1==u2)d else 10^5])==abs(r))p])
-)sec3;
-
-function oo(s,r)=let(
-sec=[for(i=[0:len(s)-1])let(
-i_minus=i==0?len(s)-1:i-1,
-i_plus=i<len(s)-1?i+1:0,
-p0=s[i_minus],
-p1=s[i],
-p2=s[i_plus],
-l1=offst_l([p1,p2],r)
-)each l1],
-
-sec1=[for(i=[0:len(sec)-1])each remove_duplicate([for(j=[0:len(sec)-1])let(
-i_minus=i==0?len(sec)-1:i-1,
-i_plus=i<len(sec)-1?i+1:0,
-
-j_minus=j==0?len(sec)-1:j-1,
-j_plus=j<len(sec)-1?j+1:0,
-
-l1=[sec[i],sec[i_plus]],
-l2=[sec[j],sec[j_plus]],
-ip=i_p2d(l1,l2),
-d1=rnd(norm(ip-sec[i]),3),d2=rnd(norm(sec[i_plus]-sec[i]),3),
-d3=rnd(norm(ip-sec[j]),3),d4=rnd(norm(sec[j_plus]-sec[j]),3),
-u1=rnd_v(uv(ip-sec[i]),3),u2=rnd_v(uv(sec[i_plus]-sec[i]),3),
-u3=rnd_v(uv(ip-sec[j]),3),u4=rnd_v(uv(sec[j_plus]-sec[j]),3),
-cw=cw([sec[i_minus],sec[i],sec[i_plus]])
-) if(i!=j&&d1<=d2&&d3<=d4&&u1==u2&&u3==u4)ip else if(cw==-1)sec[i]])],
-
-
-sec3=sort_points(s,[for(p=sec1)if(min([for(i=[0:len(s)-1])let(
-i_minus=i==0?len(s)-1:i-1,
-i_plus=i<len(s)-1?i+1:0,
-p0=s[i_minus],
-p1=s[i],
-p2=s[i_plus],
-l1=[p1,p2],
-p3=perp(l1,p),
-d=rnd(norm(p3-p),3),
-d1=rnd(norm(p3-p1),3),d2=rnd(norm(p2-p1),3),
-u1=rnd_v(uv(p3-p1),3),u2=rnd_v(uv(p2-p1),3),
-)if(d1<=d2&&u1==u2)d else 10^5])==abs(r))p])
-)sec3;
-
-function offset(s,r)=r<=0?io(s,r):oo(s,r);
+)if(d1<=d2&&u1==u2)d else 10^5])==abs(r))p];
