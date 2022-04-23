@@ -3,7 +3,7 @@ include<dependencies.scad>
 
 path=[[42,0],[62,50],[25,100],[25,180]];
 
-path1=cytz(bez(path,.01));
+path1=cytz(bez(path,100));
     
 path2=[for(i=[0:len(path1)-1])
     q([0,0,1],path1[i],i/(len(path1)-1)*(180-2))];
