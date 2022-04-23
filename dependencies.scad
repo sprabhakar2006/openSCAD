@@ -2454,7 +2454,7 @@ point=cir[i]
 
 function ang_v(v)=ang(v.x,v.y);
 
-////function to change the orientation of points of a prism. for example check prism and prism1
+//function to change the orientation of points of a prism. for example check prism and prism1
 //sec=cr(pts1([[5,20],[20,10,50],[20,-7]]),20);
 //sec1=trns([0,-.05,0],sec);
 //prism=[for(i=[0:5:355])rot([1,0,0],sec,i)];
@@ -2472,6 +2472,15 @@ function ang_v(v)=ang(v.x,v.y);
 
 function cpo(prism)=[for(i=[0:len(prism[0])-1])[for(p=prism)p[i]]];
 
+// function to draw an offset for a 3d prism
+// example:
+// sec=cir(10);
+// path=cr(pts1([[2,0],[-2,0,2],[-1,10,2],[-4,0]]),5);
+// prism=prism(sec,path);
+// //swp(prism);
+// prism1= surf_offset(prism,-1);
+// swp_prism_h(prism,prism1);
+
 function surf_offset(prism,d)=
 [for(i=[0:len(prism)-1])[for(j=[0:len(prism[0])-1])
 let(
@@ -2487,9 +2496,21 @@ p3=cross(u1,u2)*d
 )p0+p3
 ]];
 
+// function to round a vector, "v" to "n" decimal points
+// example:
+// echo(rnd_v(v=[2.3456,3.27598,5.876921],n=3)); // ECHO: [2.346, 3.276, 5.877]
+
 function rnd_v(v,n)=[for(p=v)round(p*10^n)/10^n];
+
+// function to round a value "v" to "n" decimal points
+// example:
+// echo(rnd(v=7.9816523,n=2)); // ECHO: 7.98
+
 function rnd(v,n)=round(v*10^n)/10^n;
+
 function udef(s)=[if(s!=undef)s else []].x;
+
+// input to offset function
 
 function io(s,r)=let(
 sec=[for(i=[0:len(s)-1])let(
@@ -2523,6 +2544,15 @@ t=rnd(d/norm(v1),3),
 p3=l1.x+u1*d
 )lim(t,0,1)?rnd(norm(p-p3),3):10^5])==abs(r))p])
 )sec2;
+
+// function for drawing a offset to a section. This is a finer quality and takes much longer than the f_offset function
+// example
+// sec=cr(pts1([[0,0,.5],[7,5,2],[5,7,3],[-5,7,5],[-7,5,5]]),10);
+//
+// path=cr(pts1([[2,0],[-2,0,2],[0,7,5],[-5,0]]),20);
+// prism=prism1(sec,path);
+//  
+// swp(prism);
 
 
 function offset(s,r)=r==0?s:r<0?io(s,r):outer_offset(s,r);
