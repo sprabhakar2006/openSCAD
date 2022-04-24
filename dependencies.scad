@@ -1852,6 +1852,19 @@ arc=[for(i=[0:theta*2/s:theta*2])cp+q(n,pa-cp,-i)],
 a=arc[0],b=loop(arc,1,s-1),c=arc[s]
 )[p1,each arc];//cr3d([p1,[a.x,a.y,a.z,.01],each b,[c.x,c.y,c.z,.01]],5);
 
+// function to calculate center point for a fillet
+
+function 3p_3d_fillet_cp(p0,p1,p2,r=1, s=5)=
+let(
+n=nv([p0,p1,p2]),
+theta=(180-acos(uv(p0-p1)*uv(p2-p1)))/2,
+alpha=acos(uv(p0-p1)*uv(p2-p1)),
+l=r*tan(theta),
+cp=p1+q(n,uv(p0-p1)*r/cos(theta),alpha/2),
+//pa=p1+uv(p0-p1)*l,
+//arc=[for(i=[0:theta*2/s:theta*2])cp+q(n,pa-cp,-i)],
+//a=arc[0],b=loop(arc,1,s-1),c=arc[s]
+)cp;
 // function to create a fillet with 3 known points with radius "r" and number of segments "s". point p1 is omitted while drawing the arc
 // example
 // p0=[2,3,5];
@@ -2519,8 +2532,11 @@ i_plus=i<len(s)-1?i+1:0,
 p0=s[i_minus],
 p1=s[i],
 p2=s[i_plus],
-l1=offst_l([p1,p2],r)
-)each l1],
+cp=c3t2(3p_3d_fillet_cp(c2t3(p0),c2t3(p1),c2t3(p2),abs(r))),
+cw=cw([p0,p1,p2]),
+u=uv(p1-cp),
+l=[p1,p2]
+)each cw==-1?[cp]:offst_l(l,r)],
 
 sec1=remove_extra_points([for(i=[0:len(sec)-1])each [for(j=[0:len(sec)-1])let(
 i_plus=i<len(sec)-1?i+1:0,
@@ -2533,7 +2549,9 @@ t=(im*(l2.x-l1.x)).x,
 u=(im*(l2.x-l1.x)).y,
 )if(i!=j&&lim(t,0,1)&&lim(u,0,1))l1.x+t*v1]]),
 
-sec2=sort_points(s,[for(p=sec1)if(min([for(i=[0:len(s)-1])let(
+sec11=reduced_list(sec1,sec),
+
+sec2=[for(p=sec11)if(min([for(i=[0:len(s)-1])let(
 i_plus=i<len(s)-1?i+1:0,
 l1=[s[i],s[i_plus]],
 v1=l1.y-l1.x,
@@ -2542,8 +2560,22 @@ u1=uv(v1),
 d=v1*v2/norm(v1),
 t=rnd(d/norm(v1),3),
 p3=l1.x+u1*d
-)lim(t,0,1)?rnd(norm(p-p3),3):10^5])==abs(r))p])
-)sec2;
+)lim(t,0,1)?rnd(norm(p-p3),3):10^5])==abs(r))p],
+
+sec3=[for(p=sec)if(min([for(i=[0:len(s)-1])let(
+i_plus=i<len(s)-1?i+1:0,
+l1=[s[i],s[i_plus]],
+v1=l1.y-l1.x,
+v2=p-l1.x,
+u1=uv(v1),
+d=v1*v2/norm(v1),
+t=rnd(d/norm(v1),3),
+p3=l1.x+u1*d
+)lim(t,0,1)?rnd(norm(p-p3),3):10^5])==abs(r))p],
+
+sec4=sort_points(s,[each sec2, each sec3])
+
+)sec4;
 
 // function for drawing a offset to a section. This is a finer quality and takes much longer than the f_offset function
 // example
@@ -2569,3 +2601,16 @@ d=rnd(norm(p3-p),3),
 d1=rnd(norm(p3-p1),3),d2=rnd(norm(p2-p1),3),
 u1=rnd_v(uv(p3-p1),3),u2=rnd_v(uv(p2-p1),3),
 )if(d1<=d2&&u1==u2)d else 10^5])==abs(r))p];
+
+function sec_d_min(s,p,r)=[min([for(i=[0:len(s)-1])let(
+i_minus=i==0?len(s)-1:i-1,
+i_plus=i<len(s)-1?i+1:0,
+p0=s[i_minus],
+p1=s[i],
+p2=s[i_plus],
+l1=[p1,p2],
+p3=perp(l1,p),
+d=rnd(norm(p3-p),3),
+d1=rnd(norm(p3-p1),3),d2=rnd(norm(p2-p1),3),
+u1=rnd_v(uv(p3-p1),3),u2=rnd_v(uv(p2-p1),3),
+)if(d1<=d2&&u1==u2)d else 10^5])];
