@@ -2529,53 +2529,50 @@ function io(s,r)=let(
 sec=[for(i=[0:len(s)-1])let(
 i_minus=i==0?len(s)-1:i-1,
 i_plus=i<len(s)-1?i+1:0,
-p0=s[i_minus],
-p1=s[i],
-p2=s[i_plus],
-cp=c3t2(3p_3d_fillet_cp(c2t3(p0),c2t3(p1),c2t3(p2),abs(r))),
-cw=cw([p0,p1,p2]),
-u=uv(p1-cp),
-l=[p1,p2]
-)each cw==-1?[cp]:offst_l(l,r)],
+p0=s[i_minus],p1=s[i],p2=s[i_plus],
+cw=cw([p0,p1,p2])
+)each if(cw==1)offst_l([p1,p2],r)],
 
-sec1=remove_extra_points([for(i=[0:len(sec)-1])each [for(j=[0:len(sec)-1])let(
-i_plus=i<len(sec)-1?i+1:0,
-j_plus=j<len(sec)-1?j+1:0,
-l1=[sec[i],sec[i_plus]],
-l2=[sec[j],sec[j_plus]],
+sec1=[for(i=[0:len(s)-1])let(
+i_minus=i==0?len(s)-1:i-1,
+i_plus=i<len(s)-1?i+1:0,
+p0=s[i_minus],p1=s[i],p2=s[i_plus],
+cw=cw([p0,p1,p2])
+)each offst_l([p1,p2],r)],
+
+sec2=[for(i=[0:len(sec1)-1])let(
+i_plus=i<len(sec1)-1?i+1:0,
+p0=sec1[i],p1=sec1[i_plus]
+)[p0,p1]],
+
+sec3=[for(p=sec2)each [for(p1=sec2)let(
+l1=p,l2=p1,
 v1=l1.y-l1.x,v2=l2.y-l2.x,
 im=i_m2d(t([v1,-v2])),
 t=(im*(l2.x-l1.x)).x,
 u=(im*(l2.x-l1.x)).y,
-)if(i!=j&&lim(t,0,1)&&lim(u,0,1))l1.x+t*v1]]),
+)if(p!=p1&&lim(t,0,1)&&lim(u,0,1))l1.x+t*v1]],
 
-sec11=reduced_list(sec1,sec),
+sec4=reduced_list(sec3,sec),
 
-sec2=[for(p=sec11)if(min([for(i=[0:len(s)-1])let(
+sec5=[each sec4,each sec],
+
+sec6=[for(i=[0:len(s)-1])let(
 i_plus=i<len(s)-1?i+1:0,
-l1=[s[i],s[i_plus]],
-v1=l1.y-l1.x,
-v2=p-l1.x,
+p0=s[i],p1=s[i_plus]
+)[p0,p1]],
+
+sec7=[for(p=sec5)if(min([for(l=sec6)let(
+v1=l.y-l.x,
+v2=p-l.x,
 u1=uv(v1),
 d=v1*v2/norm(v1),
 t=rnd(d/norm(v1),3),
-p3=l1.x+u1*d
-)lim(t,0,1)?rnd(norm(p-p3),3):10^5])==abs(r))p],
+p1=l.x+u1*d
+)lim(t,0,1)?rnd(norm(p-p1),3):10^5])==abs(r))p]
+)sort_points(s,sec7);
 
-sec3=[for(p=sec)if(min([for(i=[0:len(s)-1])let(
-i_plus=i<len(s)-1?i+1:0,
-l1=[s[i],s[i_plus]],
-v1=l1.y-l1.x,
-v2=p-l1.x,
-u1=uv(v1),
-d=v1*v2/norm(v1),
-t=rnd(d/norm(v1),3),
-p3=l1.x+u1*d
-)lim(t,0,1)?rnd(norm(p-p3),3):10^5])==abs(r))p],
 
-sec4=sort_points(s,[each sec2, each sec3])
-
-)sec4;
 
 // function for drawing a offset to a section. This is a finer quality and takes much longer than the f_offset function
 // example
@@ -2587,7 +2584,7 @@ sec4=sort_points(s,[each sec2, each sec3])
 // swp(prism);
 
 
-function offset(s,r)=r==0?s:r<0?io(s,r):outer_offset(s,r);
+function offset(s,r)=r==0?s:r<0?(sec_r(s)>=abs(r)?f_offset(s,r):io(s,r)):outer_offset(s,r);
 
 function sec_d(s,p,r)=[if(min([for(i=[0:len(s)-1])let(
 i_minus=i==0?len(s)-1:i-1,
