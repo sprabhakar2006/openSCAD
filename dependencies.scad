@@ -980,6 +980,27 @@ a4=cw([p1,p2,p3])==-1?(a3<a1?a3+360:a3):(a3<a1?a3:a3-360)
 
 )arc(r,a1,a4,cp,s);
 
+
+function 3p_cir(p1,p2,p3,s=30)=
+
+let(
+p4=p1+(p2-p1)/2,
+p5=p2+(p3-p2)/2,
+v1=p2-p4,u1=v1/norm(v1),
+v2=p3-p5,u2=v2/norm(v2),
+p6=p4+u1*rm(90),
+p7=p5+u2*rm(90),
+cp=i_p2d([p4,p6],[p5,p7]),
+r=norm(p1-cp),
+//v3=p1-cp,v4=p2-cp,v5=p3-cp,
+//a1=ang(v3.x,v3.y),
+//a2=ang(v4.x,v4.y),
+//a3=ang(v5.x,v5.y),
+//a4=cw([p1,p2,p3])==-1?(a3<a1?a3+360:a3):(a3<a1?a3:a3-360)
+
+)arc(r,0,360,cp,s);
+
+
 // function to draw an ellipse with semi-major and semi-minor axis "r1" and "r2" respectively and with center "cp" and number of segment "s"
 // example:
 // sec=ellipse(r1=5,r2=3,cp=[2,3],s=30);
