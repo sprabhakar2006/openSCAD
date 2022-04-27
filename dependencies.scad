@@ -999,8 +999,6 @@ r=norm(p1-cp),
 //a4=cw([p1,p2,p3])==-1?(a3<a1?a3+360:a3):(a3<a1?a3:a3-360)
 
 )arc(r,0,360,cp,s);
-
-
 // function to draw an ellipse with semi-major and semi-minor axis "r1" and "r2" respectively and with center "cp" and number of segment "s"
 // example:
 // sec=ellipse(r1=5,r2=3,cp=[2,3],s=30);
@@ -2275,8 +2273,8 @@ function resurf1(list,c_hull,revised_list)=
     len(list)<=2?revised_list:
     resurf1(list=reduced_list(list,c_hull),
     c_hull=c_hull(list),
-    revised_list=concat(revised_list,[c_hull]))
-;
+    revised_list=concat(revised_list,[c_hull]));
+    
 
 // function to reorganise a set of random points
 // example:
@@ -2583,16 +2581,62 @@ i_plus=i<len(s)-1?i+1:0,
 p0=s[i],p1=s[i_plus]
 )[p0,p1]],
 
-sec7=[for(p=sec5)if(min([for(l=sec6)let(
+sec7=remove_extra_points([for(p=sec5)if(min([for(l=sec6)let(
 v1=l.y-l.x,
 v2=p-l.x,
 u1=uv(v1),
 d=v1*v2/norm(v1),
 t=rnd(d/norm(v1),3),
 p1=l.x+u1*d
-)lim(t,0,1)?rnd(norm(p-p1),3):10^5])==abs(r))p]
+)lim(t,0,1)?rnd(norm(p-p1),3):10^5])==abs(r))p])
 )sort_points(s,sec7);
 
+function oo(s,r)=let(
+sec=[for(i=[0:len(s)-1])let(
+i_minus=i==0?len(s)-1:i-1,
+i_plus=i<len(s)-1?i+1:0,
+p0=s[i_minus],p1=s[i],p2=s[i_plus],
+cw=cw([p0,p1,p2])
+)each if(cw==-1)offst_l([p1,p2],r)],
+
+sec1=[for(i=[0:len(s)-1])let(
+i_minus=i==0?len(s)-1:i-1,
+i_plus=i<len(s)-1?i+1:0,
+p0=s[i_minus],p1=s[i],p2=s[i_plus],
+cw=cw([p0,p1,p2])
+)each offst_l([p1,p2],r)],
+
+sec2=[for(i=[0:len(sec1)-1])let(
+i_plus=i<len(sec1)-1?i+1:0,
+p0=sec1[i],p1=sec1[i_plus]
+)[p0,p1]],
+
+sec3=[for(p=sec2)each [for(p1=sec2)let(
+l1=p,l2=p1,
+v1=l1.y-l1.x,v2=l2.y-l2.x,
+im=i_m2d(t([v1,-v2])),
+t=(im*(l2.x-l1.x)).x,
+u=(im*(l2.x-l1.x)).y,
+)if(p!=p1&&lim(t,0,1)&&lim(u,0,1))l1.x+t*v1]],
+
+sec4=reduced_list(sec3,sec),
+
+sec5=[each sec4,each sec],
+
+sec6=[for(i=[0:len(s)-1])let(
+i_plus=i<len(s)-1?i+1:0,
+p0=s[i],p1=s[i_plus]
+)[p0,p1]],
+
+sec7=remove_extra_points([for(p=sec5)if(min([for(l=sec6)let(
+v1=l.y-l.x,
+v2=p-l.x,
+u1=uv(v1),
+d=v1*v2/norm(v1),
+t=rnd(d/norm(v1),3),
+p1=l.x+u1*d
+)lim(t,0,1)?rnd(norm(p-p1),3):10^5])==abs(r))p])
+)sort_points(s,sec7);
 
 
 // function for drawing a offset to a section. This is a finer quality and takes much longer than the f_offset function
@@ -2632,3 +2676,61 @@ d=rnd(norm(p3-p),3),
 d1=rnd(norm(p3-p1),3),d2=rnd(norm(p2-p1),3),
 u1=rnd_v(uv(p3-p1),3),u2=rnd_v(uv(p2-p1),3),
 )if(d1<=d2&&u1==u2)d else 10^5])];
+
+
+// function to calculate center point of a triangle "t".
+// example:
+// t=[[0,0],[10,0],[5,10]];
+// p_line(t,.1);
+// cp=triangle_cp(t);
+// points([cp],0.3);
+
+function triangle_cp(t)=let(
+p=cw(t)==1?flip(t):t,
+c1=(t[0]+t[1])/2,c2=(t[1]+t[2])/2,c3=(t[2]+t[0])/2,
+u1=uv(t[1]-t[0]),u2=uv(t[2]-t[1]),u3=uv(t[0]-t[2]),
+l1=[c1,c1+u1*rm(90)], l2=[c2,c2+u2*rm(90)], l3=[c3,c3+u3*rm(90)],
+ip=i_p2d(l1,l2)
+)ip;
+
+// function to find bottom left point from a group of points
+function bl_pnt(sec)=let(
+y=sec*[0,1],
+loc=[for(i=[0:len(y)-1])if(abs(min(y)-y[i])<.001)i],
+x=[for(i=loc)sec[i]],
+x_min=min(x*[1,0]),
+i=search(x_min,x,0,0)[0],
+pnt=x[i]
+)pnt;
+
+// function to find bottom right point from a group of points
+function br_pnt(sec)=let(
+y=sec*[0,1],
+loc=[for(i=[0:len(y)-1])if(abs(min(y)-y[i])<.001)i],
+x=[for(i=loc)sec[i]],
+x_max=max(x*[1,0]),
+i=search(x_max,x,0,0)[0],
+pnt=x[i]
+)pnt;
+
+// function to find top left point from a group of points
+
+function tl_pnt(sec)=let(
+y=sec*[0,1],
+loc=[for(i=[0:len(y)-1])if(abs(max(y)-y[i])<.001)i],
+x=[for(i=loc)sec[i]],
+x_min=min(x*[1,0]),
+i=search(x_min,x,0,0)[0],
+pnt=x[i]
+)pnt;
+
+// function to find top right point from a group of points
+
+function tr_pnt(sec)=let(
+y=sec*[0,1],
+loc=[for(i=[0:len(y)-1])if(abs(max(y)-y[i])<.001)i],
+x=[for(i=loc)sec[i]],
+x_max=max(x*[1,0]),
+i=search(x_max,x,0,0)[0],
+pnt=x[i]
+)pnt;
