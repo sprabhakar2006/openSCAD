@@ -2734,3 +2734,17 @@ x_max=max(x*[1,0]),
 i=search(x_max,x,0,0)[0],
 pnt=x[i]
 )pnt;
+
+function bb2d(p)=[max(p*[1,0])-min(p*[1,0]),max(p*[0,1])-min(p*[0,1])];
+
+// function to find the left most point from a list of points
+function l_m(p)=p[search(min(p*[1,0]),p,0,0).x];
+
+// function to find the right most point from a list of points
+function r_m(p)=p[search(max(p*[1,0]),p,0,0).x];
+
+// function to find the top modt point from a list of points
+function t_m(p)=p[search(max(p*[0,1]),p,0,1).x];
+
+// function to find the bottom most point from a list of points
+function t_m(p)=p[search(min(p*[0,1]),p,0,1).x];
