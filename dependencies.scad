@@ -2534,11 +2534,21 @@ p3=cross(u1,u2)*d
 
 function rnd_v(v,n)=[for(p=v)round(p*10^n)/10^n];
 
+
 // function to round a value "v" to "n" decimal points
 // example:
 // echo(rnd(v=7.9816523,n=2)); // ECHO: 7.98
 
 function rnd(v,n)=round(v*10^n)/10^n;
+
+// function to round a list of points to "n" decimal points
+// example:
+// x=rands(0,10,50);
+// y=rands(3,10,50);
+// p=[for(i=[0:len(x)-1])[x[i],y[i]]];
+// echo(rnd_list(p,3));
+
+function rnd_list(list,n)=[for(p=list)rnd_v(p,n)];
 
 function udef(s)=[if(s!=undef)s else []].x;
 
