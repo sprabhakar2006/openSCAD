@@ -2534,12 +2534,13 @@ p3=cross(u1,u2)*d
 
 function rnd_v(v,n)=[for(p=v)round(p*10^n)/10^n];
 
-
 // function to round a value "v" to "n" decimal points
 // example:
 // echo(rnd(v=7.9816523,n=2)); // ECHO: 7.98
 
 function rnd(v,n)=round(v*10^n)/10^n;
+
+function udef(s)=[if(s!=undef)s else []].x;
 
 // function to round a list of points to "n" decimal points
 // example:
@@ -2549,8 +2550,6 @@ function rnd(v,n)=round(v*10^n)/10^n;
 // echo(rnd_list(p,3));
 
 function rnd_list(list,n)=[for(p=list)rnd_v(p,n)];
-
-function udef(s)=[if(s!=undef)s else []].x;
 
 // input to offset function
 
@@ -2745,6 +2744,7 @@ i=search(x_max,x,0,0)[0],
 pnt=x[i]
 )pnt;
 
+// function to find the bounding box dimensions for group of 2d points
 function bb2d(p)=[max(p*[1,0])-min(p*[1,0]),max(p*[0,1])-min(p*[0,1])];
 
 // function to find the left most point from a list of points
@@ -2759,4 +2759,35 @@ function t_m(p)=p[search(max(p*[0,1]),p,0,1).x];
 // function to find the bottom most point from a list of points
 function b_m(p)=p[search(min(p*[0,1]),p,0,1).x];
 
+// function to sort the list and remove equal numbers.
+function unique_sort(list)=let(
+a=sort(list),
+b=[for(i=[0:len(a)-1])let(
+i_plus=i<len(a)-1?i+1:0,
+)if(rnd(a[i],3)!=rnd(a[i_plus],3))a[i]]
+)b;
 
+// function to sort the points in lexicographic order
+// example:
+// sec=m_points_so([[-10,0],[10,0]],10);
+// path=m_points_so([[0.001,0,0.001],[20,0,0.001]],10);
+// p=surf_extrude(sec,path);
+// p1=c3t2([for(n=p)each n]);
+// sec1=ellipse(10,7,[10,0],s=100);
+// sec3=rnd_list(pies(p1,sec1),3);
+// p2=lexicographic_sort(sec3);
+// for(i=[0:len(p2)-1])translate(p2[i])text(str(i),.5);
+
+function lexicographic_sort(list)=[let(
+a=list*[1,0],
+b=unique_sort(a),
+c=[for(i=[0:len(b)-1])search(rnd(b[i],3),rnd_list(list,3),0,0)],
+d=[for(i=c)let(
+e=[for(j=i)list[j]]
+)e],
+f=[for(p=d)let(
+g=sort(p*[0,1]),
+h=[for(n=g)p[search(rnd(n,3),rnd_list(p,3),0,1).x]]
+)each h]
+
+)f ].x;
