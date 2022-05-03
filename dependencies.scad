@@ -2791,3 +2791,56 @@ h=[for(n=g)p[search(rnd(n,3),rnd_list(p,3),0,1).x]]
 )each h]
 
 )f ].x;
+
+function convert_sec(sec,d)=let(
+r=[for(i=[0:len(sec)-1])let(
+i_2minus=i==0?len(sec)-2:i==1?len(sec)-1:i-2,
+i_minus=i==0?len(sec)-1:i-1,
+i_plus=i<len(sec)-1?i+1:0,
+i_2plus=i<len(sec)-2?i+2:i==len(sec)-2?0:1,
+pi_2minus=sec[i_2minus],
+pi_minus=sec[i_minus],
+pi=sec[i],
+pi_plus=sec[i_plus],
+pi_2plus=sec[i_2plus],
+v1=pi_minus-pi_2minus,
+v2=pi-pi_minus,
+v3=pi_plus-pi,
+v4=pi_2plus-pi_plus,
+l1=rnd(norm(v1),3),
+l2=rnd(norm(v2),3),
+l3=rnd(norm(v3),3),
+l4=rnd(norm(v4),3),
+r1=rnd(3p_r(pi_2minus,pi_minus,pi),3),
+r2=rnd(3p_r(pi_minus,pi,pi_plus),3),
+r3=rnd(3p_r(pi,pi_plus,pi_2plus),3)
+)if(l2!=l3&&(r1!=r2 || r2!=r3))0 else r2],
+
+sec1=[for(i=[0:len(r)-1])let(
+i_minus=i==0?len(sec)-1:i-1,
+i_plus=i<len(sec)-1?i+1:0,
+
+p0=sec[i_minus],
+p1=sec[i],
+p2=sec[i_plus],
+cw=cw([p0,p1,p2])
+)if((r[i]==0||r[i]>=d)||cw==1)sec[i]],
+
+sec2=[for(p=sec1)search([p],sec,0).x.x],
+
+sec3=[for(i=[0:len(sec2)-1])let(
+i_minus=i==0?len(sec2)-1:i-1,
+i_plus=i<len(sec2)-1?i+1:0,
+i_2plus=i<len(sec2)-2?i+2:i==len(sec2)-2?0:1,
+)sec2[i_plus]-sec2[i]>1?i_p2d([sec[sec2[i_minus]],sec[sec2[i]]],[sec[sec2[i_plus]],sec[sec2[i_2plus]]]):sec[sec2[i]]],
+
+sec4=[for(i=[0:len(sec3)-1])let(
+i_minus=i==0?len(sec3)-1:i-1,
+i_plus=i<len(sec3)-1?i+1:0,
+v1=sec3[i]-sec3[i_minus],
+v2=sec3[i_plus]-sec3[i_minus],
+u1=rnd_v(uv(v1),3),
+u2=rnd_v(uv(v2),3)
+)if(u1!=u2)sec3[i]]
+)
+sec4;
