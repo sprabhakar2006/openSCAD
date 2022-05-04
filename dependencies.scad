@@ -2553,7 +2553,8 @@ function rnd_list(list,n)=[for(p=list)rnd_v(p,n)];
 
 // input to offset function
 
-function io(s,r)=let(
+function io(s1,r)=let(
+s=convert_sec(s1,abs(r)),
 sec=[for(i=[0:len(s)-1])let(
 i_minus=i==0?len(s)-1:i-1,
 i_plus=i<len(s)-1?i+1:0,
@@ -2598,7 +2599,7 @@ d=v1*v2/norm(v1),
 t=rnd(d/norm(v1),3),
 p1=l.x+u1*d
 )lim(t,0,1)?rnd(norm(p-p1),3):10^5])==abs(r))p])
-)sort_points(s,sec7);
+)sort_points(s1,sec7);
 
 function oo(s,r)=let(
 sec=[for(i=[0:len(s)-1])let(
