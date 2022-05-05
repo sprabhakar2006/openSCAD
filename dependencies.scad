@@ -2553,45 +2553,49 @@ function rnd_list(list,n)=[for(p=list)rnd_v(p,n)];
 
 // input to offset function
 
-function io(s1,r)=let(
-s=convert_sec(s1,abs(r)),
-sec=[for(i=[0:len(s)-1])let(
-i_minus=i==0?len(s)-1:i-1,
-i_plus=i<len(s)-1?i+1:0,
-p0=s[i_minus],p1=s[i],p2=s[i_plus],
-cw=cw([p0,p1,p2])
-)each if(cw==1)offst_l([p1,p2],r)],
+function io(s,r)=let(
+sec=convert_sec(s,abs(r)),
 
-sec1=[for(i=[0:len(s)-1])let(
-i_minus=i==0?len(s)-1:i-1,
-i_plus=i<len(s)-1?i+1:0,
-p0=s[i_minus],p1=s[i],p2=s[i_plus],
-cw=cw([p0,p1,p2])
-)each offst_l([p1,p2],r)],
+sec1=[for(i=[0:len(sec)-1])let(
+i_plus=i<len(sec)-1?i+1:0,
+p0=sec[i],
+p1=sec[i_plus],
+l=[p0,p1]
+)offst_l(l,r)],
 
 sec2=[for(i=[0:len(sec1)-1])let(
-i_plus=i<len(sec1)-1?i+1:0,
-p0=sec1[i],p1=sec1[i_plus]
-)[p0,p1]],
+i_minus=i==0?len(sec)-1:i-1,
+i_plus=i<len(sec)-1?i+1:0,
+p0=sec[i_minus],
+p1=sec[i],
+p2=sec[i_plus],
+cw=cw([p0,p1,p2]),
+p3=i_p2d(sec1[i_minus],sec1[i])
+)each if(cw==1)sec1[i]],
 
-sec3=[for(p=sec2)each [for(p1=sec2)let(
+sec3=[for(p=sec1)each p],
+
+sec4=[for(i=[0:len(sec3)-1])let(
+i_plus=i<len(sec3)-1?i+1:0,
+p0=sec3[i],
+p1=sec3[i_plus],
+l=[p0,p1]
+)l],
+
+sec5=[for(p=sec4)each remove_extra_points([for(p1=sec4)let(
 l1=p,l2=p1,
 v1=l1.y-l1.x,v2=l2.y-l2.x,
 im=i_m2d(t([v1,-v2])),
 t=(im*(l2.x-l1.x)).x,
 u=(im*(l2.x-l1.x)).y,
-)if(p!=p1&&lim(t,0,1)&&lim(u,0,1))l1.x+t*v1]],
+)if(p!=p1&&lim(t,0.01,1-.01)&&lim(u,0,1))l1.x+t*v1])],
 
-sec4=reduced_list(sec3,sec),
-
-sec5=[each sec4,each sec],
-
-sec6=[for(i=[0:len(s)-1])let(
-i_plus=i<len(s)-1?i+1:0,
-p0=s[i],p1=s[i_plus]
+sec6=[for(i=[0:len(sec)-1])let(
+i_plus=i<len(sec)-1?i+1:0,
+p0=sec[i],p1=sec[i_plus]
 )[p0,p1]],
 
-sec7=remove_extra_points([for(p=sec5)if(min([for(l=sec6)let(
+sec7=remove_extra_points([for(p=[each sec5, each sec2])if(min([for(l=sec6)let(
 v1=l.y-l.x,
 v2=p-l.x,
 u1=uv(v1),
@@ -2599,8 +2603,7 @@ d=v1*v2/norm(v1),
 t=rnd(d/norm(v1),3),
 p1=l.x+u1*d
 )lim(t,0,1)?rnd(norm(p-p1),3):10^5])==abs(r))p])
-)sort_points(s1,sec7);
-
+)sort_points(s,sec7);
 function oo(s,r)=let(
 sec=[for(i=[0:len(s)-1])let(
 i_minus=i==0?len(s)-1:i-1,
