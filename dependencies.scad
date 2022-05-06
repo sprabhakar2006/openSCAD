@@ -8,7 +8,7 @@
 
 function prism(sec,path,m_points=0)=[for(p=path)[for(p1=sort_points(m_points_sc(sec,m_points),m_points_sc(f_offset(sec,round(p.x*100)/100),m_points)))[p1.x,p1.y,p.y]]];
 
-// very time consuming but high quality prism
+// high quality prism but a little time consuming
 
 function prism1(sec,path)=[for(p=path)trns([0,0,p.y],offset(sec,rnd(p.x,3)))];
 
