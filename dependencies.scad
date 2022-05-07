@@ -8,7 +8,7 @@
 
 function prism(sec,path,m_points=0)=[for(p=path)[for(p1=sort_points(m_points_sc(sec,m_points),m_points_sc(f_offset(sec,round(p.x*100)/100),m_points)))[p1.x,p1.y,p.y]]];
 
-// high quality prism but a little time consuming
+// high quality prism, takes slightly longer
 
 function prism1(sec,path)=[for(p=path)trns([0,0,p.y],offset(sec,rnd(p.x,3)))];
 
@@ -663,7 +663,21 @@ function ipw(prism,prism1,r)=
   function ipf(prism,prism1,r,option=0,s=5)=let(sec=ipr(prism,prism1,r,option,s=s))
             [for(i=[0:len(sec)-1])each i<len(sec)-1?[sec[i]]:[sec[i],sec[0]]];
             
- // experimental, need more work before use
+ //function for creating a fillet by intersection between a plane and a prism
+//example: 
+// sec=cr(pts1([[0,0,1],[8,3,3],[5,7,1],[-8,0,2],[-5,20,1]]),20);
+// prism=l_extrude(sec,30);
+// plane1=plane([0,0,1],60);
+// %swp(prism);
+// %swp(plane1);
+// prism1=ipe(plane1,prism,r=2,option=1,s=10);
+//
+// swp(prism1);
+//
+// plane2=trns([0,0,20],plane([0,0,1],60));
+// prism2=ipe(plane2,flip(prism),r=1,option=1,s=10);
+// %swp(plane2);
+// swp(prism2);
  
  function ipe(prism,prism1,r,option=0,s=5)=
  let(
@@ -2757,7 +2771,7 @@ function l_m(p)=p[search(min(p*[1,0]),p,0,0).x];
 // function to find the right most point from a list of points
 function r_m(p)=p[search(max(p*[1,0]),p,0,0).x];
 
-// function to find the top modt point from a list of points
+// function to find the top most point from a list of points
 function t_m(p)=p[search(max(p*[0,1]),p,0,1).x];
 
 // function to find the bottom most point from a list of points
