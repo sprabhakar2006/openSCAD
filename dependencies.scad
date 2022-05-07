@@ -1679,6 +1679,7 @@ function inner_offset(sec1,d)=d==0?(cw(sec1)==1?flip(sec1):sec1):
 let(
 sec=cw(sec1)==1?flip(sec1):sec1,
 r=abs(d),
+
 op=[for(i=[0:len(sec)-1])let(
 p0=i==0?sec[len(sec)-1]:sec[i-1],
 p1=sec[i],
@@ -1693,12 +1694,14 @@ cp=2p_arc_cp(pa,pb,r,-1),
 pc=p1+u1*r*rm(-90),
 pd=p1+u2*r*rm(90)
 ) cw( [p0, p1, p2])==-1?[cp]:2p_arc(pc, pd,r,1,s=norm(pc-pd)<1?0:5)],
+
 op01=[for(i=[0:len(sec)-1])let(
 p0=i==0?sec[len(sec)-1]:sec[i-1],
 p1=sec[i],
 p2=i<len(sec)-1?sec[i+1]:sec[0],
 radius=3p_r(p0, p1, p2)
 ) if((radius>=r)||(cw( [p0, p1, p2])==1)) each op[i]],
+
 op02=[for(i=[0:len(op01)-1])let(
 p0=op01[i],p1=i<len(op01) -1?op01[i+1]: op01[0],
 v1=p1-p0, u1=v1/norm(v1),
@@ -1706,7 +1709,9 @@ ip=[for(j=i==0?[len(op01)-2,i+2]:i==1?[len(op01)-1,i+2]:i==len(op01)-1?[i-2,1]:i
 l1=norm(p1-p0),
 ipf=[for(p=ip) let(u2=(p-p0)/norm(p-p0))if(norm(p-p0)<l1 && sign(u1.x) ==sign(u2.x) && sign(u1.y)==sign(u2.y))p])
 if (len(ipf)>0)each ipf else op01[i]],
+
 op03=[for(p=op02) if(min([for(p1=m_points_sc(sec,10,.2))norm(p-p1)])>=abs(d)-.1)p]
+
 ) sort_points (sec, remove_extra_points (op03));
 
 // function for creating offset of a defined section
@@ -2567,7 +2572,8 @@ function rnd_list(list,n)=[for(p=list)rnd_v(p,n)];
 
 // input to offset function
 
-function io(s,r)=let(
+function io(s1,r)=let(
+s=cw(s1)==1?flip(s1):s1,
 sec=convert_sec(s,abs(r)),
 
 sec1=[for(i=[0:len(sec)-1])let(
@@ -2587,29 +2593,31 @@ cw=cw([p0,p1,p2]),
 p3=i_p2d(sec1[i_minus],sec1[i])
 )each if(cw==1)sec1[i]],
 
-sec3=[for(p=sec1)each p],
+//sec3=[for(p=sec1)each p],
 
-sec4=[for(i=[0:len(sec3)-1])let(
-i_plus=i<len(sec3)-1?i+1:0,
-p0=sec3[i],
-p1=sec3[i_plus],
-l=[p0,p1]
-)l],
+//sec4=[for(i=[0:len(sec3)-1])let(
+//i_plus=i<len(sec3)-1?i+1:0,
+//p0=sec3[i],
+//p1=sec3[i_plus],
+//l=[p0,p1]
+//)l],
 
-sec5=[for(p=sec4)each remove_extra_points([for(p1=sec4)let(
+sec5=[for(p=sec1)each remove_extra_points([for(p1=sec1)let(
 l1=p,l2=p1,
 v1=l1.y-l1.x,v2=l2.y-l2.x,
 im=i_m2d(t([v1,-v2])),
 t=(im*(l2.x-l1.x)).x,
 u=(im*(l2.x-l1.x)).y,
-)if(p!=p1&&lim(t,0.01,1-.01)&&lim(u,0,1))l1.x+t*v1])],
+)if(p!=p1&&lim(t,0,1)&&lim(u,0,1))l1.x+t*v1])],
 
 sec6=[for(i=[0:len(sec)-1])let(
 i_plus=i<len(sec)-1?i+1:0,
 p0=sec[i],p1=sec[i_plus]
 )[p0,p1]],
 
-sec7=remove_extra_points([for(p=[each sec5, each sec2])if(min([for(l=sec6)let(
+sec7=remove_extra_points([for(p=[each sec5, each sec2])if(min([for(l=sec6)
+
+let(
 v1=l.y-l.x,
 v2=p-l.x,
 u1=uv(v1),
@@ -2618,6 +2626,7 @@ t=rnd(d/norm(v1),3),
 p1=l.x+u1*d
 )lim(t,0,1)?rnd(norm(p-p1),3):10^5])==abs(r))p])
 )sort_points(s,sec7);
+
 function oo(s,r)=let(
 sec=[for(i=[0:len(s)-1])let(
 i_minus=i==0?len(s)-1:i-1,
@@ -2666,7 +2675,7 @@ p1=l.x+u1*d
 )sort_points(s,sec7);
 
 
-// function for drawing a offset to a section. This is a finer quality and takes much longer than the f_offset function
+// function for drawing a offset to a section. This is a finer quality and takes longer than the f_offset function
 // example
 // sec=cr(pts1([[0,0,.5],[7,5,2],[5,7,3],[-5,7,5],[-7,5,5]]),10);
 //
@@ -2809,6 +2818,13 @@ h=[for(n=g)p[search(rnd(n,3),rnd_list(p,3),0,1).x]]
 )each h]
 
 )f ].x;
+
+// function to convert a section with corner radius to without radius for a given radius. for eaxmple 
+// sec=cr(pts1([[0,0,.2],[8,3,3],[5,7,1],[-8,0,2],[-5,20,1]]),20);
+// //sec=cr(pts1([[0,0,.5],[7,5,2],[5,7,3],[-5,7,5],[-7,5,5]]),20);
+// %p_line(sec,.1);
+// sec1=convert_sec(sec,4); // in case the corner radius of a section is < 4, the corner radius reduced to 0.
+// p_line(sec1,.1);
 
 function convert_sec(sec,d)=let(
 r=[for(i=[0:len(sec)-1])let(
