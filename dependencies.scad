@@ -2878,3 +2878,17 @@ u2=rnd_v(uv(v2),3)
 )if(u1!=u2)sec3[i]]
 )
 sec4;
+
+function top_bottom_sort(list)=[let(
+a=list*[0,1],
+b=flip(unique_sort(a)),
+c=[for(i=[0:len(b)-1])search(rnd(b[i],3),rnd_list(list,3),0,1)],
+d=[for(i=c)let(
+e=[for(j=i)list[j]]
+)e],
+f=[for(p=d)let(
+g=sort(p*[1,0]),
+h=[for(n=g)p[search(rnd(n,3),rnd_list(p,3),0,0).x]]
+)each h]
+
+)f ].x;
