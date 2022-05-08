@@ -2892,3 +2892,60 @@ h=[for(n=g)p[search(rnd(n,3),rnd_list(p,3),0,0).x]]
 )each h]
 
 )f ].x;
+
+function top_bottom_sort(list)=[let(
+a=list*[0,1],
+b=flip(unique_sort(a)),
+c=[for(i=[0:len(b)-1])search(rnd(b[i],3),rnd_list(list,3),0,1)],
+d=[for(i=c)let(
+e=[for(j=i)list[j]]
+)e],
+f=[for(p=d)let(
+g=sort(p*[1,0]),
+h=[for(n=g)p[search(rnd(n,3),rnd_list(p,3),0,0).x]]
+)each h]
+
+)f ].x;
+
+function sort_seg(sec)=let(
+ sec1=top_bottom_sort(sec),
+ 
+ seg=[for(i=[0:len(sec)-1])let(
+ i_plus=i<len(sec)-1?i+1:0,
+ p0=sec[i],
+ p1=sec[i_plus],
+ l=[p0,p1]
+ )l],
+ 
+ seg1=[for(p=sec1)each [for(i=[0:len(seg)-1])let(
+ a=max(seg[i]*[0,1]),
+ b=p.y,
+ )if(a==b)seg[i]]]
+
+)seg1;
+
+function h_l_seg(sec,p)=let(
+sec1=sort_seg(sec),
+seg=[for(q=sec1)if(p.y<=max(q*[0,1])&&p.y>=min(q*[0,1]))q]
+)seg;
+
+function i_p2dw(l1,l2)= let(
+v1=l1.y-l1.x,v2=l2.y-l2.x,
+im=i_m2d(t([v1,-v2])),
+t=rnd((im*(l2.x-l1.x)).x,3),
+u=rnd((im*(l2.x-l1.x)).y,3),
+)[if(lim(t,0,1)&&lim(u,0,1))l1.x+t*v1].x;
+
+function seg_i(sec)=let(
+sec1=rnd_list(top_bottom_sort(sec),3),
+seg=sort_seg(rnd_list(sec,3)),
+ip=[for(p=sec1)let(
+s=h_l_seg(rnd_list(sec,3),p),
+ip=[for(p1=s)each [for(p2=s) if(! is_undef(i_p2dw(p1,p2))) i_p2dw(p1,p2)]]
+)ip],
+
+//list=[for(p=ip)each p],
+
+list1=[for(p=ip)each if(p!=[])p]
+
+)remove_extra_points(list1);
