@@ -31,7 +31,7 @@ sec=q_rot(["x90","z-90"],sec5),
 a_sec=trns(p0,q_rot([str("y",ang1),str("z",ang2)],sec))
 )a_sec];
 
-
+render()
 difference(){
 surf_base(flip(sec3));
 swp(flip(prism));}
