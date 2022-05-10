@@ -1,6 +1,6 @@
 include<dependencies.scad>
 
-sec=m_points_so(cr(pts1([[0,10],[0,5],[12,0,5],[10,-5],[23,0]]),5),40,.1);
+sec=remove_extra_points(m_points_so(cr(pts1([[0,10],[0,5],[12,0,5],[10,-5],[23,0]]),5),40,.1));
 max_x=max(sec*[1,0]);
 //p_line(sec,.1);
 echo(max_x);
@@ -24,7 +24,7 @@ p1=path[i_plus],
 v1=p1-p0,
 v2=[p0.x,p0.y],
 a1=ang(norm([v1.x,v1.y]),v1.z),
-a2=ang(v2.x,v2.y)+90,
+a2=ang(v2.x,v2.y)-90,
 ang1=is_num(a1)?a1:0,
 ang2=is_num(a2)?a2:0,
 sec=q_rot(["x90","z-90"],sec5),
@@ -34,6 +34,6 @@ a_sec=trns(p0,q_rot([str("y",ang1),str("z",ang2)],sec))
 render()
 difference(){
 surf_base(flip(sec3));
-swp(flip(prism));}
+swp(prism);}
 
 
