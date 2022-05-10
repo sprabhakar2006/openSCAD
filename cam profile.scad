@@ -10,7 +10,7 @@ sec2=[for(i=[0:len(sec)-1])[10*cos(sec[i].x/max_x*360),10*sin(sec[i].x/max_x*360
 
 sec3=cpo([sec1,sec2]);
 
-sec4=loop(sec,44,131);
+sec4=loop(sec,44,129);
 
 //p_lineo(sec4);
 
