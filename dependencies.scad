@@ -2949,3 +2949,9 @@ ip=[for(p1=s)each [for(p2=s) if(! is_undef(i_p2dw(p1,p2))) i_p2dw(p1,p2)]]
 list1=[for(p=ip)each if(p!=[])p]
 
 )remove_extra_points(list1);
+
+function reduced(list,list1)=[for(p=list)if(min([for(p1=list1)rnd(abs(p-p1),5)])!=0)p];
+
+function sort1(list, rev_list, n)= n==0 || list==[]?rev_list:sort1(reduced(list,min(list)),concat(rev_list,min(list)),n-1);
+
+function sort(list)= sort1(list,[],len(list));
