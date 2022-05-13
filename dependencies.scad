@@ -53,16 +53,16 @@ function qmr2(s,r,pl,n=0)= n==len(s)?pl:qmr2(s,r,let(
 //function to rotate a group of points "pl" around a series of axis with defined angles e.g q_rot(s=["z20","x40","y80"],pl=[[2,0],[10,2]])=> will rotate the line first around z axis by 20 deg then around x axis by 40 degrees and then around y axis by 80 degrees.  
 function q_rot(s,pl)= is_num(pl[0][0])?qmr1([for(p=s)cvar(p)[0]],[for(p=s)cvar(p)[1]],pl):qmr2([for(p=s)cvar(p)[0]],[for(p=s)cvar(p)[1]],pl);
 
-//function used as input to sort
-function sort1(list,n=0)=
-let(
-list1=[for(i=[0:len(list)-1])[list[i]+i*.0000000001,i]],
-a=lookup(min(list1*[1,0]),list1),
-list2=[for(i=[0:len(list1)-1])if (lookup(list1[i].x,list1)!=a)list1[i]]
-)n==0?min(list1*[1,0]):sort1(list2*[1,0],n-1);
-
-// function to sort a list of real numbers in ascending order
-function sort(list)=[for(i=[0:len(list)-1])sort1(list,i)];
+////function used as input to sort
+//function sort1(list,n=0)=
+//let(
+//list1=[for(i=[0:len(list)-1])[list[i]+i*.0000000001,i]],
+//a=lookup(min(list1*[1,0]),list1),
+//list2=[for(i=[0:len(list1)-1])if (lookup(list1[i].x,list1)!=a)list1[i]]
+//)n==0?min(list1*[1,0]):sort1(list2*[1,0],n-1);
+//
+//// function to sort a list of real numbers in ascending order
+//function sort(list)=[for(i=[0:len(list)-1])sort1(list,i)];
        
 //function to make surface with a polyline 2d sketch and a 3d path(there is no render here but points can be visualised with following command for(p=surf_extrude(sec,path))points(p,.2);) 
 function surf_extrude(sec,path)=[
@@ -2786,13 +2786,12 @@ function t_m(p)=p[search(max(p*[0,1]),p,0,1).x];
 // function to find the bottom most point from a list of points
 function b_m(p)=p[search(min(p*[0,1]),p,0,1).x];
 
-// function to sort the list and remove equal numbers.
-function unique_sort(list)=let(
-a=sort(list),
-b=[for(i=[0:len(a)-1])let(
-i_plus=i<len(a)-1?i+1:0,
-)if(rnd(a[i],3)!=rnd(a[i_plus],3))a[i]]
-)b;
+//function unique_sort(list)=let(
+//a=sort(list),
+//b=[for(i=[0:len(a)-1])let(
+//i_plus=i<len(a)-1?i+1:0,
+//)if(rnd(a[i],3)!=rnd(a[i_plus],3))a[i]]
+//)b;
 
 // function to sort the points in lexicographic order
 // example:
@@ -2879,10 +2878,11 @@ u2=rnd_v(uv(v2),3)
 )
 sec4;
 
-function top_bottom_sort(list)=[let(
+
+function top_bottom_sort1(list)=[let(
 a=list*[0,1],
 b=flip(unique_sort(a)),
-c=[for(i=[0:len(b)-1])search(rnd(b[i],3),rnd_list(list,3),0,1)],
+c=[for(i=[0:len(b)-1])search(b[i],list,0,1)],
 d=[for(i=c)let(
 e=[for(j=i)list[j]]
 )e],
@@ -2893,19 +2893,7 @@ h=[for(n=g)p[search(rnd(n,3),rnd_list(p,3),0,0).x]]
 
 )f ].x;
 
-function top_bottom_sort(list)=[let(
-a=list*[0,1],
-b=flip(unique_sort(a)),
-c=[for(i=[0:len(b)-1])search(rnd(b[i],3),rnd_list(list,3),0,1)],
-d=[for(i=c)let(
-e=[for(j=i)list[j]]
-)e],
-f=[for(p=d)let(
-g=sort(p*[1,0]),
-h=[for(n=g)p[search(rnd(n,3),rnd_list(p,3),0,0).x]]
-)each h]
-
-)f ].x;
+function top_bottom_sort(list)=let(s=top_bottom_sort1(list))[for(p=s)if(p!=undef)p];
 
 function sort_seg(sec)=let(
  sec1=top_bottom_sort(sec),
@@ -2950,8 +2938,24 @@ list1=[for(p=ip)each if(p!=[])p]
 
 )remove_extra_points(list1);
 
-function reduced(list,list1)=[for(p=list)if(min([for(p1=list1)rnd(abs(p-p1),5)])!=0)p];
+
+
+function reduced(list,list1)=[for(p=list)if(min([for(p1=list1)rnd(abs(p-p1),8)])!=0)p];
+
+// this function is used as input to unique_sort function
 
 function sort1(list, rev_list, n)= n==0 || list==[]?rev_list:sort1(reduced(list,min(list)),concat(rev_list,min(list)),n-1);
 
-function sort(list)= sort1(list,[],len(list));
+// function to sort the list and remove equal numbers.
+
+function unique_sort(list)= sort1(list,[],len(list));
+
+// this function is used as input to sort function
+
+function sort2(list, rev_list, n)= n==0 || list==[]?rnd_n(rev_list,6):sort2(reduced(list,min(list)),concat(rev_list,min(list)),n-1);
+
+// function to sort a list of real numbers in ascending order
+
+function sort(list)= sort2([for(i=[0:len(list)-1])list[i]+i*0.00000001],[],len(list));
+
+function rnd_n(list,n)=[for(p=list)rnd(p,n)];
