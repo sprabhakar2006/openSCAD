@@ -2958,4 +2958,17 @@ function sort2(list, rev_list, n)= n==0 || list==[]?rnd_n(rev_list,6):sort2(redu
 
 function sort(list)= sort2([for(i=[0:len(list)-1])list[i]+i*0.00000001],[],len(list));
 
+
+// function to calculate point to line shortest distance, if projection of point lies with in the line.
+
+function pld(p,l)=let(
+    v1=l.y-l.x,
+    v2=p-l.x,
+    u1=uv(v1),
+    d=v1*v2/norm(v1),
+    t=rnd(d/norm(v1),3),
+    p1=l.x+u1*d
+    )lim(t,0,1)?norm(p-p1):[];
+
+
 function rnd_n(list,n)=[for(p=list)rnd(p,n)];
