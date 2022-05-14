@@ -2912,10 +2912,13 @@ function sort_seg(sec)=let(
 
 )seg1;
 
-function h_l_seg(sec,p)=let(
-sec1=sort_seg(sec),
-seg=[for(q=sec1)if(p.y<=max(q*[0,1])&&p.y>=min(q*[0,1]))q]
-)seg;
+function h_l_seg(s,n)=let(
+s2=sort_seg(s),
+s3=[for(i=[0:n])let(
+    a=max(s2[n]*[0,1]),
+    b=min(s2[i]*[0,1])
+    )if(a>=b)s2[i]]
+    )s3;
 
 function i_p2dw(l1,l2)= let(
 v1=l1.y-l1.x,v2=l2.y-l2.x,
@@ -2925,10 +2928,10 @@ u=rnd((im*(l2.x-l1.x)).y,3),
 )[if(lim(t,0,1)&&lim(u,0,1))l1.x+t*v1].x;
 
 function seg_i(sec)=let(
-sec1=rnd_list(top_bottom_sort(sec),3),
-seg=sort_seg(rnd_list(sec,3)),
-ip=[for(p=sec1)let(
-s=h_l_seg(rnd_list(sec,3),p),
+//sec1=rnd_list(top_bottom_sort(sec),3),
+//seg=sort_seg(rnd_list(sec,3)),
+ip=[for(i=[0:len(sec)-1])let(
+s=h_l_seg(sec,i),
 ip=[for(p1=s)each [for(p2=s) if(! is_undef(i_p2dw(p1,p2))) i_p2dw(p1,p2)]]
 )ip],
 
