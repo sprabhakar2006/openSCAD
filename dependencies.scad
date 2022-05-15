@@ -3044,13 +3044,7 @@ function rnd_n(list,n)=[for(p=list)rnd(p,n)];
 
 // function to create intersection between all the segments of a section
 
-function s_int(s)=[for(p=s)each remove_extra_points([for(p1=s)let(
-l1=p,l2=p1,
-v1=l1.y-l1.x,v2=l2.y-l2.x,
-im=i_m2d(t([v1,-v2])),
-t=(im*(l2.x-l1.x)).x,
-u=(im*(l2.x-l1.x)).y,
-)if(p!=p1&&lim(t,0,1)&&lim(u,0,1))l1.x+t*v1])];
+function s_int(s)=[for(p=s)each remove_extra_points([for(p1=s)let(a=i_p2dw(p,p1))if(a!=undef)a])];
 
 // function to create offset points for a given section
 
