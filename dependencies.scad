@@ -803,6 +803,64 @@ list_of_radius=[for(i=[0:len(sec)-1])
 )
 min(list_of_radius);
 
+// function to find the maximum radius for a defined sec
+
+function max_r(sec)=let(
+r=[for(i=[0:len(sec)-1])let(
+i_2minus=i==0?len(sec)-2:i==1?len(sec)-1:i-2,
+i_minus=i==0?len(sec)-1:i-1,
+i_plus=i<len(sec)-1?i+1:0,
+i_2plus=i<len(sec)-2?i+2:i==len(sec)-2?0:1,
+pi_2minus=sec[i_2minus],
+pi_minus=sec[i_minus],
+pi=sec[i],
+pi_plus=sec[i_plus],
+pi_2plus=sec[i_2plus],
+v1=pi_minus-pi_2minus,
+v2=pi-pi_minus,
+v3=pi_plus-pi,
+v4=pi_2plus-pi_plus,
+l1=rnd(norm(v1),3),
+l2=rnd(norm(v2),3),
+l3=rnd(norm(v3),3),
+l4=rnd(norm(v4),3),
+r1=rnd(3p_r(pi_2minus,pi_minus,pi),3),
+r2=rnd(3p_r(pi_minus,pi,pi_plus),3),
+r3=rnd(3p_r(pi,pi_plus,pi_2plus),3)
+)if(l2!=l3&&(r1!=r2 || r2!=r3))0 else r2]
+
+)
+max(r);
+
+// function to list all the radiuses in the defined section
+
+function list_r(sec)=let(
+r=[for(i=[0:len(sec)-1])let(
+i_2minus=i==0?len(sec)-2:i==1?len(sec)-1:i-2,
+i_minus=i==0?len(sec)-1:i-1,
+i_plus=i<len(sec)-1?i+1:0,
+i_2plus=i<len(sec)-2?i+2:i==len(sec)-2?0:1,
+pi_2minus=sec[i_2minus],
+pi_minus=sec[i_minus],
+pi=sec[i],
+pi_plus=sec[i_plus],
+pi_2plus=sec[i_2plus],
+v1=pi_minus-pi_2minus,
+v2=pi-pi_minus,
+v3=pi_plus-pi,
+v4=pi_2plus-pi_plus,
+l1=rnd(norm(v1),3),
+l2=rnd(norm(v2),3),
+l3=rnd(norm(v3),3),
+l4=rnd(norm(v4),3),
+r1=rnd(3p_r(pi_2minus,pi_minus,pi),3),
+r2=rnd(3p_r(pi_minus,pi,pi_plus),3),
+r3=rnd(3p_r(pi,pi_plus,pi_2plus),3)
+)if(l2!=l3&&(r1!=r2 || r2!=r3))0 else r2]
+
+)
+r;
+
 // math function to calculate the determinant of a 3 x 3 matrix
 
 function det3d(m)=let(
@@ -2574,7 +2632,7 @@ function rnd_list(list,n)=[for(p=list)rnd_v(p,n)];
 
 function io(s1,r)=let(
 s=cw(s1)==1?flip(s1):s1,
-sec=convert_sec(s,abs(r)),
+sec=convert_sec(s,abs(r)>=max_r(s)?max_r(s)+1:abs(r)),
 
 sec1=[for(i=[0:len(sec)-1])let(
 i_plus=i<len(sec)-1?i+1:0,
@@ -2615,7 +2673,7 @@ i_plus=i<len(sec)-1?i+1:0,
 p0=sec[i],p1=sec[i_plus]
 )[p0,p1]],
 
-sec7=remove_extra_points([for(p=[each sec5, each sec2])if(min([for(l=sec6)
+sec7=[for(p=[each sec5, each sec2])if(min([for(l=sec6)
 
 let(
 v1=l.y-l.x,
@@ -2624,7 +2682,7 @@ u1=uv(v1),
 d=v1*v2/norm(v1),
 t=rnd(d/norm(v1),3),
 p1=l.x+u1*d
-)lim(t,0,1)?rnd(norm(p-p1),3):10^5])==abs(r))p])
+)lim(t,0,1)?rnd(norm(p-p1),3):10^5])==abs(r))p]
 )sort_points(s,sec7);
 
 function oo(s,r)=let(
@@ -2971,7 +3029,40 @@ function pld(p,l)=let(
     d=v1*v2/norm(v1),
     t=rnd(d/norm(v1),3),
     p1=l.x+u1*d
-    )lim(t,0,1)?norm(p-p1):[];
+    )lim(t,0,1)?norm(p-p1):10^5;
 
+// function to calculate point to section shortest distance, if projection of point lies with in any segment of a section
+    
+function psd(p,s)=let(
+s1=seg(s),
+d=min([for(p1=s1)let(a=pld(p,p1))a])
+)d;
 
 function rnd_n(list,n)=[for(p=list)rnd(p,n)];
+
+// function to create intersection between all the segments of a section
+
+function s_int(s)=[for(p=s)each remove_extra_points([for(p1=s)let(
+l1=p,l2=p1,
+v1=l1.y-l1.x,v2=l2.y-l2.x,
+im=i_m2d(t([v1,-v2])),
+t=(im*(l2.x-l1.x)).x,
+u=(im*(l2.x-l1.x)).y,
+)if(p!=p1&&lim(t,0,1)&&lim(u,0,1))l1.x+t*v1])];
+
+// function to create offset points for a given section
+
+function offset_points(s,d)=[for(i=[0:len(s)-1])let(
+i_plus=i<len(s)-1?i+1:0,
+p0=s[i],p1=s[i_plus],
+l=offst_l([p0,p1],d)
+)each l];
+
+// function to convert a list of points in a section to list of line segments
+
+function seg(sec)=[for(i=[0:len(sec)-1])let(
+ i_plus=i<len(sec)-1?i+1:0,
+ p0=sec[i],
+ p1=sec[i_plus],
+ l=[p0,p1]
+ )l];
