@@ -2743,7 +2743,9 @@ p1=l.x+u1*d
 // swp(prism);
 
 
-function offset(s,r)=r==0?s:r<0?(sec_r(s)>=abs(r)?f_offset(s,r):io(s,r)):outer_offset(s,r);
+// function offset(s,r)=r==0?s:r<0?(sec_r(s)>=abs(r)?f_offset(s,r):io(s,r)):outer_offset(s,r);
+
+function offset(s,r)=r==0?s:r<0?io(s,r):outer_offset(s,r);
 
 function sec_d(s,p,r)=[if(min([for(i=[0:len(s)-1])let(
 i_minus=i==0?len(s)-1:i-1,
