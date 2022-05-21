@@ -3062,3 +3062,18 @@ function seg(sec)=[for(i=[0:len(sec)-1])let(
  p1=sec[i_plus],
  l=[p0,p1]
  )l];
+
+ function r_list(sec)=let(
+r=list_r(sec),
+r1=[for(i=[0:len(r)-1])let(
+i_plus=i<len(r)-1?i+1:0
+)if(r[i]!=r[i_plus] && r[i]!=0)r[i]]
+)r1;
+
+
+function seg_len(sec)=let(
+r1=r_list(sec).x,
+a=len(search(r1,list_r(sec),0)),
+b=len(search(r1,r_list(sec),0)),
+c=a/b+1
+)c;
