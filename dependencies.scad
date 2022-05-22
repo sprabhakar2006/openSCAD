@@ -6,7 +6,7 @@
 // prism=prism(sec,path);
 // swp(prism);
 
-function prism(sec,path,m_points=0)=[for(p=path)[for(p1=sort_points(m_points_sc(sec,m_points),m_points_sc(f_offset(sec,round(p.x*100)/100),m_points)))[p1.x,p1.y,p.y]]];
+function prism(sec,path,m_points=0)=[for(p=path)[for(p1=sort_points(m_points_sc(sec,m_points),m_points_sc(f_offset(sec,rnd(p.x,3)),m_points)))[p1.x,p1.y,p.y]]];
 
 // high quality prism, takes slightly longer
 
@@ -2630,60 +2630,21 @@ function rnd_list(list,n)=[for(p=list)rnd_v(p,n)];
 
 // input to offset function
 
-function io(s1,r)=let(
-s=cw(s1)==1?flip(s1):s1,
-sec=convert_sec(s,abs(r)>=max_r(s)?max_r(s)+1:abs(r)),
+function io(sec,r)= let(
 
-sec1=[for(i=[0:len(sec)-1])let(
-i_plus=i<len(sec)-1?i+1:0,
-p0=sec[i],
-p1=sec[i_plus],
-l=[p0,p1]
-)offst_l(l,r)],
+ s=cw(sec)==1?flip(sec):sec,
 
-sec2=[for(i=[0:len(sec1)-1])let(
-i_minus=i==0?len(sec)-1:i-1,
-i_plus=i<len(sec)-1?i+1:0,
-p0=sec[i_minus],
-p1=sec[i],
-p2=sec[i_plus],
-cw=cw([p0,p1,p2]),
-p3=i_p2d(sec1[i_minus],sec1[i])
-)each if(cw==1)sec1[i]],
+ s1=convert_sec(s,abs(r)>=max_r(s)?max_r(s)+1:abs(r)),
 
-//sec3=[for(p=sec1)each p],
+ s2=offset_seg(s1,r),
 
-//sec4=[for(i=[0:len(sec3)-1])let(
-//i_plus=i<len(sec3)-1?i+1:0,
-//p0=sec3[i],
-//p1=sec3[i_plus],
-//l=[p0,p1]
-//)l],
+ s3=offset_seg_cw(s1,r),
 
-sec5=[for(p=sec1)each remove_extra_points([for(p1=sec1)let(
-l1=p,l2=p1,
-v1=l1.y-l1.x,v2=l2.y-l2.x,
-im=i_m2d(t([v1,-v2])),
-t=(im*(l2.x-l1.x)).x,
-u=(im*(l2.x-l1.x)).y,
-)if(p!=p1&&lim(t,0,1)&&lim(u,0,1))l1.x+t*v1])],
+ s4=s_int(s2),
 
-sec6=[for(i=[0:len(sec)-1])let(
-i_plus=i<len(sec)-1?i+1:0,
-p0=sec[i],p1=sec[i_plus]
-)[p0,p1]],
+ s5=sort_points(sec,sec_clean(s1,[each s4, each s3],abs(r)))
 
-sec7=[for(p=[each sec5, each sec2])if(min([for(l=sec6)
-
-let(
-v1=l.y-l.x,
-v2=p-l.x,
-u1=uv(v1),
-d=v1*v2/norm(v1),
-t=rnd(d/norm(v1),3),
-p1=l.x+u1*d
-)lim(t,0,1)?rnd(norm(p-p1),3):10^5])==abs(r))p]
-)sort_points(s,sec7);
+ )s5;
 
 function oo(s,r)=let(
 sec=[for(i=[0:len(s)-1])let(
@@ -2938,6 +2899,113 @@ u2=rnd_v(uv(v2),3)
 )
 sec4;
 
+function convert_sec1(sec,d)=let(
+r=[for(i=[0:len(sec)-1])let(
+i_2minus=i==0?len(sec)-2:i==1?len(sec)-1:i-2,
+i_minus=i==0?len(sec)-1:i-1,
+i_plus=i<len(sec)-1?i+1:0,
+i_2plus=i<len(sec)-2?i+2:i==len(sec)-2?0:1,
+pi_2minus=sec[i_2minus],
+pi_minus=sec[i_minus],
+pi=sec[i],
+pi_plus=sec[i_plus],
+pi_2plus=sec[i_2plus],
+v1=pi_minus-pi_2minus,
+v2=pi-pi_minus,
+v3=pi_plus-pi,
+v4=pi_2plus-pi_plus,
+l1=rnd(norm(v1),3),
+l2=rnd(norm(v2),3),
+l3=rnd(norm(v3),3),
+l4=rnd(norm(v4),3),
+r1=rnd(3p_r(pi_2minus,pi_minus,pi),3),
+r2=rnd(3p_r(pi_minus,pi,pi_plus),3),
+r3=rnd(3p_r(pi,pi_plus,pi_2plus),3)
+)if(l2!=l3&&(r1!=r2 || r2!=r3))0 else r2],
+
+sec1=[for(i=[0:len(r)-1])let(
+i_minus=i==0?len(sec)-1:i-1,
+i_plus=i<len(sec)-1?i+1:0,
+
+p0=sec[i_minus],
+p1=sec[i],
+p2=sec[i_plus],
+cw=cw([p0,p1,p2])
+)if((r[i]==0||r[i]>=d)||cw==-1)sec[i]],
+
+sec2=[for(p=sec1)search([p],sec,0).x.x],
+
+sec3=[for(i=[0:len(sec2)-1])let(
+i_minus=i==0?len(sec2)-1:i-1,
+i_plus=i<len(sec2)-1?i+1:0,
+i_2plus=i<len(sec2)-2?i+2:i==len(sec2)-2?0:1,
+)sec2[i_plus]-sec2[i]>1?i_p2d([sec[sec2[i_minus]],sec[sec2[i]]],[sec[sec2[i_plus]],sec[sec2[i_2plus]]]):sec[sec2[i]]],
+
+sec4=[for(i=[0:len(sec3)-1])let(
+i_minus=i==0?len(sec3)-1:i-1,
+i_plus=i<len(sec3)-1?i+1:0,
+v1=sec3[i]-sec3[i_minus],
+v2=sec3[i_plus]-sec3[i_minus],
+u1=rnd_v(uv(v1),3),
+u2=rnd_v(uv(v2),3)
+)if(u1!=u2)sec3[i]]
+)
+sec4;
+
+
+function convert_sec2(sec,d)=let(
+r=[for(i=[0:len(sec)-1])let(
+i_2minus=i==0?len(sec)-2:i==1?len(sec)-1:i-2,
+i_minus=i==0?len(sec)-1:i-1,
+i_plus=i<len(sec)-1?i+1:0,
+i_2plus=i<len(sec)-2?i+2:i==len(sec)-2?0:1,
+pi_2minus=sec[i_2minus],
+pi_minus=sec[i_minus],
+pi=sec[i],
+pi_plus=sec[i_plus],
+pi_2plus=sec[i_2plus],
+v1=pi_minus-pi_2minus,
+v2=pi-pi_minus,
+v3=pi_plus-pi,
+v4=pi_2plus-pi_plus,
+l1=rnd(norm(v1),3),
+l2=rnd(norm(v2),3),
+l3=rnd(norm(v3),3),
+l4=rnd(norm(v4),3),
+r1=rnd(3p_r(pi_2minus,pi_minus,pi),3),
+r2=rnd(3p_r(pi_minus,pi,pi_plus),3),
+r3=rnd(3p_r(pi,pi_plus,pi_2plus),3)
+)if(l2!=l3&&(r1!=r2 || r2!=r3))0 else r2],
+
+sec1=[for(i=[0:len(r)-1])let(
+i_minus=i==0?len(sec)-1:i-1,
+i_plus=i<len(sec)-1?i+1:0,
+
+p0=sec[i_minus],
+p1=sec[i],
+p2=sec[i_plus],
+cw=cw([p0,p1,p2])
+)if((r[i]==0||r[i]>=d))sec[i]],
+
+sec2=[for(p=sec1)search([p],sec,0).x.x],
+
+sec3=[for(i=[0:len(sec2)-1])let(
+i_minus=i==0?len(sec2)-1:i-1,
+i_plus=i<len(sec2)-1?i+1:0,
+i_2plus=i<len(sec2)-2?i+2:i==len(sec2)-2?0:1,
+)sec2[i_plus]-sec2[i]>1?i_p2d([sec[sec2[i_minus]],sec[sec2[i]]],[sec[sec2[i_plus]],sec[sec2[i_2plus]]]):sec[sec2[i]]],
+
+sec4=[for(i=[0:len(sec3)-1])let(
+i_minus=i==0?len(sec3)-1:i-1,
+i_plus=i<len(sec3)-1?i+1:0,
+v1=sec3[i]-sec3[i_minus],
+v2=sec3[i_plus]-sec3[i_minus],
+u1=rnd_v(uv(v1),3),
+u2=rnd_v(uv(v2),3)
+)if(u1!=u2)sec3[i]]
+)
+sec4;
+
 
 function top_bottom_sort1(list)=[let(
 a=list*[0,1],
@@ -3044,7 +3112,16 @@ function rnd_n(list,n)=[for(p=list)rnd(p,n)];
 
 // function to create intersection between all the segments of a section
 
-function s_int(s)=[for(p=s)each remove_extra_points([for(p1=s)let(a=i_p2dw(p,p1))if(a!=undef)a])];
+//function s_int(s)=[for(p=s)each remove_extra_points([for(p1=s)let(a=i_p2dw(p,p1))if(a!=undef)a])];
+
+
+function s_int(sec1)=[for(p=sec1)each remove_extra_points([for(p1=sec1)let(
+l1=p,l2=p1,
+v1=l1.y-l1.x,v2=l2.y-l2.x,
+im=i_m2d(t([v1,-v2])),
+t=(im*(l2.x-l1.x)).x,
+u=(im*(l2.x-l1.x)).y,
+)if(p!=p1&&lim(t,0,1)&&lim(u,0,1))l1.x+t*v1])];
 
 // function to create offset points for a given section
 
@@ -3077,3 +3154,74 @@ a=len(search(r1,list_r(sec),0)),
 b=len(search(r1,r_list(sec),0)),
 c=a/b+1
 )c;
+
+function offset_seg(sec,r)=let(
+s=seg(sec),
+s1=[for(p=s)offst_l(p,r)]
+)s1;
+
+function offset_points_cw(sec,r)=[for(i=[0:len(sec)-1])let(
+i_minus=i==0?len(sec)-1:i-1,
+i_plus=i<len(sec)-1?i+1:0,
+p0=sec[i_minus],
+p1=sec[i],
+p2=sec[i_plus],
+cw=cw([p0,p1,p2]),
+l=[p1,p2]
+)if(cw==1)offst_l(l,r).x];
+
+function offset_points_ccw(sec,r)=[for(i=[0:len(sec)-1])let(
+i_minus=i==0?len(sec)-1:i-1,
+i_plus=i<len(sec)-1?i+1:0,
+p0=sec[i_minus],
+p1=sec[i],
+p2=sec[i_plus],
+cw=cw([p0,p1,p2]),
+l=[p1,p2]
+)if(cw==-1)offst_l(l,r).x];
+
+function offset_points_single(sec,r)=[for(i=[0:len(sec)-1])let(
+i_minus=i==0?len(sec)-1:i-1,
+i_plus=i<len(sec)-1?i+1:0,
+p0=sec[i_minus],
+p1=sec[i],
+p2=sec[i_plus],
+cw=cw([p0,p1,p2]),
+l=[p1,p2]
+)offst_l(l,r).x];
+
+function sec_clean(sec,sec1,r)=
+let(
+sec6=[for(i=[0:len(sec)-1])let(
+i_plus=i<len(sec)-1?i+1:0,
+p0=sec[i],p1=sec[i_plus]
+)[p0,p1]],
+
+sec7=[for(p=sec1)if(min([for(l=sec6)
+
+let(
+v1=l.y-l.x,
+v2=p-l.x,
+u1=uv(v1),
+d=v1*v2/norm(v1),
+t=rnd(d/norm(v1),3),
+p1=l.x+u1*d
+)lim(t,0,1)?rnd(norm(p-p1),3):10^5])==abs(r))p])sec7;
+
+function offset_seg_cw(sec,r)=[for(i=[0:len(sec)-1])
+let(
+i_minus=i==0?len(sec)-1:i-1,
+i_plus=i<len(sec)-1?i+1:0,
+p0=sec[i_minus],p1=sec[i],p2=sec[i_plus],
+cw=cw([p0,p1,p2])
+)each if(cw==1)offst_l([p1,p2],r)
+];
+
+function offset_seg_ccw(sec,r)=[for(i=[0:len(sec)-1])
+let(
+i_minus=i==0?len(sec)-1:i-1,
+i_plus=i<len(sec)-1?i+1:0,
+p0=sec[i_minus],p1=sec[i],p2=sec[i_plus],
+cw=cw([p0,p1,p2])
+)each if(cw==-1)offst_l([p1,p2],r)
+];
