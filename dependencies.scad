@@ -2706,7 +2706,7 @@ p1=l.x+u1*d
 
 // function offset(s,r)=r==0?s:r<0?(sec_r(s)>=abs(r)?f_offset(s,r):io(s,r)):outer_offset(s,r);
 
-function offset(s,r)=r==0?s:r<0?io(s,r):outer_offset(s,r);
+function offset(s,r)=r==0?s:r<0?io(s,r):convex(s)?oo_convex(s,r):outer_offset(s,r);
 
 function sec_d(s,p,r)=[if(min([for(i=[0:len(s)-1])let(
 i_minus=i==0?len(s)-1:i-1,
@@ -3225,3 +3225,10 @@ p0=sec[i_minus],p1=sec[i],p2=sec[i_plus],
 cw=cw([p0,p1,p2])
 )each if(cw==-1)offst_l([p1,p2],r)
 ];
+
+function convex(sec)=let(s=cw(sec)==1?flip(sec):sec)offset_seg_cw(s,1)==[]?true:false;
+
+function oo_convex(sec,r)=let(
+s=cw(sec)==1?flip(sec):sec,
+s1=c_hull(offset_points_single(s,abs(r)))
+)sort_points(s,s1);
