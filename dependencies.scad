@@ -3232,3 +3232,5 @@ function oo_convex(sec,r)=let(
 s=cw(sec)==1?flip(sec):sec,
 s1=c_hull(offset_points_single(s,abs(r)))
 )sort_points(s,s1);
+
+function ll(l)=norm(l.y-l.x);
