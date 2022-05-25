@@ -53,15 +53,15 @@ function qmr2(s,r,pl,n=0)= n==len(s)?pl:qmr2(s,r,let(
 //function to rotate a group of points "pl" around a series of axis with defined angles e.g q_rot(s=["z20","x40","y80"],pl=[[2,0],[10,2]])=> will rotate the line first around z axis by 20 deg then around x axis by 40 degrees and then around y axis by 80 degrees.  
 function q_rot(s,pl)= is_num(pl[0][0])?qmr1([for(p=s)cvar(p)[0]],[for(p=s)cvar(p)[1]],pl):qmr2([for(p=s)cvar(p)[0]],[for(p=s)cvar(p)[1]],pl);
 
-////function used as input to sort
+//function used as input to sort
 //function sort1(list,n=0)=
 //let(
 //list1=[for(i=[0:len(list)-1])[list[i]+i*.0000000001,i]],
 //a=lookup(min(list1*[1,0]),list1),
 //list2=[for(i=[0:len(list1)-1])if (lookup(list1[i].x,list1)!=a)list1[i]]
 //)n==0?min(list1*[1,0]):sort1(list2*[1,0],n-1);
-//
-//// function to sort a list of real numbers in ascending order
+
+// function to sort a list of real numbers in ascending order
 //function sort(list)=[for(i=[0:len(list)-1])sort1(list,i)];
        
 //function to make surface with a polyline 2d sketch and a 3d path(there is no render here but points can be visualised with following command for(p=surf_extrude(sec,path))points(p,.2);) 
@@ -1276,7 +1276,7 @@ function m_points(sec,sl=20)=
 p0=sec[i],
 p1=sec[i<len(sec)-1?i+1:0],
 lnth=norm(p1-p0),
-sec1=lnth>sl?l([p0,p1],lnth/sl):[p0],
+sec1=lnth>=sl*2?l([p0,p1],lnth/sl):[p0],
 sec2=[for(i=[0:len(sec1)-1])if(sec1[i]!=sec1[i<len(sec1)?i+1:0])sec1[i]])
 each sec2];
 
@@ -1293,7 +1293,7 @@ function m_points_o(sec,sl=20)=
 p0=sec[i],
 p1=sec[i+1],
 lnth=norm(p1-p0),
-sec1=lnth>sl?l([p0,p1],lnth/sl):[p0],
+sec1=lnth>sl*2?l([p0,p1],lnth/sl):[p0],
 sec2=[for(i=[0:len(sec1)-1])if(sec1[i]!=sec1[i<len(sec1)?i+1:0])sec1[i]])
 each sec2];
 
@@ -1727,7 +1727,7 @@ ip=[for(j=i==0?[len(op01)-2,i+2]:i==1?[len(op01)-1,i+2]:i==len(op01)-1?[i-2,1]:i
 l1=norm(p1-p0),
 ipf=[for(p=ip)let(u2=(p-p0)/norm(p-p0)) if(norm(p-p0)<l1 && sign(u1.x)==sign(u2.x) && sign(u1.y)==sign(u2.y))p]
 )if (len(ipf)>0) each ipf else op01[i]],
-op03=[for(p=op02) if(min([for(p1=m_points_sc(sec,10,.2))norm(p-p1)])>=abs(d)-.1)p]
+op03=[for(p=op02) if(lim(min([for(p1=m_points_sc(sec,10,.2))norm(p-p1)]),abs(d)-.02,abs(d)+.02))p]
 )sort_points(sec, remove_extra_points(op03));
 
 // function is used as input for another function
@@ -3112,8 +3112,6 @@ function rnd_n(list,n)=[for(p=list)rnd(p,n)];
 
 // function to create intersection between all the segments of a section
 
-//function s_int(s)=[for(p=s)each remove_extra_points([for(p1=s)let(a=i_p2dw(p,p1))if(a!=undef)a])];
-
 
 function s_int(sec1)=[for(p=sec1)each remove_extra_points([for(p1=sec1)let(
 l1=p,l2=p1,
@@ -3121,7 +3119,17 @@ v1=l1.y-l1.x,v2=l2.y-l2.x,
 im=i_m2d(t([v1,-v2])),
 t=(im*(l2.x-l1.x)).x,
 u=(im*(l2.x-l1.x)).y,
-)if(p!=p1&&lim(t,0,1)&&lim(u,0,1))l1.x+t*v1])];
+)if(p!=p1&&lim(t,-0.01,1.01)&&lim(u,-0.01,1.01))l1.x+t*v1])];
+
+// function to get self intersection points between segments. start and end point of the adjacent line segments are omitted
+
+function s_int1(sec1)=[for(p=sec1)each remove_extra_points([for(p1=sec1)let(
+l1=p,l2=p1,
+v1=l1.y-l1.x,v2=l2.y-l2.x,
+im=i_m2d(t([v1,-v2])),
+t=(im*(l2.x-l1.x)).x,
+u=(im*(l2.x-l1.x)).y,
+)if(p!=p1&&lim(t,0.01,1-.01)&&lim(u,0.01,1-.01))l1.x+t*v1])];
 
 // function to create offset points for a given section
 
