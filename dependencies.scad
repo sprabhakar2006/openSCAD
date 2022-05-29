@@ -3125,11 +3125,21 @@ u=(im*(l2.x-l1.x)).y,
 
 function s_int1(sec1)=[for(p=sec1)each remove_extra_points([for(p1=sec1)let(
 l1=p,l2=p1,
-v1=l1.y-l1.x,v2=l2.y-l2.x,
+v1=l1.y-l1.x,
+v2=l2.y-l2.x,
 im=i_m2d(t([v1,-v2])),
 t=(im*(l2.x-l1.x)).x,
 u=(im*(l2.x-l1.x)).y,
 )if(p!=p1&&lim(t,0.01,1-.01)&&lim(u,0.01,1-.01))l1.x+t*v1])];
+
+function s_int2(sec1)=[for(p=sec1)each remove_extra_points([for(p1=sec1)let(
+l1=p,l2=p1,
+v1=l1.y-l1.x,
+v2=l2.y-l2.x,
+im=i_m2d(t([v1,-v2])),
+t=(im*(l2.x-l1.x)).x,
+u=(im*(l2.x-l1.x)).y,
+)if(p!=p1&&lim(t,0.01,1-.01)&&lim(u,0.01,1-.01))l2.y])];
 
 // function to create offset points for a given section
 
@@ -3242,3 +3252,39 @@ s1=c_hull(offset_points_single(s,abs(r)))
 )sort_points(s,s1);
 
 function ll(l)=norm(l.y-l.x);
+
+function cn_hull(sec)=let(
+a=c_hull(sec),
+b=reduced_list(sec,a),
+c=[for(p=seg(a))let(
+   d=[for(p1=b)if(pld(p1,p)<ll(p))p1],
+   e=[for(p1=b)if(pld(p1,p)<ll(p))pld(p1,p)])
+   e==[]?p:[p.x,d[search(min(e),e,0).x],p.y]],
+d=remove_extra_points([for(p=c)each p])
+
+)d;
+
+function cn_hull1(sec)=let(
+a=cn_hull(sec),
+b=reduced_list(sec,a),
+c=[for(p=seg(a))let(
+   d=[for(p1=b)if(pld(p1,p)<ll(p))p1],
+   e=[for(p1=b)if(pld(p1,p)<ll(p))pld(p1,p)])
+   e==[]?p:[p.x,d[search(min(e),e,0).x],p.y]],
+d=remove_extra_points([for(p=c)each p])
+)d;
+
+function concave_hull(sec,k=0)= concave_hull1(sec,cn_hull1(sec),k);
+
+function concave_hull1(sec,sec1,k)=let(
+sec1=let(
+a=sec1,
+b=reduced_list(sec,a),
+c=[for(p=seg(a))let(
+   d=[for(p1=b)if(pld(p1,p)<ll(p))p1],
+   e=[for(p1=b)if(pld(p1,p)<ll(p))pld(p1,p)])
+   e==[]?p:[p.x,d[search(min(e),e,0).x],p.y]],
+d=remove_extra_points([for(p=c)each p])
+)d
+)k==0?reduced_list(sec1,s_int2(seg(sec1))):concave_hull1(sec,reduced_list(sec1,s_int2(seg(sec1))),k-1);
+
