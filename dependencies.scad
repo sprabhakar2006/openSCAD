@@ -3285,6 +3285,6 @@ c=[for(p=seg(a))let(
    e=[for(p1=b)if(pld(p1,p)<ll(p))pld(p1,p)])
    e==[]?p:[p.x,d[search(min(e),e,0).x],p.y]],
 d=remove_extra_points([for(p=c)each p])
-)d
-)k==0?reduced_list(sec1,s_int2(seg(sec1))):concave_hull1(sec,reduced_list(sec1,s_int2(seg(sec1))),k-1);
+)reduced_list(d,s_int2(seg(d)))
+)k==0?sec1:concave_hull1(sec,sec1,k-1);
 
