@@ -3253,38 +3253,39 @@ s1=c_hull(offset_points_single(s,abs(r)))
 
 function ll(l)=norm(l.y-l.x);
 
-function cn_hull(sec)=let(
+function cn_hull(sec,k)=let(
 a=c_hull(sec),
 b=reduced_list(sec,a),
 c=[for(p=seg(a))let(
-   d=[for(p1=b)if(pld(p1,p)<ll(p))p1],
-   e=[for(p1=b)if(pld(p1,p)<ll(p))pld(p1,p)])
+   d=[for(p1=b)if(pld(p1,p)<ll(p)/k)p1],
+   e=[for(p1=b)if(pld(p1,p)<ll(p)/k)pld(p1,p)])
    e==[]?p:[p.x,d[search(min(e),e,0).x],p.y]],
 d=remove_extra_points([for(p=c)each p])
 
 )d;
 
-function cn_hull1(sec)=let(
-a=cn_hull(sec),
+function cn_hull1(sec,k)=let(
+a=cn_hull(sec,k),
 b=reduced_list(sec,a),
 c=[for(p=seg(a))let(
-   d=[for(p1=b)if(pld(p1,p)<ll(p))p1],
-   e=[for(p1=b)if(pld(p1,p)<ll(p))pld(p1,p)])
+   d=[for(p1=b)if(pld(p1,p)<ll(p)/k)p1],
+   e=[for(p1=b)if(pld(p1,p)<ll(p)/k)pld(p1,p)])
    e==[]?p:[p.x,d[search(min(e),e,0).x],p.y]],
 d=remove_extra_points([for(p=c)each p])
 )d;
-
-function concave_hull(sec,k=0)= concave_hull1(sec,cn_hull1(sec),k);
+// function to find the concave hull of a list of points, parameter "k" refers to the sensitivity, when k=1, sensitivity is maximum and higher numbers will subsequently reduce the sensitivity. number of 2 is generally a good number.
+function concave_hull(sec,k=2)= assert(k>0,"k should be greater than 0")concave_hull1(sec,cn_hull1(sec,k),k);
 
 function concave_hull1(sec,sec1,k)=let(
+l=len(sec1),
 sec1=let(
 a=sec1,
 b=reduced_list(sec,a),
 c=[for(p=seg(a))let(
-   d=[for(p1=b)if(pld(p1,p)<ll(p))p1],
-   e=[for(p1=b)if(pld(p1,p)<ll(p))pld(p1,p)])
+   d=[for(p1=b)if(pld(p1,p)<ll(p)/k)p1],
+   e=[for(p1=b)if(pld(p1,p)<ll(p)/k)pld(p1,p)])
    e==[]?p:[p.x,d[search(min(e),e,0).x],p.y]],
 d=remove_extra_points([for(p=c)each p])
-)reduced_list(d,s_int2(seg(d)))
-)k==0?sec1:concave_hull1(sec,sec1,k-1);
-
+)reduced_list(d,s_int2(seg(d))),
+l1=len(sec1),
+)l==l1?sec1:concave_hull1(sec,sec1,k);
