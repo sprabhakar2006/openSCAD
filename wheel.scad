@@ -16,7 +16,7 @@ sec12=trns([50*cos(-15),50*sin(-15),0],cr([[0,0,25],[a[0].x,a[0].y,5],[a[len(a)-
 path11=ip(surf_extrude(sec,path10),l_extrude(m_points(sec12,10),300)),
 
 path13=ip(surf_extrude(sec,path10),cylinder(r=10,h=300,cp=[85*cos(-15),85*sin(-15)])),
-prism=ipe(trns([0,0,-5],surf_extrude(sec,path10)),l_extrude(cir(10,[85*cos(-15),85*sin(-15)]),300),2,1),
+prism=ipe(trns([0,0,-5],surf_extrude(sec,path10)),l_extrude(circle(10,[85*cos(-15),85*sin(-15)]),300),2,1),
 prism1=[c2t3(c3t2(prism[0])),each prism],
 prism2=ipe(trns([0,0,-5],surf_extrude(sec,path10)),l_extrude(m_points(sec12,10),300),2,1),
 prism3=[c2t3(c3t2(prism2[0])),each prism2],
