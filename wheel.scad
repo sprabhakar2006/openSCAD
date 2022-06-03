@@ -6,7 +6,7 @@ sec=cr(pts1([[-100,0],[100,30,500],[100,-30]]),20),
 sec3=cr(pts1([[3,0],[0,3,1.5],[-3,0,1.5],[0,-3]]),5),
 
 path7=cr(pts1([[0,0],[0,5],[-13,20],[0,20],[-12,20],[0,78],[12,20],[0,64],[13,20],[0,5]]),5),
-sec7=cir(245,s=72),
+sec7=circle(245,s=72),
 
 path10=trns([0,0,185],q_rot(["y-5","z-15"],cytz(cr(pts1([[0,0],[130,30,1000],[260,-10,0]]),20)))),
 a=arc(300,-30,0,s=20),
@@ -15,7 +15,7 @@ sec12=trns([50*cos(-15),50*sin(-15),0],cr([[0,0,25],[a[0].x,a[0].y,5],[a[len(a)-
 
 path11=ip(surf_extrude(sec,path10),l_extrude(m_points(sec12,10),300)),
 
-path13=ip(surf_extrude(sec,path10),cyl(r=10,h=300,cp=[85*cos(-15),85*sin(-15)])),
+path13=ip(surf_extrude(sec,path10),cylinder(r=10,h=300,cp=[85*cos(-15),85*sin(-15)])),
 prism=ipe(trns([0,0,-5],surf_extrude(sec,path10)),l_extrude(cir(10,[85*cos(-15),85*sin(-15)]),300),2,1),
 prism1=[c2t3(c3t2(prism[0])),each prism],
 prism2=ipe(trns([0,0,-5],surf_extrude(sec,path10)),l_extrude(m_points(sec12,10),300),2,1),
@@ -34,7 +34,7 @@ intersection(){
 surf_extrude(a[0],a[7],-5);
 swp(l_extrude(a[3],300));
 }
-swp(trns([85*cos(-15),85*sin(-15)],cyl(r=10,h=300)));
+swp(trns([85*cos(-15),85*sin(-15)],cylinder(r=10,h=300)));
 swp(l_extrude(a[4],300));
 swp(a[11]);
 swp(a[12]);
@@ -78,7 +78,7 @@ sec5=cr(pts1([[-100,-5,1],[100,30,500],[100,-30,1],[0,5,1],[-100,30,500],[-100,-
 sec6=cr([[0,0],each arc(50,0,30,s=10)],5),
  
 path7=cr(pts1([[0,0],[0,5],[-13,20],[0,20],[-12,20],[0,78],[12,20],[0,64],[13,20],[0,5]]),5),
-sec7=cir(245,s=72),
+sec7=circle(245,s=72),
 b=arc(50,0,30,s=10),
 sec10=cr([[0,0,5],[b[0].x,b[0].y,2],each loop(b,1,len(b)-2),[b[len(b)-1].x,b[len(b)-1].y,5]],5))
 [sec,sec1,sec2,sec3,sec5,sec6,sec7,path,path3,path4,path7,sec10, prism1];
@@ -116,11 +116,11 @@ swp_c(ipf(trns([0,0,-5],surf_extrude(b[0],b[7])),flip(l_extrude(b[11],300)),3));
 //spoke3
 
 function s3()=let(
-sec1=cir(245,s=72),
+sec1=circle(245,s=72),
 path1=cr(pts1([[0,0],[0,5,5],[-13,20,5],[0,20,5],[-12,20,5],[0,78,5],[12,20,5],[0,64,5],[13,20,5],[0,5]]),5),
 prism1=q_rot(["z50"],prism(sec1,path1)),
 
-sec2=cir(45),
+sec2=circle(45),
 path2=cr(pts1([[0,200],[5,0,5],[0,40,5],[-25,15,5],[-24.5,0]]),5),
 prism2=q_rot(["z30"],prism(sec2,path2)),
 
