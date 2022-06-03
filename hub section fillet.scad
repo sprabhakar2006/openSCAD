@@ -1,6 +1,6 @@
 include<dependencies.scad>
 
-sec=cir(60,s=72);
+sec=circle(60,s=72);
 path=cr(pts1([[-5,0],[5,0,5],[3,20,10],[-3,20,5],[-15,0]]),5);
 prism=q_rot(["z50"],prism(sec,path));
 
