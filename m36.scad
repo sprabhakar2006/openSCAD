@@ -1,6 +1,7 @@
 include<dependencies.scad>
 
-cir=cir(20);
+
+cir=circle(20);
 arc1=2p_arc([0,0],[4,28],58,-1,10);
 arc2=2p_arc([-2.5,2.5],[4-2.5,28],58-2.5,-1,10);
 path=cr([[-5,0],[0,0,5],each loop(arc1,1,9),[4,28,1],[3,28]],5);
@@ -9,7 +10,7 @@ prism=q_rot(["z30"],prism(cir,path));
 prism1=q_rot(["z30"],prism(cir,path1));
 swp_prism_h(prism,prism1);
 
-swp(l_extrude(cir(15),2.5));
+swp(l_extrude(circle(15),2.5));
 point=[20,4];
 cp=[24+6,21-3];
 arc3=arc(7.75,-60,155,cp);
