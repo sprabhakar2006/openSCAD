@@ -8,7 +8,7 @@ surf=surf_extrude(sketch,path);
 
 point1=[45,-15];
 point2=[45,15];
-cir=cir(r=7.5,[45+22.5,0]);
+cir=circle(r=7.5,[45+22.5,0]);
 p1=p_cir_t(point1,cir);
 p2=cir_p_t(cir,point2);
 a1=ang_v(p1-[45+22.5,0]);
@@ -33,7 +33,7 @@ prism2=[[0,-15,-5],each arc3,each loop(sec2[0],1,len(sec2[0])-2),each arc4,[0,15
 prism3=trns([30,0,14],[prism2,prism1]);
 difference(){
 swp(prism3);
-swp(trns([75,0,14],q_rot(["y-45"],trns([22.5,0,-11],cyl(r=3.75,h=12)))));}}
+swp(trns([75,0,14],q_rot(["y-45"],trns([22.5,0,-11],cylinder(r=3.75,h=12)))));}}
 
 sec=cr(pts1([[0,-15],[45,0,15],[0,30,15],[-45,0]]),10);
 
@@ -42,7 +42,7 @@ prism=l_extrude(sec,22.5);
 sec1=sqr([30,9]);
 prism1=trns([-.1,-4.5,-0.1],l_extrude(sec1,22.7));
 
-sec4=cir(6);
+sec4=circle(6);
 path4=pts([[0,-31/2],[0,5],[-3,0],[0,21],[3,0],[0,5]]);
 prism7=trns([12,0,11.25],q_rot(["x90"],prism(sec4,path4)));
 
@@ -55,7 +55,7 @@ swp(prism);
 bend();}
 
 swp(prism1);
-swp(trns([30,0,-.1],cyl(r=7.5,h=22.7)));
+swp(trns([30,0,-.1],cylinder(r=7.5,h=22.7)));
 swp(prism7);
 swp(prism8);
 }
