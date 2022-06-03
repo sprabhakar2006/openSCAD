@@ -15,7 +15,7 @@ sec4=loop(sec,44,127);
 //p_lineo(sec4);
 
 path=[for(i=[0:len(sec4)-1])[11.5*cos(sec4[i].x/max_x*360),11.5*sin(sec4[i].x/max_x*360),sec4[i].y]];
-sec5=cir(.8,s=50);
+sec5=circle(.8,s=50);
 
 prism=p_extrude(sec5,path);
 
