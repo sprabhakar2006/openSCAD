@@ -1,7 +1,7 @@
 include<dependencies.scad>
 
-prism=l_extrude(cir(20,s=100),50);
-prism1=l_extrude(cir(18,s=100),50);
+prism=l_extrude(circle(20,s=100),50);
+prism1=l_extrude(circle(18,s=100),50);
 
 
 
