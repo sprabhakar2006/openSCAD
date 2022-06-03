@@ -6,7 +6,7 @@ sec=cr([[20,0,3],[40,0,3],each arc(40,5,35,s=10),[40*cos(40),40*sin(40),3],[20*c
 prism=trns([0,0,.001],l_extrude(m_points_sc(sec,5,.5),100));
 
 
-prism1=cyl(r1=41.5,r2=18,h=10);  
+prism1=cylinder(r1=41.5,r2=18,h=10);  
 
 plane=trns([0,0,20],plane([0,0,1],200));
 
