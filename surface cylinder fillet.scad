@@ -1,7 +1,7 @@
 include <dependencies.scad>
 
-prism=cyl(r=20,h=50,s=72);
-%swp(cyl(r=20,h=50,s=72));
+prism=cylinder(r=20,h=50,s=72);
+%swp(cylinder(r=20,h=50,s=72));
 
 sec1=[[-30,0],[30,0]];
     
