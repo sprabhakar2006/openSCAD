@@ -1,9 +1,9 @@
 include<dependencies.scad>
 
-sec=cir(20);
+sec=circle(20);
 path=[[0,0,0],[0,50,0]];
-seca=cir(20,s=5);
-secb=c3t2(q_rot(["z36"],cir(5,s=5)));
+seca=circle(20,s=5);
+secb=c3t2(q_rot(["z36"],circle(5,s=5)));
 
 r=1;
 secc=cr([for(i=[0:len(seca)-1])each[[seca[i].x,seca[i].y,r],[secb[i].x,secb[i].y,r]]],5);
@@ -13,8 +13,8 @@ difference(){
 swp_h(sec,path,-2);
 swp(prism);}
 
-path1=ip(q_rot(["x-90"],cyl(r=20,h=50)),prism);
-path2=ip(q_rot(["x-90"],cyl(r=18,h=50)),prism);
+path1=ip(q_rot(["x-90"],cylinder(r=20,h=50)),prism);
+path2=ip(q_rot(["x-90"],cylinder(r=18,h=50)),prism);
 
 //points(path1,.5);
 //points(path2,.5);
