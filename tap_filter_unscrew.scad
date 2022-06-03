@@ -1,6 +1,6 @@
 include<dependencies.scad>
 
-sec=cir(26/2);
+sec=circle(26/2);
 
 
 line=trns([0,12,0],[[-10,0],[10,0]]);
