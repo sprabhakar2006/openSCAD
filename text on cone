@@ -1,7 +1,7 @@
 include<dependencies.scad>
 
-cir=trns([0,0,0],cir(20));
-cir1=trns([0,0,20],cir(5));
+cir=trns([0,0,0],circle(20));
+cir1=trns([0,0,20],circle(5));
 nv=[0.3,0,1];
 plane=trns([0,0,10],plane(nv,100));
 plane1=trns([0,0,15],plane(nv,100));
