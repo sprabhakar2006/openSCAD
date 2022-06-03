@@ -1,12 +1,12 @@
 include<dependencies.scad>
 
-c1=cir(10,[-35,0]);
-c2=cir(10,[35,0]);
-c3=cir(10,[0,44.06]);
+c1=circle(10,[-35,0]);
+c2=circle(10,[35,0]);
+c3=circle(10,[0,44.06]);
 
-c4=cir(7.5,[-35,0]);
-c5=cir(7.5,[35,0]);
-c6=cir(7.5,[0,44.06]);
+c4=circle(7.5,[-35,0]);
+c5=circle(7.5,[35,0]);
+c6=circle(7.5,[0,44.06]);
 //p_line(c1,.2);
 //p_line(c2,.2);
 //p_line(c3,.2);
@@ -50,9 +50,9 @@ path2=cr(pts1([[-1,3],[1,0,1],[0,7,1],[1,0]]),5);
 prism1=prism(sec,path1);
 prism2=prism(sec1,path2);
 
-c7=cir(5,[-35,0]);
-c8=cir(5,[35,0]);
-c9=cir(5,[0,44.06]);
+c7=circle(5,[-35,0]);
+c8=circle(5,[35,0]);
+c9=circle(5,[0,44.06]);
 path3=cr(pts1([[.5,0],[-.5,.5],[0,9],[.5,.5]]),5);
 prism3=prism(c7,path3);
 prism4=prism(c8,path3);
