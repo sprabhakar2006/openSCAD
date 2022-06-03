@@ -10,7 +10,7 @@ function prism(sec,path,m_points=0)=[for(p=path)[for(p1=sort_points(m_points_sc(
 
 // high quality prism, takes slightly longer
 
-function prism1(sec,path)=[for(p=path)trns([0,0,p.y],offset(sec,rnd(p.x,3)))];
+function prism1(sec,path,m_points=0)=[for(p=path)trns([0,0,p.y],sort_points(m_points_sc(sec,m_points),m_points_sc(offset(sec,rnd(p.x,3)),m_points)))];
 
 //function to calculate angle of a 2d vector starting from origin and end point with x and y co-ordinates
 // example:
