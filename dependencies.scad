@@ -1012,10 +1012,10 @@ a3=cw==-1?(a2<a1?a2+360:a2):(a2<a1?a2:a2-360)
 
 // function creates a longest 2d arc with 2 points with a radius "r" and number of segments "s". parameter cw(clockwise=1 and counter clockwise=-1) defines the order of arc
 //try this example for better understanding:
-// sec=2r(p1=[2,3],p2=[6,5],r=3,cw=-1,s=20);
+// sec=2p_long_arc(p1=[2,3],p2=[6,5],r=3,cw=-1,s=20);
 // p_lineo(sec,.2);
 
-function 2r(p1,p2,r,cw=1,s=20)=let(
+function 2p_long_arc(p1,p2,r,cw=1,s=20)=let(
 p3=p1+(p2-p1)/2,
 d=norm(p3-p1),
 l=sqrt(r^2-d^2),
