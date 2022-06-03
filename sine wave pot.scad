@@ -1,7 +1,7 @@
 include<dependencies.scad>
 
 //sine wave function
-sec=cir(15);
+sec=circle(15);
 path=[for(i=[0:30])[5*sin(12*i),i]];
 prism=prism(sec,path);
 prism1=prism(f_offset(sec,-1),path);
