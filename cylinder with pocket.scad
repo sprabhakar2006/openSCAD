@@ -7,8 +7,8 @@ d=25;
 prism=trns([0,25,0],l_extrude(m_points(cr(pts1([[-d/2,-d/2,4],[d,0,4],[0,d,4],[-d,0,4]]),10),1),50));
 
 
-path1=ip(q_rot(["x-90"],cyl(r=20,h=50)),prism);
-path2=ip(q_rot(["x-90"],cyl(r=18,h=50)),prism);
+path1=ip(q_rot(["x-90"],cylinder(r=20,h=50)),prism);
+path2=ip(q_rot(["x-90"],cylinder(r=18,h=50)),prism);
 
 //points(path1,.5);
 //points(path2,.5);
