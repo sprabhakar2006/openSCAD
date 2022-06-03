@@ -1,6 +1,6 @@
 include<dependencies.scad>
 
-sec=cir(20);
+sec=circle(20);
 path=[[0,0,0],[0,50,0]];
 
 d=25;
