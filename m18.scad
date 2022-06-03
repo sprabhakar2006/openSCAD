@@ -33,7 +33,7 @@ swp(trns([-7/2,-44,0],l_extrude(sqr([7,20]),15)));
 translate([-7/2,-44,2.5]){
 translate([-.25,0,0])
 linear_extrude(3)p_line(sqr([7.5,20.5]),.5);
-swp(trns([1,25.5,0],q_rot(["x90"],cub([5,3,20]))));
+swp(trns([1,25.5,0],q_rot(["x90"],cube([5,3,20]))));
 swp(trns([1+5,5+4,3],q_rot(["x90","z90","y180"],l_extrude(sec5,5))));
     }
 
@@ -72,7 +72,7 @@ swp(trns([-7/2,-44,0],l_extrude(sqr([7,20]),15)));}
 translate([-7/2,-44,2.5]){
 translate([-.25,0,0])
 linear_extrude(3)p_line(sqr([7.5,20.5]),.5);
-swp(trns([1,25.5,0],q_rot(["x90"],cub([5,3,20]))));
+swp(trns([1,25.5,0],q_rot(["x90"],cube([5,3,20]))));
 swp(trns([1+5,5+4,3],q_rot(["x90","z90","y180"],l_extrude(sec5,5))));
     }
 
