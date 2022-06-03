@@ -1,7 +1,7 @@
 
 //function to make a prism with combination of 2d section and 2d path
 // Example:
-// sec=cir(10);
+// sec=circle(10);
 // path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5);
 // prism=prism(sec,path);
 // swp(prism);
@@ -98,7 +98,7 @@ function surf_extrude(sec,path)=[
 function cytz(path)=[for(p=path)[p.x,0,p.y]];
 
 //function for creating points in circle with radius "r", center point "cp" and number of segments "s"           
-function cir(r,cp=[0,0],s=50)=[for(i=[0:360/s:360-360/s])[cp.x+r*cos(i),cp.y+r*sin(i)]];
+function circle(r,cp=[0,0],s=50)=[for(i=[0:360/s:360-360/s])[cp.x+r*cos(i),cp.y+r*sin(i)]];
 
 //module for drawing a closed 2d polyline from a group of points "path" and width of the polyline is defined by parameter "size".
 module p_line(path,size=.5){
@@ -179,8 +179,8 @@ function arc(radius,ang1=0,ang2=355,cp=[0,0],s=20)=[for(i=[ang1:(ang2-ang1)/s:an
     
 //function to create 2d fillet between 2 circles, where r1,r2 and c1,c2 are radiuses and enter points of the 2 circles respectively. r-> fillet radius
 ////example:
-//%p_line(cir(5),.2);
-//%p_line(cir(3,[7,0]),.2);
+//%p_line(circle(5),.2);
+//%p_line(circle(3,[7,0]),.2);
 //fillet=2cir_fillet(r1=5,r2=3,c1=[0,0],c2=[7,0],r=1);
 //p_line(fillet,.2);
     
@@ -360,7 +360,7 @@ function scl2d_c(sec,sl)=let(
 
 // function to scale a 3d prism keeping the base z-coordinate same. takes 2 arguments "prism" to scale and the scaling factor "s". scale factor can take any real number negative values will scale the prism and turn the prism upside down.
 // try the following code to understand better:
-// sec=cir(10);
+// sec=circle(10);
 // path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5);
 // prism=prism(sec,path);
 // %swp(prism);
@@ -378,7 +378,7 @@ d=z1-z2
 
 // function to scale a 3d prism keeping the prism centered. takes 2 arguments "prism" to scale and the scaling factor "s". scale factor can take any real number negative values will scale the prism and turn the prism upside down.
 // try the following code to understand better:
-// sec=cir(10);
+// sec=circle(10);
 // path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5);
 // prism=prism(sec,path);
 // %swp(prism);
@@ -415,10 +415,10 @@ function ipa(prism,prism1)=
 
 // function to calculate intersection point between two 3d prisms. "prism" is the 3d object which is intersected with "prism1".
 // try below code for better understanding:
-// sec=cir(10);
+// sec=circle(10);
 // path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-9.9,0]]),5);
 // prism=prism(sec,path);
-// prism1=q_rot(["y40"],cyl(r=3,h=15,s=30));
+// prism1=q_rot(["y40"],cylinder(r=3,h=15,s=30));
 //
 // %swp(prism);
 // %swp(prism1);
@@ -504,8 +504,8 @@ let(cg=[for(p=prism)[sum(p*[1,0,0]),sum(p*[0,1,0]),sum(p*[0,0,1])]])[sum(cg*[1,0
 //function to draw tangent line joining 2 circles with radiuses "r1" and "r2" with center points "cp1" and "cp2" respectively. This function draws tangent line only one side
 // e.g. try this code below:
 // sec=2ctp(r1=10,r2=5,cp1=[0,0],cp2=[15,6]);
-// p_line(cir(10),.1);
-// p_line(cir(5,[15,6]),.1);
+// p_line(circle(10),.1);
+// p_line(circle(5,[15,6]),.1);
 // p_line(sec,.1);
 
 function 2ctp(r1,r2,cp1,cp2)=
@@ -523,8 +523,8 @@ t4=cp2+u1*r2*rm(-90-ang1))[t1,t2];
 //function to draw tangent line joining 2 circles with radiuses "r1" and "r2" with center points "cp1" and "cp2" respectively. This function draws tangent line on both the sides
 // e.g. try this code below:
 // sec=2ctpf(r1=10,r2=5,cp1=[0,0],cp2=[15,6]);
-// p_line(cir(10),.1);
-// p_line(cir(5,[15,6]),.1);
+// p_line(circle(10),.1);
+// p_line(circle(5,[15,6]),.1);
 // p_line(sec,.1);
 
 function 2ctpf(r1,r2,cp1,cp2)=
@@ -541,7 +541,7 @@ t4=cp2+u1*r2*rm(-90-ang1))[t1,t2,t4,t3];
 
 //module to draw a polyline in 3d space (loop not closed)
 // e.g. try following code:
-// sec=trns([5,10,6],q_rot(["x45"],cir(10)));
+// sec=trns([5,10,6],q_rot(["x45"],circle(10)));
 // p_line3d(sec,.2);
     
 module p_line3d(path,r,rec=0){
@@ -554,7 +554,7 @@ module p_line3d(path,r,rec=0){
 
 //module to draw a polyline in 3d space (loop closed)
 // e.g. try following code:
-// sec=trns([5,10,6],q_rot(["x45"],cir(10)));
+// sec=trns([5,10,6],q_rot(["x45"],circle(10)));
 // p_line3dc(sec,.2);    
 
 module p_line3dc(path,r,rec=0){
@@ -650,10 +650,10 @@ function ipw(prism,prism1,r)=
 // function for creating fillet: this function first finds the intersection point between prism and prism1 and then calculates the fillet with radius "r". option "0" and "1" creates fillet either outside or inside.parameter "s" is for number of segments in the fillet
 // an example below will be more clear (try changing option from 1 =>0 or flip the direction of prism1 by flip(prism1))
 // try below code for better understanding:
-// sec=cir(10);
+// sec=circle(10);
 // path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-9.9,0]]),5);
 // prism=prism(sec,path);
-// prism1=q_rot(["y40"],cyl(r=3,h=15,s=30));
+// prism1=q_rot(["y40"],cylinder(r=3,h=15,s=30));
 //
 // %swp(prism);
 // %swp(prism1);
@@ -685,12 +685,12 @@ function ipw(prism,prism1,r)=
  sec1=[for(i=[0:len(sec[0])-1])[for(p=sec)p[i]]]
  )sec1;
 
-// draws a cylinder try swp(cyl(r=5,h=15)); 
+// draws a cylinder try swp(cylinder(r=5,h=15)); 
 
-function cyl(r1=1,r2=1,h=1,cp=[0,0],s=50,r,d,d1,d2,center=false)=let(
+function cylinder(r1=1,r2=1,h=1,cp=[0,0],s=50,r,d,d1,d2,center=false)=let(
      ra=is_num(r)?r:is_num(d)?d/2:is_num(d1)?d1/2:r1,
      rb=is_num(r)?r:is_num(d)?d/2:is_num(d2)?d2/2:r2,
-     sec=cir(ra,cp,s),
+     sec=circle(ra,cp,s),
      
 path=pts([[-ra+.1,0],[ra-.1,0],[rb-ra,h],[-rb+.1,0]]),
     prism=center==true?trns([0,0,-h/2],prism(sec,path)):prism(sec,path))
@@ -710,9 +710,9 @@ function l_extrude(sec,h=1,a=0,steps=1)=[for(i=[0:a==0?1:(a-0)/steps:a==0?1:a])
     trns([0,0,a==0?h*i:h/a*i],q_rot([str("z",a==0?0:i)],sec))];
  
 // function to draw a rectangle
-// e.g. p_line(sqr([10,5]),.1); or polygon(sqr([10,5]));
+// e.g. p_line(square([10,5]),.1); or polygon(square([10,5]));
  
-function sqr(s,center=false)=
+function square(s,center=false)=
 let(
 m=is_num(s)?s:s.x,
 n=is_num(s)?s:s.y,
@@ -721,26 +721,26 @@ sec1=center==true?[for(p=sec)p-[m/2,n/2]]:sec)
     sec1;
 
 // function to draw cube
-// swp(cub(p=[10,5,4]));
+// swp(cube(p=[10,5,4]));
     
-function cub(p,center=false)=
+function cube(p,center=false)=
 let(
 m=is_num(p)?p:p.x,
 n=is_num(p)?p:p.y,
 o=is_num(p)?p:p.z,
 
 path=pts([[-m/2,0],[m/2,0],[0,o],[-m/2,0]]),
-prism=center==true?trns([-m/2,-n/2,-o/2],rsz3d(prism(sqr(m),path),[m,n,o])):rsz3d(prism(sqr(m),path),[m,n,o])
+prism=center==true?trns([-m/2,-n/2,-o/2],rsz3d(prism(square(m),path),[m,n,o])):rsz3d(prism(square(m),path),[m,n,o])
 )
 prism;
 
 // function for creating sphere with radius "r", center point "cp" and number of segments "s".
 // try following code:
-// swp(spr(r=3,cp=[4,5,6],s=30));
+// swp(sphere(r=3,cp=[4,5,6],s=30));
 
-function spr(r,cp=[0,0,0],s=50)=let(
+function sphere(r,cp=[0,0,0],s=50)=let(
 path=arc(r,-90,90,s=s),
-prism=[for(p=path)trns([0,0,p.y]+cp,cir(p.x,s=s))])
+prism=[for(p=path)trns([0,0,p.y]+cp,circle(p.x,s=s))])
     prism;
 
 //function is used as input to another function    
@@ -937,21 +937,21 @@ function comb(n,i)=fact(n)/(fact(i)*fact(n-i));
 //function for calculating bezier curve with control points "p" and with number of segments 1/s
 // example:
 // p=[[0,0],[10,5],[0,15],[12,20]]; 
-// b=bez(p,.1); 
+// b=bezier(p,.1); 
 // points(b,.5);
 // //control points
 // color("green")
 // points(p,.5);
 
-function bez(p,s=10)=[for(t=[0:1/s:1])
+function bezier(p,s=10)=[for(t=[0:1/s:1])
     let(n=len(p)-1)add_v([for(i=[0:n])comb(n,i)*(1-t)^(n-i)*t^i*p[i]])];
 
 // function for creating arc which is tangent to 2 circles
 // try this code as an example:
 // sec=2cir_tarc(10,5,[0,0],[20,5],20);
 // p_lineo(sec,.2);
-// p_line(cir(10),.2);
-// p_line(cir(5,[20,5]),.2);
+// p_line(circle(10),.2);
+// p_line(circle(5,[20,5]),.2);
     
 function 2cir_tarc(r1,r2,cp1,cp2,r)=
 assert(r>=(r1+r2+norm(cp2-cp1))/2,str("arc radius : ",r," is smaller than the minimum required radius of ",(r1+r2+norm(cp2-cp1))/2))
@@ -1108,7 +1108,7 @@ a6=ang(v7.x,v7.y)>a5?ang(v7.x,v7.y)-360:ang(v7.x,v7.y)
 
 // function to calculate average of a group of points either 2d or 3d
 // example:
-// sec=cir(10);
+// sec=circle(10);
 // path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5);
 // prism=prism(sec,path);
 // %swp(prism);
@@ -1125,7 +1125,7 @@ let(cg=[for(p=prism)[sum(p*[1,0,0])/len(p),sum(p*[0,1,0])/len(p),sum(p*[0,0,1])/
 
 // function to calculate the resized prism
 //example:
-// sec=cir(10);
+// sec=circle(10);
 // path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5);
 // prism=prism(sec,path);
 // %swp(prism);
@@ -1153,7 +1153,7 @@ t=(bb(rev_prism)-bb(prism))/2
  
 // function to calculate the resized prism- centered
 //example:
-// sec=cir(10);
+// sec=circle(10);
 // path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5);
 // prism=prism(sec,path);
 // %swp(prism);
@@ -1181,7 +1181,7 @@ t=(bb(rev_prism)-bb(prism))/2
 
 // function to calculate 2d resized section - placed at minimum y value
 // example:
-// sec=cir(10);
+// sec=circle(10);
 // rsz_sec=rsz(sec,[5,3]);
 // %p_line(sec,.2);
 // p_line(rsz_sec,.2);
@@ -1203,7 +1203,7 @@ function rsz(sec,rsz=[1,1,1])=
 
 // function to calculate 2d resized section - centered
 // example:
-// sec=cir(10);
+// sec=circle(10);
 // rsz_sec=rsz_c(sec,[5,3]);
 // %p_line(sec,.2);
 // p_line(rsz_sec,.2);
@@ -1363,12 +1363,12 @@ path6=[for(i=[0:len(path2)-1])[path2[i].x,path2[i].y,path5[i].y]]
 
 // module for rendering various 3d prism 
 // //example1:
-// sec=cir(10);
+// sec=circle(10);
 // path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5);
 // prism=prism(sec,path);
 // swp(prism);
 // //example2:
-// prism1=l_extrude(sqr([10,6]),15);
+// prism1=l_extrude(square([10,6]),15);
 // translate([13,0,0])
 // swp(prism1);
 // //example3:
@@ -1391,10 +1391,10 @@ polyhedron(p0,p1,convexity=10);
 
 // module for rendering 3d prisms with closed section
 // example:
-// sec=cir(10);
+// sec=circle(10);
 // path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-9.9,0]]),5);
 // prism=prism(sec,path);
-// prism1=q_rot(["y40"],cyl(r=3,h=15,s=30));
+// prism1=q_rot(["y40"],cylinder(r=3,h=15,s=30));
 //
 // %swp(prism);
 // %swp(prism1);
@@ -1414,16 +1414,16 @@ polyhedron(p0,p1,convexity=10);
 //function for creating fillet between 2 cylinders. r1, r2 and cp1,cp2 are the radiuses and center points of 2 cylinders respectively. r -> is the fillet radius. path -> is given for rounding the cylinder edges
 //// example
 // path=[[0,0],[0,10]];
-// %swp(cyl(r=5,h=15));
-// %swp(cyl(r=3,h=10,cp=[7,0]));
+// %swp(cylinder(r=5,h=15));
+// %swp(cylinder(r=3,h=10,cp=[7,0]));
 // swp(2cyl_fillet(5,3,[0,0],[7,0],1,path));
 
 function 2cyl_fillet(r1,r2,cp1,cp2,r,path)=[for(p=path)trns([0,0,p.y],2cir_fillet(r1+p.x,r2+p.x,cp1,cp2,r))];
 
 //function to create 2d fillet between 2 circles (creates fillet only one side), where r1,r2 and c1,c2 are radiuses and enter points of the 2 circles respectively. r-> fillet radius
 ////example:
-//%p_line(cir(5),.2);
-//%p_line(cir(3,[7,0]),.2);
+//%p_line(circle(5),.2);
+//%p_line(circle(3,[7,0]),.2);
 //fillet=2cir_fillet1(r1=5,r2=3,c1=[0,0],c2=[7,0],r=1);
 //p_line(fillet,.2);
     
@@ -1455,13 +1455,13 @@ arc4=arc(r1,a5,a6<a5?a6+360:a6,c1)
 
 // function for creating fillet between 2 spheres. r1, r2 and cp1,cp2 are the radiuses and center points of 2 spheres. r-> fillet radius.
 //// example:
-// swp(spr(r=5,cp=[0,0,0]));
-// swp(spr(r=3,cp=[7,0,0]));
+// swp(sphere(r=5,cp=[0,0,0]));
+// swp(sphere(r=3,cp=[7,0,0]));
 //
-// fillet=2spr_fillet(r1=5,r2=3,cp1=[0,0,0],cp2=[7,0,0],1);
+// fillet=2sphere_fillet(r1=5,r2=3,cp1=[0,0,0],cp2=[7,0,0],1);
 // swp(fillet);
 
-function 2spr_fillet(r1,r2,cp1,cp2,r)=
+function 2sphere_fillet(r1,r2,cp1,cp2,r)=
 let(
 v=cp2-cp1,u=v/norm(v),
 l=norm(cp2-cp1),
@@ -1477,7 +1477,7 @@ prism=trns(cp1,q_rot([str("y",-a1),str("z",a2)],[for(i=[0:5:360])[for(p=sec)q([1
 // // function to get intersection point between a line and circle
 // // example
 //  line=[[0,0],[3,5]];
-//  cir=cir(5);
+//  cir=circle(5);
 //  %p_line(line,.2);
 //  %p_line(cir,.2);
 //
@@ -1541,8 +1541,8 @@ ip=i_p2d(line,line1)
 // function to create tangent between 2 circle where r1, r2 and cp1, cp2 are the radiuses and center points of the 2 circles respectively. 
 // example:
 //  tangent=2cir_tangent(5,3,[0,0],[7,0]);
-//  %p_line(cir(5),.2);
-//  %p_line(cir(3,[7,0]),.2);
+//  %p_line(circle(5),.2);
+//  %p_line(circle(3,[7,0]),.2);
 //  p_line(tangent,.2);
  
 function 2cir_tangent(r1,r2,cp1,cp2)=
@@ -1576,7 +1576,7 @@ g=search("-",a)!=[]?f*-1:f
 
 // function to rotate an object around any arbitrary axis
 // example
-//  sec=cir(10);
+//  sec=circle(10);
 //  path=cr(pts1([[2,0],[-2,0,2],[-1,5,3],[-4,0]]),5);
 //  prism=trns([15,0],prism(sec,path));
 //  prism1=rot([3,4,7],prism,180);
@@ -1640,7 +1640,7 @@ b=revised_list(sec,a)
 // function to match the number of points between 2 sections
 // example:
 // sec=cr(pts1([[-2.5,-2.5,1],[5,0,1],[0,5,1],[-5,0,1]]),5);
-// cir=cir(5);
+// cir=circle(5);
 // echo(len(sec), len(cir));
 //
 // sec1=sort_points(cir,sec);
@@ -1674,7 +1674,7 @@ faces4=[for(i=[n*p-n:n*p-1])i<n*p-1?[i,i+n*p,i+1+n*p,i+1]:[i,i+n*p,i+1-n+n*p,i+1
 
 // module to create a hollow prism with defined 2 prisms. first prism is the outer one and the second one is the inner one. number of points of the outer and inner prism should be exactly same.
 // example:
-// sec=cir(10);
+// sec=circle(10);
 // prism=l_extrude(sec,15);
 // prism1=l_extrude(f_offset(sec,-1),15);
 //
@@ -2159,7 +2159,7 @@ function pts3(p)=[for(n=[1:len(p)])add_p3(p=p,p1=[0,0,0,0],n=n,i=0)];
     
 // function to calculate the bounding box dimensions of a prism
 // example:
-// echo(bb(rsz3d(spr(4),[5,5,8]))); // => ECHO: [5, 5, 8]
+// echo(bb(rsz3d(sphere(4),[5,5,8]))); // => ECHO: [5, 5, 8]
 
 function bb(prism)=
 let(
@@ -2200,7 +2200,7 @@ back=q_rot([str("y",-theta1),str("z",theta)],rev_align)
 
 // function to calculate an offset of sectio  in 3d space
 // example:
-// sec=trns([7,8,20],align_v([2,3,5],cir(5)));
+// sec=trns([7,8,20],align_v([2,3,5],circle(5)));
 // p_line3dc(sec,.2);
 // p_line3dc(3d_offset(sec,nv(sec),1),.2);
 
@@ -2208,7 +2208,7 @@ function 3d_offset(sec,nv,o=1)=3d_offset_input(sec,nv+[0.00001,.00001,0],o);
 
 // function to calculate the normal vector of a known section
 // example:
-// sec=trns([7,8,20],align_v([2,3,5],cir(5)));
+// sec=trns([7,8,20],align_v([2,3,5],circle(5)));
 // echo(nv(sec)); // =>ECHO: [-0.0160329, -0.0240482, -0.0400802]
 
 function nv(sec)= cross(sec[0]-sec[1],sec[2]-sec[1]);
@@ -2415,7 +2415,7 @@ ip=ibsap(sec,p)
 
 )pwir;
 
-function flat(dia=10,cp=[0,0,0])=trns(cp,[cir(.001),cir(dia/2)]);
+function flat(dia=10,cp=[0,0,0])=trns(cp,[circle(.001),circle(dia/2)]);
 
 // function to draw a helix with diameter "dia", pitch "pitch" and number of turns "turns"
 // example:
@@ -2430,7 +2430,7 @@ function helix(dia=10,pitch=3,turns=5)=[for(i=[0:5:360*turns])[dia/2*cos(i),dia/
 // swp(plane);
 //
 // example 2:
-// prism=l_extrude(cir(5,s=50),50);
+// prism=l_extrude(circle(5,s=50),50);
 // p1=ipe(trns([0,0,0],plane([0,0,1],50)),prism,1);
 // p2=ipe(trns([0,0,50],plane([0,0,1],50)),flip(prism),1,1);
 // swp([each p1,each flip(p2)]);
@@ -2452,7 +2452,7 @@ function o()=[0,0,0];
 // function to align any shape "prism" with a vector "v"
 // example:
 // v=[20,30,50];
-// prism=l_extrude(cir(1),50);
+// prism=l_extrude(circle(1),50);
 // aligned_prism=align_v(v,prism);
 // %swp(aligned_prism);
 // p_line3d([o(),v],.2);
@@ -2490,7 +2490,7 @@ p0=path[i],p1=i<len(path)-1?path[i+1]:path[i]+path[i]*100
 // function to find the tanget to a circle from a point outside the circle
 // example:
 // point=[10,0];
-// cir=cir(r=7.5,cp=[22.5,15]);
+// cir=circle(r=7.5,cp=[22.5,15]);
 // p_line([point,p_cir_t(point,cir)],.2);
 // p_line(cir,.2);
 
@@ -2522,7 +2522,7 @@ point=cir[i+1]
 // function to find the tanget from a circle to a point outside the circle
 // example:
 // point=[10,0];
-// cir=cir(r=7.5,cp=[22.5,15]);
+// cir=circle(r=7.5,cp=[22.5,15]);
 // p_line([cir_p_t(cir,point),point],.2);
 // p_line(cir,.2);
 
@@ -2555,7 +2555,7 @@ point=cir[i]
 // function to find the angle of a 2d vector with [1,0]
 // example
 //  point=[10,0];
-//  cir=cir(r=7.5,cp=[22.5,15]);
+//  cir=circle(r=7.5,cp=[22.5,15]);
 //  tangent_point=p_cir_t(point,cir);
 //  v=tangent_point-point;
 //  ang=ang_v(v);
@@ -2583,7 +2583,7 @@ function cpo(prism)=[for(i=[0:len(prism[0])-1])[for(p=prism)p[i]]];
 
 // function to draw an offset for a 3d prism
 // example:
-// sec=cir(10);
+// sec=circle(10);
 // path=cr(pts1([[2,0],[-2,0,2],[-1,10,2],[-4,0]]),5);
 // prism=prism(sec,path);
 // //swp(prism);
