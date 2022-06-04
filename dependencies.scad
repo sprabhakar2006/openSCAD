@@ -3297,7 +3297,7 @@ l1=len(sec1),
 //point=[10,15,20];
 //nv=[3,4,5];
 //points([point],.5);
-//points([ppi(point=point,nv=nv)],.5);
+//points([ppp(point=point,nv=nv)],.5);
 //swp(plane(nv,dia=10));
 
 function ppp(point,nv)=
