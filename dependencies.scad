@@ -3290,3 +3290,30 @@ d=remove_extra_points([for(p=c)each p])
 )reduced_list(d,s_int2(seg(d))),
 l1=len(sec1),
 )l==l1?sec1:concave_hull1(sec,sec1,k);
+
+
+// function for finding projection of a "point" on to a plane defined by a normal vector "nv"
+////example:
+//point=[10,15,20];
+//nv=[3,4,5];
+//points([point],.5);
+//points([ppi(point=point,nv=nv)],.5);
+//swp(plane(nv,dia=10));
+
+function ppp(point,nv)=
+[for(i=[0:len(plane[0])-1])
+   let(
+   plane=plane(nv,10^5),
+   line=[point,point+uv(nv)],
+   i_plus=i<len(plane)-1?i+1:0,
+   pa=plane[0][0],pb=plane[1][i],pc=plane[1][i_plus],
+   p0=line[0],p1=line[1],
+   v1=p1-p0,v2=pb-pa,v3=pc-pa,
+//   p0+v1*t1=pa+v2*t2+v3*t3
+//   p0-pa=-v1*t1+v2*t2+v3*t3    
+   t1=(p0-pa)*cross(v2,v3)/(-v1*cross(v2,v3)),
+   t2=(p0-pa)*cross(v3,-v1)/(-v1*cross(v2,v3)),
+   t3=(p0-pa)*cross(-v1,v2)/(-v1*cross(v2,v3))
+            
+)if(lim(t2+t3,0,1))p0+v1*t1
+][0];
