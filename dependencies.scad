@@ -1627,7 +1627,13 @@ a=[for(i=[0:len(sec)-1]) if(search(0,[for(j=index_list)i-j],0)==[])i],
 sec1=[for(i=a)sec[i]]
 )sec1;
 
-// function used as input to another function
+// function to remove all the duplicate points in a list, only the first point is preserved
+////example:
+// points_list=[[1,2,3],[2,3,4],[1,2,3],[3,5,6],[1,2,3]];
+// 
+// cleaned_points_list=remove_extra_points(points_list);
+// 
+// echo(cleaned_points_list); // ECHO: [[1, 2, 3], [2, 3, 4], [3, 5, 6]
 
 function remove_extra_points(sec,n=0)=
 n==len(sec)?sec:remove_extra_points(
@@ -2839,7 +2845,7 @@ h=[for(n=g)p[search(rnd(n,3),rnd_list(p,3),0,1).x]]
 
 )f ].x;
 
-// function to convert a section with corner radius to without radius for a given radius. for eaxmple 
+// function to convert a section with corner radius to without radius for a given radius.only on clockwise points for eaxmple 
 // sec=cr(pts1([[0,0,.2],[8,3,3],[5,7,1],[-8,0,2],[-5,20,1]]),20);
 // //sec=cr(pts1([[0,0,.5],[7,5,2],[5,7,3],[-5,7,5],[-7,5,5]]),20);
 // %p_line(sec,.1);
@@ -2899,6 +2905,14 @@ u2=rnd_v(uv(v2),3)
 )
 sec4;
 
+// function to convert a section with corner radius to without radius for a given radius.only on counter clockwise points for eaxmple 
+// sec=cr(pts1([[0,0,.2],[8,3,3],[5,7,1],[-8,0,2],[-5,20,1]]),20);
+// //sec=cr(pts1([[0,0,.5],[7,5,2],[5,7,3],[-5,7,5],[-7,5,5]]),20);
+// %p_line(sec,.1);
+// sec1=convert_sec1(sec,4); // in case the corner radius of a section is < 4, the corner radius reduced to 0.
+// p_line(sec1,.1);
+
+
 function convert_sec1(sec,d)=let(
 r=[for(i=[0:len(sec)-1])let(
 i_2minus=i==0?len(sec)-2:i==1?len(sec)-1:i-2,
@@ -2952,6 +2966,12 @@ u2=rnd_v(uv(v2),3)
 )
 sec4;
 
+// function to convert a section with corner radius to without radius for a given radius. for example 
+// sec=cr(pts1([[0,0,.2],[8,3,3],[5,7,1],[-8,0,2],[-5,20,1]]),20);
+// //sec=cr(pts1([[0,0,.5],[7,5,2],[5,7,3],[-5,7,5],[-7,5,5]]),20);
+// %p_line(sec,.1);
+// sec1=convert_sec2(sec,4); // in case the corner radius of a section is < 4, the corner radius reduced to 0.
+// p_line(sec1,.1);
 
 function convert_sec2(sec,d)=let(
 r=[for(i=[0:len(sec)-1])let(
@@ -3021,6 +3041,17 @@ h=[for(n=g)p[search(rnd(n,3),rnd_list(p,3),0,0).x]]
 
 )f ].x;
 
+// function to sort a list of points in the order top to bottom and left to right
+////example:
+// a=rands(0,10,30);
+// b=rands(0,7,30);
+// pnts=[for(i=[0:len(a)-1])[a[i],b[i]]];
+// 
+// sorted_points=top_bottom_sort(pnts);
+//
+//for(i=[0:len(sorted_points)-1])
+//translate(sorted_points[i]) text(str(i),.25);
+
 function top_bottom_sort(list)=let(s=top_bottom_sort1(list))[for(p=s)if(p!=undef)p];
 
 function sort_seg(sec)=let(
@@ -3048,6 +3079,8 @@ s3=[for(i=[0:n])let(
     )if(a>=b)s2[i]]
     )s3;
 
+// function to calculate intersection point between 2 lines where the intersection point lies inside both the lines
+    
 function i_p2dw(l1,l2)= let(
 v1=l1.y-l1.x,v2=l2.y-l2.x,
 im=i_m2d(t([v1,-v2])),
@@ -3107,6 +3140,8 @@ function psd(p,s)=let(
 s1=seg(s),
 d=min([for(p1=s1)let(a=pld(p,p1))a])
 )d;
+
+// function to round all the numbers in the list to "n" decimal points
 
 function rnd_n(list,n)=[for(p=list)rnd(p,n)];
 
