@@ -1,0 +1,300 @@
+import numpy as np
+
+def arc(radius,start_angle,end_angle,cp,segments=20):
+    r=np.linspace(start_angle,end_angle,segments+1)
+    c=[]
+    for i in r:
+        c.append(np.add(cp,[radius*np.cos(np.pi/180*i),radius*np.sin(np.pi/180*i)]).tolist())
+    return c
+        
+
+def pts(p):
+    p1=[]
+    for a in p:
+        p1.append([a[0],a[1]])
+    p=p1
+    c=[]
+    for i in range(len(p)+1):
+        c.append(np.dot(np.transpose(p[0:i]),[1 for j in range(i)]).tolist())
+    return c[1:]
+
+
+
+
+def pts1(p):
+    c,d,e=[],[],[]
+    for i in p:
+        c.append([i[0],i[1]])
+        
+        d.append(i[2]) if len(i)==3 else d.append(0)
+    f=pts(c)
+    for j in range(len(f)):
+        e.append([f[j][0],f[j][1],d[j]])
+    return e
+
+def cw(p):
+    c=[]
+    for i in p:
+        c.append([i[0],i[1]])
+    p=c
+    c=[]
+    for i in range(len(p)):
+        
+        if i==0:
+            a=np.subtract(p[0],p[len(p)-1])
+            b=np.subtract(p[1],p[0])
+            c.append(np.cross(a,b))
+        elif i<len(p)-1:
+            a=np.subtract(p[i],p[i-1])
+            b=np.subtract(p[i+1],p[i])
+            c.append(np.cross(a,b))
+        else:
+            a=np.subtract(p[i],p[i-1])
+            b=np.subtract(p[0],p[i])
+            c.append(np.cross(a,b))
+    d,e=0,0
+    for i in c:
+        if i>=0:
+            d=d+1
+        else:
+            e=e+1
+    if d>e:
+        return -1
+    else:
+        return 1
+    
+
+
+def ang(x,y):
+    if x>=0 and y>=0:
+        return np.arctan(y/(0.000001 if x==0 else x))*180/np.pi
+    elif x<0 and y>=0:
+        return 180-abs(np.arctan(y/x))*180/np.pi
+    elif  x<0 and y<0:
+        return 180+abs(np.arctan(y/x))*180/np.pi
+    else:
+        return 360-abs(np.arctan(y/(0.000001 if x==0 else x)))*180/np.pi
+
+
+
+def q(vector=[1,0,0],point=[0,5,0],theta=0):
+
+    t=theta
+    v=uv(vector)
+    a=t/2*np.pi/180
+    p=[np.cos(a),np.multiply(v,np.sin(a))]
+    p1=[p[0],-p[1]]
+    q=[0,[point[0],point[1],0] if len(point)==2 else point]
+    pq=[p[0]*q[0]-p[1]*q[1],np.multiply(p[0],q[1])+p[1]*q[0]+np.cross(p[1],q[1])]
+    pqp1=[pq[0]*p1[0]-pq[1]*p1[1],pq[0]*p1[1]+pq[1]*p1[0]+np.cross(pq[1],p1[1])]
+    transformation=pqp1[1].tolist()
+    return transformation
+
+def uv(v):
+    c=[]
+    for i in v:
+        c.append(i**2)
+    b=np.sqrt(sum(c))
+    return np.divide(v,b).tolist()
+
+def norm(v):
+    c=[]
+    for i in v:
+        c.append(i**2)
+    b=np.sqrt(sum(c))
+    return b
+
+def fillet2d(pl,rl,s):
+    c=[]
+    for i in range(len(pl)):
+        p0=pl[len(pl)-2] if i==0 else pl[len(pl)-1] if i==1 else pl[i-2]
+        p1=pl[len(pl)-1] if i==0 else pl[i-1]
+        p2=pl[i]
+        p3=pl[i+1] if i<len(pl)-1 else pl[0]
+        p4=pl[i+2] if i<len(pl)-2 else pl[0] if i==pl[len(pl)-1] else pl[1]
+        r0=rl[len(rl)-1] if rl[0] else rl[i-1]
+        r1=rl[i]
+        r2=rl[i+1] if i<len(rl)-1 else rl[0]
+        u0=uv(np.subtract(p0,p1))
+        u1=uv(np.subtract(p2,p1))
+        u2=uv(np.subtract(p1,p2))
+        u3=uv(np.subtract(p3,p2))
+        u4=uv(np.subtract(p2,p3))
+        u5=uv(np.subtract(p4,p3))
+        ang0=ang(u0[0],u0[1])
+        ang1=ang(u1[0],u1[1])
+        ang2=ang(u2[0],u2[1])
+        ang3=ang(u3[0],u3[1])
+        ang4=ang(u4[0],u4[1])
+        ang5=ang(u5[0],u5[1])
+        theta0= abs(180-((ang0+360 if ang0<ang1 else ang0)-ang1))/2
+        theta1= abs(180-((ang2+360 if ang2<ang3 else ang2)-ang3))/2
+        theta2= abs(180-((ang4+360 if ang4<ang5 else ang4)-ang5))/2
+        c.append(f2d(p1,p2,p3,r0,r1,r2,theta0,theta1,theta2,u2,u3,s))
+    return c
+    
+
+
+def rm(theta):
+    return [[np.cos(theta*np.pi/180),np.sin(theta*np.pi/180)],[-np.sin(theta*np.pi/180),np.cos(theta*np.pi/180)]]
+
+def each(a):
+    c=[]
+    for p in a:
+        for p1 in p:
+            c.append(p1.tolist())
+    return c
+
+def cr1(pl,s=20):
+    pl1=[[p[0],p[1]] for p in pl]
+    rl=[0 if len(p)==2 else p[2] for p in pl]
+    return fillet2d(pl1,rl,s)
+
+def cr(pl,s=20):
+    sec=cr1(pl,s)
+    c=[]
+    for p in sec:
+        for p1 in p:
+            c.append(p1)
+    return c
+
+def f2d(p1,p2,p3,r0,r1,r2,theta0,theta1,theta2,u2,u3,s):
+        l1=norm(np.subtract(p1,p2))
+        l2=r0*np.tan(theta0*np.pi/180)+r1*np.tan(theta1*np.pi/180)
+        l3=norm(np.subtract(p3,p2))
+        l4=r1*np.tan(theta1*np.pi/180)+r2*np.tan(theta2*np.pi/180)
+        rf1=r1 if l1>l2 else l1/l2*r1
+        rf2=r1 if l3>l4 else l3/l4*r1
+        rf=min(rf1,rf2)
+
+        p=np.add(p2,np.multiply(u2,rf*np.tan(theta1*np.pi/180))).tolist()
+        cp=np.subtract(p,np.dot(u2,np.multiply(rm(90),rf))) if cw([p1,p2,p3])==-1 else np.subtract(p,np.dot(u2,np.multiply(rm(-90),rf)))
+        a1=ang(np.subtract(p,cp)[0],np.subtract(p,cp)[1])
+        a2=np.add(a1,2*theta1) if cw([p1,p2,p3])==-1 else np.subtract(a1,2*theta1)
+        ar=arc(rf,a1,a2,cp,s)
+        if r1==0 or norm(np.subtract(u2,u3))<.2:
+            return [p2]
+        else:
+            return ar
+
+
+def flip(sec): 
+    return sec[::-1]
+    
+
+def i_p2d(l1,l2):
+    p0,p1,p2,p3=l1[0],l1[1],l2[0],l2[1]
+    v1=np.subtract(p1,p0)
+    v2=np.subtract(p3,p2)
+    t1=np.dot(np.linalg.inv(np.transpose([v1,-v2])),np.subtract(p2,p0))[0]
+    pi=np.add(p0,np.multiply(v1,t1))
+    return pi.tolist()
+
+def r_3p(p1,p2,p3):
+    p4=np.add(p1,np.divide(np.subtract(p2,p1),2)).tolist()
+    p5=np.add(p2,np.divide(np.subtract(p3,p2),2)).tolist()
+    u1=uv(np.subtract(p2,p4))
+    u2=uv(np.subtract(p3,p5))
+    p6=np.add(p4,np.dot(u1,rm(90))).tolist()
+    p7=np.add(p5,np.dot(u2,rm(90))).tolist()
+    cp=i_p2d([p4,p6],[p5,p7])
+    r=norm(np.subtract(p1,cp))
+    return r
+
+
+def max_r(sec):
+    c=[]
+    for i in range(len(sec)):
+        i_2minus=len(sec)-2 if i==0 else len(sec)-1 if i==1 else i-2
+        i_minus=len(sec)-1 if i==0 else i-1
+        i_plus=i+1 if i<len(sec)-1 else 0
+        i_2plus=i+2 if i<len(sec)-2 else 0 if i<len(sec)-1 else 1
+        pi_2minus=sec[i_2minus]
+        pi_minus=sec[i_minus]
+        pi=sec[i]
+        pi_plus=sec[i_plus]
+        pi_2plus=sec[i_2plus]
+        v1=np.subtract(pi_minus,pi_2minus)
+        v2=np.subtract(pi,pi_minus)
+        v3=np.subtract(pi_plus,pi)
+        v4=np.subtract(pi_2plus,pi_plus)
+        l1=norm(v1).round(3)
+        l2=norm(v2).round(3)
+        l3=norm(v3).round(3)
+        l4=norm(v4).round(3)
+        r1=r_3p(pi_2minus,pi_minus,pi).round(3)
+        r2=r_3p(pi_minus,pi,pi_plus).round(3)
+        r3=r_3p(pi,pi_plus,pi_2plus).round(3)
+        c.append(0 if l2!=l3 and (r1!=r2 or r2!=r3) else r2)
+    return max(c)
+        
+
+def offset_l(l,d):
+    u=uv(np.subtract(l[1],l[0]))
+    p0=np.add(l[0],np.dot(u,np.multiply(d,rm(-90)))).tolist()
+    p1=np.add(l[1],np.dot(u,np.multiply(d,rm(-90)))).tolist()
+    return [p0,p1]
+
+def seg(sec):
+    c=[]
+    for i in range(len(sec)):
+        i_plus=i+1 if i<len(sec)-1 else 0
+        p0=sec[i]
+        p1=sec[i_plus]
+        l=[p0,p1]
+        c.append(l)
+    return c
+
+def offset_seg(sec,r):
+    s=seg(sec)
+    c=[]
+    for p in s:
+        c.append(offset_l(p,r))
+    return c
+
+def offset_seg_cw(sec,r):
+    c=[]
+    for i in range(len(sec)):
+        i_minus=len(sec)-1 if i==0 else i-1
+        i_plus=i+1 if i<len(sec)-1 else 0
+        p0=sec[i_minus]
+        p1=sec[i]
+        p2=sec[i_plus]
+        clock=cw([p0,p1,p2])
+        if clock==1:
+            c.append(offset_l([p1,p2],r))
+    d=[]
+    for a in c:
+        for b in a:
+            d.append(b)
+    return d
+
+def lim(t,s,e):
+    return t>=s and t<=e
+
+def remove_extra_points(points_list):
+    return np.unique(points_list,axis=0).tolist()
+
+def s_int(sec):
+    c=[]
+    for p in sec:
+        for p1 in sec:
+            l1=p
+            l2=p1
+            v1=np.subtract(l1[1],l1[0])
+            v2=np.subtract(l2[1],l2[0])
+            im=np.linalg.inv(np.transpose([v1,-v2]))
+            t=np.dot(im,np.subtract(l2[0],l1[0]))[0]
+            u=np.dot(im,np.subtract(l2[0],l1[0]))[1]
+            if p!=p1 and lim(t,-0.01,1.01) and lim(u,-.01,1.01):
+                c.append(np.add(l1[0],np.multiply(t,v1)).tolist())
+    return c
+
+with open('d:/openscad/arc.scad','w+') as f:
+    f.write(f'include<dependencies.scad> \n \
+    arc={arc(30,20,210,[15,3])};\n \
+    p_lineo(arc,.5); \n \
+    p={cr(pts1(p),20)}; \n \
+    p_line(p,.1); \n \
+    echo([2,3,4]*[4,5,6]); \n') 
+            
