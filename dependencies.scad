@@ -3352,3 +3352,10 @@ function ppp(point,nv)=
             
 )if(lim(t2+t3,0,1))p0+v1*t1
 ][0];
+
+function remove_near_point(point,list)=let(
+n=[for(p=list)if(norm(p-point)<=.01)each each search([p],list,0)]
+
+)len(n)>1?[for(i=[1:len(n)-1])each [for(j=[0:len(list)-1])if(j!=n[i])list[j]]]:list;
+
+function rep(list,n=0)= n==len(list)-1?list:rep(remove_near_point(list[n],list),n+1);
