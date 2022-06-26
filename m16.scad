@@ -12,10 +12,10 @@ plane=trns([0,0,20],plane([0,0,1],200));
 
 //for(p=prism)points(p,.2);
 
-ip1=ipe(prism1,prism,1,1);
+ip1=ipe(prism1,prism,2,1);
 sec1=c3t2(ip1[len(ip1)-1]);
 prism2=l_extrude(sec1,100);
-ip2=flip(ipe(plane,flip(prism2),1,1));
+ip2=flip(ipe(plane,flip(prism2),2,1));
 
 prism3=[each ip1,each ip2];
 
