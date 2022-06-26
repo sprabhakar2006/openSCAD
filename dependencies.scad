@@ -641,7 +641,7 @@ function ipw(prism,prism1,r)=
             
             
             ) //[v1,p2[i]-p1[i],5]
-            if(! is_undef(p7[0]))3p_3d_fillet(p2[i],p1[i],p7[0],r,s)
+            if(! is_undef(p7[0]))3p_3d_fillet(p2[i],p1[i],p7[0],3p_3d_r([p2[i],p1[i],p7[0]])*2,s)
             
             ];
             
@@ -667,7 +667,7 @@ function ipw(prism,prism1,r)=
             
             
             ) //[v1,p2[i]-p1[i],5]
-            if(! is_undef(p7[0]))3p_3d_fillet_wo_pivot(p7[0],p1[i],p2[i],r,s)
+            if(! is_undef(p7[0]))3p_3d_fillet_wo_pivot(p7[0],p1[i],p2[i],3p_3d_r([p7[0],p1[i],p2[i]])*2,s)
             
             ];
  
@@ -684,7 +684,7 @@ function ipw(prism,prism1,r)=
 // fillet=ipf(prism,prism1,r=1,option=1,s=5);
 // swp_c(fillet);
 
-  function ipf(prism,prism1,r,option=0,s=5)=let(sec=ipr(prism,prism1,r,option,s=s))
+  function ipf(prism,prism1,r,option=0,s=5)=let(sec=ipr(prism,prism1,r/2,option,s=s))
             [for(i=[0:len(sec)-1])each i<len(sec)-1?[sec[i]]:[sec[i],sec[0]]];
             
  //function for creating a fillet by intersection between a plane and a prism
@@ -705,7 +705,7 @@ function ipw(prism,prism1,r)=
  
  function ipe(prism,prism1,r,option=0,s=5)=
  let(
- sec=ipr1(prism,prism1,r,option,s=s),
+ sec=ipr1(prism,prism1,r/2,option,s=s),
  sec1=[for(i=[0:len(sec[0])-1])[for(p=sec)p[i]]]
  )sec1;
 
@@ -3405,11 +3405,12 @@ function point_projection_on_plane(point,plane)=
 )[if(lim(t2+t3,0,1))p0+v1*t1][0]
 ;
 
-function remove_near_point(point,list)=let(
-n=[for(p=list)if(norm(p-point)<=.01)each each search([p],list,0)]
+function remove_near_point(point,list,d)=let(
+n=[for(p=list)if(norm(p-point)<=d)each each search([p],list,0)]
 
 )len(n)>1?[for(i=[1:len(n)-1])each [for(j=[0:len(list)-1])if(j!=n[i])list[j]]]:list;
 
 //experimental
 
-function rep(list,n=0)= n==len(list)-1?list:rep(remove_near_point(list[n],list),n+1);
+function rep1(list,rev_list,n=0,d)= n==len(list)-1?rev_list:rep1(list,remove_near_point(list[n],rev_list,d),n+1,d);
+function rep(list,d=.01)=rep1(list,list,n=0,d);
