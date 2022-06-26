@@ -126,7 +126,30 @@ module rd_line(path,size=.5){
     translate(p0)sphere(size,true,$fn=30);
     translate(p1)sphere(size,true,$fn=30);}}
     
-    
+// function to calculate angles for each point in the list of points in the section
+//example:
+//sec=cr(pts1([[0,0,.2],[8,3,3],[5,7,1],[-8,0,2],[-5,20,1]]),20);
+//echo(list_ang(sec));
+//p0=sec[0];
+//p1=sec[1];
+//p2=sec[2];
+//
+//v1=p1-p0;
+//v2=p2-p1;
+//a=ang_v(v1);
+//l1=[[0,0],v1*100];
+//l2=[[0,0],v2*100];
+//
+//p_lineo(l1,.01);
+//p_lineo(l2,.01);
+//
+//arc=arc(1.1,a,a+5.5,s=3);
+//
+//p_lineo(arc,.01);
+//
+//translate([.2,-1,0])text(str(5.5," degrees"),.1);
+ 
+ 
 function list_ang(sec)=[for(i=[0:len(sec)-1])
     let(
 p0=sec[i],p1=i<len(sec)-1?sec[i+1]:sec[0],p2=i<len(sec)-2?sec[i+2]:i<len(sec)-1?sec[0]:sec[1],
@@ -135,6 +158,7 @@ angle1=ang(v1.x,v1.y),angle2=ang(v2.x,v2.y),
 angle=angle2-angle1
 
 )if(is_num(angle))angle];
+
 //function to identify whether the section is clockwise or counter clockwise. cw(sec)==1 means clockwise and -1 means counterclockwise. e.g. echo(cw([[0,0],[4,0],[0,4],[-4,0]]));// -1
 
 function cw(sec)=let(p=mode_sign(list_ang(sec)))
@@ -3335,10 +3359,10 @@ l1=len(sec1),
 //points([ppp(point=point,nv=nv)],.5);
 //swp(plane(nv,dia=10));
 
-function ppp(point,nv)=
+function ppp(point,nv)=let(plane=plane(nv,10^5))
 [for(i=[0:len(plane[0])-1])
    let(
-   plane=plane(nv,10^5),
+//   plane=plane(nv,10^5),
    line=[point,point+uv(nv)],
    i_plus=i<len(plane)-1?i+1:0,
    pa=plane[0][0],pb=plane[1][i],pc=plane[1][i_plus],
@@ -3353,9 +3377,39 @@ function ppp(point,nv)=
 )if(lim(t2+t3,0,1))p0+v1*t1
 ][0];
 
+////function to find the projection of a point on plane
+////example:
+//point=[5,5,5];
+//p0=[0,0,0];
+//p1=[5,20,0];
+//p2=[-2,3,10];
+//hull()
+//points([p0,p1,p2],.01);
+//points([point],.5);
+//p3=point_projection_on_plane(point,[p0,p1,p2]);
+//color("blue")
+//points([p3],.5);
+
+function point_projection_on_plane(point,plane)=
+   let(nv=nv(plane),
+   line=[point,point+uv(nv)],   
+   pa=plane[0],pb=plane[1],pc=plane[2],
+   p0=line[0],p1=line[1],
+   v1=p1-p0,v2=pb-pa,v3=pc-pa,
+//   p0+v1*t1=pa+v2*t2+v3*t3
+//   p0-pa=-v1*t1+v2*t2+v3*t3    
+   t1=(p0-pa)*cross(v2,v3)/(-v1*cross(v2,v3)),
+   t2=(p0-pa)*cross(v3,-v1)/(-v1*cross(v2,v3)),
+   t3=(p0-pa)*cross(-v1,v2)/(-v1*cross(v2,v3))
+            
+)[if(lim(t2+t3,0,1))p0+v1*t1][0]
+;
+
 function remove_near_point(point,list)=let(
 n=[for(p=list)if(norm(p-point)<=.01)each each search([p],list,0)]
 
 )len(n)>1?[for(i=[1:len(n)-1])each [for(j=[0:len(list)-1])if(j!=n[i])list[j]]]:list;
+
+//experimental
 
 function rep(list,n=0)= n==len(list)-1?list:rep(remove_near_point(list[n],list),n+1);
