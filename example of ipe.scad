@@ -11,6 +11,6 @@ include<dependencies.scad>
  swp(prism1);
 
  plane2=trns([0,0,20],plane([0,0,1],50));
- prism2=ipe(plane2,flip(prism),r=1,option=1,s=10);
+ prism2=ipe(plane2,flip(prism),r=2,option=1,s=10);
  //%swp(plane2);
  swp(prism2);
