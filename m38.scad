@@ -10,7 +10,7 @@ prism4=cylinder(r=7.5,h=5.5,cp=[14.5,0]);
 prism5=cylinder(r=7.5,h=5.5,cp=[-14.5,0]);
 
 sec=circle(10);
-path=c2t3(cr(pts1([[0,0],[0,29,17.5],[-44,0]]),10));
+path=c2t3(cr(pts1([[0,0],[0,29,17.5],[-44,0]]),30));
 
 prism6=trns([-40,0,29],q_rot(["y-90"],cylinder(r=39/2,h=4)));
 
@@ -18,8 +18,8 @@ rotate([90,0,0])
 swp_h(sec,path,-3.5);
 
 prism7=trns([0.001,0,.001],q_rot(["x90"],p_extrude(sec,path)));
-fillet1=ipf(prism3,prism7,1.25);
-fillet2=ipf(prism6,flip(prism7),1.25,1);
+fillet1=ipf(prism3,prism7,2.5);
+fillet2=ipf(prism6,flip(prism7),2.5,1);
 
 
 difference(){
