@@ -3402,7 +3402,7 @@ function point_projection_on_plane(point,plane)=
    t2=(p0-pa)*cross(v3,-v1)/(-v1*cross(v2,v3)),
    t3=(p0-pa)*cross(-v1,v2)/(-v1*cross(v2,v3))
             
-)[if(lim(t2+t3,0,1))p0+v1*t1][0]
+)[if(lim(t2,0,1)&&lim(t3,0,1))p0+v1*t1][0]
 ;
 
 function remove_near_point(point,list,d)=let(
