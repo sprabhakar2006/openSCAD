@@ -1,2 +1,490 @@
+from numpy import *
+import matplotlib.pyplot as plt
+import time
+from scipy.spatial import cKDTree
 
+
+def arc(radius,start_angle,end_angle,cp,segments=20):
+    cp=array(cp)
+    r=linspace(start_angle,end_angle,segments+1)
+    x=radius*cos(pi/180*r)
+    y=radius*sin(pi/180*r)
+    c=cp+array([x,y]).swapaxes(0,1)
+    return c.tolist()        
+
+def pts(p):
+    return array(p)[:,0:2].cumsum(axis=0).tolist()
+
+
+
+
+def pts1(p):
+    b=array(p)[:,0:2].cumsum(axis=0)
+    c=array([array(p)[:,2].tolist()])
+    return concatenate((b,c.T),1).tolist()
+
+def cw(p):
+    p=array(p)[:,0:2]
+    q=p[1:].tolist()+[p[0].tolist()]
+    r=[p[len(p)-1].tolist()]+p[0:len(p)-1].tolist()
+    a=array(q)-p
+    b=p-array(r)
+    c=where(cross(b,a)>0,1,0).sum()
+    d=where(cross(b,a)<0,1,0).sum()
+    e=1 if c<d else -1
+    return e    
+
+
+def ang(x,y):
+    if x>=0 and y>=0:
+        return arctan(y/(0.000001 if x==0 else x))*180/pi
+    elif x<0 and y>=0:
+        return 180-abs(arctan(y/x))*180/pi
+    elif  x<0 and y<0:
+        return 180+abs(arctan(y/x))*180/pi
+    else:
+        return 360-abs(arctan(y/(0.000001 if x==0 else x)))*180/pi
+
+
+
+def q(vector=[1,0,0],point=[0,5,0],theta=0):
+
+    t=theta
+    v=uv(vector)
+    a=t/2*pi/180
+    p=[cos(a),multiply(v,sin(a))]
+    p1=[p[0],-p[1]]
+    q=[0,[point[0],point[1],0] if len(point)==2 else point]
+    pq=[p[0]*q[0]-p[1]*q[1],multiply(p[0],q[1])+p[1]*q[0]+cross(p[1],q[1])]
+    pqp1=[pq[0]*p1[0]-pq[1]*p1[1],pq[0]*p1[1]+pq[1]*p1[0]+cross(pq[1],p1[1])]
+    transformation=pqp1[1].tolist()
+    return transformation
+
+def uv(v):
+    c=[]
+    for i in v:
+        c.append(i**2)
+    b=sqrt(sum(c))
+    return divide(v,b).tolist()
+
+def norm(v):
+    return linalg.norm(v)
+
+def fillet2d(pl,rl,s):
+    p0=array(array(pl)[len(pl)-2:len(pl)].tolist()+array(pl)[0:len(pl)-2].tolist())
+    p1=array([array(pl)[len(pl)-1].tolist()]+array(pl)[0:len(pl)-1].tolist())
+    p2=array(pl)
+    p3=array(array(pl)[1:len(pl)].tolist()+[array(pl)[0].tolist()])
+    p4=array(array(pl)[2:len(pl)].tolist()+array(pl)[0:2].tolist())
+    r0=array([array(rl)[len(rl)-1].tolist()]+array(rl)[0:len(rl)-1].tolist())
+    r1=array(rl)
+    r2=array(array(rl)[1:len(rl)].tolist()+[array(rl)[0].tolist()])
+    u0=(p0-p1)/linalg.norm(p0-p1,axis=1).reshape(-1,1)
+    u1=(p2-p1)/linalg.norm(p2-p1,axis=1).reshape(-1,1)
+    u2=(p1-p2)/linalg.norm(p1-p2,axis=1).reshape(-1,1)
+    u3=(p3-p2)/linalg.norm(p3-p2,axis=1).reshape(-1,1)
+    u4=(p2-p3)/linalg.norm(p2-p3,axis=1).reshape(-1,1)
+    u5=(p4-p3)/linalg.norm(p4-p3,axis=1).reshape(-1,1)
+    theta0= (180-arccos(einsum('ij,ij->i',u0,u1))*180/pi)/2
+    theta1= (180-arccos(einsum('ij,ij->i',u2,u3))*180/pi)/2
+    theta2= (180-arccos(einsum('ij,ij->i',u4,u5))*180/pi)/2
+    return f2d(p1,p2,p3,r0,r1,r2,theta0,theta1,theta2,u2,u3,s)
+    
+
+
+def each(a):
+    c=[]
+    for p in a:
+        for p1 in p:
+            c.append(p1)
+    return c
+
+def cr1(pl,s=20):
+    pl1=array(pl)[:,0:2].tolist()
+    rl=where(len(array(pl))==2,0,array(pl)[:,2]).tolist()
+    return fillet2d(pl1,rl,s)
+
+def cr(pl,s=20):
+    sec=cr1(pl,s)
+    return sec
+
+def f2d(p1,p2,p3,r0,r1,r2,theta0,theta1,theta2,u2,u3,s):
+    l1=linalg.norm(p1-p2,axis=1)
+    l2=r0*tan(theta0*pi/180)+r1*tan(theta1*pi/180)
+    l3=linalg.norm(p3-p2,axis=1)
+    l4=r1*tan(theta1*pi/180)+r2*tan(theta2*pi/180)
+    rf1=where(l1>l2,r1, l1/l2*r1)
+    rf2=where(l3>l4,r1, l3/l4*r1)
+    rf=swapaxes([rf1,rf2],0,1).min(axis=1)
+    p=p2+u2*(rf*tan(theta1*pi/180)).reshape(-1,1)
+    q=swapaxes([p1,p2,p3],0,1)
+    r=[]
+    for i in range(len(q)):
+        r.append(cw(q[i]))
+    r=array(r)
+    n=r==-1
+    n1=p-u2@array(rm(90))*rf.reshape(-1,1)
+    n2=p-u2@array(rm(-90))*rf.reshape(-1,1)
+    cp=[]
+    for i in range(len(n)):
+        if n[i]==True:
+            cp.append(n1[i])
+        else:
+            cp.append(n2[i])
+
+    cp=array(cp)
+    a1=[]
+    alpha=(p-cp)/linalg.norm(p-cp,axis=1).reshape(-1,1)
+    for i in range(len(alpha)):
+        a1.append(ang(alpha[i][0],alpha[i][1]))
+    a1=array(a1)
+    boo=[]
+    for i in range(len(p1)):
+        boo.append(cw([p1[i],p2[i],p3[i]]))
+    boo=array(boo)   
+    a2=where(boo==-1,a1+2*theta1,a1-2*theta1)
+    ar=[]
+    for i in range(len(rf)):
+        ar.append(arc(rf[i],a1[i],a2[i],cp[i],s))
+    ar=array(ar)
+    c1=r1==0
+    c2=linalg.norm(u2-u3,axis=1)<.2
+    d=[]
+    for i in range(len(c1)):
+        if c1[i] or c2[i]:
+            d.append(p2[i])
+        else:
+            d.append(ar[i])
+    return array(d).reshape(-1,2).tolist()
+
+
+def flip(sec): 
+    return sec[::-1]
+    
+
+def r_3p(p1,p2,p3):
+    p4=add(p1,divide(subtract(p2,p1),2)).tolist()
+    p5=add(p2,divide(subtract(p3,p2),2)).tolist()
+    u1=uv(subtract(p2,p4))
+    u2=uv(subtract(p3,p5))
+    p6=add(p4,dot(u1,rm(90))).tolist()
+    p7=add(p5,dot(u2,rm(90))).tolist()
+    cp=i_p2d([p4,p6],[p5,p7])
+    r=norm(subtract(p1,cp))
+    return r
+
+
+def max_r(sec):
+    c=[]
+    for i in range(len(sec)):
+        i_2minus=len(sec)-2 if i==0 else len(sec)-1 if i==1 else i-2
+        i_minus=len(sec)-1 if i==0 else i-1
+        i_plus=i+1 if i<len(sec)-1 else 0
+        i_2plus=i+2 if i<len(sec)-2 else 0 if i<len(sec)-1 else 1
+        pi_2minus=sec[i_2minus]
+        pi_minus=sec[i_minus]
+        pi=sec[i]
+        pi_plus=sec[i_plus]
+        pi_2plus=sec[i_2plus]
+        v1=subtract(pi_minus,pi_2minus)
+        v2=subtract(pi,pi_minus)
+        v3=subtract(pi_plus,pi)
+        v4=subtract(pi_2plus,pi_plus)
+        l1=norm(v1).round(3)
+        l2=norm(v2).round(3)
+        l3=norm(v3).round(3)
+        l4=norm(v4).round(3)
+        r1=r_3p(pi_2minus,pi_minus,pi).round(3)
+        r2=r_3p(pi_minus,pi,pi_plus).round(3)
+        r3=r_3p(pi,pi_plus,pi_2plus).round(3)
+        c.append(0 if l2!=l3 and (r1!=r2 or r2!=r3) else r2)
+    return max(c)
+        
+
+def offset_l(l,d):
+    u=uv(subtract(l[1],l[0]))
+    p0=add(l[0],dot(u,multiply(d,rm(-90)))).tolist()
+    p1=add(l[1],dot(u,multiply(d,rm(-90)))).tolist()
+    return [p0,p1]
+
+def seg(sec):
+    c=[]
+    for i in range(len(sec)):
+        i_plus=i+1 if i<len(sec)-1 else 0
+        p0=sec[i]
+        p1=sec[i_plus]
+        l=[p0,p1]
+        c.append(l)
+    return c
+
+def offset_seg(sec,r):
+    s=seg(sec)
+    c=[]
+    for p in s:
+        c.append(offset_l(p,r))
+    return c
+
+def offset_segv(sec,d):
+    s=sec
+    s1=s[1:]+[s[0]]
+    x=(array(s1)-array(s))
+    y=linalg.norm(x,axis=1)
+    u=x/y.reshape(-1,1)
+    p0=array(s)+u@array(rm(-90))*d
+    p1=array(s1)+u@array(rm(-90))*d
+    return swapaxes([p0,p1],0,1).tolist()
+
+def offset_points(sec,r):
+    s=seg(sec)
+    c=[]
+    for p in s:
+        c.append(offset_l(p,r)[0])
+    return c
+
+def offset_pointsv(sec,r):
+    return array(offset_segv(sec,r))[:,0].tolist()
+
+def offset_seg_cw(sec,r):
+    c=[]
+    for i in range(len(sec)):
+        i_minus=len(sec)-1 if i==0 else i-1
+        i_plus=i+1 if i<len(sec)-1 else 0
+        p0=sec[i_minus]
+        p1=sec[i]
+        p2=sec[i_plus]
+        clock=cw([p0,p1,p2])
+        if clock==1:
+            c.append(offset_l([p1,p2],r))
+    d=[]
+    for a in c:
+        for b in a:
+            d.append(b)
+    return d
+
+def lim(t,s,e):
+    return t>=s and t<=e
+
+def remove_extra_points(points_list):
+    return unique(points_list,axis=0).tolist()
+
+
+def convert_secv(sec,d):
+    pi_2minus=sec[-2:]+sec[:-2]
+    pi_minus=[sec[-1]]+sec[:-1]
+    p_i=sec
+    pi_plus=sec[1:]+[sec[0]]
+    pi_2plus=sec[2:]+sec[:2]
+
+    v1=array(pi_minus)-array(pi_2minus)
+    v2=array(p_i)-array(pi_minus)
+    v3=array(pi_plus)-array(p_i)
+    v4=array(pi_2plus)-array(pi_plus)
+
+    l1=linalg.norm(v1,axis=1).round(3)
+    l2=linalg.norm(v2,axis=1).round(3)
+    l3=linalg.norm(v3,axis=1).round(3)
+    l4=linalg.norm(v4,axis=1).round(3)
+
+    p4=array(pi_2minus)+(array(pi_minus)-array(pi_2minus))/2
+    p5=array(pi_minus)+(array(p_i)-array(pi_minus))/2
+
+    u1=(array(pi_minus)-p4)/linalg.norm(array(pi_minus)-p4,axis=1).reshape(-1,1)
+    u2=(array(p_i)-p5)/linalg.norm(array(p_i)-p5).reshape(-1,1)
+
+    v5=array(pi_minus)-p4
+    v6=(v5/linalg.norm(v5,axis=1).reshape(-1,1))
+    r1=r_3pv(array(pi_2minus),array(pi_minus),array(p_i)).round(3)
+    r2=r_3pv(array(pi_minus),array(p_i),array(pi_plus)).round(3)
+    r3=r_3pv(array(p_i),array(pi_plus),array(pi_2plus)).round(3)
+    r=where((l2!=l3) & ((r1!=r2) | (r2!=r3)),0,r2)
+    arr=swapaxes([pi_minus,p_i,pi_plus],0,1)
+    clock=array(list(map(cw,arr)))
+    c1=where(r==0,True,False)
+    c2=where(r>=d,True,False)
+    c3=where(clock==1,True,False)
+    p=array(sec)[c1 | c2 | c3]
+    p1=cKDTree(array(sec)).query(p)[1].tolist()
+    p2=[p1[len(p1)-1]]+p1[0:len(p1)-1]
+    p3=p1[1:len(p1)]+[p1[0]]
+    p4=p1[2:len(p1)]+p1[0:2]
+    a=i_p2dv(array(sec)[p2],array(sec)[p1],array(sec)[p3],array(sec)[p4])
+    b=array(sec)[p1]
+    c=array(p3)-array(p1)>1
+    d=[]
+    for i in range(len(c)):
+        if c[i]==True:
+            d.append(a[i].tolist())
+        else:
+            d.append(b[i].tolist())
+    d_minus=[d[len(d)-1]]+d[0:len(d)-1]
+    d_plus=d[1:len(d)]+[d[0]]
+    va=array(d)-array(d_minus)
+    vb=array(d_plus)-array(d_minus)
+    normva=1/linalg.norm(va,axis=1)
+    normvb=1/linalg.norm(vb,axis=1)
+    ua=einsum('ij,i->ij',va,normva)
+    ub=einsum('ij,i->ij',vb,normvb)
+    return array(d)[(ua!=ub).all(axis=1)].tolist()           
+
+
+def rnd_v(v,n):
+    b=[]
+    for i in v:
+        b.append(round(i,n))
+    return b
+
+def i_m2d(m):
+    return linalg.inv(transpose(m)).tolist()
+
+def rm(theta):
+    pi=3.141592653589793
+    return [[cos(theta * pi/180),sin(theta * pi/180)],[-sin(theta * pi/180),cos(theta * pi/180)]]
+
+def max_rv(sec):
+    pi_2minus=sec[-2:]+sec[:-2]
+    pi_minus=[sec[-1]]+sec[:-1]
+    p_i=sec
+    pi_plus=sec[1:]+[sec[0]]
+    pi_2plus=sec[2:]+sec[:2]
+
+    v1=array(pi_minus)-array(pi_2minus)
+    v2=array(p_i)-array(pi_minus)
+    v3=array(pi_plus)-array(p_i)
+    v4=array(pi_2plus)-array(pi_plus)
+
+    l1=linalg.norm(v1,axis=1).round(3)
+    l2=linalg.norm(v2,axis=1).round(3)
+    l3=linalg.norm(v3,axis=1).round(3)
+    l4=linalg.norm(v4,axis=1).round(3)
+
+    p4=array(pi_2minus)+(array(pi_minus)-array(pi_2minus))/2
+    p5=array(pi_minus)+(array(p_i)-array(pi_minus))/2
+
+    u1=(array(pi_minus)-p4)/linalg.norm(array(pi_minus)-p4,axis=1).reshape(-1,1)
+    u2=(array(p_i)-p5)/linalg.norm(array(p_i)-p5).reshape(-1,1)
+
+    v5=array(pi_minus)-p4
+    v6=(v5/linalg.norm(v5,axis=1).reshape(-1,1))
+    r1=r_3pv(array(pi_2minus),array(pi_minus),array(p_i)).round(3)
+    r2=r_3pv(array(pi_minus),array(p_i),array(pi_plus)).round(3)
+    r3=r_3pv(array(p_i),array(pi_plus),array(pi_2plus)).round(3)
+    return max(where((l2!=l3) & ((r1!=r2) | (r2!=r3)),0,r2))
+
+def r_3p(p):
+    p4=add(p[0],divide(subtract(p[1],p[0]),2)).tolist()
+    p5=add(p[1],divide(subtract(p[2],p[1]),2)).tolist()
+    u1=uv(subtract(p[1],p4))
+    u2=uv(subtract(p[2],p5))
+    p6=add(p4,dot(u1,rm(90))).tolist()
+    p7=add(p5,dot(u2,rm(90))).tolist()
+    cp=i_p2d([p4,p6],[p5,p7])
+    r=norm(subtract(p[0],cp))
+    return r
+
+
+def i_p2d(l1,l2):
+    p0,p1,p2,p3=l1[0],l1[1],l2[0],l2[1]
+    v1=subtract(p1,p0)
+    v2=subtract(p3,p2)
+    t1=dot(linalg.inv(transpose([v1,-v2])),subtract(p2,p0))[0]
+    
+    p_i=add(p0,multiply(v1,t1))
+    return p_i
+
+
+def offset_seg_cwv(sec,r):
+    pi_minus=[sec[-1]]+sec[:-1]
+    p_i=sec
+    pi_plus=sec[1:]+[sec[0]]
+    c=array(list(map(cw,swapaxes([pi_minus,p_i,pi_plus],0,1))))
+    return array(offset_segv(sec,r))[c==1].reshape(-1,2)                    
+            
+
+
+def s_intv(s):
+    c=[]
+    for i in range(len(s)):
+        p0=array([s[i]]*len(s))[:,0]
+        p1=array([s[i]]*len(s))[:,1]
+        v1=p1-p0
+        p2=array(s)[:,0]
+        p3=array(s)[:,1]
+        v2=p3-p2
+        m=swapaxes([swapaxes([v1.T[0],-v2.T[0]],0,1),swapaxes([v1.T[1],-v2.T[1]],0,1)],0,1)
+        n=m[where(linalg.det(m)!=0)]
+        pa=p0[where(linalg.det(m)!=0)]
+        pb=p2[where(linalg.det(m)!=0)]
+        v=v1[where(linalg.det(m)!=0)]
+        A=linalg.inv(n)
+        B=pb-pa
+        def mul(a,b):
+            return a@b
+        t=einsum('ijk,ik->ij',A,B)[:,0].round(3)
+        u=einsum('ijk,ik->ij',A,B)[:,1].round(3)
+        t1=where(t>=0,where(t<=1,True,False),False)
+        u1=where(u>=0,where(u<=1,True,False),False)
+        d=(pa+v*t.reshape(-1,1))[where(t1&u1==True)].round(3).tolist()
+        if d!=[]:
+            c=c+d
+    return c
+
+def r_3pv(p1,p2,p3):
+    p4=p1+(p2-p1)/2
+    p5=p2+(p3-p2)/2
+    u1=(p2-p4)/linalg.norm(p2-p4,axis=1).reshape(-1,1)
+    u2=(p3-p5)/linalg.norm(p3-p5,axis=1).reshape(-1,1)
+    p6=p4+u1@array([[0,1],[-1,0]])
+    p7=p5+u2@array([[0,1],[-1,0]])
+    cp=i_p2dv(p4,p6,p5,p7)
+    r=linalg.norm(p1-cp,axis=1)
+    return r
+
+def i_p2dv(p0,p1,p2,p3):
+    v1=p1-p0
+    v2=p3-p2
+    a=linalg.inv(swapaxes(transpose(array([v1,-v2])),0,1))
+    b=p2-p0
+    t=einsum('ijk,ik->ij',a,b)[:,0]
+    return p0+einsum('ij,i->ij',v1,t)
+
+def sort_points(sec,list):
+    if list!=[]:
+        b=[]
+        for p in sec:
+            a=[]
+            for i in range(len(list)):
+                a.append(norm(subtract(list[i],p)))
+            for i,x in enumerate(a):
+                if x==min(a):
+                    b.append(list[i])
+            
+        return b
+            
+def sort_pointsv(sec,sec1):
+    a=array(sec)
+    b=array(sec1)
+    c=[]
+    for p in a:
+        d=linalg.norm(b-p,axis=1)
+        c.append(b[where(d==min(d))][0])
+    return array(c).tolist()
+
+def sec_clean(s1,s2,d):
+    v1=s1[:,1]-s1[:,0]
+    v2=s2[:,None]-s1[:,0]
+    u1=v1/linalg.norm(v1,axis=1).reshape(-1,1)
+    v3=s2[:,None]-s1[:,1]
+    l=array([s1[(swapaxes(array([einsum('ij,ij->i',u1,v2[n]),einsum('ij,ij->i',-u1,v3[n])]),0,1).max(axis=1)<=linalg.norm(v1,axis=1)
+    )] for n in range(len(v2))])
+    return s2[array([sqrt(linalg.norm(s2[n]-l[n][:,0],axis=1)**2-einsum('ij,ij->i',(s2[n]-l[n][:,0]),((l[n][:,1]-l[n][:,0])/linalg.norm(l[n][:,1]-l[n][:,0],axis=1).reshape(-1,1)))**2).round(2).min() for n in range(len(s2))])==d]
+
+
+def iov(sec,r):
+    if r<0:
+        s1=array(seg(convert_secv(sec,abs(r))))
+        s2=unique(array(s_intv(seg(array(offset_segv(convert_secv(sec,abs(r)),r)).reshape(-1,2).tolist()))),axis=0)
+        s3=sec_clean(s1,s2,abs(r))
+        return s3[cKDTree(s3).query(sec)[1]].tolist()
+    elif r==0:
+        return sec
             
