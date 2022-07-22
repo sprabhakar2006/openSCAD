@@ -482,7 +482,7 @@ def sec_clean(s1,s2,d):
 def iov(sec,r):
     if r<0:
         s1=array(seg(convert_secv(sec,abs(r))))
-        s2=unique(array(s_intv(seg(array(offset_segv(convert_secv(sec,abs(r)),r)).reshape(-1,2).tolist()))),axis=0)
+        s2=unique(array(s_intv(seg(array(offset_segv(convert_secv(sec,abs(r)),r)).reshape(-1,2)))),axis=0)
         s3=sec_clean(s1,s2,abs(r))
         return s3[cKDTree(s3).query(sec)[1]].tolist()
     elif r==0:
