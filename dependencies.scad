@@ -319,7 +319,8 @@ theta1=abs(180-((ang2<ang3?ang2+360:ang2)-ang3))/2,
 theta2=abs(180-((ang4<ang5?ang4+360:ang4)-ang5))/2        
 
 
-)each 
+)
+each 
 2df(p1,p2,p3,r0,r1,r2,theta0,theta1,theta2,u2,u3,s)];
 
 
@@ -2513,9 +2514,9 @@ rev_prism=trns(t-o(),q_rot([str("y",90-theta2),str("z",theta1)],trns(o()-t,prism
          else
              swp([[surf[i][j],surf[i+1][j],surf[i+1][j+1],surf[i][j+1]],[surf1[i][j],surf1[i+1][j],surf1[i+1][j+1],surf1[i][j+1]]]);}
    
-function remove_duplicate(path)=[for(i=[0:len(path)-1])let(
+function remove_duplicate(path,s=.01)=[for(i=[0:len(path)-1])let(
 p0=path[i],p1=i<len(path)-1?path[i+1]:path[i]+path[i]*100
-)if(norm(p1-p0)>.01)p0];
+)if(norm(p1-p0)>s)p0];
 
 // function to find the tanget to a circle from a point outside the circle
 // example:
