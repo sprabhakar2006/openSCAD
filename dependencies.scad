@@ -3415,3 +3415,11 @@ n=[for(p=list)if(norm(p-point)<=d)each each search([p],list,0)]
 
 function rep1(list,rev_list,n=0,d)= n==len(list)-1?rev_list:rep1(list,remove_near_point(list[n],rev_list,d),n+1,d);
 function rep(list,d=.01)=rep1(list,list,n=0,d);
+
+// function to calculate median of a given array of numbers
+
+function median(a)=(len(a)+1)/2%1==0?sort(a)[(len(a))/2]:(sort(a)[round(len(a)/2)-1]+sort(a)[round(len(a)/2)])/2;
+
+// function to calculate mean of a given array of numbers
+
+function mean(a)=sum(a)/len(a);
