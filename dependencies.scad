@@ -1111,7 +1111,7 @@ sec=[for(i=[0:360/s:360-360/s])cp+[r1*cos(i),r2*sin(i)]]
 // sec=l_cir_fillet(line=[[0,0],[0,20]],r1=5,r2=1,cp=[5,10]);
 // p_lineo(sec,.2);
 
-function l_cir_fillet(line,r1,r2,cp)=let(
+function l_cir_fillet(line,r1,r2,cp,s1=50,s2=10)=let(
 p1=line[0],p2=line[1],
 v1=p2-p1,u1=v1/norm(v1),
 p12=p1+u1*cp.y,
@@ -1129,7 +1129,7 @@ a4=ang(v5.x,v5.y)<a3?ang(v5.x,v5.y)+360:ang(v5.x,v5.y),
 a5=ang(v6.x,v6.y),
 a6=ang(v7.x,v7.y)>a5?ang(v7.x,v7.y)-360:ang(v7.x,v7.y)
 )
-[p1,each arc(r2,a1,a2,cp2),each arc(r1,a3,a4,cp1),each arc(r2,a5,a6,cp3),p2];
+[p1,each arc(r2,a1,a2,cp2,s2),each arc(r1,a3,a4,cp1,s1),each arc(r2,a5,a6,cp3,s2),p2];
 
 // function to calculate average of a group of points either 2d or 3d
 // example:
