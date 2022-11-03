@@ -105,6 +105,12 @@ def q(vector=[1,0,0],point=[0,5,0],theta=0):
     return transformation
 
 def uv(v):
+    '''
+    function to calculate unit vector of a given vector
+    example:
+    vector=[2,3,5]
+    unit_vector=uv(vector) => [0.3244428422615251, 0.48666426339228763, 0.8111071056538127]
+    '''
     v=array(v)
     return (v/linalg.norm(v)).tolist()
 
@@ -218,23 +224,40 @@ def f2d(p1,p2,p3,r0,r1,r2,theta0,theta1,theta2,u2,u3,s):
     return concatenate(d).tolist()
 
 
-def flip(sec): 
+def flip(sec):
+    '''
+    function to flip the sequence of a list or a list of points
+    example:
+    list=[1,2,3,4,5]
+    flipped_list=flip(list) => [5, 4, 3, 2, 1]
+    
+    list=[[1,2,3],[4,5,6],[7,8,9]]
+    flipped_list=flip(list) => [[7, 8, 9], [4, 5, 6], [1, 2, 3]]
+    '''
     return sec[::-1]
     
 
-def r_3p(p1,p2,p3):
-    p4=add(p1,divide(subtract(p2,p1),2)).tolist()
-    p5=add(p2,divide(subtract(p3,p2),2)).tolist()
-    u1=uv(subtract(p2,p4))
-    u2=uv(subtract(p3,p5))
-    p6=add(p4,dot(u1,rm(90))).tolist()
-    p7=add(p5,dot(u2,rm(90))).tolist()
-    cp=i_p2d([p4,p6],[p5,p7])
-    r=norm(subtract(p1,cp))
-    return r
+# def r_3p(p1,p2,p3):
+    
+#     p4=add(p1,divide(subtract(p2,p1),2)).tolist()
+#     p5=add(p2,divide(subtract(p3,p2),2)).tolist()
+#     u1=uv(subtract(p2,p4))
+#     u2=uv(subtract(p3,p5))
+#     p6=add(p4,dot(u1,rm(90))).tolist()
+#     p7=add(p5,dot(u2,rm(90))).tolist()
+#     cp=i_p2d([p4,p6],[p5,p7])
+#     r=norm(subtract(p1,cp))
+#     return r
 
 
 def max_r(sec):
+    '''
+    function calculates the maximum radius in a given closed section
+    example:
+    sec=cr_c(pts1([[0,0,.2],[8,3,3],[5,7,1],[-8,0,2],[-5,20,1]]),20)
+    max_r(sec) => 3.0
+    
+    '''
     c=[]
     for i in range(len(sec)):
         i_2minus=len(sec)-2 if i==0 else len(sec)-1 if i==1 else i-2
@@ -268,6 +291,15 @@ def offset_l(l,d):
     return [p0,p1]
 
 def seg(sec):
+    '''
+    function to create a segment from a list of points or a list
+    example:
+    list=[1,2,3,4,5,6]
+    seg(list)=> [[1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 1]]
+    
+    list=[[1,2,3],[4,5,6],[7,8,9]]
+    seg(list) => [[[1, 2, 3], [4, 5, 6]], [[4, 5, 6], [7, 8, 9]], [[7, 8, 9], [1, 2, 3]]]
+    '''
     c=[]
     for i in range(len(sec)):
         i_plus=i+1 if i<len(sec)-1 else 0
@@ -295,6 +327,13 @@ def offset_segv(sec,d):
     return swapaxes([p0,p1],0,1).tolist()
 
 def offset_points(sec,r):
+    '''
+    function to calculate offset of a list of 2d points
+    in defining sections, providing corner radius is a must
+    e.g. pts([[0,0],[10,0],[0,5],[-10,0]]) will fail
+    while cr(pts1([[0,0,.1],[10,0,.1],[0,5,.1],[-10,0,.1]])) will work perfectly
+    refer the file "example of various functions" for application examples
+    '''
     s=seg(sec)
     c=[]
     for p in s:
@@ -302,6 +341,13 @@ def offset_points(sec,r):
     return array(c).tolist()
 
 def offset_pointsv(sec,r):
+    '''
+    function to calculate offset of a list of 2d points
+    in defining sections, providing corner radius is a must
+    e.g. pts([[0,0],[10,0],[0,5],[-10,0]]) will fail
+    while cr(pts1([[0,0,.1],[10,0,.1],[0,5,.1],[-10,0,.1]])) will work perfectly
+    refer the file "example of various functions" for application examples
+    '''
     return array(offset_segv(sec,r))[:,0].tolist()
 
 def offset_seg_cw(sec,r):
@@ -325,9 +371,26 @@ def lim(t,s,e):
     return t>=s and t<=e
 
 def remove_extra_points(points_list):
+    '''
+    function removes all the duplicates from a 
+    example:
+    list=[9,5,1,2,3,4,5,2,4,6,9]
+    remove_extra_points(list) => [9, 5, 1, 2, 3, 4, 6]
+    
+    list=[[7,8,9],[1,2,3],[10,11,12],[4,5,6],[7,8,9],[10,11,12]]
+    remove_extra_points(list) => [[7, 8, 9], [1, 2, 3], [10, 11, 12], [4, 5, 6]]
+    '''
     return array(points_list)[sort(unique(points_list,axis=0,return_index=True)[1])].tolist()
 
 def convert_secv(sec,d):
+    '''
+    function removes all the radiuses from a section where the radius are less than 'd'
+    example:
+    sec=cr_c(pts1([[0,0,.1],[7,5,2],[5,7,3],[-5,7,5],[-7,5,5]]),20)
+    sec1=convert_secv(sec,3)
+    sec1 will remove all the radius in 'sec' where radius are less than 3
+    refer to file "examples of various functions" for application example
+    '''
     pi_2minus=sec[-2:]+sec[:-2]
     pi_minus=[sec[-1]]+sec[:-1]
     p_i=sec
@@ -447,6 +510,16 @@ def convert_secv1(sec,d):
 
 
 def list_r(sec):
+    '''
+    function list the corner radiuses of a given section (only where the radius is specified)
+    example:
+    sec=cr_c(pts1([[0,0,.1],[7,5,2],[5,7,3],[-5,7,5],[-7,5,5]]),5)
+    list_r(sec) => 
+    array([0.   , 0.1  , 0.1  , 0.1  , 0.1  , 0.   , 0.   , 2.   , 2.   ,
+       2.   , 2.   , 0.   , 0.   , 3.   , 3.   , 3.   , 3.   , 0.   ,
+       0.   , 4.077, 4.077, 4.077, 4.077, 4.077, 4.077, 4.077, 4.077,
+       4.077, 0.   , 0.   ])
+    '''
     pi_2minus=sec[-2:]+sec[:-2]
     pi_minus=[sec[-1]]+sec[:-1]
     p_i=sec
@@ -478,6 +551,15 @@ def list_r(sec):
     return r
 
 def list_ra(sec):
+    '''
+    calculates list of radiuses for all the points of a given section
+    sec=cr_c(pts1([[0,0,.1],[7,5,2],[5,7,3],[-5,7,5],[-7,5,5]]),5)
+    list_ra(sec) =>
+    array([  0.,   0.,   0.,   0.,   0.,  19., 124.,   2.,   2.,   2.,   2.,
+        95.,  28.,   3.,   3.,   3.,   3.,  26.,  92.,   4.,   4.,   4.,
+         4.,   4.,   4.,   4.,   4.,   4.,  40.,   8.])
+    
+    '''
     pi_2minus=sec[-2:]+sec[:-2]
     pi_minus=[sec[-1]]+sec[:-1]
     p_i=sec
@@ -533,6 +615,13 @@ def rm(theta):
     return [[cos(theta * pi/180),sin(theta * pi/180)],[-sin(theta * pi/180),cos(theta * pi/180)]]
 
 def max_rv(sec):
+    '''
+    function calculates the maximum radius in a given closed section
+    example:
+    sec=cr_c(pts1([[0,0,.2],[8,3,3],[5,7,1],[-8,0,2],[-5,20,1]]),20)
+    max_rv(sec) => 3.0
+    
+    '''
     pi_2minus=sec[-2:]+sec[:-2]
     pi_minus=[sec[-1]]+sec[:-1]
     p_i=sec
@@ -563,6 +652,12 @@ def max_rv(sec):
     return max(where((l2!=l3) & ((r1!=r2) | (r2!=r3)),0,r2))
 
 def r_3p(p):
+    '''
+    function calculates radius of the circle drawn with 3 points 'p1','p2','p3'
+    example
+    p1,p2,p3=[3,0],[0,0],[0,3]
+    radius=r_3p([p1,p2,p3]) => 2.1213203435596424
+    '''
     p4=add(p[0],divide(subtract(p[1],p[0]),2)).tolist()
     p5=add(p[1],divide(subtract(p[2],p[1]),2)).tolist()
     u1=uv(subtract(p[1],p4))
@@ -600,6 +695,11 @@ def offset_seg_cwv(sec,r):
 
 
 def s_intv(s):
+    '''
+    calulates the self intersection points of a list of line segments 's'
+    it also picks the points in case the 2 lines are just connected at 1 point and are not crossing
+    refer to file 'example of various functions' for application example
+    '''
     c=[]
     for i in range(len(s)):
         p0=array([s[i]]*len(s))[:,0]
@@ -627,6 +727,24 @@ def s_intv(s):
     return c
 
 def s_intv1(s):
+    '''
+    calulates the self intersection points of a list of line segments 's'
+    it picks the intersection points only if the 2 lines are crossing each other
+    e.g.
+    sec=seg([[0,0],[10,0],[15,7]])
+    s_intv1(sec) => []
+    
+    sec=offset_seg([[0,0],[10,0],[15,7]],-1)
+    s_intv1(sec) => 
+    [[9.485, 1.0],
+     [4.508, 1.0],
+     [9.485266528793264, 0.9998381937190964],
+     [11.974266528793265, 4.484438193719097],
+     [4.507385465331124, 0.9999168600047348],
+     [11.974385465331125, 4.484516860004734]]
+     
+    refer to file 'example of various functions' for application example
+    '''
     c=[]
     for i in range(len(s)):
         p0=array([s[i]]*len(s))[:,0]
@@ -674,6 +792,12 @@ def i_p2dv(p0,p1,p2,p3):
     return p0+einsum('ij,i->ij',v1,t)
 
 def sort_points(sec,list):
+    '''
+    function picks the nearest point of a section from a reference section and matches the length of points for the 2 compared sections
+    
+    
+    
+    '''
     if list!=[]:
         b=[]
         for p in sec:
@@ -2632,6 +2756,10 @@ def pntsnfaces(bead2):
 def path_offset(path,d):
     '''
     function to offset a 'path' by 'd' distance
+    example:
+    line=[[0,0],[10,0]]
+    path_offset(line,-3) => [[0,3],[10,3]]
+    
     refer file "example of various functions" for application example
     '''
     p=array([offset_l(p,d) for p in seg(path)[:-1]])
