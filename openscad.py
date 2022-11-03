@@ -1636,7 +1636,7 @@ def ipe(prism,prism1,r,s,o):
     
     refer to the file "explanation of various functions" for application example
     '''
-    a=array(cpo(fillet_surf2sol(prism,prism1,r,s,o)))[1:].tolist()
+    a=cpo(ipf(prism,prism1,2,10,0))[1:]
     return a
 
 
@@ -1702,7 +1702,7 @@ def plane(nv,radius):
     
     refer file "example of various functions" for application example
     '''
-    sec1=arc_3d(nv,.01,0,360,-1)
+    sec1=arc_3d(nv,.0001,0,360,-1)
     sec2=arc_3d(nv,radius,0,360,-1)
     plane=[sec1,sec2]
     return plane
@@ -2187,8 +2187,9 @@ def inner_offset(sec,d):
     else:
 #         ocp=o_circles.reshape(-1,2).tolist()+ip1
         ocp=o_circle+ip1
-        cs=[r_sec(r-.001,r-.001,p2[0],p2[1]) for p2 in p1]
-        j=concatenate([pies(cs[i],ocp) for i in range(len(cs)) if pies(cs[i],ocp)!=[]])
+        cs=[r_sec(r-.01,r-.01,p2[0],p2[1]) for p2 in p1]
+        j=[pies(cs[i],ocp) for i in range(len(cs)) if pies(cs[i],ocp)!=[]]
+        j= j if j==[] else concatenate(j)
         op=exclude_points(ocp,j)
         op=sort_pointsv(sec,op)
     return op
@@ -2614,6 +2615,10 @@ def multiple_sec_extrude(path_points=[],radiuses_list=[],sections_list=[],option
     return s4
 
 def pntsnfaces(bead2):
+    '''
+    function returns points and faces of a prism
+    refer file "example of various functions" for application example
+    '''
     n1=arange(len(bead2[0])).tolist()
     n2=array([[[[(j+1)+i*len(bead2[0]),j+i*len(bead2[0]),j+(i+1)*len(bead2[0])],[(j+1)+i*len(bead2[0]),j+(i+1)*len(bead2[0]),(j+1)+(i+1)*len(bead2[0])]] \
              if j<len(bead2[0])-1 else \
@@ -2625,6 +2630,10 @@ def pntsnfaces(bead2):
     return [pnt,n]
 
 def path_offset(path,d):
+    '''
+    function to offset a 'path' by 'd' distance
+    refer file "example of various functions" for application example
+    '''
     p=array([offset_l(p,d) for p in seg(path)[:-1]])
     return p[:,0].tolist()+[p[len(p)-1][1].tolist()]
 
@@ -2657,15 +2666,15 @@ def fillet_sol2sol(p=[],p1=[],r=1,s=10,o=0):
 #     array([(-v1).tolist()]*j).transpose(1,0,2).shape,array([v2]*i).shape,array([cross(v2,v3)]*i).shape,(p04[:,None]-p01).shape
 #     cross(v3,-v1[:,None]).shape,cross(-v1[:,None],v2).shape
     a=einsum('ijk,ijk->ij',array([cross(v2,v3)]*i),p04[:,None]-p01)
-    b=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+[.00001,.00001,.00001]]*i)))
+    b=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
     t1=einsum('ij,ij->ij',a,b)
 
     a=einsum('ijk,ijk->ij',cross(v3,-v1[:,None]),p04[:,None]-p01)
-    b=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+[.00001,.00001,.00001]]*i)))
+    b=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
     t2=einsum('ij,ij->ij',a,b)
 
     a=einsum('ijk,ijk->ij',cross(-v1[:,None],v2),p04[:,None]-p01)
-    b=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+[.00001,.00001,.00001]]*i)))
+    b=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
     t3=einsum('ij,ij->ij',a,b)
 
     condition=(t1>=0) & (t1<=1) & (t2>=0) & (t2<=1) & (t3>=0) & (t3<=1) & (t2+t3>=0) & (t2+t3<=1)
@@ -2701,15 +2710,15 @@ def fillet_sol2sol(p=[],p1=[],r=1,s=10,o=0):
     i,j=len(v1),len(v2)
 
     a1=einsum('ijk,ijk->ij',array([cross(v2,v3)]*i),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+[.00001,.00001,.00001]]*i)))
+    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
     t1=einsum('ij,ij->ij',a1,b1)
 
     a1=einsum('ijk,ijk->ij',cross(v3,-v1[:,None]),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+[.00001,.00001,.00001]]*i)))
+    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
     t2=einsum('ij,ij->ij',a1,b1)
 
     a1=einsum('ijk,ijk->ij',cross(-v1[:,None],v2),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+[.00001,.00001,.00001]]*i)))
+    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
     t3=einsum('ij,ij->ij',a1,b1)
 
     condition=(t1>=0) & (t1<=1) & (t2>=0) & (t2<=1) & (t3>=0) & (t3<=1) & (t2+t3>=0) & (t2+t3<=1)
@@ -2736,15 +2745,15 @@ def fillet_sol2sol(p=[],p1=[],r=1,s=10,o=0):
     i,j=len(v1),len(v2)
 
     a1=einsum('ijk,ijk->ij',array([cross(v2,v3)]*i),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+[.00001,.00001,.00001]]*i)))
+    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
     t1=einsum('ij,ij->ij',a1,b1)
 
     a1=einsum('ijk,ijk->ij',cross(v3,-v1[:,None]),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+[.00001,.00001,.00001]]*i)))
+    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
     t2=einsum('ij,ij->ij',a1,b1)
 
     a1=einsum('ijk,ijk->ij',cross(-v1[:,None],v2),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+[.00001,.00001,.00001]]*i)))
+    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
     t3=einsum('ij,ij->ij',a1,b1)
 
     condition=(t1>=0) & (t1<=1) & (t2>=0) & (t2<=1) & (t3>=0) & (t3<=1) & (t2+t3>=0) & (t2+t3<=1)
@@ -2787,15 +2796,15 @@ def fillet_surf2sol(p=[],p1=[],r=1,s=10,o=0):
 #     array([(-v1).tolist()]*j).transpose(1,0,2).shape,array([v2]*i).shape,array([cross(v2,v3)]*i).shape,(p04[:,None]-p01).shape
 #     cross(v3,-v1[:,None]).shape,cross(-v1[:,None],v2).shape
     a=einsum('ijk,ijk->ij',array([cross(v2,v3)]*i),p04[:,None]-p01)
-    b=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+[.00001,.00001,.00001]]*i)))
+    b=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
     t1=einsum('ij,ij->ij',a,b)
 
     a=einsum('ijk,ijk->ij',cross(v3,-v1[:,None]),p04[:,None]-p01)
-    b=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+[.00001,.00001,.00001]]*i)))
+    b=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
     t2=einsum('ij,ij->ij',a,b)
 
     a=einsum('ijk,ijk->ij',cross(-v1[:,None],v2),p04[:,None]-p01)
-    b=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+[.00001,.00001,.00001]]*i)))
+    b=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
     t3=einsum('ij,ij->ij',a,b)
 
     condition=(t1>=0) & (t1<=1) & (t2>=0) & (t2<=1) & (t3>=0) & (t3<=1) & (t2+t3>=0) & (t2+t3<=1)
@@ -2831,15 +2840,15 @@ def fillet_surf2sol(p=[],p1=[],r=1,s=10,o=0):
     i,j=len(v1),len(v2)
 
     a1=einsum('ijk,ijk->ij',array([cross(v2,v3)]*i),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+[.00001,.00001,.00001]]*i)))
+    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
     t1=einsum('ij,ij->ij',a1,b1)
 
     a1=einsum('ijk,ijk->ij',cross(v3,-v1[:,None]),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+[.00001,.00001,.00001]]*i)))
+    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
     t2=einsum('ij,ij->ij',a1,b1)
 
     a1=einsum('ijk,ijk->ij',cross(-v1[:,None],v2),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+[.00001,.00001,.00001]]*i)))
+    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
     t3=einsum('ij,ij->ij',a1,b1)
 
     condition=(t1>=0) & (t1<=1) & (t2>=0) & (t2<=1) & (t3>=0) & (t3<=1) & (t2+t3>=0) & (t2+t3<=1)
@@ -2866,15 +2875,15 @@ def fillet_surf2sol(p=[],p1=[],r=1,s=10,o=0):
     i,j=len(v1),len(v2)
 
     a1=einsum('ijk,ijk->ij',array([cross(v2,v3)]*i),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+[.00001,.00001,.00001]]*i)))
+    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
     t1=einsum('ij,ij->ij',a1,b1)
 
     a1=einsum('ijk,ijk->ij',cross(v3,-v1[:,None]),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+[.00001,.00001,.00001]]*i)))
+    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
     t2=einsum('ij,ij->ij',a1,b1)
 
     a1=einsum('ijk,ijk->ij',cross(-v1[:,None],v2),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+[.00001,.00001,.00001]]*i)))
+    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
     t3=einsum('ij,ij->ij',a1,b1)
 
     condition=(t1>=0) & (t1<=1) & (t2>=0) & (t2<=1) & (t3>=0) & (t3<=1) & (t2+t3>=0) & (t2+t3<=1)
