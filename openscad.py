@@ -2033,6 +2033,10 @@ def cir_p_t(cir,pnt):
     return array(cir)[an==an1][0].tolist()
 
 def p_cir_t(pnt,cir): # point to circle tangent line (point should be outside the circle)
+    '''
+    point to circle tangent line (point should be outside the circle)
+    refer file "example of various functions" for application example
+    '''
     p0=cir
     p1=cir[1:]+[cir[0]]
     p0,p1=array([p0,p1])
@@ -2084,6 +2088,11 @@ def p_extrudec(sec,path): # section extrude through a path (closed path)
     return flip(a+[a[0]])
 
 def v_sec_extrude(sec,path,o): #variable section extrude through a given path
+    '''
+    extrude a section 'sec' through a path 'path' 
+    section will vary from start to end such that at the end the section will be offset by 'o' distance
+    refer to the file "example of various functions" for application example
+    '''
     sec=[offset(sec,i) for i in linspace(0,o,len(path))]
     p0=path
     p1=p0[1:]+[p0[0]]
@@ -2103,6 +2112,12 @@ def v_sec_extrude(sec,path,o): #variable section extrude through a given path
     return concatenate(c).tolist()
 
 def t_cir_tarc(r1,r2,cp1,cp2,r,s=50): #two circle tangent arc
+    '''
+    function draws a arc which is tangent to 2 circles defined by radiuses 'r1' and 'r2' and center points 'cp1' and 'cp2'
+    's' is the number of segments of the tangent arc
+    'r' is the rdius of the tangent arc (it should be >= (r1+r2+center distance of 2 circles)/2)
+    refer the file "example of various functions " for application examples
+    '''
     cp1,cp2=array([cp1,cp2])
     l1=linalg.norm(cp2-cp1)
     l2=r-r1
@@ -2122,6 +2137,10 @@ def t_cir_tarc(r1,r2,cp1,cp2,r,s=50): #two circle tangent arc
     return array(arc(r,ang1,ang2,cp3,s)).tolist()
 
 def tcct(r1,r2,cp1,cp2,cw=-1): # two circle cross tangent
+    '''
+    function to draw cross tangent between 2 circles
+    refer to the file "example of various functions " for application examples
+    '''
     v1=[1,1]
     v2=[-r2,r1]
     cp1,cp2=array([cp1,cp2])
@@ -2164,6 +2183,13 @@ def tcct(r1,r2,cp1,cp2,cw=-1): # two circle cross tangent
     return [p0,p1]
 
 def arc_3p(p1,p2,p3,s=30):
+    ''' 
+    function to draw arc with 3 known points 'p1','p2','p3' 
+    's' is the number of segments of the arc
+    refer to the file "example of various functions " for application examples
+    
+    
+    '''
     p1,p2,p3=array([p1,p2,p3])
     p4=p1+(p2-p1)/2
     p5=p2+(p3-p2)/2
@@ -2185,6 +2211,13 @@ def arc_3p(p1,p2,p3,s=30):
     return arc(r,a1,a4,cp,s)
 
 def cir_3p(p1,p2,p3,s=30):
+    ''' 
+    function to draw circle with 3 known points 'p1','p2','p3' 
+    's' is the number of segments of the circle
+    refer to the file "example of various functions " for application examples
+    
+    
+    '''
     p1,p2,p3=array([p1,p2,p3])
     p4=p1+(p2-p1)/2
     p5=p2+(p3-p2)/2
@@ -2206,6 +2239,12 @@ def cir_3p(p1,p2,p3,s=30):
     return circle(r,cp,s)
 
 def cp_3p(p1,p2,p3):
+    '''
+    function to calculate center point of a circle created from 3 known points 'p1','p2','p3'
+    refer to the file "example of various functions " for application examples
+    
+    
+    '''
     p1,p2,p3=array([p1,p2,p3])
     p4=p1+(p2-p1)/2
     p5=p2+(p3-p2)/2
@@ -2347,6 +2386,12 @@ def i_p2dw(l1,l):
 
 
 def pies1(sec,pnts):
+    '''
+    function to find points 'pnts' which are inside an enclosed section 'sec'
+    refer to the file "example of various functions " for application examples
+    
+    
+    '''
     s8,s4=[sec,pnts]
     p0=array(s4)
     p2=s8
@@ -2530,863 +2575,13 @@ def out_offset(sec,r):
 
 
 def swp(bead2):
-    n1=arange(len(bead2[0])).tolist()
-    n2=array([[[[(j+1)+i*len(bead2[0]),j+i*len(bead2[0]),j+(i+1)*len(bead2[0])],[(j+1)+i*len(bead2[0]),j+(i+1)*len(bead2[0]),(j+1)+(i+1)*len(bead2[0])]] \
-             if j<len(bead2[0])-1 else \
-             [[0+i*len(bead2[0]),j+i*len(bead2[0]),j+(i+1)*len(bead2[0])],[0+i*len(bead2[0]),j+(i+1)*len(bead2[0]),0+(i+1)*len(bead2[0])]] \
-                 for j in range(len(bead2[0]))] for i in range(len(bead2)-1)]).reshape(-1,3).tolist()
-    n3=(array(flip(arange(len(bead2[0]))))+(len(bead2)-1)*len(bead2[0])).tolist()
-    n=[n1]+n2+[n3]
-    pnt=array(bead2).reshape(-1,3).round(4).tolist()
-    return f'polyhedron({pnt},{n},convexity=10);'
-
-def swp_c(bead2):
-    n1=arange(len(bead2[0])).tolist()
-    n2=array([[[[(j+1)+i*len(bead2[0]),j+i*len(bead2[0]),j+(i+1)*len(bead2[0])],[(j+1)+i*len(bead2[0]),j+(i+1)*len(bead2[0]),(j+1)+(i+1)*len(bead2[0])]] \
-             if j<len(bead2[0])-1 else \
-             [[0+i*len(bead2[0]),j+i*len(bead2[0]),j+(i+1)*len(bead2[0])],[0+i*len(bead2[0]),j+(i+1)*len(bead2[0]),0+(i+1)*len(bead2[0])]] \
-                 for j in range(len(bead2[0]))] for i in range(len(bead2)-1)]).reshape(-1,3).tolist()
-    n3=(array(flip(arange(len(bead2[0]))))+(len(bead2)-1)*len(bead2[0])).tolist()
-    n=[n1]+n2+[n3]
-    pnt=array(bead2).reshape(-1,3).round(4).tolist()
-    return f'polyhedron({pnt},{n2},convexity=10);'
-
-def resurf(surf,f):
-    base=array(c3t2(surf)).reshape(-1,2).tolist()
-    c=[]
-    for i in range(len(surf)):
-        if len(base)<=2:
-            break
-        else:
-            base1=concave_hull(base,f)
-            base=exclude_points(base,base1)
-            c.append(base1)
-    base=concave_hull(array(c3t2(surf)).reshape(-1,2).tolist(),f)
-    c=[array(p)[cKDTree(p).query(base)[1]].tolist() for p in c]
-    base=array(c3t2(surf)).reshape(-1,2).tolist()
-    surf=array(surf).reshape(-1,3)
-    c= [surf[cKDTree(base).query(p)[1]].tolist() for p in c]
-    return c
-
-def surf_extrudef(surf,t=-.05):
     '''
-    surface with a polyline 2d sketch and a 3d path. thickness of the surface can be set with parameter "t". 
-    positive and negative value creates thickness towards +z and -z directions respectively
-    refer file "example of various functions"
-    '''
-    s=cpo(surf)
-    s1=trns([0,0,t],[flip(p) for p in s])
-    s2=array([s,s1]).transpose(1,0,2,3)
-    
-    i,j,k,l=s2.shape
-    s2=s2.reshape(i,j*k,l).tolist()
-    return s2 if t>0 else flip(s2)
-
-
-
-def swp_prism_h(prism_big,prism_small):
-    p1=prism_big
-    p2=flip(prism_small)
-    p3=p1+p2+[p1[0]]
-    return p3
-    
-def pmdp(line,pnts): #perpendicular minimum distance point
-    if pnts==[]:
-        return line
-    else:
-        a=[perp_dist(line,p) for p in pnts]
-        b=array(pnts)[min(a)==array(a)][0].tolist()
-        return [line[0],b,line[1]]
-    
-
-
-def surf_base(surf,h=0):
-    s=cpo(surf)
-    s1=trns([0,0,h],c2t3(c3t2([flip(p) for p in s])))
-    s2=array([s,s1]).transpose(1,0,2,3)
-    
-    i,j,k,l=s2.shape
-    s2=s2.reshape(i,j*k,l).tolist()
-    t=array(surf).reshape(-1,3).mean(0)[2]
-    return s2 if h>t else flip(s2)
-
-def cr_3d(p,s=5): # Corner radius 3d where 'p' are the list of points (turtle movement) and 's' is number of segments for each arc
-    pnts=array(p)[:,0:3]
-    pnts=pnts.cumsum(0)
-
-    rds=array(p)[:,3]
-    c=[]
-    for i in range(len(pnts)):
-        if i==0:
-            p0=pnts[len(pnts)-1]
-            p1=pnts[i]
-            p2=pnts[i+1]
-        elif i<len(pnts)-1:
-            p0=pnts[i-1]
-            p1=pnts[i]
-            p2=pnts[i+1]
-        else:
-            p0=pnts[i-1]
-            p1=pnts[i]
-            p2=pnts[0]
-        c.append(fillet_3p_3d(p0,p1,p2,rds[i],s)[1:])
-    c=array(c).reshape(-1,3).tolist()
-    return remove_extra_points(c) 
-
-def p_exc(sec,path,option=0):
-    p=array(path)
-    c,d,e=[],[],[]
-    a2,j=0,0
-    for i in range(len(p)):
-        i_plus=i+1 if i<len(p)-1 else 0
-        p0=p[i]
-        p1=p[i_plus]
-        v1=uv(p1-p0)
-        vz=[0,0,1]
-        v2=cross(vz,v1).tolist()
-        theta=0 if v2==[0,0,0] else arccos(array(vz)@array(v1))*180/pi
-        a=0 if theta==0 else ang(v2[0],v2[1])
-        a1=0 if v1[2]==0 else ang(v1[0],v1[1]) if v1[2]<0 else -ang(v1[0],v1[1])
-        d.append(a1)
-        if i>0:
-            j= j+1 if abs(a1-d[i-1])>179 else j
-            e.append(j)
-            a2=a1+j*180
-        if option==0:
-            sec1=trns(path[i],[q(v2,q([0,0,1],p,a+a2),theta) for p in sec])
-        else:
-            sec1=trns(path[i],[q(v2,q([0,0,1],p,a+a1),theta) for p in sec])
-            
-        c.append(sec1)
-    c=c+[c[0]]
-    return c
-
-def p_ex(sec,path,option=0):
-    p=array(path)
-    c,d,e=[],[],[]
-    a2,j=0,0
-    for i in range(len(p)-1):
-        i_plus=i+1 if i<len(p)-1 else 0
-        p0=p[i]
-        p1=p[i_plus]
-        v1=uv(p1-p0)
-        vz=[0,0,1]
-        v2=cross(vz,v1).tolist()
-        theta=0 if v2==[0,0,0] else arccos(array(vz)@array(v1))*180/pi
-        a=0 if theta==0 else ang(v2[0],v2[1])
-        a1=0 if v1[2]==0 else ang(v1[0],v1[1]) if v1[2]<0 else -ang(v1[0],v1[1])
-        d.append(a1)
-        if i>0:
-            j= j+1 if abs(abs(a1)-d[i-1])>100 else j
-            e.append(j)
-            a2=a1+j*180
-        if option==0:
-            sec1=trns(path[i],[q(v2,q([0,0,1],p,a+a2),theta) for p in sec])
-        else:
-            sec1=trns(path[i],[q(v2,q([0,0,1],p,a+a1),theta) for p in sec])
-            
-        c.append(sec1)
-    c=c+[trns(array(path[-1])-array(path[-2]),c[-1])]
-    return c
-
-def helix(radius=10,pitch=10, number_of_coils=1, step_angle=1):
-    return [[radius*cos(i*pi/180),radius*sin(i*pi/180),i/360*pitch] for i in arange(0,360*number_of_coils,step_angle)]
-
-def surf_offset(surf,o):
-    '''
-    function to offset the 'surface' by a distance 'o'
-    refer to file "example of various functions" for application example
-    '''
-    c=[]
-    for i in range(len(surf)):
-        for j in range(len(surf[0])):
-            j_plus=j+1 if j<len(surf[0])-1 else 0
-            p0=surf[i][j]
-            p1=surf[i][j_plus] if i<len(surf)-1 else surf[i-1][j]
-            p2=surf[i+1][j] if i<len(surf)-1 else surf[i][j_plus]
-            p0,p1,p2=array([p0,p1,p2])
-            v1=p1-p0
-            v2=p2-p0
-            p=p0+array(uv(cross(v1,v2)))*o
-            c.append(p.tolist())
-    l,m,n=array(surf).shape
-    return array(c).reshape(l,m,n).tolist()
-
-def path_to_vectors(path):
-    c=[]
-    for i in range(len(path)):
-        i_plus=i+1 if i<len(path)-1 else 0
-        p0=path[i]
-        p1=path[i_plus]
-        p0,p1=array([p0,p1])
-        v1=p1-p0
-        c.append(v1.round(4).tolist())
-    return vector_correct(c)
-
-def vector_correct(c):
-    for i in range(len(c)):
-        if i>0 and i<len(c)-1:
-            if c[i][0]==0 and abs(c[i-1][0])>0 and abs(c[i+1][0])>0:
-                c[i][0]=.001
-            if c[i][1]==0 and abs(c[i-1][1])>0 and abs(c[i+1][1])>0:
-                c[i][1]=.001
-            if c[i][2]==0 and abs(c[i-1][2])>0 and abs(c[i+1][2])>0:
-                c[i][2]=.001
-    path=c
-    return path
-
-def concave_hull(pnts,x=1,loops=10):
-    '''
-    x is sensitivity where 1 is max and 100 is almost like a convex hull, 
-    loops can be any number less than the number of points
-    refer file "example of various functions" for application example
-    '''
-    c=c_hull(pnts)
-    for j in range(loops):
-        c1=seg(c)
-        pnts1=exclude_points(pnts,c)
-        c2=[]
-        for i in range(len(c1)):
-            p0,p1=array(c1[i])
-            v1=p1-p0
-            u1=array(uv(v1))
-            v1norm=linalg.norm(v1)
-            pnts2=[p for p in array(pnts1) if ((u1@(p-p0))>=0)&((u1@(p-p0))<=v1norm) & (abs(cross(v1,p-p0))/v1norm <= v1norm/x) ]
-            if pnts2!=[]:
-                lengths=[cross(v1,(p-p0))/v1norm for p in array(pnts2)]
-                pnt=array(pnts2)[lengths==min(lengths)][0]
-                pnts1=exclude_points(pnts1,pnt)
-                c2.append([p0.tolist(),pnt.tolist(),p1.tolist()])
-            else:
-                c2.append(c1[i])
-
-
-        c3=remove_extra_points(concatenate(c2).tolist())
-        n=s_intv1(seg(c3))
-        if n!=[]:
-            d=[[p[1] for p1 in array(n) if (array(uv(p1-p[0])).round(4)==array(uv(p[1]-p[0])).round(4)).all() ] for p in array(seg(c3))]
-            d=concatenate([p for p in d if p!=[]]).tolist()
-            c3=exclude_points(c3,d)
-        c=c3
-    while s_intv1(seg(c))!=[]:
-        n=s_intv1(seg(c3))
-        if n==[]:
-            break
-        else:
-            d=[[p[1] for p1 in array(n) if (array(uv(p1-p[0])).round(4)==array(uv(p[1]-p[0])).round(4)).all() ] for p in array(seg(c3))]
-            d=concatenate([p for p in d if p!=[]]).tolist()
-            c3=exclude_points(c3,d)
-        
-        
-    return c3
-
-
-# def ipfillet(p,p1,r=1,s=5,o=0):
-  
-#     pa=[[[[p[i][j],p[i][j+1],p[i+1][j]],[p[i+1][j+1],p[i+1][j],p[i][j+1]]] if j<len(p[0])-1 else \
-#          [[p[i][j],p[i][0],p[i+1][j]],[p[i+1][0],p[i+1][j],p[i][0]]] \
-#          for j in arange(len(p[0]))] for i in arange(len(p)-1)]
-#     pa=array(pa).reshape(-1,3,3)
-
-#     pb=[[[p1[i][j],p1[i+1][j]] for j in arange(len(p1[0]))] for i in arange(len(p1)-1)]
-#     pb=array(pb).reshape(-1,2,3)
-#     a1,a2,a3=pa[:,0],pa[:,1],pa[:,2]
-#     b1,b2=pb[:,0],pb[:,1]
-#     v1,v2,v3=b2-b1,a2-a1,a3-a1
-#     i,j=len(v1),len(v2)
-#     v1=v1.repeat(j,0)
-#     v2=array((v2).tolist()*i)
-#     v3=array((v3).tolist()*i)
-#     c=linalg.pinv(array([v1,-v2,-v3]).transpose(1,0,2).transpose(0,2,1))
-#     d=array(a1.tolist()*i)-b1.repeat(j,0)
-#     t=einsum('ijk,ik->ij',c,d)
-#     p0=b1.repeat(j,0)
-#     pnt=p0+einsum('ij,i->ij',v1,t[:,0])
-#     v1norm=1/sqrt(einsum('ij,ij->i',v1,v1))
-#     u1=einsum('ij,i->ij',v1,v1norm)
-#     pnt1=pnt+u1*r
-#     cond=(t[:,0]>=0)&(t[:,0]<=1)&(t[:,1]>=0)&(t[:,1]<=1)&(t[:,2]>=0)&(t[:,2]<=1)&((t[:,1]+t[:,2])>=0)&((t[:,1]+t[:,2])<=1)
-#     pnt=pnt[cond]
-#     pnt1=pnt1[cond]
-#     ip=array([pnt,pnt1]).transpose(1,0,2)
-#     if o==0:
-#         e=[ip[i][0]+array(uv(cross(ip[i+1][0]-ip[i][0],ip[i][1]-ip[i][0])))*r if i<len(ip)-1 else \
-#            ip[i][0]+array(uv(cross(ip[0][0]-ip[i][0],ip[i][1]-ip[i][0])))*r \
-#            for i in arange(len(ip))]
-#     elif o==1:
-#         e=[ip[i][0]+array(uv(cross(ip[i][1]-ip[i][0],ip[i+1][0]-ip[i][0])))*r if i<len(ip)-1 else \
-#            ip[i][0]+array(uv(cross(ip[i][1]-ip[i][0],ip[0][0]-ip[i][0])))*r \
-#            for i in arange(len(ip))]
-
-#     f=[[ip[i][0]+q(ip[i+1][0]-ip[i][0],e[i]-ip[i][0], theta) if i<len(ip)-1 else \
-#         ip[i][0]+q(ip[0][0]-ip[i][0],e[i]-ip[i][0] , theta) \
-#         for theta in linspace(-90,90,3)] for i in arange(len(ip))]
-#     f=array([seg(array(p).tolist())[0:-1] for p in f]).reshape(-1,2,3)
-
-#     a1,a2,a3=pa[:,0],pa[:,1],pa[:,2]
-#     b1,b2=f[:,0],f[:,1]
-#     v1,v2,v3=b2-b1,a2-a1,a3-a1
-#     i,j=len(v1),len(v2)
-#     v1=v1.repeat(j,0)
-#     v2=array((v2).tolist()*i)
-#     v3=array((v3).tolist()*i)
-#     c=linalg.pinv(array([v1,-v2,-v3]).transpose(1,0,2).transpose(0,2,1))
-#     d=array(a1.tolist()*i)-b1.repeat(j,0)
-#     t=einsum('ijk,ik->ij',c,d)
-#     p0=b1.repeat(j,0)
-#     pnt2=p0+einsum('ij,i->ij',v1,t[:,0])
-#     cond=(t[:,0]>=0)&(t[:,0]<=1)&(t[:,1]>=0)&(t[:,1]<=1)&(t[:,2]>=0)&(t[:,2]<=1)&((t[:,1]+t[:,2])>=0)&((t[:,1]+t[:,2])<=1)
-#     pnt2=pnt2[cond]
-
-#     g=array([pnt2,pnt,pnt1]).transpose(1,0,2)
-#     h=[fillet_3p_3d(p0,p1,p2,r_3p_3d([p0,p1,p2]),s) for (p0,p1,p2) in g]
-
-#     return h+[h[0]]
-
-def path_extrude(sec,path):
-    '''
-    function to extrude a section 'sec' along a open path 'path'
-    refer to file "example of various functions" for application example
-    '''
-    s=q_rot(['x90','z-90'],sec)
-    p=array(path)
-    s2=[]
-    for i in range(len(p)-1):
-        v1=p[i+1]-p[i]+array([0,0,0.00001])
-        va=[v1[0],v1[1],0]
-        u1=array(uv(v1))
-        ua=array(uv(va))
-        v2=cross(va,v1)
-        a1=arccos(u1@ua)*180/pi
-        a2=ang(v1[0],v1[1])
-        s1=q_rot([f'z{a2}'],s)
-        if i<len(p)-1:
-            s2.append(trns(p[i],[q(v2,p,a1) for p in s1]))
-        else:
-            s2.append(trns(p[i],[q(v2,p,a1) for p in s1]))
-            s2.append(trns(p[i+1],[q(v2,p,a1) for p in s1]))
-        
-    return flip(s2)
-
-def path_extrudec(sec,path):
-    '''
-    function to extrude a section 'sec' along a closed loop path 'path'
-    refer to file "example of various functions" for application example
-    '''
-    s=q_rot(['x90','z-90'],sec)
-    p=array(path)
-    s2=[]
-    for i in range(len(p)):
-        v1=(p[i+1]-p[i] if i<len(p)-1 else p[0]-p[i])+array([0,0,0.00001])
-        va=[v1[0],v1[1],0]
-        u1=array(uv(v1))
-        ua=array(uv(va))
-        v2=cross(va,v1)
-        a1=arccos(u1@ua)*180/pi
-        a2=ang(v1[0],v1[1])
-        s1=q_rot([f'z{a2}'],s)
-        s2.append(trns(p[i],[q(v2,p,a1) for p in s1]))
-        
-    return flip(s2+[s2[0]])
-
-
-def multiple_sec_extrude(path_points=[],radiuses_list=[],sections_list=[],option=0,s=10):
-    '''
-    explanation of the function 'multiple_sec_extrude'
-    path_points: are the points at which sections needs to be placed,
-    radiuses: radius required at each path_point. this can be '0' in case no radius required in the path
-    sections_list= list of sections required at each path_points. same section can be provided for various path_points as well
-    option: can be '0' in case the number of points in each section do not match or '1' in case number of points for each section are same
-    s: in case value of radiuses is provided 's' is the number of segments in that path curve
-    
-    refer to file "example of various functions" for application example
-    '''
-    p=array(path_points)
-    r=radiuses_list
-    if option==0:
-        sections=[sections_list[0]]+[sort_pointsv(sections_list[0],p) for p in sections_list[1:]]
-    else:
-        sections=sections_list
-        
-    s1=[]
-    for i in range(len(p)):
-        if r[i]==0 and i<len(p)-1:
-            p0=p[i].tolist()
-            p1=(p0+(p[i+1]-p[i])*.01).tolist()
-            s1.append([p0,p1])
-        elif r[i]==0 and i==len(p)-1:
-            p0=p[i].tolist()
-            p1=(p0+(p[i]-p[i-1])*.01).tolist()
-            s1.append([p0,p1])
-        else:
-            s1.append(fillet_3p_3d(p[i-1],p[i],p[i+1],r[i],s)[1:])
-    
-    s1=[remove_extra_points(p) for p in s1]
-
-    s4=[]
-    for i in range(len(s1)):
-        for j in range(len(s1[i])-1):
-            p0,p1=array([s1[i][j],s1[i][j+1]])
-            v1=p1-p0
-            va=[v1[0],v1[1]+.00001,0]
-            u1=array(uv(v1))
-            ua=array(uv(va))
-            v2=cross(v1,va)
-            a1=arccos(u1@ua)*180/pi
-            a2=ang(v1[0],v1[1])
-            s2=q_rot(['x90','z-90',f'z{a2}'],sections[i])
-            s3=trns(p0,flip([q(v2,p,-a1) for p in s2]))
-            s4.append(s3)
-    return s4
-
-def pntsnfaces(bead2):
-    '''
-    function returns points and faces of a prism
-    refer file "example of various functions" for application example
-    '''
-    n1=arange(len(bead2[0])).tolist()
-    n2=array([[[[(j+1)+i*len(bead2[0]),j+i*len(bead2[0]),j+(i+1)*len(bead2[0])],[(j+1)+i*len(bead2[0]),j+(i+1)*len(bead2[0]),(j+1)+(i+1)*len(bead2[0])]] \
-             if j<len(bead2[0])-1 else \
-             [[0+i*len(bead2[0]),j+i*len(bead2[0]),j+(i+1)*len(bead2[0])],[0+i*len(bead2[0]),j+(i+1)*len(bead2[0]),0+(i+1)*len(bead2[0])]] \
-                 for j in range(len(bead2[0]))] for i in range(len(bead2)-1)]).reshape(-1,3).tolist()
-    n3=(array(flip(arange(len(bead2[0]))))+(len(bead2)-1)*len(bead2[0])).tolist()
-    n=[n1]+n2+[n3]
-    pnt=array(bead2).reshape(-1,3).round(4).tolist()
-    return [pnt,n]
-
-def path_offset(path,d):
-    '''
-    function to offset a 'path' by 'd' distance
+    function to render various 3d shapes
     example:
-    line=[[0,0],[10,0]]
-    path_offset(line,-3) => [[0,3],[10,3]]
+    swp(cylinde(d=10,h=20)) will render a cylinder with dia 10 and height 20
+    refer to the file "example of various functions " for application examples
     
-    refer file "example of various functions" for application example
     '''
-    p=array([offset_l(p,d) for p in seg(path)[:-1]])
-    return p[:,0].tolist()+[p[len(p)-1][1].tolist()]
-
-
-def fillet_sol2sol(p=[],p1=[],r=1,s=10,o=0):
-    ''' 
-    function to calculate fillet at the intersection point of 2 solids
-    'p': solid 1
-    'p1': solid 2
-    'r': radius of the fillet
-    's': number of segments in the fillet, more number of segments will give finer finish
-    'o': option '0' produces fillet in outer side of the intersection and '1' in the inner side of the intersections
-    refer file "example of various functions" for application example
-    '''
-    pa=[[[[p[i][j],p[i][j+1],p[i+1][j]],[p[i+1][j+1],p[i+1][j],p[i][j+1]]] if j<len(p[0])-1 else \
-         [[p[i][j],p[i][0],p[i+1][j]],[p[i+1][0],p[i+1][j],p[i][0]]] \
-         for j in range(len(p[0]))] for i in range(len(p)-1)]
-    pa=array(pa).reshape(-1,3,3)
-
-#     pb=[[[p1[i][j],p1[i+1][j]] for j in range(len(p1[0]))] for i in range(len(p1)-1)]
-#     pb=array(pb).reshape(-1,2,3)
-    p2=cpo(p1)
-    pb=[[[p2[i][j],p2[i][j+1]] for j in range(len(p2[0])-1)] for i in range(len(p2))]
-    pb=array(pb).reshape(-1,2,3)
-    
-    p01,p02,p03,p04,p05=pa[:,0],pa[:,1],pa[:,2],pb[:,0],pb[:,1]
-
-    v1,v2,v3=p05-p04,p02-p01,p03-p01
-    i,j=len(v1),len(v2)
-#     array([(-v1).tolist()]*j).transpose(1,0,2).shape,array([v2]*i).shape,array([cross(v2,v3)]*i).shape,(p04[:,None]-p01).shape
-#     cross(v3,-v1[:,None]).shape,cross(-v1[:,None],v2).shape
-    a=einsum('ijk,ijk->ij',array([cross(v2,v3)]*i),p04[:,None]-p01)
-    b=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
-    t1=einsum('ij,ij->ij',a,b)
-
-    a=einsum('ijk,ijk->ij',cross(v3,-v1[:,None]),p04[:,None]-p01)
-    b=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
-    t2=einsum('ij,ij->ij',a,b)
-
-    a=einsum('ijk,ijk->ij',cross(-v1[:,None],v2),p04[:,None]-p01)
-    b=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
-    t3=einsum('ij,ij->ij',a,b)
-
-    condition=(t1>=0) & (t1<=1) & (t2>=0) & (t2<=1) & (t3>=0) & (t3<=1) & (t2+t3>=0) & (t2+t3<=1)
-#     condition.shape
-
-    pnt1=(p04[:,None]+einsum('ijk,ij->ijk',array([v1]*j).transpose(1,0,2),t1))[condition]
-#     pnt1.shape
-
-    uv1=v1/linalg.norm(v1,axis=1).reshape(-1,1)
-    uv1=array([uv1]*j).transpose(1,0,2)[condition]
-#     uv1.shape
-#     pnt2=pnt1+uv1*r
-
-    a=cross(v2,v3)
-    b=a/(linalg.norm(a,axis=1).reshape(-1,1)+.00001)
-    b=array([b]*i)[condition]
-#     b.shape
-
-    nxt_pnt=array(pnt1[1:].tolist()+[pnt1[0]])
-    v_rot=nxt_pnt-pnt1
-
-    if o==0:
-        cir=array([[pnt1[i]+array(q(v_rot[i],b[i]*r,t)) for t in linspace(0,180,5)] for i in arange(len(pnt1))]).tolist()
-    else:
-        cir=array([[pnt1[i]+array(q(v_rot[i],b[i]*r,-t)) for t in linspace(0,180,5)] for i in arange(len(pnt1))]).tolist()
-
-    pc=array([[[cir[i][j],cir[i][j+1]]  for j in arange(len(cir[0])-1)] for i in arange(len(cir))]).reshape(-1,2,3)
-#     pc.shape
-
-    p01,p02,p03,p04,p05=pa[:,0],pa[:,1],pa[:,2],pc[:,0],pc[:,1]
-
-    v1,v2,v3=p05-p04,p02-p01,p03-p01
-    i,j=len(v1),len(v2)
-
-    a1=einsum('ijk,ijk->ij',array([cross(v2,v3)]*i),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
-    t1=einsum('ij,ij->ij',a1,b1)
-
-    a1=einsum('ijk,ijk->ij',cross(v3,-v1[:,None]),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
-    t2=einsum('ij,ij->ij',a1,b1)
-
-    a1=einsum('ijk,ijk->ij',cross(-v1[:,None],v2),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
-    t3=einsum('ij,ij->ij',a1,b1)
-
-    condition=(t1>=0) & (t1<=1) & (t2>=0) & (t2<=1) & (t3>=0) & (t3<=1) & (t2+t3>=0) & (t2+t3<=1)
-#     condition.shape
-
-    pnt3=(p04[:,None]+einsum('ijk,ij->ijk',array([v1]*j).transpose(1,0,2),t1))[condition]
-    pnt3=sort_pointsv(pnt1,pnt3) if len(pnt1)!=len(pnt3) else pnt3.tolist()
-
-#     if o==0:
-    cir=array([[pnt1[i]+array(q(v_rot[i],b[i]*r,-t)) for t in linspace(-90,90,5)] for i in arange(len(pnt1))]).tolist()
-#     else:
-#         cir=array([[pnt1[i]+array(q(v_rot[i],b[i]*r,t)) for t in linspace(-90,90,5)] for i in arange(len(pnt1))]).tolist()
-    
-    pa=[[[[p1[i][j],p1[i][j+1],p1[i+1][j]],[p1[i+1][j+1],p1[i+1][j],p1[i][j+1]]] if j<len(p1[0])-1 else \
-         [[p1[i][j],p1[i][0],p1[i+1][j]],[p1[i+1][0],p1[i+1][j],p1[i][0]]] \
-         for j in range(len(p1[0]))] for i in range(len(p1)-1)]
-    pa=array(pa).reshape(-1,3,3)
-    
-    pc=array([[[cir[i][j],cir[i][j+1]]  for j in arange(len(cir[0])-1)] for i in arange(len(cir))]).reshape(-1,2,3)
-
-    p01,p02,p03,p04,p05=pa[:,0],pa[:,1],pa[:,2],pc[:,0],pc[:,1]
-
-    v1,v2,v3=p05-p04,p02-p01,p03-p01
-    i,j=len(v1),len(v2)
-
-    a1=einsum('ijk,ijk->ij',array([cross(v2,v3)]*i),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
-    t1=einsum('ij,ij->ij',a1,b1)
-
-    a1=einsum('ijk,ijk->ij',cross(v3,-v1[:,None]),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
-    t2=einsum('ij,ij->ij',a1,b1)
-
-    a1=einsum('ijk,ijk->ij',cross(-v1[:,None],v2),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
-    t3=einsum('ij,ij->ij',a1,b1)
-
-    condition=(t1>=0) & (t1<=1) & (t2>=0) & (t2<=1) & (t3>=0) & (t3<=1) & (t2+t3>=0) & (t2+t3<=1)
-#     condition.shape
-
-    pnt2=(p04[:,None]+einsum('ijk,ij->ijk',array([v1]*j).transpose(1,0,2),t1))[condition]
-    pnt2=sort_pointsv(pnt1,pnt2) if len(pnt2)!=len(pnt1) else pnt2.tolist()
-
-    
-    sol=array([pnt3,pnt1,pnt2]).transpose(1,0,2)
-    sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*1.9,s) for (p1,p2,p3) in sol]
-    sol=sol+[sol[0]]
-    return sol
-
-def fillet_surf2sol(p=[],p1=[],r=1,s=10,o=0):
-    '''
-    function to calculate fillet at the intersection point of 2 solids
-    'p': solid 1
-    'p1': solid 2
-    'r': radius of the fillet
-    's': number of segments in the fillet, more number of segments will give finer finish
-    'o': option '0' produces fillet in outer side of the intersection and '1' in the inner side of the intersections
-    refer file "example of various functions" for application
-    '''
-    pa=[[[[p[i][j],p[i][j+1],p[i+1][j]],[p[i+1][j+1],p[i+1][j],p[i][j+1]]] if j<len(p[0])-1 else \
-         [[p[i][j],p[i][0],p[i+1][j]],[p[i+1][0],p[i+1][j],p[i][0]]] \
-         for j in range(len(p[0])-1)] for i in range(len(p)-1)]
-    pa=array(pa).reshape(-1,3,3)
-
-#     pb=[[[p1[i][j],p1[i+1][j]] for j in range(len(p1[0]))] for i in range(len(p1)-1)]
-#     pb=array(pb).reshape(-1,2,3)
-    p2=cpo(p1)
-    pb=[[[p2[i][j],p2[i][j+1]] for j in range(len(p2[0])-1)] for i in range(len(p2))]
-    pb=array(pb).reshape(-1,2,3)
-    
-    p01,p02,p03,p04,p05=pa[:,0],pa[:,1],pa[:,2],pb[:,0],pb[:,1]
-
-    v1,v2,v3=p05-p04,p02-p01,p03-p01
-    i,j=len(v1),len(v2)
-#     array([(-v1).tolist()]*j).transpose(1,0,2).shape,array([v2]*i).shape,array([cross(v2,v3)]*i).shape,(p04[:,None]-p01).shape
-#     cross(v3,-v1[:,None]).shape,cross(-v1[:,None],v2).shape
-    a=einsum('ijk,ijk->ij',array([cross(v2,v3)]*i),p04[:,None]-p01)
-    b=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
-    t1=einsum('ij,ij->ij',a,b)
-
-    a=einsum('ijk,ijk->ij',cross(v3,-v1[:,None]),p04[:,None]-p01)
-    b=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
-    t2=einsum('ij,ij->ij',a,b)
-
-    a=einsum('ijk,ijk->ij',cross(-v1[:,None],v2),p04[:,None]-p01)
-    b=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
-    t3=einsum('ij,ij->ij',a,b)
-
-    condition=(t1>=0) & (t1<=1) & (t2>=0) & (t2<=1) & (t3>=0) & (t3<=1) & (t2+t3>=0) & (t2+t3<=1)
-#     condition.shape
-
-    pnt1=(p04[:,None]+einsum('ijk,ij->ijk',array([v1]*j).transpose(1,0,2),t1))[condition]
-#     pnt1.shape
-
-    uv1=v1/linalg.norm(v1,axis=1).reshape(-1,1)
-    uv1=array([uv1]*j).transpose(1,0,2)[condition]
-#     uv1.shape
-#     pnt2=pnt1+uv1*r
-
-    a=cross(v2,v3)
-    b=a/(linalg.norm(a,axis=1).reshape(-1,1)+.00001)
-    b=array([b]*i)[condition]
-#     b.shape
-
-    nxt_pnt=array(pnt1[1:].tolist()+[pnt1[0]])
-    v_rot=nxt_pnt-pnt1
-
-    if o==0:
-        cir=array([[pnt1[i]+array(q(v_rot[i],b[i]*r,t)) for t in linspace(0,180,5)] for i in arange(len(pnt1))]).tolist()
-    else:
-        cir=array([[pnt1[i]+array(q(v_rot[i],b[i]*r,-t)) for t in linspace(0,180,5)] for i in arange(len(pnt1))]).tolist()
-
-    pc=array([[[cir[i][j],cir[i][j+1]]  for j in arange(len(cir[0])-1)] for i in arange(len(cir))]).reshape(-1,2,3)
-#     pc.shape
-
-    p01,p02,p03,p04,p05=pa[:,0],pa[:,1],pa[:,2],pc[:,0],pc[:,1]
-
-    v1,v2,v3=p05-p04,p02-p01,p03-p01
-    i,j=len(v1),len(v2)
-
-    a1=einsum('ijk,ijk->ij',array([cross(v2,v3)]*i),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
-    t1=einsum('ij,ij->ij',a1,b1)
-
-    a1=einsum('ijk,ijk->ij',cross(v3,-v1[:,None]),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
-    t2=einsum('ij,ij->ij',a1,b1)
-
-    a1=einsum('ijk,ijk->ij',cross(-v1[:,None],v2),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
-    t3=einsum('ij,ij->ij',a1,b1)
-
-    condition=(t1>=0) & (t1<=1) & (t2>=0) & (t2<=1) & (t3>=0) & (t3<=1) & (t2+t3>=0) & (t2+t3<=1)
-#     condition.shape
-
-    pnt3=(p04[:,None]+einsum('ijk,ij->ijk',array([v1]*j).transpose(1,0,2),t1))[condition]
-    pnt3=sort_pointsv(pnt1,pnt3) if len(pnt3)!= len(pnt1) else pnt3.tolist()
-
-#     if o==0:
-    cir=array([[pnt1[i]+array(q(v_rot[i],b[i]*r,-t)) for t in linspace(-90,90,5)] for i in arange(len(pnt1))]).tolist()
-#     else:
-#         cir=array([[pnt1[i]+array(q(v_rot[i],b[i]*r,t)) for t in linspace(-90,90,5)] for i in arange(len(pnt1))]).tolist()
-    
-    pa=[[[[p1[i][j],p1[i][j+1],p1[i+1][j]],[p1[i+1][j+1],p1[i+1][j],p1[i][j+1]]] if j<len(p1[0])-1 else \
-         [[p1[i][j],p1[i][0],p1[i+1][j]],[p1[i+1][0],p1[i+1][j],p1[i][0]]] \
-         for j in range(len(p1[0]))] for i in range(len(p1)-1)]
-    pa=array(pa).reshape(-1,3,3)
-    
-    pc=array([[[cir[i][j],cir[i][j+1]]  for j in arange(len(cir[0])-1)] for i in arange(len(cir))]).reshape(-1,2,3)
-
-    p01,p02,p03,p04,p05=pa[:,0],pa[:,1],pa[:,2],pc[:,0],pc[:,1]
-
-    v1,v2,v3=p05-p04,p02-p01,p03-p01
-    i,j=len(v1),len(v2)
-
-    a1=einsum('ijk,ijk->ij',array([cross(v2,v3)]*i),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
-    t1=einsum('ij,ij->ij',a1,b1)
-
-    a1=einsum('ijk,ijk->ij',cross(v3,-v1[:,None]),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
-    t2=einsum('ij,ij->ij',a1,b1)
-
-    a1=einsum('ijk,ijk->ij',cross(-v1[:,None],v2),p04[:,None]-p01)
-    b1=(1/einsum('ijk,ijk->ij',array([-v1]*j).transpose(1,0,2),array([cross(v2,v3)+.00001]*i)))
-    t3=einsum('ij,ij->ij',a1,b1)
-
-    condition=(t1>=0) & (t1<=1) & (t2>=0) & (t2<=1) & (t3>=0) & (t3<=1) & (t2+t3>=0) & (t2+t3<=1)
-#     condition.shape
-
-    pnt2=(p04[:,None]+einsum('ijk,ij->ijk',array([v1]*j).transpose(1,0,2),t1))[condition]
-    pnt2=sort_pointsv(pnt1,pnt2) if len(pnt2)!= len(pnt1) else pnt2.tolist()
-
-    
-    sol=array([pnt3,pnt1,pnt2]).transpose(1,0,2)
-    sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*1.9,s) for (p1,p2,p3) in sol]
-    sol=sol+[sol[0]]
-    return sol
-
-def rsec(line,radius):
-    p0=line[0]
-    p1=line[1]
-    p0,p1=array([p0,p1])
-    v=p1-p0
-    a=ang(v[0],v[1])
-    return arc(radius,a+90,a+270,p0,int(round(10+log10(radius+1)**6,0)))+arc(radius,a-90,a+90,p1,int(round(10+log10(radius+1)**6,0)))
-
-
-
-def cleaning_seg(sec):
-    r=-max_r(sec)-1
-    s=seg(sec)
-    s1=offset_points(sec,r)
-    s2=seg(s1)
-    u=array([(array(p[1])-array(p[0]))/linalg.norm(array(p[1])-array(p[0])) for p in s])
-    u1=array([(array(p[1])-array(p[0]))/linalg.norm(array(p[1])-array(p[0])) for p in s2])
-    s3=array(s)[linalg.norm(u-u1,axis=1)<1].tolist()
-    return s3
-
-def cleaning_sec_inner(sec,r):
-    s=cleaning_seg(sec)
-    s1=[rsec(p,abs(r)-.01) for p in s]
-    return s1
-
-def cleaning_sec_outer(sec,r):
-    s=cleaning_seg(sec)
-    s1=[rsec(p,abs(r)-.1) for p in s]
-    return s1
-
-# def inner_offset(sec,r):
-#     sec=flip(sec) if cw(sec)==1 else sec
-#     s=offset_points(sec,r)
-#     if s_intv1(seg(s))!=[]:
-#         s1=unique(s_intv(seg(s)),axis=0).tolist()
-#         for p in cleaning_sec_inner(sec,r):
-#             s2=pies1(p,s1)
-#             s1=exclude_points(s1,s2)
-#         s1=array(s1)[cKDTree(s1).query(sec)[1]].tolist()
-#         return s1
-#     else:
-#         return s
-
-def r_sec(r1,r2,cp1,cp2):
-    l=tctpf(r1,r2,cp1,cp2)
-    l=l[:2]+arc_2p(l[1],l[2],r1)+l[2:]+arc_2p(l[3],l[0],r2)
-    return l
-
-def inner_offset(sec,d):
-    p=sec+[sec[0]]
-    r=abs(d)
-    a=array(sec)[array(list_r(sec))==0]
-    a=seg(a)
-    p1=array([a[i] for i in range(len(a)) if i%2!=0]).tolist()
-    ol=[path_offset(p,d) for p in p1]
-    om=seg(offset_points_cw(sec,d))
-    #     o_circles=array([tctp(r,r,p[i],p[i+1])for i in range(len(p)-1)])
-    o_circle=offset_pointsv(sec,d)
-    # ip1=s_intv1(seg(o_circles.reshape(-1,2)))
-    ip1=s_intv(ol+om) if om != [] else s_intv(ol)
-    if ip1==[]:
-    #         op=sort_pointsv(sec,o_circles.reshape(-1,2))
-        op=offset_pointsv(sec,d)
-    else:
-    #         ocp=o_circles.reshape(-1,2).tolist()+ip1
-        ocp=o_circle+ip1
-        cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in p1]
-        j=[pies(cs[i],o_circle) for i in range(len(cs))]
-        k=[pies(cs[i],ip1) for i in range(len(cs)) ]
-        l=j+k
-        l=[p for p in l if p != [] ]
-        l=concatenate([p for p in l if p != [] ]).tolist() if l != [] else []
-        op=exclude_points(ocp,l)
-        op=array(op)[cKDTree(op).query(sec)[1]].tolist()
-    return op
-
-# def inner_offset(sec,r):
-#     sec=flip(sec) if cw(sec)==1 else sec
-#     p=sec+[sec[0]]
-#     r=abs(r)
-#     a=array(sec)[array(list_r(sec))==0]
-#     a=seg(a)
-#     p1=array([a[i] for i in range(len(a)) if i%2!=0]).tolist()
-    
-#     s=offset_points(sec,-r)
-#     if s_intv1(seg(s))!=[]:
-#         s1=unique(s_intv(seg(s)),axis=0).tolist()
-#         cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in p1]
-#         for p in cs:
-#             s2=pies1(p,s1)
-#             s1=exclude_points(s1,s2)
-#         s1=array(s1)[cKDTree(s1).query(sec)[1]].tolist()
-#         return s1
-#     else:
-#         return s
-
-# def outer_offset(sec,d):
-#     p=sec+[sec[0]]
-#     r=abs(d)
-#     a=array(sec)[array(list_r(sec))==0]
-#     a=seg(a)
-#     p1=array([a[i] for i in range(len(a)) if i%2!=0]).tolist()
-#     ol=[path_offset(p,d) for p in p1]
-#     om=seg(offset_points_ccw(sec,d))
-    
-#     #     o_circles=array([tctp(r,r,p[i],p[i+1])for i in range(len(p)-1)])
-#     o_circle=offset_pointsv(sec,d)
-#     # ip1=s_intv1(seg(o_circles.reshape(-1,2)))
-#     ip1=s_intv(ol+om) if om != [] else s_intv(ol)
-#     if ip1==[]:
-#     #         op=sort_pointsv(sec,o_circles.reshape(-1,2))
-#         op=offset_pointsv(sec,d)
-#     else:
-#     #         ocp=o_circles.reshape(-1,2).tolist()+ip1
-#         ocp=o_circle+ip1
-#         cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in p1]
-#         j=[pies1(cs[i],o_circle) for i in range(len(cs))]
-#         k=[pies1(cs[i],ip1) for i in range(len(cs)) ]
-#         l=j+k
-#         l=[p for p in l if p != [] ]
-#         l=concatenate([p for p in l if p != [] ]).tolist() if l != [] else []
-#         op=exclude_points(ocp,l)
-#         op=array(op)[cKDTree(op).query(sec)[1]].tolist()
-#     return op
-
-def outer_offset(sec,r):
-    sec=flip(sec) if cw(sec)==1 else sec
-    p=sec+[sec[0]]
-    r=abs(r)
-    a=array(sec)[array(list_r(sec))==0]
-    a=seg(a)
-    p1=array([a[i] for i in range(len(a)) if i%2!=0]).tolist()
-    
-    s=offset_points(sec,r)
-    if s_intv1(seg(s))!=[]:
-        s1=unique(s_intv(seg(s)),axis=0).tolist()
-        cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in p1]
-        for p in cs:
-            s2=pies1(p,s1)
-            s1=exclude_points(s1,s2)
-        s1=array(s1)[cKDTree(s1).query(sec)[1]].tolist()
-        return s1
-    else:
-        return s
-
-def out_offset(sec,r):
-    sec=flip(sec) if cw(sec)==1 else sec
-    s=offset_points(sec,r)
-    if s_intv1(seg(s))!=[]:
-        s1=unique(s_intv(seg(s)),axis=0).tolist()
-        for p in cleaning_sec_outer(sec,r):
-            s2=pies1(p,s1)
-            s1=exclude_points(s1,s2)
-        s1=array(s1)[cKDTree(s1).query(sec)[1]].tolist()
-        return s1
-    else:
-        return s
-
-
-def swp(bead2):
     n1=arange(len(bead2[0])).tolist()
     n2=array([[[[(j+1)+i*len(bead2[0]),j+i*len(bead2[0]),j+(i+1)*len(bead2[0])],[(j+1)+i*len(bead2[0]),j+(i+1)*len(bead2[0]),(j+1)+(i+1)*len(bead2[0])]] \
              if j<len(bead2[0])-1 else \
@@ -3398,6 +2593,11 @@ def swp(bead2):
     return f'polyhedron({pnt},{n},convexity=10);'
 
 def swp_c(bead2):
+    '''
+    function to render various polyhedron with closed loop shapes e.g. fillets
+    refer to the file "example of various functions " for application examples
+    
+    '''
     n1=arange(len(bead2[0])).tolist()
     n2=array([[[[(j+1)+i*len(bead2[0]),j+i*len(bead2[0]),j+(i+1)*len(bead2[0])],[(j+1)+i*len(bead2[0]),j+(i+1)*len(bead2[0]),(j+1)+(i+1)*len(bead2[0])]] \
              if j<len(bead2[0])-1 else \
@@ -3442,6 +2642,13 @@ def surf_extrudef(surf,t=-.05):
 
 
 def swp_prism_h(prism_big,prism_small):
+    '''
+    
+    creats a hollow prism with 2 similar prisms (1 big and 1 smaller)
+    
+    refer the file "example of various functions" for application example
+    '''
+    
     p1=prism_big
     p2=flip(prism_small)
     p3=p1+p2+[p1[0]]
@@ -3458,6 +2665,11 @@ def pmdp(line,pnts): #perpendicular minimum distance point
 
 
 def surf_base(surf,h=0):
+    '''
+    creates a solid from any surface, 'h' is the height of the base of the surface
+    refer the file "example of various functions" for application example
+    
+    '''
     s=cpo(surf)
     s1=trns([0,0,h],c2t3(c3t2([flip(p) for p in s])))
     s2=array([s,s1]).transpose(1,0,2,3)
@@ -3547,6 +2759,12 @@ def p_ex(sec,path,option=0):
     return c
 
 def helix(radius=10,pitch=10, number_of_coils=1, step_angle=1):
+    '''
+    creates a helix with radius, pitch and number of coils parameters
+    
+    refer to file "example of various functions" for application example
+    
+    '''
     return [[radius*cos(i*pi/180),radius*sin(i*pi/180),i/360*pitch] for i in arange(0,360*number_of_coils,step_angle)]
 
 def surf_offset(surf,o):
