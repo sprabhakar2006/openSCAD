@@ -1027,6 +1027,11 @@ def prism1(sec,path,n):
         return [ trns([0,0,y], array(m_points(offset(sec,x),n))[cKDTree(m_points(offset(sec,x),n)).query(a)[1]]) for (x,y) in path ]
 
 def offset_points_cw(sec,r):
+    '''
+    function to offset only those points which are clockwise 
+    refer file "example of various functions" for application example
+    
+    '''
     s=seg(sec)
     c=[]
     for i in range(len(sec)):
@@ -1040,6 +1045,11 @@ def offset_points_cw(sec,r):
     return c
 
 def offset_points_ccw(sec,r):
+    '''
+    function to offset only those points which are counter clockwise 
+    refer file "example of various functions" for application example
+    
+    '''
     s=seg(sec)
     c=[]
     for i in range(len(sec)):
@@ -1088,9 +1098,21 @@ def surf_extrude(sec,path):# extrudes an open section 'sec' to a 'path' to creat
     return concatenate(c).tolist()
 
 def cpo(prism): # changes the orientation of points of a prism
+    '''
+    function to change the orientation of the points of the prism
+    refer to the file "example of various functions" for application example
+    
+    
+    '''
     return swapaxes(array(prism),0,1).tolist()
 
 def c2t3(p):# converts 2d list to 3d
+    '''
+    function to convert 2d to 3d, it just adds the z-coordinate to the points list 
+    example:
+    list=c2t3([[1,2],[3,4],[6,7]])
+    output=> [[1, 2, 0], [3, 4, 0], [6, 7, 0]]
+    '''
     if len(array(p).shape)>2:
         return [trns([0,0,0],p) for p in p]
     else:
@@ -1110,12 +1132,24 @@ def c3t2(a): # converts 3d list to 2d list
         return swapaxes([p[:,0],p[:,1]],0,1).tolist()
 
 def nv(p):# normal vector to the plane 'p' with atleast 3 known points
+    '''
+    given 3 points ['p1','p2',p3] function calculates unit normal vector
+    example:
+    p1,p2,p3=[1,0,0],[0,10,0],[-5,0,0]
+    nv([p1,p2,p3]) => [0.0, 0.0, -1.0]
+    '''
     p0,p1,p2=array(trns([0,0,0],[p[0],p[1],p[2]]))
     nv=cross(p0-p1,p2-p1)
     m=1/linalg.norm(nv) if linalg.norm(nv)>0 else 1e5
     return (nv*m).tolist()
 
 def fillet_3p_3d(p0,p1,p2,r,s):# fillet with 3 known points 'p0,p1,p2' in 3d space. 'r' is the radius of fillet and 's' is the number of segments in the fillet
+    '''
+    function to create fillet given 3 points 'p1','p2','p3' 
+    r: radius of the fillet
+    s: number of segments in the fillet
+    refer file "example of various functions" for application example
+    '''
     p0,p1,p2=array(trns([0,0,0],[p0,p1,p2]))
     n=array(nv([p0,p1,p2]))
     u1=(p0-p1)/(linalg.norm(p0-p1)+.00001)
@@ -1130,6 +1164,12 @@ def fillet_3p_3d(p0,p1,p2,r,s):# fillet with 3 known points 'p0,p1,p2' in 3d spa
     return concatenate([[p1],arc]).tolist()
 
 def fillet_3p_3d_cp(p0,p1,p2,r):# center point 'cp' of the fillet with 3 known points 'p0,p1,p2' in 3d space. 'r' is the radius of fillet
+    '''
+    function to find the center point of the fillet created by given 3 points 'p1','p2','p3' 
+    r: radius of the fillet
+    
+    refer file "example of various functions" for application example
+    '''
     p0,p1,p2=array(trns([0,0,0],[p0,p1,p2]))
     n=array(nv([p0,p1,p2]))
     u1=(p0-p1)/(linalg.norm(p0-p1)+.00001)
@@ -1157,6 +1197,11 @@ def i_p3d(l1,l2): # intersection point between 2 lines 'l1' and 'l2' in 3d space
     return ip.tolist()
 
 def arc_3p_3d(points,s): # arc with 3 known list of 'points' in 3d space where 's' is the number of segments in the arc
+    '''
+    function to create arc given 3 points 'p1','p2','p3' 
+    s: number of segments in the arc
+    refer file "example of various functions" for application example
+    '''
     points=array(points)
     v1=points[0]-points[1]
     v2=points[2]-points[1]
@@ -1181,6 +1226,12 @@ def arc_3p_3d(points,s): # arc with 3 known list of 'points' in 3d space where '
     return array(arc).tolist()
 
 def r_3p_3d(points):# radius of the circle with 3 known list of 'points' in 3d space
+    '''
+    function to find the radius of a circle created by 3 given points 'p1','p2','p3' in 3d space
+    example:
+    p1,p2,p3=[[3,0,0],[0,0,0],[0,3,2]]
+    r_3p_3d([p1,p2,p3])=>1.8027906380190175
+    '''
     points=array(points)
     v1=points[0]-points[1]
     v2=points[2]-points[1]
@@ -1204,6 +1255,11 @@ def r_3p_3d(points):# radius of the circle with 3 known list of 'points' in 3d s
     return radius
 
 def cir_3p_3d(points,s):#circle with 3 known list of 'points' in 3d space where 's' is the number of segments in the circle 
+    '''
+    function to create circle given 3 points 'p1','p2','p3' 
+    s: number of segments in the arc
+    refer file "example of various functions" for application example
+    '''
     points=array(points)
     v1=points[0]-points[1]
     v2=points[2]-points[1]
@@ -1361,6 +1417,10 @@ def io(sec,r):# used for inner offset in offset function
 #     return p4[cKDTree(p4).query(s1)[1]].tolist()
 
 def m_points1(sec,s):# multiple points with in the straight lines in the closed section 'sec'. 's' is the number of segments between each straight line
+    '''
+    adds 's' number of points in each straight line segment of a section 'sec'
+    refer to the file "example of various functions" for application example
+    '''
     s1=sec
     s2=sec[1:]+[sec[0]]
     s1,s2=array([s1,s2])
@@ -1597,6 +1657,14 @@ def q_rot(s,pl):
         return qmr2([p[0] for p in s],[0 if len(p)==1 else float(p[1:]) for p in s],pl)
     
 def l_extrude(sec,h=1,a=0,steps=1):
+    '''
+    function to linear extrude a section where
+    sec: section to extrude
+    h: height of the extrusion
+    a: angle of twist while extruding
+    steps: number of steps in each angular extrusion
+    refer to the file ' example of various functions' for application example
+    '''
     s=2 if a==0 else steps
     return [trns([0,0,h*i if a==0 else h/a*i],q_rot([f"z{0 if a==0 else i}"],sec)) for i in linspace(0,1 if a==0 else a,s)]
 
@@ -1625,6 +1693,11 @@ def square(s=0,center=False):
     return sec1
 
 def rsz3d(prism,rsz):
+    '''
+    function to resize a 'prism' to dimensions 'rsz'
+    bottom left corner of both the prisms would be same
+    refer to file 'example of various functions' for application example
+    '''
     prism1=array(prism).reshape(-1,3)
     max_x=prism1[:,0].max()
     max_y=prism1[:,1].max()
@@ -1644,6 +1717,11 @@ def rsz3d(prism,rsz):
     return trns(t,rev_prism)
 
 def rsz3dc(prism,rsz):
+    '''
+    function to resize a 'prism' to dimensions 'rsz'
+    resized prism will be placed in the center of the original prism or center point of both the prisms will be same
+    refer to file 'example of various functions' for application example
+    '''
     prism1=array(prism).reshape(-1,3)
     max_x=prism1[:,0].max()
     max_y=prism1[:,1].max()
@@ -1663,6 +1741,10 @@ def rsz3dc(prism,rsz):
 
 
 def bb(prism):
+    '''
+    function to find the bounding box dimensions of a prism
+    refer to the file "example of various functions " for application example
+    '''
     prism1=array(prism).reshape(-1,3)
     max_x=prism1[:,0].max()
     max_y=prism1[:,1].max()
@@ -1681,6 +1763,11 @@ def bb(prism):
 #     return array(p).tolist()
 
 def cube(s,center=False):
+    '''
+    function to draw cube with size 's'
+    refer to the file "example of various functions " for application example
+    
+    '''
     if center==False:
         return l_extrude(square([s[0],s[1]]),s[2])
     elif center==True:
@@ -1688,11 +1775,21 @@ def cube(s,center=False):
 
 
 def sphere(r=0,cp=[0,0,0],s=50):
+    '''
+    function to draw sphere with radius 'r' , center point 'cp' and number of segments 's'
+    refer to the file "example of various functions " for application example
+    
+    '''
     path=arc(r,-90,90,s=s)
     p=[ trns([cp[0],cp[1],p[1]+cp[2]],circle(p[0],s=s)) for p in path]
     return array(p).tolist()
 
 def rsz2d(sec,rsz):
+    '''
+    function to resize a 2d section to dimensions 'rsz'
+    resized section will be placed on bottom center of the original section
+    refer the file "example of various functions" for application example
+    '''
     avg=array(sec).mean(axis=0)
     max_x=array(sec)[:,0].max()
     min_x=array(sec)[:,0].min()
@@ -1704,6 +1801,11 @@ def rsz2d(sec,rsz):
     return s[sort(unique(s,axis=0,return_index=True)[1])].tolist()
     
 def rsz2dc(sec,rsz):
+    '''
+    function to resize a 2d section to dimensions 'rsz'
+    resized section will be placed in center of the original section
+    refer the file "example of various functions" for application example
+    '''
     avg=array(sec).mean(axis=0)
     max_x=array(sec)[:,0].max()
     min_x=array(sec)[:,0].min()
@@ -1927,18 +2029,26 @@ def arc_3d(v=[0,0,1],r=1,theta1=0,theta2=360,cw=-1,s=50):
 #     arc1=arc(r,theta1,theta2,[0,0],s=s) if cw==-1 else flip(arc(r,theta1,theta2,[0,0],s=s))
 #     arc2=q_rot(['x90','z90'],arc1)
 #     return array(q_rot([f'z{theta}',f'y{-alpha}'],arc2)).tolist()
-    sec=arc(r,theta1,theta2,[0,0],s) if cw==-1 else flip(arc(r,theta1,theta2,[0,0],s))
-    s=q_rot(['x90','z-90'],sec)
-    v1=array(v)+array([0,0,0.00001])
-    va=[v1[0],v1[1],0]
-    u1=array(uv(v1))
-    ua=array(uv(va))
-    v2=cross(va,v1)
-    a1=arccos(u1@ua)*180/pi
-    a2=ang(v1[0],v1[1])
-    s1=q_rot([f'z{a2}'],s)
-    sec1=[q(v2,p,a1) for p in s1]
-    return sec1
+    if uv(v)==[0,0,1]:
+        arc1=arc(r,theta1,theta2,[0,0],s) if cw==-1 else flip(arc(r,theta1,theta2,[0,0],s))
+        return c2t3(arc1)
+    elif uv(v)==[0,0,-1]:
+        arc1=arc(r,theta1,theta2,[0,0],s) if cw==-1 else flip(arc(r,theta1,theta2,[0,0],s))
+        arc1=q_rot(['y180'],arc1)
+        return arc1
+    else:
+        sec=arc(r,theta1,theta2,[0,0],s) if cw==-1 else flip(arc(r,theta1,theta2,[0,0],s))
+        s=q_rot(['x90','z-90'],sec)
+        v1=array(v)+array([0,0,0.00001])
+        va=[v1[0],v1[1],0]
+        u1=array(uv(v1))
+        ua=array(uv(va))
+        v2=cross(va,v1)
+        a1=arccos(u1@ua)*180/pi
+        a2=ang(v1[0],v1[1])
+        s1=q_rot([f'z{a2}'],s)
+        sec1=[q(v2,p,a1) for p in s1]
+        return sec1
 
 def plane(nv,radius):
     '''
