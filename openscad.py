@@ -32,6 +32,17 @@ def pts(p):
 
 
 def pts1(p):
+    '''
+    'p' is a list of points
+    function calculates the cumulative sum of x,y values in the list while z value remains the same.
+    this is mainly used in function cr(pl,s).
+    example:
+    pts1([[0,0,1],[10,0,1],[0,5,1],[-10,0,1]]) => [[0, 0, 1], [10, 0, 1], [10, 5, 1], [0, 5, 1]]
+    
+    if used with function cr(pl,s)
+    cr(pts1([[0,0,1],[10,0,1],[0,5,1],[-10,0,1]]),5) => This is a rounded rectangle of dim 10 x 5 with corner radius of 1 at each corner
+    refer to file 'example of various functions' for application example
+    '''
     
     p=[[a[0],a[1],0] if len(a)==2 else a for a in p]
     b=array(p)[:,0:2].cumsum(axis=0)
@@ -43,7 +54,7 @@ def cw(p):
     function to identify whether the section is clockwise or counter clockwise. 
     cw(sec)==1 means clockwise and -1 means counterclockwise. 
     e.g.
-    cw([[0,0],[4,0],[0,4],[-4,0]]) => -1
+    cw(pts([[0,0],[4,0],[0,4],[-4,0]])) => -1
     '''
     p=array(p)[:,0:2]
     q=p[1:].tolist()+[p[0].tolist()]
@@ -55,14 +66,20 @@ def cw(p):
     e=1 if c<d else -1
     return e    
 
-# def cwv(p):
-#     p=sec
-#     p0=[p[len(p)-1]]+p[:-1]
-#     p1=p
-#     p2=p[1:]+[p[0]]
-#     p0,p1,p2=array([p0,p1,p2])
-#     p=array([p0,p1,p2]).transpose(1,0,2).tolist()
-#     return [cw(p1) for p1 in p]
+def cwv(sec):
+    '''
+    function to identify whether each point in a section is clockwise or counter clockwise. 
+    cw(sec)==1 means clockwise and -1 means counterclockwise. 
+    e.g.
+    cwv(pts([[0,0],[4,0],[0,4],[2,0],[0,2],[-6,0]])) => [-1, -1, 1, -1, -1, -1]
+    '''
+    p=sec
+    p0=[p[len(p)-1]]+p[:-1]
+    p1=p
+    p2=p[1:]+[p[0]]
+    p0,p1,p2=array([p0,p1,p2])
+    p=array([p0,p1,p2]).transpose(1,0,2).tolist()
+    return [cw(p1) for p1 in p]
 
 
 def ang(x,y):
@@ -317,6 +334,11 @@ def offset_seg(sec,r):
     return c
 
 def offset_segv(sec,d):
+    '''
+    function makes the segments of the original section and offset each segment by a distance 'd'
+    refer the file "example of various functions" for application examples
+    
+    '''
     s=sec
     s1=s[1:]+[s[0]]
     x=(array(s1)-array(s))
@@ -351,6 +373,10 @@ def offset_pointsv(sec,r):
     return array(offset_segv(sec,r))[:,0].tolist()
 
 def offset_seg_cw(sec,r):
+    '''
+    function offsets the segment only when the point is clockwise
+    refer to file 'example of various functions' for application example
+    '''
     c=[]
     for i in range(len(sec)):
         i_minus=len(sec)-1 if i==0 else i-1
@@ -690,7 +716,7 @@ def offset_seg_cwv(sec,r):
     p_i=sec
     pi_plus=sec[1:]+[sec[0]]
     c=array(list(map(cw,swapaxes([pi_minus,p_i,pi_plus],0,1))))
-    return array(offset_segv(sec,r))[c==1].reshape(-1,2)                    
+    return array(offset_segv(sec,r))[c==1].reshape(-1,2).tolist()                    
             
 
 
@@ -734,7 +760,7 @@ def s_intv1(s):
     sec=seg([[0,0],[10,0],[15,7]])
     s_intv1(sec) => []
     
-    sec=offset_seg([[0,0],[10,0],[15,7]],-1)
+    sec=offset_segv([[0,0],[10,0],[15,7]],-1)
     s_intv1(sec) => 
     [[9.485, 1.0],
      [4.508, 1.0],
@@ -771,6 +797,44 @@ def s_intv1(s):
             c=c+d
     return c
 
+def self_intersections_crossed(ol):
+    i=len(ol)
+    a=array([ol]*i).transpose(1,0,2,3).reshape(-1,2,2)
+    b=array([ol]*i).reshape(-1,2,2)
+    p0,p1,p2,p3=a[:,0],a[:,1],b[:,0],b[:,1]
+    v1,v2=p1-p0,p3-p2
+    # p0+v1*t1=p2+v2*t2
+    # v1*t1-v2*t2=p2-p0
+    c=array([v1,-v2]).transpose(1,0,2).transpose(0,2,1)
+    d=linalg.pinv(c)
+    e=p2-p0
+    f=einsum('ijk,ij->ij',d,e)
+    t1,t2=f[:,0],f[:,1]
+    decision=(t1>0)&(t1<1)&(t2>0)&(t2<1)
+    p0.shape,v1.shape,t1.shape
+    g=p0+einsum('ij,i->ij',v1,t1)
+    g=g[decision]
+    return g[sort(unique(g,axis=0,return_index=True)[1])].tolist()
+
+
+def self_intersections(ol):
+    i=len(ol)
+    a=array([ol]*i).transpose(1,0,2,3).reshape(-1,2,2)
+    b=array([ol]*i).reshape(-1,2,2)
+    p0,p1,p2,p3=a[:,0],a[:,1],b[:,0],b[:,1]
+    v1,v2=p1-p0,p3-p2
+    # p0+v1*t1=p2+v2*t2
+    # v1*t1-v2*t2=p2-p0
+    c=array([v1,-v2]).transpose(1,0,2).transpose(0,2,1)
+    d=linalg.pinv(c)
+    e=p2-p0
+    f=einsum('ijk,ij->ij',d,e)
+    t1,t2=f[:,0],f[:,1]
+    decision=(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)
+    p0.shape,v1.shape,t1.shape
+    g=p0+einsum('ij,i->ij',v1,t1)
+    g=g[decision]
+    return g[sort(unique(g,axis=0,return_index=True)[1])].tolist()
 
 def r_3pv(p1,p2,p3):
     p4=p1+(p2-p1)/2
@@ -794,8 +858,7 @@ def i_p2dv(p0,p1,p2,p3):
 def sort_points(sec,list):
     '''
     function picks the nearest point of a section from a reference section and matches the length of points for the 2 compared sections
-    
-    
+    refer file "example of various functions" for application example
     
     '''
     if list!=[]:
@@ -811,6 +874,11 @@ def sort_points(sec,list):
         return b
             
 def sort_pointsv(sec,sec1):
+    '''
+    function picks the nearest point of a section from a reference section and matches the length of points for the 2 compared sections
+    refer file "example of various functions" for application example
+
+    '''
     a=array(sec)
     b=array(sec1)
     c=[]
@@ -821,14 +889,23 @@ def sort_pointsv(sec,sec1):
 
 
 
-def m_points(sec,sl=20):# multiple points within straight lines of a closed section 'sec' with equal segment length 'sl' in the straight line segments
+def m_points(sec,sl=20):
+    '''
+    multiple points within straight lines of a closed section 'sec' with equal segment length 'sl' in the straight line segments
+    refer file "example of various functions" for application example
+    '''
     p0=array(sec)
     p1=array(sec)[1:].tolist()+[sec[0]]
     lnth=linalg.norm(array(p1)-array(p0),axis=1)
     sec1=concatenate([array(l([p0[i],p1[i]],lnth[i]/sl)) if lnth[i]>=sl*2 else [p0[i]] for i in range(len(p0))])
     return sec1.tolist()
 
-def m_points_o(sec,sl=20):# multiple points within straight lines of an open section 'sec' with equal segment length 'sl' in the straight line segments
+def m_points_o(sec,sl=20):
+    '''
+    multiple points within straight lines of an open section 'sec' with equal segment length 'sl' in the straight line segments
+    refer file "example of various functions" for application example
+    
+    '''
     p0=array(sec)
     p1=array(sec)[1:].tolist()+[sec[0]]
     lnth=linalg.norm(array(p1)-array(p0),axis=1)
@@ -837,6 +914,12 @@ def m_points_o(sec,sl=20):# multiple points within straight lines of an open sec
 
 
 def l(l,s=20):# line 'l' with number of segments 's'
+    '''
+    function to draw number of points 's' in a line 'l'
+    example:
+    line=[[0,0],[10,0]]
+    line1=l(line,5) => [[0.0, 0.0], [2.0, 0.0], [4.0, 0.0], [6.0, 0.0], [8.0, 0.0]] (last point of line is excluded)
+    '''
     p0,p1=array(l[0]),array(l[1])
     v=p1-p0
     u=[v/linalg.norm(v)]
@@ -844,14 +927,24 @@ def l(l,s=20):# line 'l' with number of segments 's'
     r=arange(0,length,length/s)
     return (p0+einsum('ij,k->kj',u,r)).tolist()
 
-def l_len(l):# length of a line 'l'
+def l_len(l):
+    '''
+    calculates length of a line 'l'
+    example:
+    line=[[0,0],[10,0]]
+    l_len(line) =>10
+    '''
     p0,p1=array(l[0]),array(l[1])
     v=p1-p0
     u=[v/(linalg.norm(v)+.00001)]
     length=linalg.norm(v)
     return length.tolist()
 
-def arc_2p(p1,p2,r,cw=1,s=20):#arc with 2 points 'p1,p2' with radius 'r' and with orientation clockwise (1) or counterclock wise(-1)
+def arc_2p(p1,p2,r,cw=1,s=20):
+    '''
+    arc with 2 points 'p1,p2' with radius 'r' and with orientation clockwise (1) or counterclock wise(-1)
+    refer file "example of various functions" for application example
+    '''
     p1,p2=array([p1,p2])
     p3=p1+(p2-p1)/2
     d=linalg.norm(p3-p1)
@@ -864,7 +957,12 @@ def arc_2p(p1,p2,r,cw=1,s=20):#arc with 2 points 'p1,p2' with radius 'r' and wit
     a3= (a2+360 if a2<a1 else a2) if cw==-1 else (a2 if a2<a1 else a2-360)
     return arc(r,a1,a3,cp,s)
 
-def arc_long_2p(p1,p2,r,cw=1,s=20):#long arc with 2 points 'p1,p2' with radius 'r' and with orientation clockwise (1) or counterclock wise(-1)
+def arc_long_2p(p1,p2,r,cw=1,s=20):
+    '''
+    long arc with 2 points 'p1,p2' with radius 'r' and with orientation clockwise (1) or counterclock wise(-1)
+    
+    refer file "example of various functions" for application example
+    '''
     p1,p2=array([p1,p2])
     p3=p1+(p2-p1)/2
     d=linalg.norm(p3-p1)
@@ -877,7 +975,13 @@ def arc_long_2p(p1,p2,r,cw=1,s=20):#long arc with 2 points 'p1,p2' with radius '
     a3=(a2+360 if a2<a1 else a2) if cw==-1 else (a2 if a2<a1 else a2-360)
     return arc(r,a1,a3,cp,s)
 
-def arc_2p_cp(p1,p2,r,cw=-1):# center point of an arc with 2 points 'p1,p2' with radius 'r' and with orientation clockwise (1) or counterclock wise(-1)
+def arc_2p_cp(p1,p2,r,cw=-1):
+    '''
+    center point of an arc with 2 points 'p1,p2' with radius 'r' and with orientation clockwise (1) or counterclock wise(-1)
+    
+    refer file "example of various functions" for application example
+    
+    '''
     p1,p2=array([p1,p2])
     p3=p1+(p2-p1)/2
     d=linalg.norm(p3-p1)
@@ -885,11 +989,15 @@ def arc_2p_cp(p1,p2,r,cw=-1):# center point of an arc with 2 points 'p1,p2' with
     v=p1-p3
     u=v/linalg.norm(v)
     cp=p3+(u*l)@rm(-90 if cw==-1 else 90)
-    return cp
+    return cp.tolist()
 
-def offset(sec,r):# offset for a section 'sec' by amount 'r'
+def offset(sec,r):
+    '''
+    calculates offset for a section 'sec' by amount 'r'
+    refer file "example of various functions" for application example
+    '''
 #     return io(sec,r) if r<0 else sec if r==0 else oo_convex(sec,r) if convex(sec)==True else outer_offset(sec,r)
-    return inner_offset(sec,r) if r<0 else sec if r==0 else oo_convex(sec,r) if convex(sec)==True else out_offset(sec,r)
+    return inner_offset(sec,r) if r<0 else sec if r==0 else oo_convex(sec,r) if convex(sec)==True else outer_offset(sec,r)
 
 
 def prism(sec,path):
@@ -931,6 +1039,18 @@ def offset_points_cw(sec,r):
             c.append(offset_l([p1,p2],r)[0])
     return c
 
+def offset_points_ccw(sec,r):
+    s=seg(sec)
+    c=[]
+    for i in range(len(sec)):
+        i_minus=len(sec)-1 if i==0 else i-1
+        i_plus=i+1 if i<len(sec)-1 else 0
+        p0=sec[i_minus]
+        p1=sec[i]
+        p2=sec[i_plus]
+        if cw([p0,p1,p2])==-1:
+            c.append(offset_l([p1,p2],r)[0])
+    return c
 
 def cytz(path):# converts 'y' points to 'z' points in a 2d list of points
     '''
@@ -1183,7 +1303,7 @@ def io(sec,r):# used for inner offset in offset function
         s=flip(sec) if cw(sec)==1 else sec
         s1=s
 #         s1=convert_secv(s,max_r(s)+1 if abs(r)>=max_r(s) else abs(r))
-        s2=offset_seg(s1,r)
+        s2=offset_segv(s1,r)
         s3=offset_seg_cw(s1,r)
         s4=s_int(s2)
         s5=sec_clean(s1,s4+s3,abs(r))
@@ -1192,53 +1312,53 @@ def io(sec,r):# used for inner offset in offset function
 
 
     
-def outer_offset(sec,r):# used for offset function
-    s1=flip(sec) if cw(sec)==1 else sec
-    p0=[sec[len(sec)-1]]+sec[:len(sec)-1]
-    p1=sec
-    p2=sec[1:]+[sec[0]]
-    p0,p1,p2=array([p0,p1,p2])
-    v1=p0-p1
-    u1=v1/linalg.norm(v1,axis=1).reshape(-1,1)
-    v2=p2-p1
-    u2=v2/linalg.norm(v2,axis=1).reshape(-1,1)
-    theta=arccos(einsum('ij,ij->i',u1,u2))*180/pi
-    alpha=180-theta
-    pa=p1+einsum('ij,i->ij',(u1*r),tan(alpha/2*pi/180))
-    pb=p1+einsum('ij,i->ij',(u2*r),tan(alpha/2*pi/180))
-    cp=array([ arc_2p_cp(pa[i],pb[i],r,1) for i in range(len(p1))])
-    pc=p1+(u1@rm(90))*r
-    pd=p1+(u2@rm(-90))*r
-    op=[ array(arc_2p(pc[i],pd[i],r,-1,0 if linalg.norm(pc[i]-pd[i])<1 else 5)) if cw([p0[i],p1[i],p2[i]])==-1 else [cp[i]] for i in range(len(p1))]
-    radius=r_3pv(p0,p1,p2)
-    op01=concatenate([op[i] for i in range(len(sec)) if (cw([p0[i],p1[i],p2[i]])==-1) | (radius[i]>=r)]).tolist()
-    p0=op01
-    p1=op01[1:]+[op01[0]]
-    p2=op01[len(op01)-2:len(op01)]+op01[:len(op01)-2]
-    p3=[op01[len(op01)-1]]+op01[:len(op01)-1]
-    p4=op01[2:]+op01[0:2]
-    p5=op01[3:]+op01[0:3]
+# def outer_offset(sec,r):# used for offset function
+#     s1=flip(sec) if cw(sec)==1 else sec
+#     p0=[sec[len(sec)-1]]+sec[:len(sec)-1]
+#     p1=sec
+#     p2=sec[1:]+[sec[0]]
+#     p0,p1,p2=array([p0,p1,p2])
+#     v1=p0-p1
+#     u1=v1/linalg.norm(v1,axis=1).reshape(-1,1)
+#     v2=p2-p1
+#     u2=v2/linalg.norm(v2,axis=1).reshape(-1,1)
+#     theta=arccos(einsum('ij,ij->i',u1,u2))*180/pi
+#     alpha=180-theta
+#     pa=p1+einsum('ij,i->ij',(u1*r),tan(alpha/2*pi/180))
+#     pb=p1+einsum('ij,i->ij',(u2*r),tan(alpha/2*pi/180))
+#     cp=array([ arc_2p_cp(pa[i],pb[i],r,1) for i in range(len(p1))])
+#     pc=p1+(u1@rm(90))*r
+#     pd=p1+(u2@rm(-90))*r
+#     op=[ array(arc_2p(pc[i],pd[i],r,-1,0 if linalg.norm(pc[i]-pd[i])<1 else 5)) if cw([p0[i],p1[i],p2[i]])==-1 else [cp[i]] for i in range(len(p1))]
+#     radius=r_3pv(p0,p1,p2)
+#     op01=concatenate([op[i] for i in range(len(sec)) if (cw([p0[i],p1[i],p2[i]])==-1) | (radius[i]>=r)]).tolist()
+#     p0=op01
+#     p1=op01[1:]+[op01[0]]
+#     p2=op01[len(op01)-2:len(op01)]+op01[:len(op01)-2]
+#     p3=[op01[len(op01)-1]]+op01[:len(op01)-1]
+#     p4=op01[2:]+op01[0:2]
+#     p5=op01[3:]+op01[0:3]
 
-    p0,p1,p2,p3,p4,p5=array([p0,p1,p2,p3,p4,p5])
-    v1=p1-p0
-    u1=v1/linalg.norm(v1,axis=1).reshape(-1,1)
-    ip=swapaxes(array([i_p2dv(p0,p1,p2,p3),i_p2dv(p0,p1,p4,p5)]),0,1)
-    l1=linalg.norm(p1-p0,axis=1)
-    a=ip-p0[:,None]
-    b=1/sqrt(einsum('ijk,ijk->ij',a,a))
-    c=sqrt(einsum('ijk,ijk->ij',a,a))
-    u2=einsum('ijk,ij->ijk',a,b)
-    c1=c<l1[:,None]
-    c2=((u2<0)==(u1<0)[:,None]).all(axis=1)
-    op02=[ ip[i][0].tolist() if (c1&c2)[i][0]==True else (ip[i][1].tolist() if (c1&c2)[i][1]==True else op01[i]) for i in range(len(ip))]
-    p=array(op02)
-    p1=array(m_points1(s1,10))
-    p.shape,p1.shape
-    p2=p[:,None]-p1
-    p3=sqrt(einsum('ijk,ijk->ij',p2,p2)).min(axis=1)
-    p4=p[(p3>=r-.02)]
+#     p0,p1,p2,p3,p4,p5=array([p0,p1,p2,p3,p4,p5])
+#     v1=p1-p0
+#     u1=v1/linalg.norm(v1,axis=1).reshape(-1,1)
+#     ip=swapaxes(array([i_p2dv(p0,p1,p2,p3),i_p2dv(p0,p1,p4,p5)]),0,1)
+#     l1=linalg.norm(p1-p0,axis=1)
+#     a=ip-p0[:,None]
+#     b=1/sqrt(einsum('ijk,ijk->ij',a,a))
+#     c=sqrt(einsum('ijk,ijk->ij',a,a))
+#     u2=einsum('ijk,ij->ijk',a,b)
+#     c1=c<l1[:,None]
+#     c2=((u2<0)==(u1<0)[:,None]).all(axis=1)
+#     op02=[ ip[i][0].tolist() if (c1&c2)[i][0]==True else (ip[i][1].tolist() if (c1&c2)[i][1]==True else op01[i]) for i in range(len(ip))]
+#     p=array(op02)
+#     p1=array(m_points1(s1,10))
+#     p.shape,p1.shape
+#     p2=p[:,None]-p1
+#     p3=sqrt(einsum('ijk,ijk->ij',p2,p2)).min(axis=1)
+#     p4=p[(p3>=r-.02)]
 
-    return p4[cKDTree(p4).query(s1)[1]].tolist()
+#     return p4[cKDTree(p4).query(s1)[1]].tolist()
 
 def m_points1(sec,s):# multiple points with in the straight lines in the closed section 'sec'. 's' is the number of segments between each straight line
     s1=sec
@@ -2205,8 +2325,12 @@ def next_point(points,s_p):
     n_p=array(points)[a1==max(a1)][0].tolist()
     return n_p
 
-def exclude_points(points,pnts):
-    return [p for p in points if p not in pnts]
+# def exclude_points(points,pnts):
+#     return [p for p in points if p not in pnts]
+
+def exclude_points(list,list_to_exclude):
+    decision=[array([p1!=p for p1 in list_to_exclude]).all() for p in list]
+    return array(list)[decision].tolist()
 
 def i_p2dw(l1,l):
     p0,p1=array(l1)
@@ -2299,24 +2423,96 @@ def inner_offset(sec,d):
     a=array(sec)[array(list_r(sec))==0]
     a=seg(a)
     p1=array([a[i] for i in range(len(a)) if i%2!=0]).tolist()
-    ol=[offset_l(p,d) for p in p1]
+    ol=[path_offset(p,d) for p in p1]
     om=seg(offset_points_cw(sec,d))
-#     o_circles=array([tctp(r,r,p[i],p[i+1])for i in range(len(p)-1)])
+    #     o_circles=array([tctp(r,r,p[i],p[i+1])for i in range(len(p)-1)])
     o_circle=offset_pointsv(sec,d)
     # ip1=s_intv1(seg(o_circles.reshape(-1,2)))
-    ip1=s_intv1(ol+om)
+    ip1=s_intv(ol+om) if om != [] else s_intv(ol)
     if ip1==[]:
-#         op=sort_pointsv(sec,o_circles.reshape(-1,2))
+    #         op=sort_pointsv(sec,o_circles.reshape(-1,2))
         op=offset_pointsv(sec,d)
     else:
-#         ocp=o_circles.reshape(-1,2).tolist()+ip1
+    #         ocp=o_circles.reshape(-1,2).tolist()+ip1
         ocp=o_circle+ip1
-        cs=[r_sec(r-.01,r-.01,p2[0],p2[1]) for p2 in p1]
-        j=[pies(cs[i],ocp) for i in range(len(cs)) if pies(cs[i],ocp)!=[]]
-        j= j if j==[] else concatenate(j)
-        op=exclude_points(ocp,j)
-        op=sort_pointsv(sec,op)
+        cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in p1]
+        j=[pies(cs[i],o_circle) for i in range(len(cs))]
+        k=[pies(cs[i],ip1) for i in range(len(cs)) ]
+        l=j+k
+        l=[p for p in l if p != [] ]
+        l=concatenate([p for p in l if p != [] ]).tolist() if l != [] else []
+        op=exclude_points(ocp,l)
+        op=array(op)[cKDTree(op).query(sec)[1]].tolist()
     return op
+
+# def inner_offset(sec,r):
+#     sec=flip(sec) if cw(sec)==1 else sec
+#     p=sec+[sec[0]]
+#     r=abs(r)
+#     a=array(sec)[array(list_r(sec))==0]
+#     a=seg(a)
+#     p1=array([a[i] for i in range(len(a)) if i%2!=0]).tolist()
+    
+#     s=offset_points(sec,-r)
+#     if s_intv1(seg(s))!=[]:
+#         s1=unique(s_intv(seg(s)),axis=0).tolist()
+#         cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in p1]
+#         for p in cs:
+#             s2=pies1(p,s1)
+#             s1=exclude_points(s1,s2)
+#         s1=array(s1)[cKDTree(s1).query(sec)[1]].tolist()
+#         return s1
+#     else:
+#         return s
+
+# def outer_offset(sec,d):
+#     p=sec+[sec[0]]
+#     r=abs(d)
+#     a=array(sec)[array(list_r(sec))==0]
+#     a=seg(a)
+#     p1=array([a[i] for i in range(len(a)) if i%2!=0]).tolist()
+#     ol=[path_offset(p,d) for p in p1]
+#     om=seg(offset_points_ccw(sec,d))
+    
+#     #     o_circles=array([tctp(r,r,p[i],p[i+1])for i in range(len(p)-1)])
+#     o_circle=offset_pointsv(sec,d)
+#     # ip1=s_intv1(seg(o_circles.reshape(-1,2)))
+#     ip1=s_intv(ol+om) if om != [] else s_intv(ol)
+#     if ip1==[]:
+#     #         op=sort_pointsv(sec,o_circles.reshape(-1,2))
+#         op=offset_pointsv(sec,d)
+#     else:
+#     #         ocp=o_circles.reshape(-1,2).tolist()+ip1
+#         ocp=o_circle+ip1
+#         cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in p1]
+#         j=[pies1(cs[i],o_circle) for i in range(len(cs))]
+#         k=[pies1(cs[i],ip1) for i in range(len(cs)) ]
+#         l=j+k
+#         l=[p for p in l if p != [] ]
+#         l=concatenate([p for p in l if p != [] ]).tolist() if l != [] else []
+#         op=exclude_points(ocp,l)
+#         op=array(op)[cKDTree(op).query(sec)[1]].tolist()
+#     return op
+
+def outer_offset(sec,r):
+    sec=flip(sec) if cw(sec)==1 else sec
+    p=sec+[sec[0]]
+    r=abs(r)
+    a=array(sec)[array(list_r(sec))==0]
+    a=seg(a)
+    p1=array([a[i] for i in range(len(a)) if i%2!=0]).tolist()
+    
+    s=offset_points(sec,r)
+    if s_intv1(seg(s))!=[]:
+        s1=unique(s_intv(seg(s)),axis=0).tolist()
+        cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in p1]
+        for p in cs:
+            s2=pies1(p,s1)
+            s1=exclude_points(s1,s2)
+        s1=array(s1)[cKDTree(s1).query(sec)[1]].tolist()
+        return s1
+    else:
+        return s
 
 def out_offset(sec,r):
     sec=flip(sec) if cw(sec)==1 else sec
@@ -2496,6 +2692,10 @@ def helix(radius=10,pitch=10, number_of_coils=1, step_angle=1):
     return [[radius*cos(i*pi/180),radius*sin(i*pi/180),i/360*pitch] for i in arange(0,360*number_of_coils,step_angle)]
 
 def surf_offset(surf,o):
+    '''
+    function to offset the 'surface' by a distance 'o'
+    refer to file "example of various functions" for application example
+    '''
     c=[]
     for i in range(len(surf)):
         for j in range(len(surf[0])):
