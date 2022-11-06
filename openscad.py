@@ -254,19 +254,6 @@ def flip(sec):
     return sec[::-1]
     
 
-# def r_3p(p1,p2,p3):
-    
-#     p4=add(p1,divide(subtract(p2,p1),2)).tolist()
-#     p5=add(p2,divide(subtract(p3,p2),2)).tolist()
-#     u1=uv(subtract(p2,p4))
-#     u2=uv(subtract(p3,p5))
-#     p6=add(p4,dot(u1,rm(90))).tolist()
-#     p7=add(p5,dot(u2,rm(90))).tolist()
-#     cp=i_p2d([p4,p6],[p5,p7])
-#     r=norm(subtract(p1,cp))
-#     return r
-
-
 def max_r(sec):
     '''
     function calculates the maximum radius in a given closed section
@@ -326,12 +313,6 @@ def seg(sec):
         c.append(l)
     return c
 
-def offset_seg(sec,r):
-    s=seg(sec)
-    c=[]
-    for p in s:
-        c.append(offset_l(p,r))
-    return c
 
 def offset_segv(sec,d):
     '''
@@ -393,8 +374,6 @@ def offset_seg_cw(sec,r):
             d.append(b)
     return d
 
-def lim(t,s,e):
-    return t>=s and t<=e
 
 def remove_extra_points(points_list):
     '''
@@ -616,18 +595,6 @@ def list_ra(sec):
     r=where((l2!=l3) & ((r1!=r2) | (r2!=r3)),0,r2)
     return r2
 
-
-
-
-def rnd_v(v,n):
-    b=[]
-    for i in v:
-        b.append(round(i,n))
-    return b
-
-def i_m2d(m):
-    return linalg.pinv(transpose(m)).tolist()
-
 def rm(theta):
     '''
     function to rotate a vector by "theta" degrees e.g. try following code:
@@ -710,17 +677,7 @@ def i_p2d(l1,l2):
     
     return ip.tolist()
 
-
-def offset_seg_cwv(sec,r):
-    pi_minus=[sec[-1]]+sec[:-1]
-    p_i=sec
-    pi_plus=sec[1:]+[sec[0]]
-    c=array(list(map(cw,swapaxes([pi_minus,p_i,pi_plus],0,1))))
-    return array(offset_segv(sec,r))[c==1].reshape(-1,2).tolist()                    
-            
-
-
-def s_intv(s):
+def s_int(s):
     '''
     calulates the self intersection points of a list of line segments 's'
     it also picks the points in case the 2 lines are just connected at 1 point and are not crossing
@@ -752,89 +709,6 @@ def s_intv(s):
             c=c+d
     return c
 
-def s_intv1(s):
-    '''
-    calulates the self intersection points of a list of line segments 's'
-    it picks the intersection points only if the 2 lines are crossing each other
-    e.g.
-    sec=seg([[0,0],[10,0],[15,7]])
-    s_intv1(sec) => []
-    
-    sec=offset_segv([[0,0],[10,0],[15,7]],-1)
-    s_intv1(sec) => 
-    [[9.485, 1.0],
-     [4.508, 1.0],
-     [9.485266528793264, 0.9998381937190964],
-     [11.974266528793265, 4.484438193719097],
-     [4.507385465331124, 0.9999168600047348],
-     [11.974385465331125, 4.484516860004734]]
-     
-    refer to file 'example of various functions' for application example
-    '''
-    c=[]
-    for i in range(len(s)):
-        p0=array([s[i]]*len(s))[:,0]
-        p1=array([s[i]]*len(s))[:,1]
-        v1=p1-p0
-        p2=array(s)[:,0]
-        p3=array(s)[:,1]
-        v2=p3-p2
-        m=swapaxes([swapaxes([v1.T[0],-v2.T[0]],0,1),swapaxes([v1.T[1],-v2.T[1]],0,1)],0,1)
-        n=m[where(linalg.det(m)!=0)]
-        pa=p0[where(linalg.det(m)!=0)]
-        pb=p2[where(linalg.det(m)!=0)]
-        v=v1[where(linalg.det(m)!=0)]
-        A=linalg.inv(n)
-        B=pb-pa
-        def mul(a,b):
-            return a@b
-        t=einsum('ijk,ik->ij',A,B)[:,0].round(4)
-        u=einsum('ijk,ik->ij',A,B)[:,1].round(4)
-        t1=where(t>0,where(t<1,True,False),False)
-        u1=where(u>0,where(u<1,True,False),False)
-        d=(pa+v*t.reshape(-1,1))[where(t1&u1==True)].tolist()
-        if d!=[]:
-            c=c+d
-    return c
-
-def self_intersections_crossed(ol):
-    i=len(ol)
-    a=array([ol]*i).transpose(1,0,2,3).reshape(-1,2,2)
-    b=array([ol]*i).reshape(-1,2,2)
-    p0,p1,p2,p3=a[:,0],a[:,1],b[:,0],b[:,1]
-    v1,v2=p1-p0,p3-p2
-    # p0+v1*t1=p2+v2*t2
-    # v1*t1-v2*t2=p2-p0
-    c=array([v1,-v2]).transpose(1,0,2).transpose(0,2,1)
-    d=linalg.pinv(c)
-    e=p2-p0
-    f=einsum('ijk,ij->ij',d,e)
-    t1,t2=f[:,0],f[:,1]
-    decision=(t1>0)&(t1<1)&(t2>0)&(t2<1)
-    p0.shape,v1.shape,t1.shape
-    g=p0+einsum('ij,i->ij',v1,t1)
-    g=g[decision]
-    return g[sort(unique(g,axis=0,return_index=True)[1])].tolist()
-
-
-def self_intersections(ol):
-    i=len(ol)
-    a=array([ol]*i).transpose(1,0,2,3).reshape(-1,2,2)
-    b=array([ol]*i).reshape(-1,2,2)
-    p0,p1,p2,p3=a[:,0],a[:,1],b[:,0],b[:,1]
-    v1,v2=p1-p0,p3-p2
-    # p0+v1*t1=p2+v2*t2
-    # v1*t1-v2*t2=p2-p0
-    c=array([v1,-v2]).transpose(1,0,2).transpose(0,2,1)
-    d=linalg.pinv(c)
-    e=p2-p0
-    f=einsum('ijk,ij->ij',d,e)
-    t1,t2=f[:,0],f[:,1]
-    decision=(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)
-    p0.shape,v1.shape,t1.shape
-    g=p0+einsum('ij,i->ij',v1,t1)
-    g=g[decision]
-    return g[sort(unique(g,axis=0,return_index=True)[1])].tolist()
 
 def r_3pv(p1,p2,p3):
     p4=p1+(p2-p1)/2
@@ -855,37 +729,21 @@ def i_p2dv(p0,p1,p2,p3):
     t=einsum('ijk,ik->ij',a,b)[:,0]
     return p0+einsum('ij,i->ij',v1,t)
 
-def sort_points(sec,list):
+def sort_points(sec,list1):
     '''
     function picks the nearest point of a section from a reference section and matches the length of points for the 2 compared sections
     refer file "example of various functions" for application example
     
     '''
-    if list!=[]:
-        b=[]
-        for p in sec:
-            a=[]
-            for i in range(len(list)):
-                a.append(norm(subtract(list[i],p)))
-            for i,x in enumerate(a):
-                if x==min(a):
-                    b.append(list[i])
+    return array(list1)[cKDTree(list1).query(sec)[1]].tolist()
             
-        return b
-            
-def sort_pointsv(sec,sec1):
+def sort_pointsv(sec,list1):
     '''
     function picks the nearest point of a section from a reference section and matches the length of points for the 2 compared sections
     refer file "example of various functions" for application example
 
     '''
-    a=array(sec)
-    b=array(sec1)
-    c=[]
-    for p in a:
-        d=linalg.norm(b-p,axis=1)
-        c.append(b[where(d==min(d))][0])
-    return array(c).tolist()
+    return array(list1)[cKDTree(list1).query(sec)[1]].tolist()
 
 
 
@@ -1368,54 +1226,6 @@ def io(sec,r):# used for inner offset in offset function
 
 
     
-# def outer_offset(sec,r):# used for offset function
-#     s1=flip(sec) if cw(sec)==1 else sec
-#     p0=[sec[len(sec)-1]]+sec[:len(sec)-1]
-#     p1=sec
-#     p2=sec[1:]+[sec[0]]
-#     p0,p1,p2=array([p0,p1,p2])
-#     v1=p0-p1
-#     u1=v1/linalg.norm(v1,axis=1).reshape(-1,1)
-#     v2=p2-p1
-#     u2=v2/linalg.norm(v2,axis=1).reshape(-1,1)
-#     theta=arccos(einsum('ij,ij->i',u1,u2))*180/pi
-#     alpha=180-theta
-#     pa=p1+einsum('ij,i->ij',(u1*r),tan(alpha/2*pi/180))
-#     pb=p1+einsum('ij,i->ij',(u2*r),tan(alpha/2*pi/180))
-#     cp=array([ arc_2p_cp(pa[i],pb[i],r,1) for i in range(len(p1))])
-#     pc=p1+(u1@rm(90))*r
-#     pd=p1+(u2@rm(-90))*r
-#     op=[ array(arc_2p(pc[i],pd[i],r,-1,0 if linalg.norm(pc[i]-pd[i])<1 else 5)) if cw([p0[i],p1[i],p2[i]])==-1 else [cp[i]] for i in range(len(p1))]
-#     radius=r_3pv(p0,p1,p2)
-#     op01=concatenate([op[i] for i in range(len(sec)) if (cw([p0[i],p1[i],p2[i]])==-1) | (radius[i]>=r)]).tolist()
-#     p0=op01
-#     p1=op01[1:]+[op01[0]]
-#     p2=op01[len(op01)-2:len(op01)]+op01[:len(op01)-2]
-#     p3=[op01[len(op01)-1]]+op01[:len(op01)-1]
-#     p4=op01[2:]+op01[0:2]
-#     p5=op01[3:]+op01[0:3]
-
-#     p0,p1,p2,p3,p4,p5=array([p0,p1,p2,p3,p4,p5])
-#     v1=p1-p0
-#     u1=v1/linalg.norm(v1,axis=1).reshape(-1,1)
-#     ip=swapaxes(array([i_p2dv(p0,p1,p2,p3),i_p2dv(p0,p1,p4,p5)]),0,1)
-#     l1=linalg.norm(p1-p0,axis=1)
-#     a=ip-p0[:,None]
-#     b=1/sqrt(einsum('ijk,ijk->ij',a,a))
-#     c=sqrt(einsum('ijk,ijk->ij',a,a))
-#     u2=einsum('ijk,ij->ijk',a,b)
-#     c1=c<l1[:,None]
-#     c2=((u2<0)==(u1<0)[:,None]).all(axis=1)
-#     op02=[ ip[i][0].tolist() if (c1&c2)[i][0]==True else (ip[i][1].tolist() if (c1&c2)[i][1]==True else op01[i]) for i in range(len(ip))]
-#     p=array(op02)
-#     p1=array(m_points1(s1,10))
-#     p.shape,p1.shape
-#     p2=p[:,None]-p1
-#     p3=sqrt(einsum('ijk,ijk->ij',p2,p2)).min(axis=1)
-#     p4=p[(p3>=r-.02)]
-
-#     return p4[cKDTree(p4).query(s1)[1]].tolist()
-
 def m_points1(sec,s):# multiple points with in the straight lines in the closed section 'sec'. 's' is the number of segments between each straight line
     '''
     adds 's' number of points in each straight line segment of a section 'sec'
@@ -1986,7 +1796,25 @@ def ipe(prism,prism1,r,s,o):
     return a
 
 
-def s_int(s): #creates intersection between all the segments of a section
+def s_int1(s): #creates intersection between all the segments of a section which are crossing
+    '''
+    calulates the self intersection points of a list of line segments 's'
+    it picks the intersection points only if the 2 lines are crossing each other
+    e.g.
+    sec=seg([[0,0],[10,0],[15,7]])
+    s_int1(sec) => []
+    
+    sec=offset_segv([[0,0],[10,0],[15,7]],-1)
+    s_int1(sec) => 
+    [[9.485, 1.0],
+     [4.508, 1.0],
+     [9.485266528793264, 0.9998381937190964],
+     [11.974266528793265, 4.484438193719097],
+     [4.507385465331124, 0.9999168600047348],
+     [11.974385465331125, 4.484516860004734]]
+     
+    refer to file 'example of various functions' for application example
+    '''
     p0=array([array(s)[:,0]]*len(s)).transpose(1,0,2)
     p1=array([array(s)[:,1]]*len(s)).transpose(1,0,2)
     v1=p1-p0
@@ -1998,9 +1826,10 @@ def s_int(s): #creates intersection between all the segments of a section
     B=p2-p0
     t=einsum('ijkl,ijl->ijk',A,B)[:,:,0].round(4)
     u=einsum('ijkl,ijl->ijk',A,B)[:,:,1].round(4)
-    condition=(t>=0)&(t<=1)&(u>=0)&(u<=1)
+    condition=(t>0)&(t<1)&(u>0)&(u<1)
     d=(p0+einsum('ijk,ij->ijk',v1,t))[condition].tolist()
-    return d
+    return remove_extra_points(d)
+
 
 def comb(n,i): 
     '''
@@ -2558,8 +2387,8 @@ def cleaning_sec_outer(sec,r):
 # def inner_offset(sec,r):
 #     sec=flip(sec) if cw(sec)==1 else sec
 #     s=offset_points(sec,r)
-#     if s_intv1(seg(s))!=[]:
-#         s1=unique(s_intv(seg(s)),axis=0).tolist()
+#     if s_int1(seg(s))!=[]:
+#         s1=unique(s_int(seg(s)),axis=0).tolist()
 #         for p in cleaning_sec_inner(sec,r):
 #             s2=pies1(p,s1)
 #             s1=exclude_points(s1,s2)
@@ -2583,8 +2412,8 @@ def inner_offset(sec,d):
     om=seg(offset_points_cw(sec,d))
     #     o_circles=array([tctp(r,r,p[i],p[i+1])for i in range(len(p)-1)])
     o_circle=offset_pointsv(sec,d)
-    # ip1=s_intv1(seg(o_circles.reshape(-1,2)))
-    ip1=s_intv(ol+om) if om != [] else s_intv(ol)
+    # ip1=s_int1(seg(o_circles.reshape(-1,2)))
+    ip1=s_int(ol+om) if om != [] else s_int(ol)
     if ip1==[]:
     #         op=sort_pointsv(sec,o_circles.reshape(-1,2))
         op=offset_pointsv(sec,d)
@@ -2610,8 +2439,8 @@ def inner_offset(sec,d):
 #     p1=array([a[i] for i in range(len(a)) if i%2!=0]).tolist()
     
 #     s=offset_points(sec,-r)
-#     if s_intv1(seg(s))!=[]:
-#         s1=unique(s_intv(seg(s)),axis=0).tolist()
+#     if s_int1(seg(s))!=[]:
+#         s1=unique(s_int(seg(s)),axis=0).tolist()
 #         cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in p1]
 #         for p in cs:
 #             s2=pies1(p,s1)
@@ -2632,8 +2461,8 @@ def inner_offset(sec,d):
     
 #     #     o_circles=array([tctp(r,r,p[i],p[i+1])for i in range(len(p)-1)])
 #     o_circle=offset_pointsv(sec,d)
-#     # ip1=s_intv1(seg(o_circles.reshape(-1,2)))
-#     ip1=s_intv(ol+om) if om != [] else s_intv(ol)
+#     # ip1=s_int1(seg(o_circles.reshape(-1,2)))
+#     ip1=s_int(ol+om) if om != [] else s_int(ol)
 #     if ip1==[]:
 #     #         op=sort_pointsv(sec,o_circles.reshape(-1,2))
 #         op=offset_pointsv(sec,d)
@@ -2659,8 +2488,8 @@ def outer_offset(sec,r):
     p1=array([a[i] for i in range(len(a)) if i%2!=0]).tolist()
     
     s=offset_points(sec,r)
-    if s_intv1(seg(s))!=[]:
-        s1=unique(s_intv(seg(s)),axis=0).tolist()
+    if s_int1(seg(s))!=[]:
+        s1=unique(s_int(seg(s)),axis=0).tolist()
         cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in p1]
         for p in cs:
             s2=pies1(p,s1)
@@ -2673,8 +2502,8 @@ def outer_offset(sec,r):
 def out_offset(sec,r):
     sec=flip(sec) if cw(sec)==1 else sec
     s=offset_points(sec,r)
-    if s_intv1(seg(s))!=[]:
-        s1=unique(s_intv(seg(s)),axis=0).tolist()
+    if s_int1(seg(s))!=[]:
+        s1=unique(s_int(seg(s)),axis=0).tolist()
         for p in cleaning_sec_outer(sec,r):
             s2=pies1(p,s1)
             s1=exclude_points(s1,s2)
@@ -2947,14 +2776,14 @@ def concave_hull(pnts,x=1,loops=10):
 
 
         c3=remove_extra_points(concatenate(c2).tolist())
-        n=s_intv1(seg(c3))
+        n=s_int1(seg(c3))
         if n!=[]:
             d=[[p[1] for p1 in array(n) if (array(uv(p1-p[0])).round(4)==array(uv(p[1]-p[0])).round(4)).all() ] for p in array(seg(c3))]
             d=concatenate([p for p in d if p!=[]]).tolist()
             c3=exclude_points(c3,d)
         c=c3
-    while s_intv1(seg(c))!=[]:
-        n=s_intv1(seg(c3))
+    while s_int1(seg(c))!=[]:
+        n=s_int1(seg(c3))
         if n==[]:
             break
         else:
