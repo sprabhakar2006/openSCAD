@@ -2402,6 +2402,19 @@ def r_sec(r1,r2,cp1,cp2):
     l=l[:2]+arc_2p(l[1],l[2],r1)+l[2:]+arc_2p(l[3],l[0],r2)
     return l
 
+def cs(sec,d):
+    '''
+    cleaning section for remove excess points from offset
+    refer to the file "example of various functions " for application examples
+    
+    '''
+    r=abs(d)
+    a=array(sec)[array(list_r(sec))==0]
+    a=seg(a)
+    p1=array([a[i] for i in range(len(a)) if i%2!=0]).tolist()
+    cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in p1]
+    return cs
+
 def inner_offset(sec,d):
     p=sec+[sec[0]]
     r=abs(d)
