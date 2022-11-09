@@ -465,7 +465,7 @@ def convert_secv1(sec):
     refer to file "examples of various functions" for application example
     '''
     a=list_r(sec)
-    if (a==a[0]).all():
+    if (a==a[0]).all() or list_r(sec).max()>array(bb2d(sec)).max():
         return sec
     else:
         d=max_rv(sec)+1
@@ -3286,7 +3286,7 @@ def fillet_surf2sol(p=[],p1=[],r=1,s=10,o=0):
 
 def sec_radiuses(sec):
     a=list_r(sec)
-    if (a==a[0]).all():
+    if (a==a[0]).all() or list_r(sec).max()>array(bb2d(sec)).max():
         return zeros(len(sec)).tolist()
     else:
         a=list_r(sec)
@@ -3295,3 +3295,5 @@ def sec_radiuses(sec):
         d= [0.0]+c if len(c)!=len(convert_secv1(sec)) else c
         return d
 
+def bb2d(sec):
+    return [array(sec)[:,0].max()-array(sec)[:,0].min(),array(sec)[:,1].max()-array(sec)[:,1].min()]
