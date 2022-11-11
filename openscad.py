@@ -625,7 +625,6 @@ def rm(theta):
     line=[[0,0],[5,3]]
     line1=array(line)@rm(30)
     line1=line1.tolist()
-
     refer file "examples of various functions" for application
     '''
     pi=3.141592653589793
@@ -765,7 +764,6 @@ def sort_pointsv(sec,list1):
     '''
     function picks the nearest point of a section from a reference section and matches the length of points for the 2 compared sections
     refer file "example of various functions" for application example
-
     '''
     return array(list1)[cKDTree(list1).query(sec)[1]].tolist()
 
@@ -889,7 +887,6 @@ Example:
 sec=circle(10)
 path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5)
 prism=prism(sec,path)
-
     '''
     s1=flip(sec) if cw(sec)==1 else sec
     return [array(trns([0,0,y],offset(s1,round(x,3)))).tolist() for (x,y) in path]
@@ -1206,7 +1203,6 @@ def scl3d(p,s):# scale 3d prism 'p' with scaling factor 's'. This places the sca
     path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5)
     sol=prism(sec,path)
     sol1=scl3d(sol,.7)
-
     refer file "example of various functions" for application
     '''
     p=array(p)
@@ -2231,7 +2227,6 @@ def ip_surf(surf2,surf1):
  path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-9.9,0]]),5);
  prism=prism(sec,path);
  prism1=q_rot(["y40"],cylinder(r=3,h=15,s=30));
-
  %swp(prism);
  %swp(prism1);
  ip=ip_surf(prism,prism1);
@@ -2464,8 +2459,8 @@ def inner_offset(sec,d):
     #         ocp=o_circles.reshape(-1,2).tolist()+ip1
         ocp=o_circle+ip1
         cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in p1]
-        j=[pies(cs[i],o_circle) for i in range(len(cs))]
-        k=[pies(cs[i],ip1) for i in range(len(cs)) ]
+        j=[pies1(cs[i],o_circle) for i in range(len(cs))]
+        k=[pies1(cs[i],ip1) for i in range(len(cs)) ]
         l=j+k
         l=[p for p in l if p != [] ]
         l=concatenate([p for p in l if p != [] ]).tolist() if l != [] else []
