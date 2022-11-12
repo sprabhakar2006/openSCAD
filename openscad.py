@@ -387,87 +387,72 @@ def remove_extra_points(points_list):
     '''
     return array(points_list)[sort(unique(points_list,axis=0,return_index=True)[1])].tolist()
 
-def convert_secv(sec):
+def convert_secv(sec,d):
     '''
-    function removes all the radiuses from the section 'sec' where points are ccw
+    function removes all the radiuses from a section where the radius are less than 'd'
     example:
     sec=cr_c(pts1([[0,0,.1],[7,5,2],[5,7,3],[-5,7,5],[-7,5,5]]),20)
-    sec1=convert_secv(sec)
-    sec1 will remove all the radius in 'sec' where points are ccw
+    sec1=convert_secv(sec,3)
+    sec1 will remove all the radius in 'sec' where radius are less than 3
     refer to file "examples of various functions" for application example
     '''
-    a=list_r(sec)
-    if (a==a[0]).all() or list_r(sec).max()>array(bb2d(sec)).max():
-        return sec
-    else:
-        d=max_rv(sec)+1
-        pi_2minus=sec[-2:]+sec[:-2]
-        pi_minus=[sec[-1]]+sec[:-1]
-        p_i=sec
-        pi_plus=sec[1:]+[sec[0]]
-        pi_2plus=sec[2:]+sec[:2]
+    pi_2minus=sec[-2:]+sec[:-2]
+    pi_minus=[sec[-1]]+sec[:-1]
+    p_i=sec
+    pi_plus=sec[1:]+[sec[0]]
+    pi_2plus=sec[2:]+sec[:2]
 
-        v1=array(pi_minus)-array(pi_2minus)
-        v2=array(p_i)-array(pi_minus)
-        v3=array(pi_plus)-array(p_i)
-        v4=array(pi_2plus)-array(pi_plus)
+    v1=array(pi_minus)-array(pi_2minus)
+    v2=array(p_i)-array(pi_minus)
+    v3=array(pi_plus)-array(p_i)
+    v4=array(pi_2plus)-array(pi_plus)
 
-        l1=linalg.norm(v1,axis=1).round(3)
-        l2=linalg.norm(v2,axis=1).round(3)
-        l3=linalg.norm(v3,axis=1).round(3)
-        l4=linalg.norm(v4,axis=1).round(3)
+    l1=linalg.norm(v1,axis=1).round(3)
+    l2=linalg.norm(v2,axis=1).round(3)
+    l3=linalg.norm(v3,axis=1).round(3)
+    l4=linalg.norm(v4,axis=1).round(3)
 
-        p4=array(pi_2minus)+(array(pi_minus)-array(pi_2minus))/2
-        p5=array(pi_minus)+(array(p_i)-array(pi_minus))/2
+    p4=array(pi_2minus)+(array(pi_minus)-array(pi_2minus))/2
+    p5=array(pi_minus)+(array(p_i)-array(pi_minus))/2
 
-        u1=(array(pi_minus)-p4)/linalg.norm(array(pi_minus)-p4,axis=1).reshape(-1,1)
-        u2=(array(p_i)-p5)/linalg.norm(array(p_i)-p5).reshape(-1,1)
+    u1=(array(pi_minus)-p4)/linalg.norm(array(pi_minus)-p4,axis=1).reshape(-1,1)
+    u2=(array(p_i)-p5)/linalg.norm(array(p_i)-p5).reshape(-1,1)
 
-        v5=array(pi_minus)-p4
-        v6=(v5/linalg.norm(v5,axis=1).reshape(-1,1))
-        r1=r_3pv(array(pi_2minus),array(pi_minus),array(p_i)).round(3)
-        r2=r_3pv(array(pi_minus),array(p_i),array(pi_plus)).round(3)
-        r3=r_3pv(array(p_i),array(pi_plus),array(pi_2plus)).round(3)
-        r=where((l2!=l3) & ((r1!=r2) | (r2!=r3)),0,r2)
-        arr=swapaxes([pi_minus,p_i,pi_plus],0,1)
-        clock=array(list(map(cw,arr)))
-        c1=where(r==0,True,False)
-        c2=where(r>=d,True,False)
-        c3=where(clock==1,True,False)
-        p=array(sec)[c1 | c2 | c3 ]
-        p1=cKDTree(array(sec)).query(p)[1].tolist()
-        p2=[p1[len(p1)-1]]+p1[0:len(p1)-1]
-        p3=p1[1:len(p1)]+[p1[0]]
-        p4=p1[2:len(p1)]+p1[0:2]
-        a=i_p2dv(array(sec)[p2],array(sec)[p1],array(sec)[p3],array(sec)[p4])
-        b=array(sec)[p1]
-        c=array(p3)-array(p1)>1
-        d=[]
-        for i in range(len(c)):
-            if c[i]==True:
-                d.append(a[i].tolist())
-            else:
-                d.append(b[i].tolist())
-        d_minus=[d[len(d)-1]]+d[0:len(d)-1]
-        d_plus=d[1:len(d)]+[d[0]]
-        va=array(d)-array(d_minus)
-        vb=array(d_plus)-array(d_minus)
-        normva=1/linalg.norm(va,axis=1)
-        normvb=1/linalg.norm(vb,axis=1)
-        ua=einsum('ij,i->ij',va,normva)
-        ub=einsum('ij,i->ij',vb,normvb)
-        sec1=array(d)[(ua!=ub).all(axis=1)].tolist()
-        a=[sec1[len(sec1)-1]]+sec1[:-1]
-        b=sec1
-        c=sec1[1:]+[sec1[0]]
-        a,b,c=array([a,b,c])
-        v1,v2=b-a,c-a
-        n1=1/einsum('ij,ij->i',v1,v1)**.5
-        n2=1/einsum('ij,ij->i',v2,v2)**.5
-        u1=einsum('ij,i->ij',v1,n1).round(3)
-        u2=einsum('ij,i->ij',v2,n2).round(3)
-        decision=~(u1==u2).all(1)
-        return b[decision].tolist()
+    v5=array(pi_minus)-p4
+    v6=(v5/linalg.norm(v5,axis=1).reshape(-1,1))
+    r1=r_3pv(array(pi_2minus),array(pi_minus),array(p_i)).round(3)
+    r2=r_3pv(array(pi_minus),array(p_i),array(pi_plus)).round(3)
+    r3=r_3pv(array(p_i),array(pi_plus),array(pi_2plus)).round(3)
+    r=where((l2!=l3) & ((r1!=r2) | (r2!=r3)),0,r2)
+    arr=swapaxes([pi_minus,p_i,pi_plus],0,1)
+    clock=array(list(map(cw,arr)))
+    c1=where(r==0,True,False)
+    c2=where(r>=d,True,False)
+    c3=where(clock==1,True,False)
+    p=array(sec)[c1 | c2 | c3].round(6)
+    p=p[sort(unique(p,axis=0,return_index=True)[1])]
+    p1=cKDTree(array(sec)).query(p)[1].tolist()
+    p2=[p1[len(p1)-1]]+p1[0:len(p1)-1]
+    p3=p1[1:len(p1)]+[p1[0]]
+    p4=p1[2:len(p1)]+p1[0:2]
+    a=i_p2dv(array(sec)[p2],array(sec)[p1],array(sec)[p3],array(sec)[p4])
+    b=array(sec)[p1]
+    c=array(p3)-array(p1)>1
+    d=[]
+    for i in range(len(c)):
+        if c[i]==True:
+            d.append(a[i].tolist())
+        else:
+            d.append(b[i].tolist())
+    d_minus=[d[len(d)-1]]+d[0:len(d)-1]
+    d_plus=d[1:len(d)]+[d[0]]
+    va=array(d)-array(d_minus)
+    vb=array(d_plus)-array(d_minus)
+    normva=1/linalg.norm(va,axis=1)
+    normvb=1/linalg.norm(vb,axis=1)
+    ua=einsum('ij,i->ij',va,normva)
+    ub=einsum('ij,i->ij',vb,normvb)
+    return array(d)[(ua!=ub).all(axis=1)].tolist()           
 
 
 def convert_secv1(sec):
@@ -480,7 +465,7 @@ def convert_secv1(sec):
     refer to file "examples of various functions" for application example
     '''
     a=list_r(sec)
-    if (a==a[0]).all() or list_r(sec).max()>array(bb2d(sec)).max():
+    if (a==a[0]).all():
         return sec
     else:
         d=max_rv(sec)+1
@@ -640,6 +625,7 @@ def rm(theta):
     line=[[0,0],[5,3]]
     line1=array(line)@rm(30)
     line1=line1.tolist()
+
     refer file "examples of various functions" for application
     '''
     pi=3.141592653589793
@@ -779,6 +765,7 @@ def sort_pointsv(sec,list1):
     '''
     function picks the nearest point of a section from a reference section and matches the length of points for the 2 compared sections
     refer file "example of various functions" for application example
+
     '''
     return array(list1)[cKDTree(list1).query(sec)[1]].tolist()
 
@@ -892,20 +879,7 @@ def offset(sec,r):
     refer file "example of various functions" for application example
     '''
 #     return io(sec,r) if r<0 else sec if r==0 else oo_convex(sec,r) if convex(sec)==True else outer_offset(sec,r)
-    if convex(sec):
-        if r <0:
-            return inner_convex_offset(sec,r)
-        elif r >0:
-            return oo_convex(sec,r)
-        elif r==0:
-            return sec
-    else:
-        if r<0:
-            return inner_offset(sec,r)
-        elif r>0:
-            return outer_offset(sec,r)
-        elif r==0:
-            return sec
+    return inner_offset(sec,r) if r<0 else sec if r==0 else oo_convex(sec,r) if convex(sec)==True else outer_offset(sec,r)
 
 
 def prism(sec,path):
@@ -915,6 +889,7 @@ Example:
 sec=circle(10)
 path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5)
 prism=prism(sec,path)
+
     '''
     s1=flip(sec) if cw(sec)==1 else sec
     return [array(trns([0,0,y],offset(s1,round(x,3)))).tolist() for (x,y) in path]
@@ -1231,6 +1206,7 @@ def scl3d(p,s):# scale 3d prism 'p' with scaling factor 's'. This places the sca
     path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5)
     sol=prism(sec,path)
     sol1=scl3d(sol,.7)
+
     refer file "example of various functions" for application
     '''
     p=array(p)
@@ -2255,6 +2231,7 @@ def ip_surf(surf2,surf1):
  path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-9.9,0]]),5);
  prism=prism(sec,path);
  prism1=q_rot(["y40"],cylinder(r=3,h=15,s=30));
+
  %swp(prism);
  %swp(prism1);
  ip=ip_surf(prism,prism1);
@@ -2487,8 +2464,8 @@ def inner_offset(sec,d):
     #         ocp=o_circles.reshape(-1,2).tolist()+ip1
         ocp=o_circle+ip1
         cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in p1]
-        j=[pies1(cs[i],o_circle) for i in range(len(cs))]
-        k=[pies1(cs[i],ip1) for i in range(len(cs)) ]
+        j=[pies(cs[i],o_circle) for i in range(len(cs))]
+        k=[pies(cs[i],ip1) for i in range(len(cs)) ]
         l=j+k
         l=[p for p in l if p != [] ]
         l=concatenate([p for p in l if p != [] ]).tolist() if l != [] else []
@@ -3309,7 +3286,7 @@ def fillet_surf2sol(p=[],p1=[],r=1,s=10,o=0):
 
 def sec_radiuses(sec):
     a=list_r(sec)
-    if (a==a[0]).all() or list_r(sec).max()>array(bb2d(sec)).max():
+    if (a==a[0]).all():
         return zeros(len(sec)).tolist()
     else:
         a=list_r(sec)
@@ -3317,21 +3294,3 @@ def sec_radiuses(sec):
         c=[b[i] for i in range(len(b)-1) if b[i+1]==0]+[b[-1]]
         d= [0.0]+c if len(c)!=len(convert_secv1(sec)) else c
         return d
-
-def bb2d(sec):
-    return [array(sec)[:,0].max()-array(sec)[:,0].min(),array(sec)[:,1].max()-array(sec)[:,1].min()]
-
-def inner_convex_offset(sec,d):
-    sec1=convert_secv1(sec)
-    sec2=[path_offset(p,d) for p in seg(sec1)]
-    sec3=array(sec2).reshape(-1,2).tolist()
-    sec4=s_int1(sec2)
-    clean=cs(sec,abs(d)-.001)
-    sec5=[pies1(p,sec4) for p in clean if pies1(p,sec4)!=[]]
-    sec5=concatenate(sec5) if sec5!=[] else []
-    sec6=sort_points(sec1,exclude_points(sec4,sec5))
-    sec7=sec_radiuses(sec)
-    clock=cwv(sec1)
-    rad=where(array(sec7)+(array(clock)*d*-1)<0,0,array(sec7)+(array(clock)*d*-1))
-    sec8=cr([[sec6[i][0],sec6[i][1],rad[i]] for i in range(len(sec6))],100)
-    return sort_points(sec,sec8)
