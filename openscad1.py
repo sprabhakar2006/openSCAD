@@ -3420,43 +3420,59 @@ def inner_convex_offset(sec,d):
     sec8=cr(remove_extra_points([[sec6[i][0],sec6[i][1],rad[i]] for i in range(len(sec6))]),100)
     return sort_points(sec,sec8)
 
-def inner_concave_offset(sec,d):
-    d=round(d,3)
-    if d==0:
-        return sec
-    else:
-        sec1=convert_secv(sec)
-        sec2=[path_offset(p,d) for p in seg(sec1)]
-        sec3=array(sec2).reshape(-1,2).tolist()
-        sec4=s_int1(seg(sec3))
-        s=array(convert_secv1(sec))[array(cwv(convert_secv1(sec)))<0]
-        rad=array(sec_radiuses(sec))[array(cwv(convert_secv1(sec)))<0]
-        rad=where((rad+d)<0,0,(rad+d))
-        clean=cs(sec,abs(d)-.001)
-        sec5=[pies1(p,sec4) for p in clean if pies1(p,sec4)!=[]]
-        sec5=concatenate(sec5) if sec5!=[] else []
-        sec6=exclude_points(sec4,sec5)
-        sec7=sec6+offset_points_cw(sec,d)
-        sec8=[pies1(p,sec7) for p in clean if pies1(p,sec7)!=[]]
-        sec8=concatenate(sec8) if sec8!=[] else []
-        if (rad==0).all():
-            sec11=sort_points(sec1,exclude_points(sec7,sec8))
-        else:
-            sec9=sort_points(sec1,exclude_points(sec7,sec8))
-            a=remove_extra_points(array(sec9)[array(cwv(sec9))==-1])
-            b=rad
-            c=[[a[i][0],a[i][1],b[i]] for i in range(len(a))]
-            sec10=[]
-            for p in sec9:
-                if p in c3t2(c):
-                    sec10.append(array(c)[cKDTree(c3t2(c)).query(p)[1]].tolist())
-                else:
-                    sec10.append([p[0],p[1],0])
-            sec11=cr(remove_extra_points(sec10),100)
+# def inner_concave_offset(sec,d):
+#     d=round(d,3)
+#     if d==0:
+#         return sec
+#     else:
+#         sec1=convert_secv(sec)
+#         sec2=[path_offset(p,d) for p in seg(sec1)]
+#         sec3=array(sec2).reshape(-1,2).tolist()
+#         sec4=s_int1(seg(sec3))
+#         s=array(convert_secv1(sec))[array(cwv(convert_secv1(sec)))<0]
+#         rad=array(sec_radiuses(sec))[array(cwv(convert_secv1(sec)))<0]
+#         rad=where((rad+d)<0,0,(rad+d))
+#         clean=cs(sec,abs(d)-.001)
+#         sec5=[pies1(p,sec4) for p in clean if pies1(p,sec4)!=[]]
+#         sec5=concatenate(sec5) if sec5!=[] else []
+#         sec6=exclude_points(sec4,sec5)
+#         sec7=sec6+offset_points_cw(sec,d)
+#         sec8=[pies1(p,sec7) for p in clean if pies1(p,sec7)!=[]]
+#         sec8=concatenate(sec8) if sec8!=[] else []
+#         if (rad==0).all():
+#             sec11=sort_points(sec1,exclude_points(sec7,sec8))
+#         else:
+#             sec9=sort_points(sec1,exclude_points(sec7,sec8))
+#             a=remove_extra_points(array(sec9)[array(cwv(sec9))==-1])
+#             b=rad
+#             c=[[a[i][0],a[i][1],b[i]] for i in range(len(a))]
+#             sec10=[]
+#             for p in sec9:
+#                 if p in c3t2(c):
+#                     sec10.append(array(c)[cKDTree(c3t2(c)).query(p)[1]].tolist())
+#                 else:
+#                     sec10.append([p[0],p[1],0])
+#             sec11=cr(remove_extra_points(sec10),100)
 
-    return sort_points(sec,sec11)
+#     return sort_points(sec,sec11)
     
 
+def inner_concave_offset(sec,r):
+    sec=flip(sec) if cw(sec)==1 else sec
+    r=round(r,3)
+    sec1=offset_segv(sec,r)
+    s=intersections(sec1)
+    if s_int1(seg(s))!=[]:
+        sec2=s_int1(seg(s))+s
+        clean=cs(sec,abs(r)-.001)
+        sec3=[pies1(p,sec2) for p in clean if pies1(p,sec2)!=[]]
+        sec3=[] if sec3==[] else remove_extra_points(concatenate(sec3))
+        sec4=exclude_points(sec2,sec3)
+        sec5=sort_points(sec,sec4)
+    else:
+        sec5=s
+    return sec5
+    
 def outer_convex_offset(sec,d):
     segments=offset_segv(sec,d)
     return intersections(segments)
@@ -3496,3 +3512,4 @@ def outer_concave_offset(sec,r):
         return s1
     else:
         return s
+
