@@ -1358,21 +1358,21 @@ def io(sec,r):# used for inner offset in offset function
 
 
     
-def m_points1(sec,s):# multiple points with in the straight lines in the closed section 'sec'. 's' is the number of segments between each straight line
+def m_points1(sec,s,d=.25):# multiple points with in the straight lines in the closed section 'sec'. 's' is the number of segments between each straight line
     '''
     adds 's' number of points in each straight line segment of a section 'sec'
+    'd' is the minimum segment length where multipe points to be added
     refer to the file "example of various functions" for application example
     '''
-    s1=sec
-    s2=sec[1:]+[sec[0]]
-    s1,s2=array([s1,s2])
-    u=(s2-s1)/linalg.norm(s2-s1,axis=1).reshape(-1,1)
-    l=linalg.norm(s2-s1,axis=1)
-    n=(l/s).round(0)+1
-    p=linspace(zeros(len(l)),l,s,axis=1)
-    q=einsum('ij,ik->ikj',u,p)
-    s1.shape,q.shape
-    return (s1[:,None]+q).reshape(-1,2).tolist()
+    c=[]
+    for i in range(len(sec)):
+        i_plus=i+1 if i<len(sec)-1 else 0
+        if l_len([sec[i],sec[i_plus]])>=d:
+            c.append(l([sec[i],sec[i_plus]],s))
+        else:
+            c.append([sec[i],sec[i_plus]])
+    return remove_extra_points(concatenate(c))
+
 
 def ibsap(sec,pnt):# intersection between section and a point. used to find whether the poin is inside the section or outside the section
     p0=array(pnt)
@@ -3512,4 +3512,15 @@ def outer_concave_offset(sec,r):
         return s1
     else:
         return s
+
+def c2ro(sol,s):#circular to rectangulat orientation
+    '''
+    change the orientation of points of a cylinder from circular to rectangular orientation
+    'sol': is a cylindrical type 3d shape
+    's': number of segments required between each straight line segments
+    refer to the file 'example of various functions' for application examples 
+    '''
+    angle=360/len(sol[0])/2
+    sol=cpo(sol)
+    return q_rot([f'z{angle}'],[m_points1(sol[i]+flip(sol[len(sol)-1-i]),s) for i in range(int(len(sol)/2))])
 
