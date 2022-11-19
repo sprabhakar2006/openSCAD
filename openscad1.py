@@ -1,4 +1,5 @@
 from numpy import *
+from numpy.linalg import *
 import matplotlib.pyplot as plt
 import time
 from scipy.spatial import cKDTree
@@ -111,7 +112,7 @@ def q(vector=[1,0,0],point=[0,5,0],theta=0):
     '''
 
     t=theta
-    v=vector/(linalg.norm(vector)+.00001)
+    v=vector/(norm(vector)+.00001)
     a=t/2*pi/180
     p=[cos(a),multiply(v,sin(a))]
     p1=[p[0],-p[1]]
@@ -129,10 +130,10 @@ def uv(v):
     unit_vector=uv(vector) => [0.3244428422615251, 0.48666426339228763, 0.8111071056538127]
     '''
     v=array(v)
-    return (v/linalg.norm(v)).tolist()
+    return (v/norm(v)).tolist()
 
-def norm(v):
-    return linalg.norm(v)
+# def norm(v):
+#     return norm(v)
 
 def fillet2d(pl,rl,s):
     p0=array(array(pl)[len(pl)-2:len(pl)].tolist()+array(pl)[0:len(pl)-2].tolist())
@@ -143,12 +144,12 @@ def fillet2d(pl,rl,s):
     r0=array([array(rl)[len(rl)-1].tolist()]+array(rl)[0:len(rl)-1].tolist())
     r1=array(rl)
     r2=array(array(rl)[1:len(rl)].tolist()+[array(rl)[0].tolist()])
-    u0=(p0-p1)/(linalg.norm(p0-p1,axis=1)).reshape(-1,1)
-    u1=(p2-p1)/(linalg.norm(p2-p1,axis=1)).reshape(-1,1)
-    u2=(p1-p2)/(linalg.norm(p1-p2,axis=1)).reshape(-1,1)
-    u3=(p3-p2)/(linalg.norm(p3-p2,axis=1)).reshape(-1,1)
-    u4=(p2-p3)/(linalg.norm(p2-p3,axis=1)).reshape(-1,1)
-    u5=(p4-p3)/(linalg.norm(p4-p3,axis=1)).reshape(-1,1)
+    u0=(p0-p1)/(norm(p0-p1,axis=1)).reshape(-1,1)
+    u1=(p2-p1)/(norm(p2-p1,axis=1)).reshape(-1,1)
+    u2=(p1-p2)/(norm(p1-p2,axis=1)).reshape(-1,1)
+    u3=(p3-p2)/(norm(p3-p2,axis=1)).reshape(-1,1)
+    u4=(p2-p3)/(norm(p2-p3,axis=1)).reshape(-1,1)
+    u5=(p4-p3)/(norm(p4-p3,axis=1)).reshape(-1,1)
     theta0= (180-arccos(einsum('ij,ij->i',u0,u1))*180/pi)/2
     theta1= (180-arccos(einsum('ij,ij->i',u2,u3))*180/pi)/2
     theta2= (180-arccos(einsum('ij,ij->i',u4,u5))*180/pi)/2
@@ -191,9 +192,9 @@ def cr_c(pl,s=20):
     return s1+[p]
 
 def f2d(p1,p2,p3,r0,r1,r2,theta0,theta1,theta2,u2,u3,s):
-    l1=linalg.norm(p1-p2,axis=1)
+    l1=norm(p1-p2,axis=1)
     l2=r0*tan(theta0*pi/180)+r1*tan(theta1*pi/180)
-    l3=linalg.norm(p3-p2,axis=1)
+    l3=norm(p3-p2,axis=1)
     l4=r1*tan(theta1*pi/180)+r2*tan(theta2*pi/180)
     rf1=[r1[i] if l1[i]>l2[i] else 0 if l2[i]==0 else l1[i]/l2[i]*r1[i] for i in range(len(l1))]
     rf2=[r1[i] if l3[i]>l4[i] else 0 if l4[i]==0 else l3[i]/l4[i]*r1[i] for i in range(len(l3))]
@@ -216,8 +217,8 @@ def f2d(p1,p2,p3,r0,r1,r2,theta0,theta1,theta2,u2,u3,s):
 
     cp=array(cp)
     a1=[]
-#     alpha=(p-cp)/linalg.norm(p-cp,axis=1).reshape(-1,1)
-    alpha=[ [0,0] if linalg.norm(p[i]-cp[i])==0 else (p[i]-cp[i])/linalg.norm(p[i]-cp[i]) for i in range(len(p))]
+#     alpha=(p-cp)/norm(p-cp,axis=1).reshape(-1,1)
+    alpha=[ [0,0] if norm(p[i]-cp[i])==0 else (p[i]-cp[i])/norm(p[i]-cp[i]) for i in range(len(p))]
     for i in range(len(alpha)):
         a1.append(ang(alpha[i][0],alpha[i][1]))
     a1=array(a1)
@@ -231,7 +232,7 @@ def f2d(p1,p2,p3,r0,r1,r2,theta0,theta1,theta2,u2,u3,s):
         ar.append(arc(rf[i],a1[i],a2[i],cp[i],s))
     ar=array(ar)
     c1=r1==0
-    c2=linalg.norm(u2-u3,axis=1)<.2
+    c2=norm(u2-u3,axis=1)<.2
     d=[]
     for i in range(len(c1)):
         if c1[i] or c2[i]:
@@ -323,7 +324,7 @@ def offset_segv(sec,d):
     s=sec
     s1=s[1:]+[s[0]]
     x=(array(s1)-array(s))
-    y=linalg.norm(x,axis=1)
+    y=norm(x,axis=1)
     u=x/y.reshape(-1,1)
     p0=array(s)+u@array(rm(-90))*d
     p1=array(s1)+u@array(rm(-90))*d
@@ -412,19 +413,19 @@ def convert_secv(sec):
         v3=array(pi_plus)-array(p_i)
         v4=array(pi_2plus)-array(pi_plus)
 
-        l1=linalg.norm(v1,axis=1).round(3)
-        l2=linalg.norm(v2,axis=1).round(3)
-        l3=linalg.norm(v3,axis=1).round(3)
-        l4=linalg.norm(v4,axis=1).round(3)
+        l1=norm(v1,axis=1).round(3)
+        l2=norm(v2,axis=1).round(3)
+        l3=norm(v3,axis=1).round(3)
+        l4=norm(v4,axis=1).round(3)
 
         p4=array(pi_2minus)+(array(pi_minus)-array(pi_2minus))/2
         p5=array(pi_minus)+(array(p_i)-array(pi_minus))/2
 
-        u1=(array(pi_minus)-p4)/linalg.norm(array(pi_minus)-p4,axis=1).reshape(-1,1)
-        u2=(array(p_i)-p5)/linalg.norm(array(p_i)-p5).reshape(-1,1)
+        u1=(array(pi_minus)-p4)/norm(array(pi_minus)-p4,axis=1).reshape(-1,1)
+        u2=(array(p_i)-p5)/norm(array(p_i)-p5).reshape(-1,1)
 
         v5=array(pi_minus)-p4
-        v6=(v5/linalg.norm(v5,axis=1).reshape(-1,1))
+        v6=(v5/norm(v5,axis=1).reshape(-1,1))
         r1=r_3pv(array(pi_2minus),array(pi_minus),array(p_i)).round(3)
         r2=r_3pv(array(pi_minus),array(p_i),array(pi_plus)).round(3)
         r3=r_3pv(array(p_i),array(pi_plus),array(pi_2plus)).round(3)
@@ -452,8 +453,8 @@ def convert_secv(sec):
         d_plus=d[1:len(d)]+[d[0]]
         va=array(d)-array(d_minus)
         vb=array(d_plus)-array(d_minus)
-        normva=1/linalg.norm(va,axis=1)
-        normvb=1/linalg.norm(vb,axis=1)
+        normva=1/norm(va,axis=1)
+        normvb=1/norm(vb,axis=1)
         ua=einsum('ij,i->ij',va,normva)
         ub=einsum('ij,i->ij',vb,normvb)
         sec1=array(d)[(ua!=ub).all(axis=1)].tolist()
@@ -495,19 +496,19 @@ def convert_secv1(sec):
         v3=array(pi_plus)-array(p_i)
         v4=array(pi_2plus)-array(pi_plus)
 
-        l1=linalg.norm(v1,axis=1).round(3)
-        l2=linalg.norm(v2,axis=1).round(3)
-        l3=linalg.norm(v3,axis=1).round(3)
-        l4=linalg.norm(v4,axis=1).round(3)
+        l1=norm(v1,axis=1).round(3)
+        l2=norm(v2,axis=1).round(3)
+        l3=norm(v3,axis=1).round(3)
+        l4=norm(v4,axis=1).round(3)
 
         p4=array(pi_2minus)+(array(pi_minus)-array(pi_2minus))/2
         p5=array(pi_minus)+(array(p_i)-array(pi_minus))/2
 
-        u1=(array(pi_minus)-p4)/linalg.norm(array(pi_minus)-p4,axis=1).reshape(-1,1)
-        u2=(array(p_i)-p5)/linalg.norm(array(p_i)-p5).reshape(-1,1)
+        u1=(array(pi_minus)-p4)/norm(array(pi_minus)-p4,axis=1).reshape(-1,1)
+        u2=(array(p_i)-p5)/norm(array(p_i)-p5).reshape(-1,1)
 
         v5=array(pi_minus)-p4
-        v6=(v5/linalg.norm(v5,axis=1).reshape(-1,1))
+        v6=(v5/norm(v5,axis=1).reshape(-1,1))
         r1=r_3pv(array(pi_2minus),array(pi_minus),array(p_i)).round(3)
         r2=r_3pv(array(pi_minus),array(p_i),array(pi_plus)).round(3)
         r3=r_3pv(array(p_i),array(pi_plus),array(pi_2plus)).round(3)
@@ -535,8 +536,8 @@ def convert_secv1(sec):
         d_plus=d[1:len(d)]+[d[0]]
         va=array(d)-array(d_minus)
         vb=array(d_plus)-array(d_minus)
-        normva=1/linalg.norm(va,axis=1)
-        normvb=1/linalg.norm(vb,axis=1)
+        normva=1/norm(va,axis=1)
+        normvb=1/norm(vb,axis=1)
         ua=einsum('ij,i->ij',va,normva)
         ub=einsum('ij,i->ij',vb,normvb)
         sec1=array(d)[(ua!=ub).all(axis=1)].tolist()
@@ -578,19 +579,19 @@ def convert_secv2(sec,d):
         v3=array(pi_plus)-array(p_i)
         v4=array(pi_2plus)-array(pi_plus)
 
-        l1=linalg.norm(v1,axis=1).round(3)
-        l2=linalg.norm(v2,axis=1).round(3)
-        l3=linalg.norm(v3,axis=1).round(3)
-        l4=linalg.norm(v4,axis=1).round(3)
+        l1=norm(v1,axis=1).round(3)
+        l2=norm(v2,axis=1).round(3)
+        l3=norm(v3,axis=1).round(3)
+        l4=norm(v4,axis=1).round(3)
 
         p4=array(pi_2minus)+(array(pi_minus)-array(pi_2minus))/2
         p5=array(pi_minus)+(array(p_i)-array(pi_minus))/2
 
-        u1=(array(pi_minus)-p4)/linalg.norm(array(pi_minus)-p4,axis=1).reshape(-1,1)
-        u2=(array(p_i)-p5)/linalg.norm(array(p_i)-p5).reshape(-1,1)
+        u1=(array(pi_minus)-p4)/norm(array(pi_minus)-p4,axis=1).reshape(-1,1)
+        u2=(array(p_i)-p5)/norm(array(p_i)-p5).reshape(-1,1)
 
         v5=array(pi_minus)-p4
-        v6=(v5/linalg.norm(v5,axis=1).reshape(-1,1))
+        v6=(v5/norm(v5,axis=1).reshape(-1,1))
         r1=r_3pv(array(pi_2minus),array(pi_minus),array(p_i)).round(3)
         r2=r_3pv(array(pi_minus),array(p_i),array(pi_plus)).round(3)
         r3=r_3pv(array(p_i),array(pi_plus),array(pi_2plus)).round(3)
@@ -618,8 +619,8 @@ def convert_secv2(sec,d):
         d_plus=d[1:len(d)]+[d[0]]
         va=array(d)-array(d_minus)
         vb=array(d_plus)-array(d_minus)
-        normva=1/linalg.norm(va,axis=1)
-        normvb=1/linalg.norm(vb,axis=1)
+        normva=1/norm(va,axis=1)
+        normvb=1/norm(vb,axis=1)
         ua=einsum('ij,i->ij',va,normva)
         ub=einsum('ij,i->ij',vb,normvb)
         sec1=array(d)[(ua!=ub).all(axis=1)].tolist()
@@ -659,19 +660,19 @@ def list_r(sec):
     v3=array(pi_plus)-array(p_i)
     v4=array(pi_2plus)-array(pi_plus)
 
-    l1=linalg.norm(v1,axis=1).round(3)
-    l2=linalg.norm(v2,axis=1).round(3)
-    l3=linalg.norm(v3,axis=1).round(3)
-    l4=linalg.norm(v4,axis=1).round(3)
+    l1=norm(v1,axis=1).round(3)
+    l2=norm(v2,axis=1).round(3)
+    l3=norm(v3,axis=1).round(3)
+    l4=norm(v4,axis=1).round(3)
 
     p4=array(pi_2minus)+(array(pi_minus)-array(pi_2minus))/2
     p5=array(pi_minus)+(array(p_i)-array(pi_minus))/2
 
-    u1=(array(pi_minus)-p4)/linalg.norm(array(pi_minus)-p4,axis=1).reshape(-1,1)
-    u2=(array(p_i)-p5)/linalg.norm(array(p_i)-p5).reshape(-1,1)
+    u1=(array(pi_minus)-p4)/norm(array(pi_minus)-p4,axis=1).reshape(-1,1)
+    u2=(array(p_i)-p5)/norm(array(p_i)-p5).reshape(-1,1)
 
     v5=array(pi_minus)-p4
-    v6=(v5/linalg.norm(v5,axis=1).reshape(-1,1))
+    v6=(v5/norm(v5,axis=1).reshape(-1,1))
     r1=r_3pv(array(pi_2minus),array(pi_minus),array(p_i)).round(3)
     r2=r_3pv(array(pi_minus),array(p_i),array(pi_plus)).round(3)
     r3=r_3pv(array(p_i),array(pi_plus),array(pi_2plus)).round(3)
@@ -699,19 +700,19 @@ def list_ra(sec):
     v3=array(pi_plus)-array(p_i)
     v4=array(pi_2plus)-array(pi_plus)
 
-    l1=linalg.norm(v1,axis=1).round(3)
-    l2=linalg.norm(v2,axis=1).round(3)
-    l3=linalg.norm(v3,axis=1).round(3)
-    l4=linalg.norm(v4,axis=1).round(3)
+    l1=norm(v1,axis=1).round(3)
+    l2=norm(v2,axis=1).round(3)
+    l3=norm(v3,axis=1).round(3)
+    l4=norm(v4,axis=1).round(3)
 
     p4=array(pi_2minus)+(array(pi_minus)-array(pi_2minus))/2
     p5=array(pi_minus)+(array(p_i)-array(pi_minus))/2
 
-    u1=(array(pi_minus)-p4)/linalg.norm(array(pi_minus)-p4,axis=1).reshape(-1,1)
-    u2=(array(p_i)-p5)/linalg.norm(array(p_i)-p5).reshape(-1,1)
+    u1=(array(pi_minus)-p4)/norm(array(pi_minus)-p4,axis=1).reshape(-1,1)
+    u2=(array(p_i)-p5)/norm(array(p_i)-p5).reshape(-1,1)
 
     v5=array(pi_minus)-p4
-    v6=(v5/linalg.norm(v5,axis=1).reshape(-1,1))
+    v6=(v5/norm(v5,axis=1).reshape(-1,1))
     r1=r_3pv(array(pi_2minus),array(pi_minus),array(p_i)).round(3)
     r2=r_3pv(array(pi_minus),array(p_i),array(pi_plus)).round(3)
     r3=r_3pv(array(p_i),array(pi_plus),array(pi_2plus)).round(3)
@@ -748,19 +749,19 @@ def max_rv(sec):
     v3=array(pi_plus)-array(p_i)
     v4=array(pi_2plus)-array(pi_plus)
 
-    l1=linalg.norm(v1,axis=1).round(3)
-    l2=linalg.norm(v2,axis=1).round(3)
-    l3=linalg.norm(v3,axis=1).round(3)
-    l4=linalg.norm(v4,axis=1).round(3)
+    l1=norm(v1,axis=1).round(3)
+    l2=norm(v2,axis=1).round(3)
+    l3=norm(v3,axis=1).round(3)
+    l4=norm(v4,axis=1).round(3)
 
     p4=array(pi_2minus)+(array(pi_minus)-array(pi_2minus))/2
     p5=array(pi_minus)+(array(p_i)-array(pi_minus))/2
 
-    u1=(array(pi_minus)-p4)/linalg.norm(array(pi_minus)-p4,axis=1).reshape(-1,1)
-    u2=(array(p_i)-p5)/linalg.norm(array(p_i)-p5).reshape(-1,1)
+    u1=(array(pi_minus)-p4)/norm(array(pi_minus)-p4,axis=1).reshape(-1,1)
+    u2=(array(p_i)-p5)/norm(array(p_i)-p5).reshape(-1,1)
 
     v5=array(pi_minus)-p4
-    v6=(v5/linalg.norm(v5,axis=1).reshape(-1,1))
+    v6=(v5/norm(v5,axis=1).reshape(-1,1))
     r1=r_3pv(array(pi_2minus),array(pi_minus),array(p_i)).round(3)
     r2=r_3pv(array(pi_minus),array(p_i),array(pi_plus)).round(3)
     r3=r_3pv(array(p_i),array(pi_plus),array(pi_2plus)).round(3)
@@ -793,7 +794,7 @@ def i_p2d(l1,l2):
     p0,p1,p2,p3=array([p0,p1,p2,p3])
     v1=p1-p0
     v2=p3-p2
-    im=linalg.pinv(array([v1,-v2]).T)
+    im=pinv(array([v1,-v2]).T)
     t1=(im@(p2-p0))[0]
     ip=p0+v1*t1
     
@@ -814,11 +815,11 @@ def s_int(s):
         p3=array(s)[:,1]
         v2=p3-p2
         m=swapaxes([swapaxes([v1.T[0],-v2.T[0]],0,1),swapaxes([v1.T[1],-v2.T[1]],0,1)],0,1)
-        n=m[where(linalg.det(m)!=0)]
-        pa=p0[where(linalg.det(m)!=0)]
-        pb=p2[where(linalg.det(m)!=0)]
-        v=v1[where(linalg.det(m)!=0)]
-        A=linalg.inv(n)
+        n=m[where(det(m)!=0)]
+        pa=p0[where(det(m)!=0)]
+        pb=p2[where(det(m)!=0)]
+        v=v1[where(det(m)!=0)]
+        A=inv(n)
         B=pb-pa
         def mul(a,b):
             return a@b
@@ -835,18 +836,18 @@ def s_int(s):
 def r_3pv(p1,p2,p3):
     p4=p1+(p2-p1)/2
     p5=p2+(p3-p2)/2
-    u1=(p2-p4)/linalg.norm(p2-p4,axis=1).reshape(-1,1)
-    u2=(p3-p5)/linalg.norm(p3-p5,axis=1).reshape(-1,1)
+    u1=(p2-p4)/norm(p2-p4,axis=1).reshape(-1,1)
+    u2=(p3-p5)/norm(p3-p5,axis=1).reshape(-1,1)
     p6=p4+u1@array([[0,1],[-1,0]])
     p7=p5+u2@array([[0,1],[-1,0]])
     cp=i_p2dv(p4,p6,p5,p7)
-    r=linalg.norm(p1-cp,axis=1)
+    r=norm(p1-cp,axis=1)
     return r
 
 def i_p2dv(p0,p1,p2,p3):
     v1=p1-p0
     v2=p3-p2
-    a=linalg.pinv(swapaxes(transpose(array([v1,-v2])),0,1))
+    a=pinv(swapaxes(transpose(array([v1,-v2])),0,1))
     b=p2-p0
     t=einsum('ijk,ik->ij',a,b)[:,0]
     return p0+einsum('ij,i->ij',v1,t)
@@ -875,7 +876,7 @@ def m_points(sec,sl=20):
     '''
     p0=array(sec)
     p1=array(sec)[1:].tolist()+[sec[0]]
-    lnth=linalg.norm(array(p1)-array(p0),axis=1)
+    lnth=norm(array(p1)-array(p0),axis=1)
     sec1=concatenate([array(l([p0[i],p1[i]],lnth[i]/sl)) if lnth[i]>=sl*2 else [p0[i]] for i in range(len(p0))])
     return sec1.tolist()
 
@@ -887,7 +888,7 @@ def m_points_o(sec,sl=20):
     '''
     p0=array(sec)
     p1=array(sec)[1:].tolist()+[sec[0]]
-    lnth=linalg.norm(array(p1)-array(p0),axis=1)
+    lnth=norm(array(p1)-array(p0),axis=1)
     sec1=concatenate([array(l([p0[i],p1[i]],lnth[i]/sl)) if lnth[i]>=sl*2 else [p0[i]] for i in range(len(p0)-1)])
     return sec1.tolist()
 
@@ -901,8 +902,8 @@ def l(l,s=20):# line 'l' with number of segments 's'
     '''
     p0,p1=array(l[0]),array(l[1])
     v=p1-p0
-    u=[v/linalg.norm(v)]
-    length=linalg.norm(v)
+    u=[v/norm(v)]
+    length=norm(v)
     r=arange(0,length,length/s)
     return (p0+einsum('ij,k->kj',u,r)).tolist()
 
@@ -915,8 +916,8 @@ def l_len(l):
     '''
     p0,p1=array(l[0]),array(l[1])
     v=p1-p0
-    u=[v/(linalg.norm(v)+.00001)]
-    length=linalg.norm(v)
+    u=[v/(norm(v)+.00001)]
+    length=norm(v)
     return length.tolist()
 
 def arc_2p(p1,p2,r,cw=1,s=20):
@@ -926,10 +927,10 @@ def arc_2p(p1,p2,r,cw=1,s=20):
     '''
     p1,p2=array([p1,p2])
     p3=p1+(p2-p1)/2
-    d=linalg.norm(p3-p1)
+    d=norm(p3-p1)
     l=sqrt(abs(r**2-d**2))
     v=p1-p3
-    u=v/linalg.norm(v)
+    u=v/norm(v)
     cp=p3+(u*l)@rm(-90 if cw==-1 else 90)
     v1,v2=p1-cp,p2-cp
     a1,a2=ang(v1[0],v1[1]),ang(v2[0],v2[1])
@@ -944,10 +945,10 @@ def arc_long_2p(p1,p2,r,cw=1,s=20):
     '''
     p1,p2=array([p1,p2])
     p3=p1+(p2-p1)/2
-    d=linalg.norm(p3-p1)
+    d=norm(p3-p1)
     l=sqrt(abs(r**2-d**2))
     v=p1-p3
-    u=v/linalg.norm(v)
+    u=v/norm(v)
     cp=p3+(u*l)@rm(90 if cw==-1 else -90)
     v1,v2=p1-cp,p2-cp
     a1,a2=ang(v1[0],v1[1]),ang(v2[0],v2[1])
@@ -963,10 +964,10 @@ def arc_2p_cp(p1,p2,r,cw=-1):
     '''
     p1,p2=array([p1,p2])
     p3=p1+(p2-p1)/2
-    d=linalg.norm(p3-p1)
+    d=norm(p3-p1)
     l=sqrt(abs(r**2-d**2))
     v=p1-p3
-    u=v/linalg.norm(v)
+    u=v/norm(v)
     cp=p3+(u*l)@rm(-90 if cw==-1 else 90)
     return cp.tolist()
 
@@ -1131,7 +1132,7 @@ def nv(p):# normal vector to the plane 'p' with atleast 3 known points
     '''
     p0,p1,p2=array(trns([0,0,0],[p[0],p[1],p[2]]))
     nv=cross(p0-p1,p2-p1)
-    m=1/linalg.norm(nv) if linalg.norm(nv)>0 else 1e5
+    m=1/norm(nv) if norm(nv)>0 else 1e5
     return (nv*m).tolist()
 
 def fillet_3p_3d(p0,p1,p2,r,s):# fillet with 3 known points 'p0,p1,p2' in 3d space. 'r' is the radius of fillet and 's' is the number of segments in the fillet
@@ -1143,8 +1144,8 @@ def fillet_3p_3d(p0,p1,p2,r,s):# fillet with 3 known points 'p0,p1,p2' in 3d spa
     '''
     p0,p1,p2=array(trns([0,0,0],[p0,p1,p2]))
     n=array(nv([p0,p1,p2]))
-    u1=(p0-p1)/(linalg.norm(p0-p1)+.00001)
-    u2=(p2-p1)/(linalg.norm(p2-p1)+.00001)
+    u1=(p0-p1)/(norm(p0-p1)+.00001)
+    u2=(p2-p1)/(norm(p2-p1)+.00001)
     theta=(180-arccos(u1@u2)*180/pi)/2
     alpha=arccos(u1@u2)*180/pi
     l=r*tan(theta*pi/180)
@@ -1163,8 +1164,8 @@ def fillet_3p_3d_cp(p0,p1,p2,r):# center point 'cp' of the fillet with 3 known p
     '''
     p0,p1,p2=array(trns([0,0,0],[p0,p1,p2]))
     n=array(nv([p0,p1,p2]))
-    u1=(p0-p1)/(linalg.norm(p0-p1)+.00001)
-    u2=(p2-p1)/(linalg.norm(p2-p1)+.00001)
+    u1=(p0-p1)/(norm(p0-p1)+.00001)
+    u2=(p2-p1)/(norm(p2-p1)+.00001)
     theta=(180-arccos(u1@u2)*180/pi)/2
     alpha=arccos(u1@u2)*180/pi
     l=r*tan(theta*pi/180)
@@ -1180,10 +1181,10 @@ def i_p3d(l1,l2): # intersection point between 2 lines 'l1' and 'l2' in 3d space
     l1,l2=array(l1),array(l2)
     v1=l1[1]-l1[0]
     v2=l2[1]-l2[0]
-    u1=v1/(linalg.norm(v1)+.00001)
-    u2=v2/(linalg.norm(v2)+.00001)
+    u1=v1/(norm(v1)+.00001)
+    u2=v2/(norm(v2)+.00001)
     v3=l2[0]-l1[0]
-    t1= (linalg.pinv(array([v1,-v2,[1,1,1]]).T)@array(v3))[0]
+    t1= (pinv(array([v1,-v2,[1,1,1]]).T)@array(v3))[0]
     ip=l1[0]+v1*t1
     return ip.tolist()
 
@@ -1196,8 +1197,8 @@ def arc_3p_3d(points,s): # arc with 3 known list of 'points' in 3d space where '
     points=array(points)
     v1=points[0]-points[1]
     v2=points[2]-points[1]
-    u1=v1/linalg.norm(v1)
-    u2=v2/linalg.norm(v2)
+    u1=v1/norm(v1)
+    u2=v2/norm(v2)
     n=cross(u1,u2)
     alpha=arccos(u1@u2)*180/pi
     pa=v1/2
@@ -1208,11 +1209,11 @@ def arc_3p_3d(points,s): # arc with 3 known list of 'points' in 3d space where '
     l2=[pb,pbp]
     cp=i_p3d(l1,l2)
     v3=points[0]-(points[1]+cp)
-    u3=v3/linalg.norm(v3)
+    u3=v3/norm(v3)
     v4=points[2]-(points[1]+cp)
-    u4=v4/linalg.norm(v4)
+    u4=v4/norm(v4)
     theta= 360-arccos(u3@u4)*180/pi if alpha<90 else arccos(u3@u4)*180/pi
-    radius=linalg.norm(pa-cp)
+    radius=norm(pa-cp)
     arc=trns(points[1]+cp,[ q(n,points[0]-(points[1]+cp),-i)  for i in linspace(0,theta,s) ])
     return array(arc).tolist()
 
@@ -1226,8 +1227,8 @@ def r_3p_3d(points):# radius of the circle with 3 known list of 'points' in 3d s
     points=array(points)
     v1=points[0]-points[1]
     v2=points[2]-points[1]
-    u1=v1/(linalg.norm(v1)+.00001)
-    u2=v2/(linalg.norm(v2)+.00001)
+    u1=v1/(norm(v1)+.00001)
+    u2=v2/(norm(v2)+.00001)
     n=cross(u1,u2)
     alpha=arccos(u1@u2)*180/pi
     pa=v1/2
@@ -1238,11 +1239,11 @@ def r_3p_3d(points):# radius of the circle with 3 known list of 'points' in 3d s
     l2=[pb,pbp]
     cp=i_p3d(l1,l2)
     v3=points[0]-(points[1]+cp)
-    u3=v3/(linalg.norm(v3)+.00001)
+    u3=v3/(norm(v3)+.00001)
     v4=points[2]-(points[1]+cp)
-    u4=v4/(linalg.norm(v4)+.00001)
+    u4=v4/(norm(v4)+.00001)
     theta= 360-arccos(u3@u4)*180/pi if alpha<90 else arccos(u3@u4)*180/pi
-    radius=linalg.norm(pa-cp)
+    radius=norm(pa-cp)
     return radius
 
 def cir_3p_3d(points,s):#circle with 3 known list of 'points' in 3d space where 's' is the number of segments in the circle 
@@ -1254,8 +1255,8 @@ def cir_3p_3d(points,s):#circle with 3 known list of 'points' in 3d space where 
     points=array(points)
     v1=points[0]-points[1]
     v2=points[2]-points[1]
-    u1=v1/linalg.norm(v1)
-    u2=v2/linalg.norm(v2)
+    u1=v1/norm(v1)
+    u2=v2/norm(v2)
     n=cross(u1,u2)
     alpha=arccos(u1@u2)*180/pi
     pa=v1/2
@@ -1266,11 +1267,11 @@ def cir_3p_3d(points,s):#circle with 3 known list of 'points' in 3d space where 
     l2=[pb,pbp]
     cp=i_p3d(l1,l2)
     v3=points[0]-(points[1]+cp)
-    u3=v3/linalg.norm(v3)
+    u3=v3/norm(v3)
     v4=points[2]-(points[1]+cp)
-    u4=v4/linalg.norm(v4)
+    u4=v4/norm(v4)
     theta= 360-arccos(u3@u4)*180/pi if alpha<90 else arccos(u3@u4)*180/pi
-    radius=linalg.norm(pa-cp)
+    radius=norm(pa-cp)
     arc=trns(points[1]+cp,[ q(n,points[0]-(points[1]+cp),-i)  for i in linspace(0,360,s) ])
     return array(arc).tolist()
 
@@ -1381,7 +1382,7 @@ def ibsap(sec,pnt):# intersection between section and a point. used to find whet
     p2,p3=array([p2,p3])
     v1=[1,0]
     v2=(p3-p2)+[0,.00001]
-    im=linalg.pinv(array([[v1]*len(v2),-v2]).transpose(1,0,2).transpose(0,2,1))
+    im=pinv(array([[v1]*len(v2),-v2]).transpose(1,0,2).transpose(0,2,1))
     p=p2-p0
     t1=einsum('ijk,ik->ij',im,p)[:,0]
     t2=einsum('ijk,ik->ij',im,p)[:,1]
@@ -1400,8 +1401,8 @@ def sec_clean(sec,sec1,r):
     v1=p1-p0
     v2=sec1[:,None]-p0
     v3=sec1[:,None]-p1
-    u1=v1/linalg.norm(v1,axis=1).reshape(-1,1)
-    n=1/linalg.norm(v1,axis=1)
+    u1=v1/norm(v1,axis=1).reshape(-1,1)
+    n=1/norm(v1,axis=1)
     u1.shape,v2.shape
     d=einsum('jk,ijk->ij',u1,v2)
     t=einsum('ij,j->ij',d,n).round(3)
@@ -1425,8 +1426,8 @@ def sec_clean1(sec,sec1,r):
     v1=p1-p0
     v2=sec1[:,None]-p0
     v3=sec1[:,None]-p1
-    u1=v1/linalg.norm(v1,axis=1).reshape(-1,1)
-    n=1/linalg.norm(v1,axis=1)
+    u1=v1/norm(v1,axis=1).reshape(-1,1)
+    n=1/norm(v1,axis=1)
     u1.shape,v2.shape
     d=einsum('jk,ijk->ij',u1,v2)
     t=einsum('ij,j->ij',d,n).round(3)
@@ -1453,13 +1454,13 @@ def fillet_2cir(r1,r2,c1,c2,r): # fillet between 2 circles with radius 'r1' and 
     '''
     
     c1,c2=array([c1,c2])
-    l1=linalg.norm(c2-c1)
+    l1=norm(c2-c1)
     l2=r1+r
     l3=r2+r
     t=(l1**2+l2**2-l3**2)/(2*l1)
     h=sqrt(l2**2-t**2)
     v=c2-c1
-    u=v/linalg.norm(v)
+    u=v/norm(v)
     p1=c1+u*t+(u@rm(90))*h
     a1=ang((c1-p1)[0],(c1-p1)[1])
     a2=ang((c2-p1)[0],(c2-p1)[1])
@@ -1488,13 +1489,13 @@ def filleto_2cir(r1,r2,c1,c2,r): # fillet between 2 circles with radius 'r1' and
     '''
     
     c1,c2=array([c1,c2])
-    l1=linalg.norm(c2-c1)
+    l1=norm(c2-c1)
     l2=r1+r
     l3=r2+r
     t=(l1**2+l2**2-l3**2)/(2*l1)
     h=sqrt(l2**2-t**2)
     v=c2-c1
-    u=v/linalg.norm(v)
+    u=v/norm(v)
     p1=c1+u*t+(u@rm(90))*h
     a1=ang((c1-p1)[0],(c1-p1)[1])
     a2=ang((c2-p1)[0],(c2-p1)[1])
@@ -1525,8 +1526,8 @@ def tctp(r1,r2,cp1,cp2): # 2 circle tangent points (one side) r1 and r2 are the 
     '''
     cp1,cp2=array([cp1,cp2])
     v1=cp2-cp1,
-    u1=v1/linalg.norm(v1)
-    ang1=arcsin((r2-r1)/linalg.norm(cp2-cp1))*180/pi
+    u1=v1/norm(v1)
+    ang1=arcsin((r2-r1)/norm(cp2-cp1))*180/pi
 
     t1=cp1+u1@rm(90+ang1)*r1
     t2=cp2+u1@rm(90+ang1)*r2
@@ -1548,8 +1549,8 @@ def tctpf(r1,r2,cp1,cp2): #2 circle tangent point full (both the sides)
     '''
     cp1,cp2=array([cp1,cp2])
     v1=cp2-cp1,
-    u1=v1/linalg.norm(v1)
-    ang1=arcsin((r2-r1)/linalg.norm(cp2-cp1))*180/pi
+    u1=v1/norm(v1)
+    ang1=arcsin((r2-r1)/norm(cp2-cp1))*180/pi
 
     t1=cp1+u1@rm(90+ang1)*r1
     t2=cp2+u1@rm(90+ang1)*r2
@@ -1818,7 +1819,7 @@ def ipf(prism,prism1,r,s,o=0):
     v1,v2,v3=py-px,pn-pm,po-pm
 #     px+v1*t1=pm+v2*t2+v3*t3
 #     v1*t1-v2*t2-v3*t3=pm-px
-    u1=v1/(linalg.norm(v1,axis=1).reshape(-1,1)+.0001)
+    u1=v1/(norm(v1,axis=1).reshape(-1,1)+.0001)
     t1=einsum('ijk,jk->ij',px[:,None]-pm,cross(v2,v3))/(einsum('ik,jk->ij',-v1,cross(v2,v3))+.0001)
     t2=einsum('ijk,ijk->ij',px[:,None]-pm,cross(v3,-v1[:,None]))/(einsum('ik,jk->ij',-v1,cross(v2,v3))+.0001)
     t3=einsum('ijk,ijk->ij',px[:,None]-pm,cross(-v1[:,None],v2))/(einsum('ik,jk->ij',-v1,cross(v2,v3))+.0001)
@@ -1832,7 +1833,7 @@ def ipf(prism,prism1,r,s,o=0):
     v4=array(pp)-array(p)
     pnt=array(pq)-array(p)
     n=cross(v4,pnt)
-    n=n/(linalg.norm(n,axis=1).reshape(-1,1)+.0001)*r
+    n=n/(norm(n,axis=1).reshape(-1,1)+.0001)*r
     pnt=n
     cir=[[(p[i]+array(q(v4[i],pnt[i],t))).tolist() for t in linspace(-90,90,10)]for i in range(len(v4))] if o==0 else \
     [[(p[i]+array(q(v4[i],pnt[i],-t))).tolist() for t in linspace(90,270,10)]for i in range(len(v4))] 
@@ -1841,7 +1842,7 @@ def ipf(prism,prism1,r,s,o=0):
     px=p2[:,0]
     py=p2[:,1]
     v1,v2,v3=py-px,pn-pm,po-pm
-    u1=v1/(linalg.norm(v1,axis=1).reshape(-1,1)+.0001)
+    u1=v1/(norm(v1,axis=1).reshape(-1,1)+.0001)
     t1=einsum('ijk,jk->ij',px[:,None]-pm,cross(v2,v3))/(einsum('ik,jk->ij',-v1,cross(v2,v3))+.0001)
     t2=einsum('ijk,ijk->ij',px[:,None]-pm,cross(v3,-v1[:,None]))/(einsum('ik,jk->ij',-v1,cross(v2,v3))+.0001)
     t3=einsum('ijk,ijk->ij',px[:,None]-pm,cross(-v1[:,None],v2))/(einsum('ik,jk->ij',-v1,cross(v2,v3))+.0001)
@@ -1873,7 +1874,7 @@ def ipf1(p,p1,r,s,o=0):
     v5=array([cross(v2,v3).tolist()]*len(v1))
 #     px+v1*t1=pm+v2*t2+v3*t3
 #     v1*t1-v2*t2-v3*t3=pm-px
-    u1=v1/(linalg.norm(v1,axis=1).reshape(-1,1)+.0001)
+    u1=v1/(norm(v1,axis=1).reshape(-1,1)+.0001)
     t1=einsum('ijk,jk->ij',px[:,None]-pm,cross(v2,v3))/(einsum('ik,jk->ij',-v1,cross(v2,v3))+.0001)
     t2=einsum('ijk,ijk->ij',px[:,None]-pm,cross(v3,-v1[:,None]))/(einsum('ik,jk->ij',-v1,cross(v2,v3))+.0001)
     t3=einsum('ijk,ijk->ij',px[:,None]-pm,cross(-v1[:,None],v2))/(einsum('ik,jk->ij',-v1,cross(v2,v3))+.0001)
@@ -1887,7 +1888,7 @@ def ipf1(p,p1,r,s,o=0):
     v4=array(pp)-array(p)
 #     pnt=array(pq)-array(p)
 #     n=cross(v4,pnt)
-#     n=n/(linalg.norm(n,axis=1).reshape(-1,1)+.0001)*r
+#     n=n/(norm(n,axis=1).reshape(-1,1)+.0001)*r
 #     pnt=n
     pnt=v5[condition]
     
@@ -1898,7 +1899,7 @@ def ipf1(p,p1,r,s,o=0):
     px=p2[:,0]
     py=p2[:,1]
     v1,v2,v3=py-px,pn-pm,po-pm
-    u1=v1/(linalg.norm(v1,axis=1).reshape(-1,1)+.0001)
+    u1=v1/(norm(v1,axis=1).reshape(-1,1)+.0001)
     t1=einsum('ijk,jk->ij',px[:,None]-pm,cross(v2,v3))/(einsum('ik,jk->ij',-v1,cross(v2,v3))+.0001)
     t2=einsum('ijk,ijk->ij',px[:,None]-pm,cross(v3,-v1[:,None]))/(einsum('ik,jk->ij',-v1,cross(v2,v3))+.0001)
     t3=einsum('ijk,ijk->ij',px[:,None]-pm,cross(-v1[:,None],v2))/(einsum('ik,jk->ij',-v1,cross(v2,v3))+.0001)
@@ -1954,7 +1955,7 @@ def s_int1(s): #creates intersection between all the segments of a section which
     p3=array([array(s)[:,1]]*len(s))
     v2=p3-p2
     v1.shape,v2.shape
-    A=linalg.inv(array([v1+[.00001,0],-v2+[.00001,.00001]]).transpose(1,0,2,3).transpose(0,2,1,3).transpose(0,1,3,2))
+    A=inv(array([v1+[.00001,0],-v2+[.00001,.00001]]).transpose(1,0,2,3).transpose(0,2,1,3).transpose(0,1,3,2))
     B=p2-p0
     t=einsum('ijkl,ijl->ijk',A,B)[:,:,0].round(4)
     u=einsum('ijkl,ijl->ijk',A,B)[:,:,1].round(4)
@@ -2030,7 +2031,7 @@ def l_cir_ip(line,cir):
     p3=array(cir[1:]+[cir[0]])
     v1=p1-p0
     v2=p3-p2
-    im=linalg.pinv(array([[v1]*len(v2),-v2]).transpose(1,0,2).transpose(0,2,1))
+    im=pinv(array([[v1]*len(v2),-v2]).transpose(1,0,2).transpose(0,2,1))
     pnt=p2-p0
     t=einsum('ijk,ik->ij',im,pnt)
     condition=((t>=0)&(t<=1)).all(1)
@@ -2189,19 +2190,19 @@ def t_cir_tarc(r1,r2,cp1,cp2,r,s=50): #two circle tangent arc
     refer the file "example of various functions " for application examples
     '''
     cp1,cp2=array([cp1,cp2])
-    l1=linalg.norm(cp2-cp1)
+    l1=norm(cp2-cp1)
     l2=r-r1
     l3=r-r2
     x=(l2**2-l3**2+l1**2)/(2*l1)
     h=sqrt(l2**2-x**2)
     v1=cp2-cp1
-    u1=v1/linalg.norm(v1)
+    u1=v1/norm(v1)
     p0=cp1+u1*x
     cp3=p0-(u1@rm(90))*h
     v2=cp2-cp3
-    u2=v2/linalg.norm(v2)
+    u2=v2/norm(v2)
     v3=cp1-cp3
-    u3=v3/linalg.norm(v3)
+    u3=v3/norm(v3)
     ang1=ang(u2[0],u2[1])
     ang2=ang(u3[0],u3[1])
     return array(arc(r,ang1,ang2,cp3,s)).tolist()
@@ -2214,12 +2215,12 @@ def tcct(r1,r2,cp1,cp2,cw=-1): # two circle cross tangent
     v1=[1,1]
     v2=[-r2,r1]
     cp1,cp2=array([cp1,cp2])
-    d=linalg.norm(cp2-cp1)
-    d1=(linalg.inv(array([v1,v2]).T)@array([d,0]))[0]
-    d2=(linalg.inv(array([v1,v2]).T)@array([d,0]))[1]
+    d=norm(cp2-cp1)
+    d1=(inv(array([v1,v2]).T)@array([d,0]))[0]
+    d2=(inv(array([v1,v2]).T)@array([d,0]))[1]
     a=arcsin(r1/d1)*180/pi
     v3=cp2-cp1
-    u3=v3/linalg.norm(v3)
+    u3=v3/norm(v3)
     b=arccos(u3@array([1,0]))*180/pi
     if cw==-1:
         if v3[0]>0 and v3[1]<=0:
@@ -2264,13 +2265,13 @@ def arc_3p(p1,p2,p3,s=30):
     p4=p1+(p2-p1)/2
     p5=p2+(p3-p2)/2
     v1=p2-p4
-    u1=v1/linalg.norm(v1)
+    u1=v1/norm(v1)
     v2=p3-p5
-    u2=v2/linalg.norm(v2)
+    u2=v2/norm(v2)
     p6=p4+u1@rm(90)
     p7=p5+u2@rm(90)
     cp=i_p2d([p4,p6],[p5,p7])
-    r=linalg.norm(p1-cp)
+    r=norm(p1-cp)
     v3=p1-cp
     v4=p2-cp
     v5=p3-cp
@@ -2292,13 +2293,13 @@ def cir_3p(p1,p2,p3,s=30):
     p4=p1+(p2-p1)/2
     p5=p2+(p3-p2)/2
     v1=p2-p4
-    u1=v1/linalg.norm(v1)
+    u1=v1/norm(v1)
     v2=p3-p5
-    u2=v2/linalg.norm(v2)
+    u2=v2/norm(v2)
     p6=p4+u1@rm(90)
     p7=p5+u2@rm(90)
     cp=i_p2d([p4,p6],[p5,p7])
-    r=linalg.norm(p1-cp)
+    r=norm(p1-cp)
 #     v3=p1-cp
 #     v4=p2-cp
 #     v5=p3-cp
@@ -2319,9 +2320,9 @@ def cp_3p(p1,p2,p3):
     p4=p1+(p2-p1)/2
     p5=p2+(p3-p2)/2
     v1=p2-p4
-    u1=v1/linalg.norm(v1)
+    u1=v1/norm(v1)
     v2=p3-p5
-    u2=v2/linalg.norm(v2)
+    u2=v2/norm(v2)
     p6=p4+u1@rm(90)
     p7=p5+u2@rm(90)
     cp=i_p2d([p4,p6],[p5,p7])
@@ -2367,10 +2368,10 @@ def perp(sec,point,radius):
     p0=sec[:,0]
     p1=sec[:,1]
     v1=p1-p0
-    u1=v1/(linalg.norm(v1,axis=1).reshape(-1,1)+.00001)
+    u1=v1/(norm(v1,axis=1).reshape(-1,1)+.00001)
     v2=array(point)-p0
-    v1norm=linalg.norm(v1,axis=1)
-    v2norm=linalg.norm(v2,axis=1)
+    v1norm=norm(v1,axis=1)
+    v2norm=norm(v2,axis=1)
     v2cost=einsum('ij,ij->i',u1,v2)
     cond1=v2cost>=0
     cond2=v2cost<=v1norm
@@ -2384,10 +2385,10 @@ def perp_point(line,point,distance):
     p1=line[1]
     p0,p1=array([p0,p1])
     v1=p1-p0
-    u1=v1/(linalg.norm(v1)+.00001)
+    u1=v1/(norm(v1)+.00001)
     v2=array(point)-p0
-    v1norm=linalg.norm(v1)
-    v2norm=linalg.norm(v2)
+    v1norm=norm(v1)
+    v2norm=norm(v2)
     v2cost=u1@v2
     cond1=v2cost>=0
     cond2=v2cost<=v1norm
@@ -2400,10 +2401,10 @@ def perp_dist(line,point):
     p1=line[1]
     p0,p1=array([p0,p1])
     v1=p1-p0
-    u1=v1/(linalg.norm(v1)+.00001)
+    u1=v1/(norm(v1)+.00001)
     v2=array(point)-p0
-    v1norm=linalg.norm(v1)
-    v2norm=linalg.norm(v2)
+    v1norm=norm(v1)
+    v2norm=norm(v2)
     v2cost=u1@v2
     d=sqrt(v2norm**2-v2cost**2)
     return d
@@ -2419,7 +2420,7 @@ def sq(d,cp=[0,0]):
     return c3t2(trns(cp,[[0,0],[d,0],[d,d],[0,d]]))
 
 def near_points(points,s_p,n):
-    l=array([ linalg.norm(array(p)-array(s_p)) for p in points])
+    l=array([ norm(array(p)-array(s_p)) for p in points])
     l1=sort(l)[0:n+1]
     index=array([[i for i in range(len(l)) if p==l[i]]for p in l1]).reshape(-1)
     p1=array(points)[index].tolist()
@@ -2447,7 +2448,7 @@ def i_p2dw(l1,l):
     v2=p3-p2
 #                     p0+v1*t1=p2+v2*t2
 #                     v1*t1-v2*t2=p2-p0
-    im=linalg.inv(array([v1,-v2]).transpose(1,0)
+    im=inv(array([v1,-v2]).transpose(1,0)
                   +array([[.000001,.000002],[.000002,.000003]]))
     t=(im@(p2-p0))[0]
     u=(im@(p2-p0))[1]
@@ -2468,7 +2469,7 @@ def pies1(sec,pnts):
     p2,p3=array([p2,p3])
     v1=array([[[1,0]]*len(p2)]*len(p0))
     v2=array([((p3-p2)+[0,.00001]).tolist()]*len(p0))
-    # im=linalg.pinv(array([[v1]*len(v2),-v2]).transpose(1,0,2).transpose(0,2,1))
+    # im=pinv(array([[v1]*len(v2),-v2]).transpose(1,0,2).transpose(0,2,1))
     # im=array([im.tolist()]*len(p0))
     p=p2-p0[:,None]
     # t=einsum('ijkl,ijl->ijl',im,p)
@@ -2476,7 +2477,7 @@ def pies1(sec,pnts):
     #     t[i][(t[i][:,0]>=0)&(t[i][:,1]>=0)&(t[i][:,1]<=1)].shape[0]%2 \
     #  ==1]
 
-    im=linalg.pinv(array([v1,-v2]).transpose(1,0,2,3).transpose(0,2,1,3))
+    im=pinv(array([v1,-v2]).transpose(1,0,2,3).transpose(0,2,1,3))
     im.shape,p.shape
     t=einsum('ijkl,ijk->ijl',im,p)
     s10=[p0[i].tolist() for i in range(len(p0)) if \
@@ -2499,9 +2500,9 @@ def cleaning_seg(sec):
     s=seg(sec)
     s1=offset_points(sec,r)
     s2=seg(s1)
-    u=array([(array(p[1])-array(p[0]))/linalg.norm(array(p[1])-array(p[0])) for p in s])
-    u1=array([(array(p[1])-array(p[0]))/linalg.norm(array(p[1])-array(p[0])) for p in s2])
-    s3=array(s)[linalg.norm(u-u1,axis=1)<1].tolist()
+    u=array([(array(p[1])-array(p[0]))/norm(array(p[1])-array(p[0])) for p in s])
+    u1=array([(array(p[1])-array(p[0]))/norm(array(p[1])-array(p[0])) for p in s2])
+    s3=array(s)[norm(u-u1,axis=1)<1].tolist()
     return s3
 
 def cleaning_sec_inner(sec,r):
@@ -2913,7 +2914,7 @@ def concave_hull(pnts,x=1,loops=10):
             p0,p1=array(c1[i])
             v1=p1-p0
             u1=array(uv(v1))
-            v1norm=linalg.norm(v1)
+            v1norm=norm(v1)
             pnts2=[p for p in array(pnts1) if ((u1@(p-p0))>=0)&((u1@(p-p0))<=v1norm) & (abs(cross(v1,p-p0))/v1norm <= v1norm/x) ]
             if pnts2!=[]:
                 lengths=[cross(v1,(p-p0))/v1norm for p in array(pnts2)]
@@ -2960,7 +2961,7 @@ def concave_hull(pnts,x=1,loops=10):
 #     v1=v1.repeat(j,0)
 #     v2=array((v2).tolist()*i)
 #     v3=array((v3).tolist()*i)
-#     c=linalg.pinv(array([v1,-v2,-v3]).transpose(1,0,2).transpose(0,2,1))
+#     c=pinv(array([v1,-v2,-v3]).transpose(1,0,2).transpose(0,2,1))
 #     d=array(a1.tolist()*i)-b1.repeat(j,0)
 #     t=einsum('ijk,ik->ij',c,d)
 #     p0=b1.repeat(j,0)
@@ -2993,7 +2994,7 @@ def concave_hull(pnts,x=1,loops=10):
 #     v1=v1.repeat(j,0)
 #     v2=array((v2).tolist()*i)
 #     v3=array((v3).tolist()*i)
-#     c=linalg.pinv(array([v1,-v2,-v3]).transpose(1,0,2).transpose(0,2,1))
+#     c=pinv(array([v1,-v2,-v3]).transpose(1,0,2).transpose(0,2,1))
 #     d=array(a1.tolist()*i)-b1.repeat(j,0)
 #     t=einsum('ijk,ik->ij',c,d)
 #     p0=b1.repeat(j,0)
@@ -3175,13 +3176,13 @@ def fillet_sol2sol(p=[],p1=[],r=1,s=10,o=0):
     pnt1=(p04[:,None]+einsum('ijk,ij->ijk',array([v1]*j).transpose(1,0,2),t1))[condition]
 #     pnt1.shape
 
-    uv1=v1/linalg.norm(v1,axis=1).reshape(-1,1)
+    uv1=v1/norm(v1,axis=1).reshape(-1,1)
     uv1=array([uv1]*j).transpose(1,0,2)[condition]
 #     uv1.shape
 #     pnt2=pnt1+uv1*r
 
     a=cross(v2,v3)
-    b=a/(linalg.norm(a,axis=1).reshape(-1,1)+.00001)
+    b=a/(norm(a,axis=1).reshape(-1,1)+.00001)
     b=array([b]*i)[condition]
 #     b.shape
 
@@ -3305,13 +3306,13 @@ def fillet_surf2sol(p=[],p1=[],r=1,s=10,o=0):
     pnt1=(p04[:,None]+einsum('ijk,ij->ijk',array([v1]*j).transpose(1,0,2),t1))[condition]
 #     pnt1.shape
 
-    uv1=v1/linalg.norm(v1,axis=1).reshape(-1,1)
+    uv1=v1/norm(v1,axis=1).reshape(-1,1)
     uv1=array([uv1]*j).transpose(1,0,2)[condition]
 #     uv1.shape
 #     pnt2=pnt1+uv1*r
 
     a=cross(v2,v3)
-    b=a/(linalg.norm(a,axis=1).reshape(-1,1)+.00001)
+    b=a/(norm(a,axis=1).reshape(-1,1)+.00001)
     b=array([b]*i)[condition]
 #     b.shape
 
@@ -3485,7 +3486,7 @@ def intersections(segments):
     p0,p1,p2,p3=a[:,0],a[:,1],b[:,0],b[:,1]
     v1,v2=p1-p0,p3-p2
     #     v1t1-v2t2=p2-p0
-    im=linalg.inv(array([v1,-v2]).transpose(1,0,2).transpose(0,2,1))
+    im=inv(array([v1,-v2]).transpose(1,0,2).transpose(0,2,1))
     p=p2-p0  
     t=einsum('ijk,ik->ij',im,p)[:,0]
     p0.shape,v1.shape,t.shape
@@ -3523,4 +3524,62 @@ def c2ro(sol,s):#circular to rectangulat orientation
     angle=360/len(sol[0])/2
     sol=cpo(sol)
     return q_rot([f'z{angle}'],[m_points1(sol[i]+flip(sol[len(sol)-1-i]),s) for i in range(int(len(sol)/2))])
+
+def vsp_extrude(sec,extrude_path, shape_path):
+    '''
+    function variable section and path extrude
+    sec: section to extrude
+    extrude_path: is the path on which the section needs to be extruded
+    shape_path: sculpting path
+    
+    extrude path should always be a little longer than the sculpting shape
+    an example will make this more clear
+    refer to the file "example of various functions" for the same
+    '''
+    path=shape_path
+    path1=extrude_path
+    path2=path1[:-1]
+    path3=path1[1:]
+    path,path2,path3=array(path),array(path2),array(path3)
+    v1=array([path3-path2]*len(path)).transpose(1,0,2)
+    v2=path-path2[:,None]
+    v1.shape
+    v1norm=sqrt(einsum('ijk,ijk->ij',v1,v1))
+    inv_v1norm=1/v1norm
+    v1.shape,v1norm.shape
+    u1=einsum('ijk,ij->ijk',v1,inv_v1norm)
+    u1.shape,v2.shape
+    p1=einsum('ijk,ijk->ij',u1,v2)
+    a,b=p1.shape
+    decision=(zeros(a*b).reshape(a,b)<=p1)&(p1<=v1norm)
+    p0=array([path2]*len(path)).transpose(1,0,2)
+    p0.shape,u1.shape,p1.shape
+    points=p0+einsum('ijk,ij->ijk',u1,p1)
+    points=array(sort_points(path,points[decision]))
+    os=[norm(path[i]-points[i])-norm(path[0]-points[0]) for i in range(len(path))]
+
+    sections=[offset(sec,p) for p in os]
+
+    p=array(cytz(points))
+    s2=[]
+    for i in range(len(p)-1):
+        s=q_rot(['x90','z-90'],sections[i])
+        v1=p[i+1]-p[i]+array([0,0,0.00001])
+        va=[v1[0],v1[1],0]
+        u1=array(uv(v1))
+        ua=array(uv(va))
+        v2=cross(va,v1)
+        a1=arccos(u1@ua)*180/pi
+        a2=ang(v1[0],v1[1])
+        s1=q_rot([f'z{a2}'],s)
+        if i<len(p)-1:
+            s2.append(trns(p[i],[q(v2,p,a1) for p in s1]))
+        else:
+            s2.append(trns(p[i],[q(v2,p,a1) for p in s1]))
+            s2.append(trns(p[i+1],[q(v2,p,a1) for p in s1]))
+
+    s3=flip([[p for p in p1 if ~isnan(p[0])] for p1 in s2])
+    s3=[p for p in s3 if p!=[]]
+    return s3
+
 
