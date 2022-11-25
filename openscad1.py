@@ -3583,3 +3583,24 @@ def vsp_extrude(sec,extrude_path, shape_path):
     return s3
 
 
+def sl_int(sec,line):
+    '''
+    section-line intersection:
+    function to find intersection between an enclosed section in 3d space and a line
+    refer to the file "example of various functions" for application example
+    '''
+    vectors=array([p-array(sec[0]) for p in array(sec[1:])])
+    segments=array(seg(vectors))[:-1]
+    v1=array([array(line[1])-array(line[0])])
+    im=inv(array([concatenate([v1,-p]) for p in segments]))
+    point=array([array(sec[0])-array(line[0])]*len(im))
+    im.shape,point.shape
+    t=einsum('ijk,ij->ik',im,point)
+    p0=array(line[0])
+
+    decision=(t[:,0]>=0)&(t[:,0]<=1)&(t[:,1]>=0)&(t[:,1]<=1)&(t[:,2]>=0)&(t[:,2]<=1)&((t[:,1]+t[:,2])<=1)
+    p0.shape,v1.shape,t.shape
+    v2=array([v1]*len(t)).reshape(-1,3)
+    intersection_point=(p0+einsum('ij,i->ij',v2,t[:,0])[decision]).tolist()
+
+    return intersection_point
