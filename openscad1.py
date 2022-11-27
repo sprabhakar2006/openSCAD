@@ -1810,6 +1810,15 @@ def ipf(prism,prism1,r,s,o=0):
      else [[pa[i][j],pa[i][0],pa[i+1][j]],[pa[i+1][0],pa[i+1][j],pa[i][0]]] 
      for j in range(len(pa[i])-1)] 
               for i in range(len(pa)-1)]).reshape(-1,3,3)
+#    segment=seg(pa[0][1:])[:-1]
+#    seg1=[[pa[0][0],p1[0],p1[1]] for p1 in segment]
+    
+#    segment=seg(pa[len(pa)-1][1:])[:-1]
+#    seg2=[[pa[len(pa)-1][0],p1[0],p1[1]] for p1 in segment]
+#    p1=array(seg1+p1.tolist()+seg2)
+
+
+
     p2=array([[[pb[i][j],pb[i+1][j]] for j in range(len(pb[i]))] for i in range(len(pb)-1)]).reshape(-1,2,3)
     pm=p1[:,0]
     pn=p1[:,1]
@@ -3012,6 +3021,9 @@ def path_extrude(sec,path):
     function to extrude a section 'sec' along a open path 'path'
     refer to file "example of various functions" for application example
     '''
+    a=array(path[len(path)-1])+array(uv(array(path[len(path)-1])-array(path[len(path)-2])))
+    a=a.tolist()
+    path=path+[a]
     s=q_rot(['x90','z-90'],sec)
     p=array(path)
     s2=[]
@@ -3032,11 +3044,15 @@ def path_extrude(sec,path):
         
     return flip(s2)
 
+
 def path_extrudec(sec,path):
     '''
     function to extrude a section 'sec' along a closed loop path 'path'
     refer to file "example of various functions" for application example
     '''
+    a=array(path[len(path)-1])+array(uv(array(path[0])-array(path[len(path)-1])))
+    a=a.tolist()
+    path=path+[a]
     s=q_rot(['x90','z-90'],sec)
     p=array(path)
     s2=[]
@@ -3131,7 +3147,7 @@ def path_offset(path,d):
     return p[:,0].tolist()+[p[len(p)-1][1].tolist()]
 
 
-def fillet_sol2sol(p=[],p1=[],r=1,s=10,o=0):
+def fillet_sol2sol(p=[],p1=[],r=1,s=10,o=0,f=1.8):
     ''' 
     function to calculate fillet at the intersection point of 2 solids
     'p': solid 1
@@ -3145,6 +3161,12 @@ def fillet_sol2sol(p=[],p1=[],r=1,s=10,o=0):
          [[p[i][j],p[i][0],p[i+1][j]],[p[i+1][0],p[i+1][j],p[i][0]]] \
          for j in range(len(p[0]))] for i in range(len(p)-1)]
     pa=array(pa).reshape(-1,3,3)
+#    segment=seg(p[0][1:])[:-1]
+#    seg1=[[p[0][0],p1[0],p1[1]] for p1 in segment]
+    
+#    segment=seg(p[len(p)-1][1:])[:-1]
+#    seg2=[[p[len(p)-1][0],p1[0],p1[1]] for p1 in segment]
+#    pa=array(seg1+pa.tolist()+seg2)
 
 #     pb=[[[p1[i][j],p1[i+1][j]] for j in range(len(p1[0]))] for i in range(len(p1)-1)]
 #     pb=array(pb).reshape(-1,2,3)
@@ -3257,11 +3279,11 @@ def fillet_sol2sol(p=[],p1=[],r=1,s=10,o=0):
 
     
     sol=array([pnt3,pnt1,pnt2]).transpose(1,0,2)
-    sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*1.9,s) for (p1,p2,p3) in sol]
+    sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*f,s) for (p1,p2,p3) in sol]
     sol=sol+[sol[0]]
     return sol
 
-def fillet_surf2sol(p=[],p1=[],r=1,s=10,o=0):
+def fillet_surf2sol(p=[],p1=[],r=1,s=10,o=0,f=1.8):
     '''
     function to calculate fillet at the intersection point of 2 solids
     'p': solid 1
@@ -3387,7 +3409,7 @@ def fillet_surf2sol(p=[],p1=[],r=1,s=10,o=0):
 
     
     sol=array([pnt3,pnt1,pnt2]).transpose(1,0,2)
-    sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*1.85,s) for (p1,p2,p3) in sol]
+    sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*f,s) for (p1,p2,p3) in sol]
     sol=sol+[sol[0]]
     return sol
 
@@ -3604,3 +3626,35 @@ def sl_int(sec,line):
     intersection_point=(p0+einsum('ij,i->ij',v2,t[:,0])[decision]).tolist()
 
     return intersection_point
+    
+def pts2(path):
+    '''
+    returns the cumulative sum of points
+    example:
+    path=[[0,0,1],[0,5,10],[10,3,20]]
+    pts2(path)=> [[0, 0, 1], [0, 5, 11], [10, 8, 31]]
+    
+    '''
+    return array(path).cumsum(0).tolist()
+    
+def axis_rot(axis,solid,angle):
+    '''
+    rotate a solid around an axis
+    '''
+    if len(array(solid).shape)==3:
+        return[[q(axis,p1,angle) for p1 in p] for p in solid]
+    else:
+        return [q(axis,p,angle) for p in solid]
+        
+
+def end_cap(fillet,f=-1):
+    '''
+    for giving fillet at the end of a path_extruded solid
+    factor 'f' can be -1 or 1 depending on which side fillet needs to be created
+    
+    '''
+    fillet1=cpo(fillet)[1:]
+    v1=nv(fillet1[0])
+    fillet01=trns(f*array(v1),scl3dc(fillet1,1.5))
+    fillet1=swp_prism_h(fillet01,fillet1)
+    return fillet1
