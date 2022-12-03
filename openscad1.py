@@ -2908,50 +2908,51 @@ def vector_correct(c):
     path=c
     return path
 
-def concave_hull(pnts,x=1,loops=10):
-    '''
-    x is sensitivity where 1 is max and 100 is almost like a convex hull, 
-    loops can be any number less than the number of points
-    refer file "example of various functions" for application example
-    '''
-    c=c_hull(pnts)
-    for j in range(loops):
-        c1=seg(c)
-        pnts1=exclude_points(pnts,c)
-        c2=[]
-        for i in range(len(c1)):
-            p0,p1=array(c1[i])
-            v1=p1-p0
-            u1=array(uv(v1))
-            v1norm=norm(v1)
-            pnts2=[p for p in array(pnts1) if ((u1@(p-p0))>=0)&((u1@(p-p0))<=v1norm) & (abs(cross(v1,p-p0))/v1norm <= v1norm/x) ]
-            if pnts2!=[]:
-                lengths=[cross(v1,(p-p0))/v1norm for p in array(pnts2)]
-                pnt=array(pnts2)[lengths==min(lengths)][0]
-                pnts1=exclude_points(pnts1,pnt)
-                c2.append([p0.tolist(),pnt.tolist(),p1.tolist()])
-            else:
-                c2.append(c1[i])
+
+# def concave_hull(pnts,x=1,loops=10):
+#     '''
+#     x is sensitivity where 1 is max and 100 is almost like a convex hull, 
+#     loops can be any number less than the number of points
+#     refer file "example of various functions" for application example
+#     '''
+#     c=c_hull(pnts)
+#     for j in range(loops):
+#         c1=seg(c)
+#         pnts1=exclude_points(pnts,c)
+#         c2=[]
+#         for i in range(len(c1)):
+#             p0,p1=array(c1[i])
+#             v1=p1-p0
+#             u1=array(uv(v1))
+#             v1norm=norm(v1)
+#             pnts2=[p for p in array(pnts1) if ((u1@(p-p0))>=0)&((u1@(p-p0))<=v1norm) & (abs(cross(v1,p-p0))/v1norm <= v1norm/x) ]
+#             if pnts2!=[]:
+#                 lengths=[cross(v1,(p-p0))/v1norm for p in array(pnts2)]
+#                 pnt=array(pnts2)[lengths==min(lengths)][0]
+#                 pnts1=exclude_points(pnts1,pnt)
+#                 c2.append([p0.tolist(),pnt.tolist(),p1.tolist()])
+#             else:
+#                 c2.append(c1[i])
 
 
-        c3=remove_extra_points(concatenate(c2).tolist())
-        n=s_int1(seg(c3))
-        if n!=[]:
-            d=[[p[1] for p1 in array(n) if (array(uv(p1-p[0])).round(4)==array(uv(p[1]-p[0])).round(4)).all() ] for p in array(seg(c3))]
-            d=concatenate([p for p in d if p!=[]]).tolist()
-            c3=exclude_points(c3,d)
-        c=c3
-    while s_int1(seg(c))!=[]:
-        n=s_int1(seg(c3))
-        if n==[]:
-            break
-        else:
-            d=[[p[1] for p1 in array(n) if (array(uv(p1-p[0])).round(4)==array(uv(p[1]-p[0])).round(4)).all() ] for p in array(seg(c3))]
-            d=concatenate([p for p in d if p!=[]]).tolist()
-            c3=exclude_points(c3,d)
+#         c3=remove_extra_points(concatenate(c2).tolist())
+#         n=s_int1(seg(c3))
+#         if n!=[]:
+#             d=[[p[1] for p1 in array(n) if (array(uv(p1-p[0])).round(4)==array(uv(p[1]-p[0])).round(4)).all() ] for p in array(seg(c3))]
+#             d=concatenate([p for p in d if p!=[]]).tolist()
+#             c3=exclude_points(c3,d)
+#         c=c3
+#     while s_int1(seg(c))!=[]:
+#         n=s_int1(seg(c3))
+#         if n==[]:
+#             break
+#         else:
+#             d=[[p[1] for p1 in array(n) if (array(uv(p1-p[0])).round(4)==array(uv(p[1]-p[0])).round(4)).all() ] for p in array(seg(c3))]
+#             d=concatenate([p for p in d if p!=[]]).tolist()
+#             c3=exclude_points(c3,d)
         
         
-    return c3
+#     return c3
 
 
 # def ipfillet(p,p1,r=1,s=5,o=0):
@@ -3645,8 +3646,7 @@ def axis_rot(axis,solid,angle):
         return[[q(axis,p1,angle) for p1 in p] for p in solid]
     else:
         return [q(axis,p,angle) for p in solid]
-        
-
+    
 def end_cap(fillet,f=-1):
     '''
     for giving fillet at the end of a path_extruded solid
@@ -3658,3 +3658,45 @@ def end_cap(fillet,f=-1):
     fillet01=trns(f*array(v1),scl3dc(fillet1,1.5))
     fillet1=swp_prism_h(fillet01,fillet1)
     return fillet1
+
+def con_hull(d,c,f=1):
+    d=seg(d)
+    revised_list=[]
+    rv=[]
+    for i in range(len(d)):
+        line=d[i]
+        v1=array(line[1])-array(line[0])
+        v2=array(c)-array(line[0])
+        c1=einsum('j,ij->i',v1/norm(v1),v2)
+        c2=cross(v1/norm(v1),v2)
+        condition=(c1>=0)&(c1<=l_len(line))&(c2<=l_len(line)/f)
+        pl=array(c)[condition]
+        v2=pl-array(line[0])
+        c2=cross(v1/norm(v1),v2).round(5)
+        if len(c2[c2>0])!=0 :
+            pl=pl[c2==min(c2[c2>0])].tolist()[0]
+#             if s_int1(seg(remove_extra_points(concatenate(revised_list+[[pl]]))))==[]:
+            revised_list.append([line[0],pl,line[1]])
+#             else:
+#                 revised_list.append(line)
+                
+        else:
+            revised_list.append(line)
+    points=remove_extra_points(concatenate(revised_list))
+    return points
+def concave_hull(pnts,x):
+    '''
+    x is sensitivity where 1 is max and 100 is almost like a convex hull, 
+    refer file "example of various functions" for application example
+    '''
+
+    d=c_hull(pnts)
+    c=pnts
+    for i in range(1000):
+        e=con_hull(d,c,x)
+        if d==e:
+            break
+        else:
+            d=e
+            c=exclude_points(c,d)
+    return d
