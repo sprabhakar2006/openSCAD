@@ -1002,13 +1002,13 @@ path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5)
 prism=prism(sec,path)
     '''
     s1=flip(sec) if cw(sec)==1 else sec
-    return [array(trns([0,0,y],offset(s1,round(x,3)))).tolist() for (x,y) in path]
+    return [array(translate([0,0,y],offset(s1,round(x,3)))).tolist() for (x,y) in path]
 
-def trns(p,sec):#translates a prism or section by [x,y,z] distance
+def translate(p,sec):#translates a prism or section by [x,y,z] distance
     '''
     function to translate a group of points "sec" by "p" distance defined in [x,y,z].e.g. try following code:
     sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5)
-    sec1=trns(p=[2,5,3],sec=sec)
+    sec1=translate(p=[2,5,3],sec=sec)
     
     refer to file "example of various functions " for application
     '''
@@ -1016,7 +1016,7 @@ def trns(p,sec):#translates a prism or section by [x,y,z] distance
 
 def prism1(sec,path,n):
         a=m_points(sec,n)
-        return [ trns([0,0,y], array(m_points(offset(sec,x),n))[cKDTree(m_points(offset(sec,x),n)).query(a)[1]]) for (x,y) in path ]
+        return [ translate([0,0,y], array(m_points(offset(sec,x),n))[cKDTree(m_points(offset(sec,x),n)).query(a)[1]]) for (x,y) in path ]
 
 def offset_points_cw(sec,r):
     '''
@@ -1081,8 +1081,8 @@ def surf_extrude(sec,path):# extrudes an open section 'sec' to a 'path' to creat
     a2=vectorize(ang)(b,v[:,2])
     c=[]
     for i in range(len(path)-1):
-        sec1=trns(p0[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec))
-        sec2=trns(p1[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec))
+        sec1=translate(p0[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec))
+        sec2=translate(p1[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec))
         if i<len(path)-2:
             c.append([sec1])
         else:
@@ -1106,9 +1106,9 @@ def c2t3(p):# converts 2d list to 3d
     output=> [[1, 2, 0], [3, 4, 0], [6, 7, 0]]
     '''
     if len(array(p).shape)>2:
-        return [trns([0,0,0],p) for p in p]
+        return [translate([0,0,0],p) for p in p]
     else:
-        return trns([0,0,0],p)
+        return translate([0,0,0],p)
 
 def c3t2(a): # converts 3d list to 2d list 
     '''
@@ -1130,7 +1130,7 @@ def nv(p):# normal vector to the plane 'p' with atleast 3 known points
     p1,p2,p3=[1,0,0],[0,10,0],[-5,0,0]
     nv([p1,p2,p3]) => [0.0, 0.0, -1.0]
     '''
-    p0,p1,p2=array(trns([0,0,0],[p[0],p[1],p[2]]))
+    p0,p1,p2=array(translate([0,0,0],[p[0],p[1],p[2]]))
     nv=cross(p0-p1,p2-p1)
     m=1/norm(nv) if norm(nv)>0 else 1e5
     return (nv*m).tolist()
@@ -1142,7 +1142,7 @@ def fillet_3p_3d(p0,p1,p2,r,s):# fillet with 3 known points 'p0,p1,p2' in 3d spa
     s: number of segments in the fillet
     refer file "example of various functions" for application example
     '''
-    p0,p1,p2=array(trns([0,0,0],[p0,p1,p2]))
+    p0,p1,p2=array(translate([0,0,0],[p0,p1,p2]))
     n=array(nv([p0,p1,p2]))
     u1=(p0-p1)/(norm(p0-p1)+.00001)
     u2=(p2-p1)/(norm(p2-p1)+.00001)
@@ -1162,7 +1162,7 @@ def fillet_3p_3d_cp(p0,p1,p2,r):# center point 'cp' of the fillet with 3 known p
     
     refer file "example of various functions" for application example
     '''
-    p0,p1,p2=array(trns([0,0,0],[p0,p1,p2]))
+    p0,p1,p2=array(translate([0,0,0],[p0,p1,p2]))
     n=array(nv([p0,p1,p2]))
     u1=(p0-p1)/(norm(p0-p1)+.00001)
     u2=(p2-p1)/(norm(p2-p1)+.00001)
@@ -1214,7 +1214,7 @@ def arc_3p_3d(points,s): # arc with 3 known list of 'points' in 3d space where '
     u4=v4/norm(v4)
     theta= 360-arccos(u3@u4)*180/pi if alpha<90 else arccos(u3@u4)*180/pi
     radius=norm(pa-cp)
-    arc=trns(points[1]+cp,[ q(n,points[0]-(points[1]+cp),-i)  for i in linspace(0,theta,s) ])
+    arc=translate(points[1]+cp,[ q(n,points[0]-(points[1]+cp),-i)  for i in linspace(0,theta,s) ])
     return array(arc).tolist()
 
 def r_3p_3d(points):# radius of the circle with 3 known list of 'points' in 3d space
@@ -1272,7 +1272,7 @@ def cir_3p_3d(points,s):#circle with 3 known list of 'points' in 3d space where 
     u4=v4/norm(v4)
     theta= 360-arccos(u3@u4)*180/pi if alpha<90 else arccos(u3@u4)*180/pi
     radius=norm(pa-cp)
-    arc=trns(points[1]+cp,[ q(n,points[0]-(points[1]+cp),-i)  for i in linspace(0,360,s) ])
+    arc=translate(points[1]+cp,[ q(n,points[0]-(points[1]+cp),-i)  for i in linspace(0,360,s) ])
     return array(arc).tolist()
 
 def scl2d(sec,sl):# scale the 2d section 'sec' by a scaling factor 'sl'. this places the scaled section in the bottom center of the original section
@@ -1284,13 +1284,13 @@ def scl2d(sec,sl):# scale the 2d section 'sec' by a scaling factor 'sl'. this pl
     
     refer file "example of various functions" for application
     '''
-    s1=array(trns([0,0,0],sec))
+    s1=array(translate([0,0,0],sec))
     cp=array(s1).mean(axis=0)
     rev=array(s1).mean(axis=0)+(array(s1)-array(s1).mean(axis=0))*sl
     y1=cp-array([0,array(s1)[:,1].min(),0])
     y2=cp-array([0,rev[:,1].min(),0])
     d=y2-y1
-    return c3t2(trns(d,rev))
+    return c3t2(translate(d,rev))
 
 def scl2d_c(sec,sl):# scale the 2d section 'sec' with scaling factor 'sl'. this places the scaled section in the center of original section or the center of both original and scaled section remains the same.
     '''
@@ -1301,7 +1301,7 @@ def scl2d_c(sec,sl):# scale the 2d section 'sec' with scaling factor 'sl'. this 
     
     refer file "example of various functions" for application
     '''
-    s1=array(trns([0,0,0],sec))
+    s1=array(translate([0,0,0],sec))
     cp=array(s1).mean(axis=0)
     rev=array(s1).mean(axis=0)+(array(s1)-array(s1).mean(axis=0))*sl
     return c3t2(rev)
@@ -1324,7 +1324,7 @@ def scl3d(p,s):# scale 3d prism 'p' with scaling factor 's'. This places the sca
     z1=p.reshape(-1,3)[:,2].min()
     z2=rev.reshape(-1,3)[:,2].min()
     d=z1-z2
-    return trns([0,0,d],rev)
+    return translate([0,0,d],rev)
 
 def scl3dc(p,s):# scale a 3d prism 'p' with scaling factor 's'. This places the scaled prism in the center of the original prism or the center of both the prism is same
     '''
@@ -1609,7 +1609,7 @@ def l_extrude(sec,h=1,a=0,steps=1):
     refer to the file ' example of various functions' for application example
     '''
     s=2 if a==0 else steps
-    return [trns([0,0,h*i if a==0 else h/a*i],q_rot([f"z{0 if a==0 else i}"],sec)) for i in linspace(0,1 if a==0 else a,s)]
+    return [translate([0,0,h*i if a==0 else h/a*i],q_rot([f"z{0 if a==0 else i}"],sec)) for i in linspace(0,1 if a==0 else a,s)]
 
 def cylinder(r1=1,r2=1,h=1,cp=[0,0],s=50,r=0,d=0,d1=0,d2=0,center=False):
     '''
@@ -1625,7 +1625,7 @@ def cylinder(r1=1,r2=1,h=1,cp=[0,0],s=50,r=0,d=0,d1=0,d2=0,center=False):
     sec=circle(ra,cp,s)
     
     path=pts([[-ra+.1,0],[ra-.1,0],[rb-ra,h],[-rb+.1,0]])
-    p= trns([0,0,-h/2],prism(sec,path)) if center==True else prism(sec,path)
+    p= translate([0,0,-h/2],prism(sec,path)) if center==True else prism(sec,path)
     return p
 
 def square(s=0,center=False):
@@ -1657,7 +1657,7 @@ def rsz3d(prism,rsz):
     rev_prism=[[[avg[0]+r_x*(p[0]-avg[0]),avg[1]+r_y*(p[1]-avg[1]),avg[2]+r_z*(p[2]-avg[2])] for p in prism[i]] 
                for i in range(len(prism))]
     t=((array(bb(rev_prism))-array(bb(prism)))/2).tolist()
-    return trns(t,rev_prism)
+    return translate(t,rev_prism)
 
 def rsz3dc(prism,rsz):
     '''
@@ -1702,7 +1702,7 @@ def bb(prism):
 #     n=s if type(s)==int or type(s)==float else s[1]
 #     o=s if type(s)==int or type(s)==float else s[2]
 #     path=cr(pts1([[-m/2,0],[m/2,0],[0,o],[-m/2,0]]),1)
-#     p=trns([-m/2,-n/2,-o/2],rsz3d(prism(square(m),path),[m,n,o])) if center==True else rsz3d(prism(square(m),path),[m,n,o])
+#     p=translate([-m/2,-n/2,-o/2],rsz3d(prism(square(m),path),[m,n,o])) if center==True else rsz3d(prism(square(m),path),[m,n,o])
 #     return array(p).tolist()
 
 def cube(s,center=False):
@@ -1714,7 +1714,7 @@ def cube(s,center=False):
     if center==False:
         return l_extrude(square([s[0],s[1]]),s[2])
     elif center==True:
-        return trns([0,0,-s[2]/2],l_extrude(square([s[0],s[1]],True),s[2]))
+        return translate([0,0,-s[2]/2],l_extrude(square([s[0],s[1]],True),s[2]))
 
 
 def sphere(r=0,cp=[0,0,0],s=50):
@@ -1724,7 +1724,7 @@ def sphere(r=0,cp=[0,0,0],s=50):
     
     '''
     path=arc(r,-90,90,s=s)
-    p=[ trns([cp[0],cp[1],p[1]+cp[2]],circle(p[0],s=s)) for p in path]
+    p=[ translate([cp[0],cp[1],p[1]+cp[2]],circle(p[0],s=s)) for p in path]
     return array(p).tolist()
 
 def rsz2d(sec,rsz):
@@ -2140,8 +2140,8 @@ def p_extrude(sec,path): # section extrude through a path
     a2=vectorize(ang)(b,v[:,2])
     c=[]
     for i in range(len(path)-1):
-        sec1=trns(p0[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec))
-        sec2=trns(p1[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec))
+        sec1=translate(p0[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec))
+        sec2=translate(p1[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec))
         if i<len(path)-2:
             c.append([sec1])
         else:
@@ -2158,8 +2158,8 @@ def p_extrudec(sec,path): # section extrude through a path (closed path)
     a2=vectorize(ang)(b,v[:,2])
     c=[]
     for i in range(len(path)-1):
-        sec1=trns(p0[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec))
-        sec2=trns(p1[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec))
+        sec1=translate(p0[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec))
+        sec2=translate(p1[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec))
         if i<len(path)-2:
             c.append([sec1])
         else:
@@ -2183,8 +2183,8 @@ def v_sec_extrude(sec,path,o): #variable section extrude through a given path
     a2=vectorize(ang)(b,v[:,2])
     c=[]
     for i in range(len(path)-1):
-        sec1=trns(p0[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec[i]))
-        sec2=trns(p1[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec[i]))
+        sec1=translate(p0[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec[i]))
+        sec2=translate(p1[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec[i]))
         if i<len(path)-2:
             c.append([sec1])
         else:
@@ -2426,7 +2426,7 @@ def pies(sec,pnt):
 def sq(d,cp=[0,0]):
     cp=array(cp)-d/2
     cp=[cp[0],cp[1],0]
-    return c3t2(trns(cp,[[0,0],[d,0],[d,d],[0,d]]))
+    return c3t2(translate(cp,[[0,0],[d,0],[d,d],[0,d]]))
 
 def near_points(points,s_p,n):
     l=array([ norm(array(p)-array(s_p)) for p in points])
@@ -2548,6 +2548,7 @@ def cs(sec,d):
     refer to the file "example of various functions " for application examples
     
     '''
+    sec=c3t2(q_rot(['z.0001'],sec))
     r=abs(d)
     a=array(sec)[array(list_r(sec))==0]
     a=seg(a)
@@ -2730,7 +2731,7 @@ def surf_extrudef(surf,t=-.05):
     refer file "example of various functions"
     '''
     s=cpo(surf)
-    s1=trns([0,0,t],[flip(p) for p in s])
+    s1=translate([0,0,t],[flip(p) for p in s])
     s2=array([s,s1]).transpose(1,0,2,3)
     
     i,j,k,l=s2.shape
@@ -2769,7 +2770,7 @@ def surf_base(surf,h=0):
     
     '''
     s=cpo(surf)
-    s1=trns([0,0,h],c2t3(c3t2([flip(p) for p in s])))
+    s1=translate([0,0,h],c2t3(c3t2([flip(p) for p in s])))
     s2=array([s,s1]).transpose(1,0,2,3)
     
     i,j,k,l=s2.shape
@@ -2820,9 +2821,9 @@ def p_exc(sec,path,option=0):
             e.append(j)
             a2=a1+j*180
         if option==0:
-            sec1=trns(path[i],[q(v2,q([0,0,1],p,a+a2),theta) for p in sec])
+            sec1=translate(path[i],[q(v2,q([0,0,1],p,a+a2),theta) for p in sec])
         else:
-            sec1=trns(path[i],[q(v2,q([0,0,1],p,a+a1),theta) for p in sec])
+            sec1=translate(path[i],[q(v2,q([0,0,1],p,a+a1),theta) for p in sec])
             
         c.append(sec1)
     c=c+[c[0]]
@@ -2848,12 +2849,12 @@ def p_ex(sec,path,option=0):
             e.append(j)
             a2=a1+j*180
         if option==0:
-            sec1=trns(path[i],[q(v2,q([0,0,1],p,a+a2),theta) for p in sec])
+            sec1=translate(path[i],[q(v2,q([0,0,1],p,a+a2),theta) for p in sec])
         else:
-            sec1=trns(path[i],[q(v2,q([0,0,1],p,a+a1),theta) for p in sec])
+            sec1=translate(path[i],[q(v2,q([0,0,1],p,a+a1),theta) for p in sec])
             
         c.append(sec1)
-    c=c+[trns(array(path[-1])-array(path[-2]),c[-1])]
+    c=c+[translate(array(path[-1])-array(path[-2]),c[-1])]
     return c
 
 def helix(radius=10,pitch=10, number_of_coils=1, step_angle=1):
@@ -3038,10 +3039,10 @@ def path_extrude(sec,path):
         a2=ang(v1[0],v1[1])
         s1=q_rot([f'z{a2}'],s)
         if i<len(p)-1:
-            s2.append(trns(p[i],[q(v2,p,a1) for p in s1]))
+            s2.append(translate(p[i],[q(v2,p,a1) for p in s1]))
         else:
-            s2.append(trns(p[i],[q(v2,p,a1) for p in s1]))
-            s2.append(trns(p[i+1],[q(v2,p,a1) for p in s1]))
+            s2.append(translate(p[i],[q(v2,p,a1) for p in s1]))
+            s2.append(translate(p[i+1],[q(v2,p,a1) for p in s1]))
         
     return flip(s2)
 
@@ -3066,7 +3067,7 @@ def path_extrudec(sec,path):
         a1=arccos(u1@ua)*180/pi
         a2=ang(v1[0],v1[1])
         s1=q_rot([f'z{a2}'],s)
-        s2.append(trns(p[i],[q(v2,p,a1) for p in s1]))
+        s2.append(translate(p[i],[q(v2,p,a1) for p in s1]))
         
     return flip(s2+[s2[0]])
 
@@ -3116,7 +3117,7 @@ def multiple_sec_extrude(path_points=[],radiuses_list=[],sections_list=[],option
             a1=arccos(u1@ua)*180/pi
             a2=ang(v1[0],v1[1])
             s2=q_rot(['x90','z-90',f'z{a2}'],sections[i])
-            s3=trns(p0,flip([q(v2,p,-a1) for p in s2]))
+            s3=translate(p0,flip([q(v2,p,-a1) for p in s2]))
             s4.append(s3)
     return s4
 
@@ -3596,10 +3597,10 @@ def vsp_extrude(sec,extrude_path, shape_path):
         a2=ang(v1[0],v1[1])
         s1=q_rot([f'z{a2}'],s)
         if i<len(p)-1:
-            s2.append(trns(p[i],[q(v2,p,a1) for p in s1]))
+            s2.append(translate(p[i],[q(v2,p,a1) for p in s1]))
         else:
-            s2.append(trns(p[i],[q(v2,p,a1) for p in s1]))
-            s2.append(trns(p[i+1],[q(v2,p,a1) for p in s1]))
+            s2.append(translate(p[i],[q(v2,p,a1) for p in s1]))
+            s2.append(translate(p[i+1],[q(v2,p,a1) for p in s1]))
 
     s3=flip([[p for p in p1 if ~isnan(p[0])] for p1 in s2])
     s3=[p for p in s3 if p!=[]]
@@ -3655,7 +3656,7 @@ def end_cap(fillet,f=-1):
     '''
     fillet1=cpo(fillet)[1:]
     v1=nv(fillet1[0])
-    fillet01=trns(f*array(v1),scl3dc(fillet1,1.5))
+    fillet01=translate(f*array(v1),scl3dc(fillet1,1.5))
     fillet1=swp_prism_h(fillet01,fillet1)
     return fillet1
 
@@ -3692,7 +3693,7 @@ def concave_hull(pnts,x):
 
     d=c_hull(pnts)
     c=pnts
-    for i in range(1000):
+    for i in range(100):
         e=con_hull(d,c,x)
         if d==e:
             break
@@ -3700,3 +3701,4 @@ def concave_hull(pnts,x):
             d=e
             c=exclude_points(c,d)
     return d
+        
