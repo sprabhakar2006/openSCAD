@@ -3023,7 +3023,7 @@ def path_extrude(sec,path):
     function to extrude a section 'sec' along a open path 'path'
     refer to file "example of various functions" for application example
     '''
-    a=array(path[len(path)-1])+array(uv(array(path[len(path)-1])-array(path[len(path)-2])))
+    a=array(path[len(path)-1])+array(uv(array(path[len(path)-1])-array(path[len(path)-2])))*.1
     a=a.tolist()
     path=path+[a]
     s=q_rot(['x90','z-90'],sec)
@@ -3052,7 +3052,7 @@ def path_extrudec(sec,path):
     function to extrude a section 'sec' along a closed loop path 'path'
     refer to file "example of various functions" for application example
     '''
-    a=array(path[len(path)-1])+array(uv(array(path[0])-array(path[len(path)-1])))
+    a=array(path[len(path)-1])+array(uv(array(path[0])-array(path[len(path)-1])))*.1
     a=a.tolist()
     path=path+[a]
     s=q_rot(['x90','z-90'],sec)
