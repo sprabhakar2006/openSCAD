@@ -1921,6 +1921,21 @@ def ipf1(p,p1,r,s,o=0):
     p=[[fillet_3p_3d(p2,p1,p0,r_3p_3d([p0,p1,p2]),s)]for (p0,p1,p2) in p]
     p=array(p).reshape(-1,s+1,3).tolist()
     return p+[p[0]]
+    
+    
+def ipf_co(prism,prism1,r,s,o=0):
+    '''
+    function to change the orientation of a fillet to create a solid
+    prism: solid
+    prism1: is another 3d solid which intersects 'prism' to create fillet
+    r: radius of the fillet
+    s: number of segments in the fillet
+    o: options '0' and '1' (refer to the explanation of options in function fillet_sol2sol())
+    
+    refer to the file "explanation of various functions" for application example
+    '''
+    a=cpo(ipf(prism,prism1,2,10,0))[1:]
+    return a
 
 
 def ipe(prism,prism1,r,s,o):
@@ -3284,6 +3299,17 @@ def fillet_sol2sol(p=[],p1=[],r=1,s=10,o=0,f=1.8):
     sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*f,s) for (p1,p2,p3) in sol]
     sol=sol+[sol[0]]
     return sol
+    
+def fillet_sol2sol_co(p=[],p1=[],r=1,s=10,o=0,f=1.8):
+    '''
+    fillet with changed orientation
+    many times it is helpful
+    see example in file 'examples of various functions'
+    
+    '''
+    sol=fillet_sol2sol(p,p1,r,s,o,f)
+    return cpo(sol)[1:]
+
 
 def fillet_surf2sol(p=[],p1=[],r=1,s=10,o=0,f=1.8):
     '''
@@ -3414,6 +3440,17 @@ def fillet_surf2sol(p=[],p1=[],r=1,s=10,o=0,f=1.8):
     sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*f,s) for (p1,p2,p3) in sol]
     sol=sol+[sol[0]]
     return sol
+    
+def fillet_surf2sol_co(p=[],p1=[],r=1,s=10,o=0,f=1.8):
+    '''
+    fillet with changed orientation
+    many times it is helpful
+    see example in file 'examples of various functions'
+    
+    '''
+    sol=fillet_surf2sol(p,p1,r,s,o,f)
+    return cpo(sol)[1:]
+
 
 def sec_radiuses(sec):
     a=list_r(sec)
