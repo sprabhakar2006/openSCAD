@@ -1375,6 +1375,22 @@ def m_points1(sec,s,d=.25):# multiple points with in the straight lines in the c
     return remove_extra_points(concatenate(c))
 
 
+def m_points1_o(sec,s,d=.25):# multiple points with in the straight lines in the open section 'sec'. 's' is the number of segments between each straight line
+    '''
+    adds 's' number of points in each straight line segment of an open section 'sec'
+    'd' is the minimum segment length where multipe points to be added
+    refer to the file "example of various functions" for application example
+    '''
+    c=[]
+    for i in range(len(sec)-1):
+        i_plus=i+1 if i<len(sec)-1 else 0
+        if l_len([sec[i],sec[i_plus]])>=d:
+            c.append(l([sec[i],sec[i_plus]],s))
+        else:
+            c.append([sec[i],sec[i_plus]])
+    return remove_extra_points(concatenate(c))
+
+
 def ibsap(sec,pnt):# intersection between section and a point. used to find whether the poin is inside the section or outside the section
     p0=array(pnt)
     p2=sec
