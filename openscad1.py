@@ -1647,7 +1647,7 @@ def cylinder(r1=1,r2=1,h=1,cp=[0,0],s=50,r=0,d=0,d1=0,d2=0,center=False):
 def square(s=0,center=False):
     m= s if type(s)==int or type(s)==float else s[0]
     n= s if type(s)==int or type(s)==float else s[1]
-    sec=cr(pts1([[0,0,.001],[m,0,.001],[0,n,.001],[-m,0,.001]]),10)
+    sec=cr(pts1([[0,0,.01],[m,0,.01],[0,n,.01],[-m,0,.01]]),10)
     sec1= [[p[0]-m/2,p[1]-n/2] for p in sec] if center==True else sec
     return sec1
 
@@ -2125,41 +2125,37 @@ def oo_convex(sec,r): #outer offset of a convex section
     s=flip(sec) if cw(sec)==1 else sec
     return offset_points(sec,r)
 
-def cir_p_t(cir,pnt):
+def cir_p_t(cir,p):
     '''
     circle to point tangent line (point should be outside the circle)
     refer file "example of various functions" for application example
     '''
-    p0=cir
-    p1=cir[1:]+[cir[0]]
-    p0,p1=array([p0,p1])
-    v=p1-p0
-    a1=vectorize(ang)(v[:,0],v[:,1])
-    v1=array(pnt)-p0
-    a2=vectorize(ang)(v1[:,0],v1[:,1])
-    an=abs(a1-a2).round(4)
-    a=360/len(cir)/2
-    cond=abs(a1-a2)<a
-    an1=abs(a1-a2)[cond].round(4)
-    return array(cir)[an==an1][0].tolist()
+    cp=cp_3p(cir[0],cir[int(len(cir)/3)],cir[int(len(cir)/2)])
+    r=r_3p([cir[0],cir[int(len(cir)/3)],cir[int(len(cir)/2)]])
+    l1=l_len([p,cp])
+    v1=array(p)-array(cp)
+    theta1=ang(v1[0],v1[1])
+    theta2=arccos(r/l1)*180/pi
+    theta3=(theta1-theta2)*pi/180
+    tp=array([r*cos(theta3),r*sin(theta3)])+array(cp)
+    tp=tp.tolist()
+    return tp
 
-def p_cir_t(pnt,cir): # point to circle tangent line (point should be outside the circle)
+def p_cir_t(p,cir): # point to circle tangent line (point should be outside the circle)
     '''
     point to circle tangent line (point should be outside the circle)
     refer file "example of various functions" for application example
     '''
-    p0=cir
-    p1=cir[1:]+[cir[0]]
-    p0,p1=array([p0,p1])
-    v=p1-p0
-    a1=vectorize(ang)(v[:,0],v[:,1])
-    v1=p0-array(pnt)
-    a2=vectorize(ang)(v1[:,0],v1[:,1])
-    an=abs(a1-a2).round(4)
-    a=360/len(cir)/2
-    cond=abs(a1-a2)<a
-    an1=abs(a1-a2)[cond].round(4)
-    return array(cir)[an==an1][0].tolist()
+    cp=cp_3p(cir[0],cir[int(len(cir)/3)],cir[int(len(cir)/2)])
+    r=r_3p([cir[0],cir[int(len(cir)/3)],cir[int(len(cir)/2)]])
+    l1=l_len([p,cp])
+    v1=array(p)-array(cp)
+    theta1=ang(v1[0],v1[1])
+    theta2=arccos(r/l1)*180/pi
+    theta3=(theta1+theta2)*pi/180
+    tp=array([r*cos(theta3),r*sin(theta3)])+array(cp)
+    tp=tp.tolist()
+    return tp
 
 def p_extrude(sec,path): # section extrude through a path
     p0=path
