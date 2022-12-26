@@ -1615,7 +1615,7 @@ def q_rot(s,pl):
     else:
         return qmr2([p[0] for p in s],[0 if len(p)==1 else float(p[1:]) for p in s],pl)
     
-def l_extrude(sec,h=1,a=0,steps=1):
+def linear_extrude(sec,h=1,a=0,steps=1):
     '''
     function to linear extrude a section where
     sec: section to extrude
@@ -1728,9 +1728,9 @@ def cube(s,center=False):
     
     '''
     if center==False:
-        return l_extrude(square([s[0],s[1]]),s[2])
+        return linear_extrude(square([s[0],s[1]]),s[2])
     elif center==True:
-        return translate([0,0,-s[2]/2],l_extrude(square([s[0],s[1]],True),s[2]))
+        return translate([0,0,-s[2]/2],linear_extrude(square([s[0],s[1]],True),s[2]))
 
 
 def sphere(r=0,cp=[0,0,0],s=50):
