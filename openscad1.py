@@ -2066,17 +2066,23 @@ def l_cir_ip(line,cir):
     '''
     line circle intersection point
     '''
-    p0,p1=array(line)
-    p2=array(cir)
-    p3=array(cir[1:]+[cir[0]])
+    
+    p0=line[0]
+    p1=line[1]
+    p0,p1=array(p0),array(p1)
     v1=p1-p0
-    v2=p3-p2
-    im=pinv(array([[v1]*len(v2),-v2]).transpose(1,0,2).transpose(0,2,1))
-    pnt=p2-p0
-    t=einsum('ijk,ik->ij',im,pnt)
-    condition=((t>=0)&(t<=1)).all(1)
-    ip=p2+v2*t[:,1].reshape(-1,1)
-    return ip[condition].tolist()
+    cp=cp_3p(cir[0],cir[int(len(cir)/2)],cir[int(len(cir)*2/3)])
+    r=r_3p([cir[0],cir[int(len(cir)/2)],cir[int(len(cir)*2/3)]])
+
+    a=v1[0]**2+v1[1]**2
+    b=2*p0[0]*v1[0]-2*v1[0]*cp[0]+2*p0[1]*v1[1]-2*v1[1]*cp[1]
+    c=p0[0]**2+p0[1]**2+cp[0]**2+cp[1]**2-r**2
+    t1=(-b-sqrt(b**2-4*a*c))/(2*a)
+    t2=(-b+sqrt(b**2-4*a*c))/(2*a)
+    p2=p0+v1*t1
+    p3=p0+v1*t2
+    return [p2.tolist(),p3.tolist()]
+
 
 def s_pnt(pnt): # starting point for calculating convex hull (bottom left point)
     pnt=array(pnt)
@@ -2130,8 +2136,8 @@ def cir_p_t(cir,p):
     circle to point tangent line (point should be outside the circle)
     refer file "example of various functions" for application example
     '''
-    cp=cp_3p(cir[0],cir[int(len(cir)/3)],cir[int(len(cir)/2)])
-    r=r_3p([cir[0],cir[int(len(cir)/3)],cir[int(len(cir)/2)]])
+    cp=cp_3p(cir[0],cir[int(len(cir)/3)],cir[int(len(cir)*2/3)])
+    r=r_3p([cir[0],cir[int(len(cir)/3)],cir[int(len(cir)*2/3)]])
     l1=l_len([p,cp])
     v1=array(p)-array(cp)
     theta1=ang(v1[0],v1[1])
@@ -2146,8 +2152,8 @@ def p_cir_t(p,cir): # point to circle tangent line (point should be outside the 
     point to circle tangent line (point should be outside the circle)
     refer file "example of various functions" for application example
     '''
-    cp=cp_3p(cir[0],cir[int(len(cir)/3)],cir[int(len(cir)/2)])
-    r=r_3p([cir[0],cir[int(len(cir)/3)],cir[int(len(cir)/2)]])
+    cp=cp_3p(cir[0],cir[int(len(cir)/3)],cir[int(len(cir)*2/3)])
+    r=r_3p([cir[0],cir[int(len(cir)/3)],cir[int(len(cir)*2/3)]])
     l1=l_len([p,cp])
     v1=array(p)-array(cp)
     theta1=ang(v1[0],v1[1])
@@ -3752,3 +3758,7 @@ def concave_hull(pnts,x):
             c=exclude_points(c,d)
     return d
         
+def d2r(d):
+    return radians(d)
+def r2d(r):
+    return rad2deg(r)
