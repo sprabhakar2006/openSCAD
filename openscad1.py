@@ -3490,7 +3490,7 @@ def inner_convex_offset(sec,d):
     sec2=[path_offset(p,d) for p in seg(sec1)]
     sec3=array(sec2).reshape(-1,2).tolist()
     sec4=s_int1(sec2)
-    clean=cs(sec,abs(d)-.001)
+    clean=cs(sec,abs(d)-.01)
     sec5=[pies1(p,sec4) for p in clean if pies1(p,sec4)!=[]]
     sec5=concatenate(sec5) if sec5!=[] else []
     sec6=sort_points(sec1,exclude_points(sec4,sec5))
@@ -3545,7 +3545,7 @@ def inner_concave_offset(sec,r):
     if s_int1(seg(s))!=[]:
         sec2=s_int1(seg(s))+s
         sec2=pies1(sec,sec2)
-        clean=cs(sec,abs(r)-.001)
+        clean=cs(sec,abs(r)-.01)
         sec3=[pies1(p,sec2) for p in clean if pies1(p,sec2)!=[]]
         sec3=[] if sec3==[] else remove_extra_points(concatenate(sec3))
         sec4=exclude_points(sec2,sec3)
