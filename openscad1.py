@@ -3485,20 +3485,15 @@ def bb2d(sec):
     return [array(sec)[:,0].max()-array(sec)[:,0].min(),array(sec)[:,1].max()-array(sec)[:,1].min()]
 
 def inner_convex_offset(sec,d):
-    d=round(d,3)
-    sec1=convert_secv1(sec)
-    sec2=[path_offset(p,d) for p in seg(sec1)]
-    sec3=array(sec2).reshape(-1,2).tolist()
-    sec4=s_int1(sec2)
+    sec1=offset_segv(sec,d)
+    sec2=s_int1(sec1)
     clean=cs(sec,abs(d)-.01)
-    sec5=[pies1(p,sec4) for p in clean if pies1(p,sec4)!=[]]
-    sec5=concatenate(sec5) if sec5!=[] else []
-    sec6=sort_points(sec1,exclude_points(sec4,sec5))
-    sec7=sec_radiuses(sec)
-    clock=cwv(sec1)
-    rad=where(array(sec7)+(array(clock)*d*-1)<0,0,array(sec7)+(array(clock)*d*-1))
-    sec8=cr(remove_extra_points([[sec6[i][0],sec6[i][1],rad[i]] for i in range(len(sec6))]),100)
-    return sort_points(sec,sec8)
+    sec3=[pies1(p,sec2) for p in clean if pies1(p,sec2)!=[]]
+    sec3=[] if sec3==[] else concatenate(sec3).tolist()
+    sec4=sort_points(sec,exclude_points(sec2,sec3))
+
+    return sec4
+    
 
 # def inner_concave_offset(sec,d):
 #     d=round(d,3)
@@ -3762,3 +3757,24 @@ def d2r(d):
     return radians(d)
 def r2d(r):
     return rad2deg(r)
+    
+def convert_3lines2fillet(pnt1,pnt2,pnt3,f=1.9,s=10):    
+    sol=array([pnt3,pnt1,pnt2]).transpose(1,0,2)
+    sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*f,s) for (p1,p2,p3) in sol]
+    sol=sol
+    return sol
+    
+def min_d_points(sec,min_d=.1):
+    ''' 
+    rationalises the number points in a section based on the minimum distance between 2 points
+    i.e. all the points which are less than the defined minimum distance "min_d" will be omitted from the section "sec" 
+    
+    '''
+    b=sec[0]
+    c=[sec[0]]
+    for i in range(1,len(sec)):
+        if l_len([b,sec[i]])>=min_d:
+            c.append(sec[i])
+            b=sec[i]
+            
+    return c
