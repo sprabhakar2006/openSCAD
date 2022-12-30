@@ -979,7 +979,7 @@ def offset(sec,r):
 #     return io(sec,r) if r<0 else sec if r==0 else oo_convex(sec,r) if convex(sec)==True else outer_offset(sec,r)
     if convex(sec):
         if r <0:
-            return inner_convex_offset(sec,r)
+            return inner_concave_offset(sec,r)
         elif r >0:
             return outer_convex_offset(sec,r)
         elif r==0:
