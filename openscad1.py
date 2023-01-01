@@ -876,9 +876,9 @@ def m_points(sec,sl=20):
     '''
     p0=array(sec)
     p1=array(sec)[1:].tolist()+[sec[0]]
-    lnth=norm(array(p1)-array(p0),axis=1)
-    sec1=concatenate([array(l([p0[i],p1[i]],lnth[i]/sl)) if lnth[i]>=sl*2 else [p0[i]] for i in range(len(p0))])
-    return sec1.tolist()
+    lnth=linalg.norm(array(p1)-array(p0),axis=1)
+    sec1=concatenate([array(l([p0[i],p1[i]],int(lnth[i]/sl))) if lnth[i]>=sl*2 else [p0[i]] for i in range(len(p0))])
+    return remove_extra_points(sec1)
 
 def m_points_o(sec,sl=20):
     '''
@@ -888,24 +888,22 @@ def m_points_o(sec,sl=20):
     '''
     p0=array(sec)
     p1=array(sec)[1:].tolist()+[sec[0]]
-    lnth=norm(array(p1)-array(p0),axis=1)
-    sec1=concatenate([array(l([p0[i],p1[i]],lnth[i]/sl)) if lnth[i]>=sl*2 else [p0[i]] for i in range(len(p0)-1)])
-    return sec1.tolist()
+    lnth=linalg.norm(array(p1)-array(p0),axis=1)
+    sec1=concatenate([array(l([p0[i],p1[i]],int(lnth[i]/sl))) if lnth[i]>=sl*2 else [p0[i]] for i in range(len(p0)-1)])
+    return remove_extra_points(sec1)
 
 
-def l(l,s=20):# line 'l' with number of segments 's'
+def l(line,n):
     '''
-    function to draw number of points 's' in a line 'l'
+    function to draw number of points 'n' in a line 'line'
     example:
     line=[[0,0],[10,0]]
-    line1=l(line,5) => [[0.0, 0.0], [2.0, 0.0], [4.0, 0.0], [6.0, 0.0], [8.0, 0.0]] (last point of line is excluded)
+    line1=l(line,5) => [[0.0, 0.0], [2.0, 0.0], [4.0, 0.0], [6.0, 0.0], [8.0, 0.0], [10.0, 0.0]]
     '''
-    p0,p1=array(l[0]),array(l[1])
-    v=p1-p0
-    u=[v/norm(v)]
-    length=norm(v)
-    r=arange(0,length,length/s)
-    return (p0+einsum('ij,k->kj',u,r)).tolist()
+    p0,p1=array(line)
+    v1=p1-p0
+    return array([p0+v1/n*i for i in range(n)]).tolist()
+
 
 def l_len(l):
     '''
@@ -2899,26 +2897,43 @@ def helix(radius=10,pitch=10, number_of_coils=1, step_angle=1):
     '''
     return [[radius*cos(i*pi/180),radius*sin(i*pi/180),i/360*pitch] for i in arange(0,360*number_of_coils,step_angle)]
 
-def surf_offset(surf,o):
+
+def surf_offset(sec,d):
     '''
-    function to offset the 'surface' by a distance 'o'
+    function to offset the surface 'sec' by a distance 'd'
     refer to file "example of various functions" for application example
     '''
-    c=[]
-    for i in range(len(surf)):
-        for j in range(len(surf[0])):
-            j_plus=j+1 if j<len(surf[0])-1 else 0
-            p0=surf[i][j]
-            p1=surf[i][j_plus] if i<len(surf)-1 else surf[i-1][j]
-            p2=surf[i+1][j] if i<len(surf)-1 else surf[i][j_plus]
-            p0,p1,p2=array([p0,p1,p2])
-            v1=p1-p0
-            v2=p2-p0
-            p=p0+array(uv(cross(v1,v2)))*o
-            c.append(p.tolist())
-    l,m,n=array(surf).shape
-    return array(c).reshape(l,m,n).tolist()
+    sec1=[]
+    for i in range(len(sec)):
+        for j in range(len(sec[0])):
+            if j<len(sec[0])-1 and i<len(sec)-1:
+                p0=sec[i][j]
+                p1=sec[i][j+1]
+                p2=sec[i+1][j]
+            elif j==len(sec[0])-1 and i<len(sec)-1:
+                p0=sec[i][j]
+                p1=sec[i][0]
+                p2=sec[i+1][0]
+            elif j<len(sec[0])-1 and i==len(sec)-1:
+                p0=sec[i][j]
+                p1=sec[i-1][j]
+                p2=sec[i-1][j+1]
+            elif j==len(sec[0])-1 and i==len(sec)-1:
+                p0=sec[i][j]
+                p1=sec[i-1][j]
+                p2=sec[i-1][0]
 
+            p0,p1,p2=array([p0,p1,p2])
+            v1,v2=p1-p0,p2-p0
+            v3=cross(v1,v2)
+            nv3=v3/norm(v3)
+            p3=(p0+nv3*d).tolist()
+            sec1.append(p3)
+    a,b,c=array(sec).shape
+    sec1=array(sec1).reshape(a,b,c).tolist()
+    return sec1
+    
+    
 def path_to_vectors(path):
     c=[]
     for i in range(len(path)):
@@ -3778,3 +3793,22 @@ def min_d_points(sec,min_d=.1):
             b=sec[i]
             
     return c
+    
+def wrap_around(sec,path):
+    sec=sec if array(sec).shape[1]==3 else c2t3(sec)
+    path=array(path)
+    dy=[0]+[l_len([path[i],path[i+1]]) for i in range(len(path)-1)]
+    v1=[path[i+1]-path[i] for i in range(len(path)-1)]
+    dy,v1=array(dy),array(v1)
+    y=dy.cumsum()
+    l1=array([p for p in array(sec)[:,1]])
+
+    sec1=[]
+    for n in range(len(sec)):
+        m=arange(len(y))[y>l1[n]][0]
+        m=0 if m-1<0 else m-1
+        l2=l1[n]-y[m]
+        l2=l1[n] if l2<0 else l2
+        p2=path[m]+v1[m]*l2/dy[m+1]+array([sec[n][0],0,0])
+        sec1.append(p2.tolist())
+    return sec1
