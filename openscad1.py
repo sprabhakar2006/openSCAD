@@ -3555,7 +3555,7 @@ def inner_concave_offset(sec,r):
     if s_int1(seg(s))!=[]:
         sec2=s_int1(seg(s))+s
         sec2=pies1(sec,sec2)
-        clean=cs(sec,abs(r)-.01)
+        clean=cs1(sec,abs(r)-.01)
         sec3=[pies1(p,sec2) for p in clean if pies1(p,sec2)!=[]]
         sec3=[] if sec3==[] else remove_extra_points(concatenate(sec3))
         sec4=exclude_points(sec2,sec3)
