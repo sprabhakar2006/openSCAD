@@ -3809,6 +3809,6 @@ def wrap_around(sec,path):
         m=0 if m-1<0 else m-1
         l2=l1[n]-y[m]
         l2=l1[n] if l2<0 else l2
-        p2=path[m]+v1[m]*l2/dy[m+1]+array([sec[n][0],0,0])
+        p2=path[m]+v1[m]*l2/dy[m+1]+array([sec[n][0],0,sec[n][2]])
         sec1.append(p2.tolist())
     return sec1
