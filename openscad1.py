@@ -877,7 +877,7 @@ def m_points(sec,sl=20):
     p0=array(sec)
     p1=array(sec)[1:].tolist()+[sec[0]]
     lnth=linalg.norm(array(p1)-array(p0),axis=1)
-    sec1=concatenate([array(l([p0[i],p1[i]],int(lnth[i]/sl))) if lnth[i]>=sl*2 else [p0[i]] for i in range(len(p0))])
+    sec1=concatenate([array(ls([p0[i],p1[i]],int(lnth[i]/sl))) if lnth[i]>=sl*2 else [p0[i]] for i in range(len(p0))])
     return remove_extra_points(sec1)
 
 def m_points_o(sec,sl=20):
@@ -889,16 +889,16 @@ def m_points_o(sec,sl=20):
     p0=array(sec)
     p1=array(sec)[1:].tolist()+[sec[0]]
     lnth=linalg.norm(array(p1)-array(p0),axis=1)
-    sec1=concatenate([array(l([p0[i],p1[i]],int(lnth[i]/sl))) if lnth[i]>=sl*2 else [p0[i]] for i in range(len(p0)-1)])
+    sec1=concatenate([array(ls([p0[i],p1[i]],int(lnth[i]/sl))) if lnth[i]>=sl*2 else [p0[i]] for i in range(len(p0)-1)])
     return remove_extra_points(sec1)
 
 
-def l(line,n):
+def ls(line,n):
     '''
     function to draw number of points 'n' in a line 'line'
     example:
     line=[[0,0],[10,0]]
-    line1=l(line,5) => [[0.0, 0.0], [2.0, 0.0], [4.0, 0.0], [6.0, 0.0], [8.0, 0.0], [10.0, 0.0]]
+    line1=ls(line,5) => [[0.0, 0.0], [2.0, 0.0], [4.0, 0.0], [6.0, 0.0], [8.0, 0.0], [10.0, 0.0]]
     '''
     p0,p1=array(line)
     v1=p1-p0
@@ -1002,6 +1002,18 @@ prism=prism(sec,path)
     s1=flip(sec) if cw(sec)==1 else sec
     return [array(translate([0,0,y],offset(s1,round(x,3)))).tolist() for (x,y) in path]
 
+#def translate(p,sec):#translates a prism or section by [x,y,z] distance
+#    '''
+#    function to translate a group of points "sec" by "p" distance defined in [x,y,z].e.g. try #following code:
+#    sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5)
+#    sec1=translate(p=[2,5,3],sec=sec)
+#    
+#    refer to file "example of various functions " for application
+#    '''
+#    
+#    return [ (array([p1[0],p1[1],0])+array(p)).tolist() if array(p1).shape[-1]==2 else (array(p1)+array(p)).tolist() for p1 in sec]
+
+
 def translate(p,sec):#translates a prism or section by [x,y,z] distance
     '''
     function to translate a group of points "sec" by "p" distance defined in [x,y,z].e.g. try following code:
@@ -1010,7 +1022,25 @@ def translate(p,sec):#translates a prism or section by [x,y,z] distance
     
     refer to file "example of various functions " for application
     '''
-    return [ (array([p1[0],p1[1],0])+array(p)).tolist() if len(p1)==2 else (array(p1)+array(p)).tolist() for p1 in sec]
+    p=[p[0],p[1],0] if len(p)==2 else p
+    if len(array(sec).shape)==3:
+        l,m,n=array(sec).shape
+        a=array(sec).reshape(-1,n)
+        if n==3:
+            return array([a[:,0]+p[0],a[:,1]+p[1],a[:,2]+p[2]]).transpose(1,0).reshape(l,m,n).tolist()
+        elif n==2:
+            return array([a[:,0]+p[0],a[:,1]+p[1],p[2]]).transpose(1,0).reshape(l,m,n+1).tolist()
+            
+        
+    elif len(array(sec).shape)==2:
+        m,n=array(sec).shape
+        a=array(sec).reshape(-1,n)
+        if n==3:
+            return array([a[:,0]+p[0],a[:,1]+p[1],a[:,2]+p[2]]).transpose(1,0).reshape(m,n).tolist()
+        elif n==2:
+            return array([a[:,0]+p[0],a[:,1]+p[1],array([p[2]]*m)]).transpose(1,0).reshape(m,n+1).tolist()
+
+
 
 def prism1(sec,path,n):
         a=m_points(sec,n)
@@ -1367,7 +1397,7 @@ def m_points1(sec,s,d=.25):# multiple points with in the straight lines in the c
     for i in range(len(sec)):
         i_plus=i+1 if i<len(sec)-1 else 0
         if l_len([sec[i],sec[i_plus]])>=d:
-            c.append(l([sec[i],sec[i_plus]],s))
+            c.append(ls([sec[i],sec[i_plus]],s))
         else:
             c.append([sec[i],sec[i_plus]])
     return remove_extra_points(concatenate(c))
@@ -1383,7 +1413,7 @@ def m_points1_o(sec,s,d=.25):# multiple points with in the straight lines in the
     for i in range(len(sec)-1):
         i_plus=i+1 if i<len(sec)-1 else 0
         if l_len([sec[i],sec[i_plus]])>=d:
-            c.append(l([sec[i],sec[i_plus]],s))
+            c.append(ls([sec[i],sec[i_plus]],s))
         else:
             c.append([sec[i],sec[i_plus]])
     return remove_extra_points(concatenate(c))
@@ -2507,23 +2537,20 @@ def pies1(sec,pnts):
     p2=s8
     p3=s8[1:]+[s8[0]]
     p2,p3=array([p2,p3])
-    v1=array([[[1,0]]*len(p2)]*len(p0))
-    v2=array([((p3-p2)+[0,.00001]).tolist()]*len(p0))
-    # im=pinv(array([[v1]*len(v2),-v2]).transpose(1,0,2).transpose(0,2,1))
-    # im=array([im.tolist()]*len(p0))
+    # v1=array([[[1,0]]*len(p2)]*len(p0))
+    v1=array([ones(len(p2)),zeros(len(p2))]).transpose(1,0)
+    v2=(p3-p2)+[0,.00001]
     p=p2-p0[:,None]
-    # t=einsum('ijkl,ijl->ijl',im,p)
-    # s10=[p0[i].tolist() for i in range(len(p0)) if \
-    #     t[i][(t[i][:,0]>=0)&(t[i][:,1]>=0)&(t[i][:,1]<=1)].shape[0]%2 \
-    #  ==1]
-
-    im=pinv(array([v1,-v2]).transpose(1,0,2,3).transpose(0,2,1,3))
-    im.shape,p.shape
+    im=pinv(array([v1,-v2]).transpose(1,0,2))
+    im=array([im]*len(p0))
     t=einsum('ijkl,ijk->ijl',im,p)
-    s10=[p0[i].tolist() for i in range(len(p0)) if \
-        t[i][(t[i][:,0]>=0)&(t[i][:,1]>=0)&(t[i][:,1]<=1)].shape[0]%2 \
-     ==1]
-    return s10
+
+    s10=[p0[i] for i in range(len(p0)) if \
+            t[i][(t[i][:,0]>=0)&(t[i][:,1]>=0)&(t[i][:,1]<=1)].shape[0]%2 \
+         ==1]
+    return array(s10).tolist()
+
+
 
 def rsec(line,radius):
     p0=line[0]
@@ -2591,6 +2618,12 @@ def cs1(sec,d):
     r=abs(d)
     a=seg(sec)
     cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in a]
+    return cs
+    
+def cs2(sec,d):
+    r=abs(d)
+    a=seg(sec)
+    cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in a if l_len(p2)>.5]
     return cs
 
 def inner_offset(sec,d):
