@@ -2480,9 +2480,9 @@ def perp_dist(line,point):
     return d
 
 
-def pies(sec,pnt):
-    sec1=array([p for p in pnt if len(ibsap(sec,p))%2==1])
-    return sec1.tolist()
+#def pies(sec,pnt):
+#    sec1=array([p for p in pnt if len(ibsap(sec,p))%2==1])
+#    return sec1.tolist()
 
 def sq(d,cp=[0,0]):
     cp=array(cp)-d/2
@@ -2541,9 +2541,9 @@ def pies1(sec,pnts):
     v1=array([ones(len(p2)),zeros(len(p2))]).transpose(1,0)
     v2=(p3-p2)+[0,.00001]
     p=p2-p0[:,None]
-    im=pinv(array([v1,-v2]).transpose(1,0,2))
+    im=pinv(array([v1,-v2]).transpose(1,0,2).transpose(0,2,1))
     im=array([im]*len(p0))
-    t=einsum('ijkl,ijk->ijl',im,p)
+    t=einsum('ijkl,ijl->ijk',im,p)
 
     s10=[p0[i] for i in range(len(p0)) if \
             t[i][(t[i][:,0]>=0)&(t[i][:,1]>=0)&(t[i][:,1]<=1)].shape[0]%2 \
@@ -2770,6 +2770,20 @@ def swp_c(bead2):
     n=[n1]+n2+[n3]
     pnt=array(bead2).reshape(-1,3).round(4).tolist()
     return f'polyhedron({pnt},{n2},convexity=10);'
+    
+def mesh_vf(bead2):
+    '''
+    function to render various polyhedron with closed loop shapes e.g. fillets
+    refer to the file "example of various functions " for application examples
+    
+    '''
+    n1=arange(len(bead2[0])).tolist()
+    n2=array([[[[(j+1)+i*len(bead2[0]),j+i*len(bead2[0]),j+(i+1)*len(bead2[0])],[(j+1)+i*len(bead2[0]),j+(i+1)*len(bead2[0]),(j+1)+(i+1)*len(bead2[0])]] \
+             if j<len(bead2[0])-1 else \
+             [[0+i*len(bead2[0]),j+i*len(bead2[0]),j+(i+1)*len(bead2[0])],[0+i*len(bead2[0]),j+(i+1)*len(bead2[0]),0+(i+1)*len(bead2[0])]] \
+                 for j in range(len(bead2[0]))] for i in range(len(bead2)-1)]).reshape(-1,3)
+    pnt=array(bead2).reshape(-1,3).round(4)
+    return [pnt,n2]
 
 def resurf(surf,f):
     base=array(c3t2(surf)).reshape(-1,2).tolist()
@@ -3580,22 +3594,43 @@ def inner_convex_offset(sec,d):
 #     return sort_points(sec,sec11)
     
 
+#def inner_concave_offset(sec,r):
+#    sec=flip(sec) if cw(sec)==1 else sec
+#    r=round(r,3)
+#    sec1=offset_segv(sec,r)
+#    s=intersections(sec1)
+#    if s_int1(seg(s))!=[]:
+#        sec2=s_int1(seg(s))+s
+#        sec2=pies1(sec,sec2)
+#        clean=cs1(sec,abs(r)-.01)
+#        sec3=[pies1(p,sec2) for p in clean if pies1(p,sec2)!=[]]
+#        sec3=[] if sec3==[] else remove_extra_points(concatenate(sec3))
+#        sec4=exclude_points(sec2,sec3)
+#        sec5=sort_points(sec,sec4)
+#    else:
+#        sec5=s
+#    return sec5
+    
 def inner_concave_offset(sec,r):
     sec=flip(sec) if cw(sec)==1 else sec
     r=round(r,3)
     sec1=offset_segv(sec,r)
     s=intersections(sec1)
-    if s_int1(seg(s))!=[]:
-        sec2=s_int1(seg(s))+s
+    a=s_int1(seg(s))
+    if a!=[]:
+        sec2=a+s
         sec2=pies1(sec,sec2)
+        sec2=array(sec2)
         clean=cs1(sec,abs(r)-.01)
-        sec3=[pies1(p,sec2) for p in clean if pies1(p,sec2)!=[]]
-        sec3=[] if sec3==[] else remove_extra_points(concatenate(sec3))
-        sec4=exclude_points(sec2,sec3)
-        sec5=sort_points(sec,sec4)
+        for i in range(len(clean)):
+            p=pies1(clean[i],sec2)
+            sec2=exclude_points(sec2,p)
+        sec2=remove_extra_points(sec2)
+        sec3=sort_points(sec,sec2)
     else:
-        sec5=s
-    return sec5
+        sec3=s
+    return sec3
+    
     
 def outer_convex_offset(sec,d):
     segments=offset_segv(sec,d)
