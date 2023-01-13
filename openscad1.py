@@ -3631,6 +3631,26 @@ def inner_concave_offset(sec,r):
         sec3=s
     return sec3
     
+def outer_concave_offset(sec,r):
+    sec=flip(sec) if cw(sec)==1 else sec
+    r=round(r,3)
+    sec1=offset_segv(sec,r)
+    s=intersections(sec1)
+    a=s_int1(seg(s))
+    if a!=[]:
+        sec2=a+s
+    #     sec2=pies1(sec,sec2)
+        sec2=array(sec2)
+        clean=cs1(sec,abs(r)-.01)
+        for i in range(len(clean)):
+            p=pies1(clean[i],sec2)
+            sec2=exclude_points(sec2,p)
+        sec2=remove_extra_points(sec2)
+        sec3=sort_points(sec,sec2)
+    else:
+        sec3=s
+    return sec3
+    
     
 def outer_convex_offset(sec,d):
     segments=offset_segv(sec,d)
@@ -3651,26 +3671,26 @@ def intersections(segments):
     points=(p0+einsum('ij,i->ij',v1,t)).tolist()
     return points
 
-def outer_concave_offset(sec,r):
-    sec=flip(sec) if cw(sec)==1 else sec
-    p=sec+[sec[0]]
-    r=round(abs(r),3)
-    a=array(sec)[array(list_r(sec))==0]
-    a=seg(a)
-    p1=array([a[i] for i in range(len(a)) if i%2!=0]).tolist()
-    
-    s=outer_convex_offset(sec,r)
-    if s_int1(seg(s))!=[]:
-        s1=unique(s_int(seg(s)),axis=0).tolist()
-        cs=[r_sec(r-.001,r-.001,p2[0],p2[1]) for p2 in p1]
-        for p in cs:
-            s2=pies1(p,s1)
-            s1=exclude_points(s1,s2)
-        s3=sort_points(sec,convert_secv2(sec,r))
-        s1=array(s1)[cKDTree(s1).query(s3)[1]].tolist()
-        return s1
-    else:
-        return s
+#def outer_concave_offset(sec,r):
+#    sec=flip(sec) if cw(sec)==1 else sec
+#    p=sec+[sec[0]]
+#    r=round(abs(r),3)
+#    a=array(sec)[array(list_r(sec))==0]
+#    a=seg(a)
+#    p1=array([a[i] for i in range(len(a)) if i%2!=0]).tolist()
+#    
+#    s=outer_convex_offset(sec,r)
+#    if s_int1(seg(s))!=[]:
+#        s1=unique(s_int(seg(s)),axis=0).tolist()
+#        cs=[r_sec(r-.001,r-.001,p2[0],p2[1]) for p2 in p1]
+#        for p in cs:
+#            s2=pies1(p,s1)
+#            s1=exclude_points(s1,s2)
+#        s3=sort_points(sec,convert_secv2(sec,r))
+#        s1=array(s1)[cKDTree(s1).query(s3)[1]].tolist()
+#        return s1
+#    else:
+#        return s
 
 def c2ro(sol,s):#circular to rectangulat orientation
     '''
