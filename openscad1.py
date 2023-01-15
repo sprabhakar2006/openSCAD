@@ -338,11 +338,8 @@ def offset_points(sec,r):
     while cr(pts1([[0,0,.1],[10,0,.1],[0,5,.1],[-10,0,.1]])) will work perfectly
     refer the file "example of various functions" for application examples
     '''
-    s=seg(sec)
-    c=[]
-    for p in s:
-        c.append(offset_l(p,r)[0])
-    return array(c).tolist()
+    return array(offset_segv(sec,r))[:,0].tolist()
+
 
 def offset_pointsv(sec,r):
     '''
@@ -2507,9 +2504,9 @@ def next_point(points,s_p):
 # def exclude_points(points,pnts):
 #     return [p for p in points if p not in pnts]
 
-def exclude_points(list,list_to_exclude):
-    decision=[array([p1!=p for p1 in list_to_exclude]).all() for p in list]
-    return array(list)[decision].tolist()
+def exclude_points(list1,list_to_exclude):
+    list1,list_to_exclude=array(list1),array(list_to_exclude)
+    return list1[~(list_to_exclude==list1[:,None]).all(2).any(1)].tolist()
 
 def i_p2dw(l1,l):
     p0,p1=array(l1)
