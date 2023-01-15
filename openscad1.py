@@ -3622,14 +3622,22 @@ def inner_concave_offset(sec,r):
         sec2=pies1(sec,sec2)
         sec2=array(sec2)
         clean=cs1(sec,abs(r)-.01)
-        for i in range(len(clean)):
-            p=pies1(clean[i],sec2)
-            sec2=exclude_points(sec2,p)
-        sec2=remove_extra_points(sec2)
-        sec3=sort_points(sec,sec2)
+        clean1=[p[1:]+[p[0]] for p in clean]
+        m,n,_=array(clean).shape
+        o,_=sec2.shape
+        v1=array([[[1,0]]*n]*m)
+        v2=array(clean1)-array(clean)
+        iim=array([v1,-v2]).transpose(1,2,0,3).transpose(0,1,3,2)+[0,.00001]
+        im=array([pinv(iim)]*o)
+        p=(array(clean)[:,:,None]-sec2).transpose(2,0,1,3)
+        t=einsum('ijklm,ijkm->ijkl',im,p)
+        decision1=((t[:,:,:,0]>=0)&(t[:,:,:,1]>=0)&(t[:,:,:,1]<=1))
+        sec3=sec2[(decision1.sum(2)==1).any(1)]
+        sec4=sort_points(sec,exclude_points(sec2,sec3))
     else:
-        sec3=s
-    return sec3
+        sec4=s
+    return sec4
+
     
 def outer_concave_offset(sec,r):
     sec=flip(sec) if cw(sec)==1 else sec
@@ -3639,17 +3647,24 @@ def outer_concave_offset(sec,r):
     a=s_int1(seg(s))
     if a!=[]:
         sec2=a+s
-    #     sec2=pies1(sec,sec2)
+        #sec2=pies1(sec,sec2)
         sec2=array(sec2)
         clean=cs1(sec,abs(r)-.01)
-        for i in range(len(clean)):
-            p=pies1(clean[i],sec2)
-            sec2=exclude_points(sec2,p)
-        sec2=remove_extra_points(sec2)
-        sec3=sort_points(sec,sec2)
+        clean1=[p[1:]+[p[0]] for p in clean]
+        m,n,_=array(clean).shape
+        o,_=sec2.shape
+        v1=array([[[1,0]]*n]*m)
+        v2=array(clean1)-array(clean)
+        iim=array([v1,-v2]).transpose(1,2,0,3).transpose(0,1,3,2)+[0,.00001]
+        im=array([pinv(iim)]*o)
+        p=(array(clean)[:,:,None]-sec2).transpose(2,0,1,3)
+        t=einsum('ijklm,ijkm->ijkl',im,p)
+        decision1=((t[:,:,:,0]>=0)&(t[:,:,:,1]>=0)&(t[:,:,:,1]<=1))
+        sec3=sec2[(decision1.sum(2)==1).any(1)]
+        sec4=sort_points(sec,exclude_points(sec2,sec3))
     else:
-        sec3=s
-    return sec3
+        sec4=s
+    return sec4
     
     
 def outer_convex_offset(sec,d):
