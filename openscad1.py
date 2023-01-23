@@ -871,23 +871,23 @@ def m_points(sec,sl=20):
     multiple points within straight lines of a closed section 'sec' with equal segment length 'sl' in the straight line segments
     refer file "example of various functions" for application example
     '''
-    p0=array(sec)
-    p1=array(sec)[1:].tolist()+[sec[0]]
-    lnth=linalg.norm(array(p1)-array(p0),axis=1)
-    sec1=concatenate([array(ls([p0[i],p1[i]],int(lnth[i]/sl))) if lnth[i]>=sl*2 else [p0[i]] for i in range(len(p0))])
-    return remove_extra_points(sec1)
+    sec1=[]
+    for p in seg(sec):
+        n=1 if int(round(l_len(p)/sl,0))==0 else int(round(l_len(p)/sl,0))
+        sec1.append(ls(p,n))
+    return concatenate(sec1).tolist()
+    
 
 def m_points_o(sec,sl=20):
     '''
-    multiple points within straight lines of an open section 'sec' with equal segment length 'sl' in the straight line segments
+    multiple points within straight lines of a open section 'sec' with equal segment length 'sl' in the straight line segments
     refer file "example of various functions" for application example
-    
     '''
-    p0=array(sec)
-    p1=array(sec)[1:].tolist()+[sec[0]]
-    lnth=linalg.norm(array(p1)-array(p0),axis=1)
-    sec1=concatenate([array(ls([p0[i],p1[i]],int(lnth[i]/sl))) if lnth[i]>=sl*2 else [p0[i]] for i in range(len(p0)-1)])
-    return remove_extra_points(sec1)
+    sec1=[]
+    for p in seg(sec)[:-1]:
+        n=1 if int(round(l_len(p)/sl,0))==0 else int(round(l_len(p)/sl,0))
+        sec1.append(ls(p,n))
+    return concatenate(sec1).tolist()+[sec[len(sec)-1]]
 
 
 def ls(line,n):
@@ -1484,7 +1484,7 @@ def sec_clean1(sec,sec1,r):
 
 
 
-def fillet_2cir(r1,r2,c1,c2,r): # fillet between 2 circles with radius 'r1' and 'r2' and center points 'c1' and 'c2' and 'r' is the radius of the fillet
+def fillet_2cir(r1,r2,c1,c2,r,s=50): # fillet between 2 circles with radius 'r1' and 'r2' and center points 'c1' and 'c2' and 'r' is the radius of the fillet
     '''
     function to create 2d fillet between 2 circles, where r1,r2 and c1,c2 are radiuses and enter points of the 2 circles respectively. r-> fillet radius
     example:
@@ -1513,14 +1513,14 @@ def fillet_2cir(r1,r2,c1,c2,r): # fillet between 2 circles with radius 'r1' and 
     a7=ang((p1-c2)[0] ,(p1-c2)[1])
     a8=ang((p2-c2)[0] ,(p2-c2)[1])
 
-    arc1=arc(r,360+a2 if a2<a1 else a2,a1,p1)
-    arc2=arc(r,360+a4 if a4<a3 else a4,a3,p2)
-    arc3=arc(r2,360+a7 if a7<a8 else a7,a8,c2)
-    arc4=arc(r1,a5,360+a6 if a6<a5 else a6,c1)
+    arc1=arc(r,360+a2 if a2<a1 else a2,a1,p1,s=s)
+    arc2=arc(r,360+a4 if a4<a3 else a4,a3,p2,s=s)
+    arc3=arc(r2,360+a7 if a7<a8 else a7,a8,c2,s=s)
+    arc4=arc(r1,a5,360+a6 if a6<a5 else a6,c1,s=s)
 
     return arc2+arc1
 
-def filleto_2cir(r1,r2,c1,c2,r): # fillet between 2 circles with radius 'r1' and 'r2' and center points 'c1' and 'c2' and 'r' is the radius of the fillet. This is an open fillet where first or the second fillet can be called based on requirement
+def filleto_2cir(r1,r2,c1,c2,r,s=50): # fillet between 2 circles with radius 'r1' and 'r2' and center points 'c1' and 'c2' and 'r' is the radius of the fillet. This is an open fillet where first or the second fillet can be called based on requirement
     '''
     function to draw the fillet radius "r" between the 2 circle with radiuses "r1" and "r2" centered at "c1" and "c2" respectively.
     This function gives an additional flexibility for drawing fillet only one side. e.g 
@@ -1548,10 +1548,10 @@ def filleto_2cir(r1,r2,c1,c2,r): # fillet between 2 circles with radius 'r1' and
     a7=ang((p1-c2)[0] ,(p1-c2)[1])
     a8=ang((p2-c2)[0] ,(p2-c2)[1])
 
-    arc1=arc(r,360+a2 if a2<a1 else a2,a1,p1)
-    arc2=arc(r,360+a4 if a4<a3 else a4,a3,p2)
-    arc3=arc(r2,360+a7 if a7<a8 else a7,a8,c2)
-    arc4=arc(r1,a5,360+a6 if a6<a5 else a6,c1)
+    arc1=arc(r,360+a2 if a2<a1 else a2,a1,p1,s=s)
+    arc2=arc(r,360+a4 if a4<a3 else a4,a3,p2,s=s)
+    arc3=arc(r2,360+a7 if a7<a8 else a7,a8,c2,s=s)
+    arc4=arc(r1,a5,360+a6 if a6<a5 else a6,c1,s=s)
 
     return [arc2,arc1]
 
@@ -2249,31 +2249,52 @@ def v_sec_extrude(sec,path,o): #variable section extrude through a given path
             c.append([sec1,sec2])
     return concatenate(c).tolist()
 
-def t_cir_tarc(r1,r2,cp1,cp2,r,s=50): #two circle tangent arc
+def t_cir_tarc(r1,r2,cp1,cp2,r,side=0,s=50): #two circle tangent arc
     '''
     function draws a arc which is tangent to 2 circles defined by radiuses 'r1' and 'r2' and center points 'cp1' and 'cp2'
     's' is the number of segments of the tangent arc
-    'r' is the rdius of the tangent arc (it should be >= (r1+r2+center distance of 2 circles)/2)
+    'r' is the radius of the tangent arc (it should be >= (r1+r2+center distance of 2 circles)/2)
+    'side' there are 2 sides of the circles where the arc could be created defined by '0' and '1'
     refer the file "example of various functions " for application examples
     '''
     cp1,cp2=array([cp1,cp2])
     l1=norm(cp2-cp1)
-    l2=r-r1
-    l3=r-r2
-    x=(l2**2-l3**2+l1**2)/(2*l1)
-    h=sqrt(l2**2-x**2)
-    v1=cp2-cp1
-    u1=v1/norm(v1)
-    p0=cp1+u1*x
-    cp3=p0-(u1@rm(90))*h
-    v2=cp2-cp3
-    u2=v2/norm(v2)
-    v3=cp1-cp3
-    u3=v3/norm(v3)
-    ang1=ang(u2[0],u2[1])
-    ang2=ang(u3[0],u3[1])
-    return array(arc(r,ang1,ang2,cp3,s)).tolist()
+    if r>(r1+r2+l1)/2:
+        l2=r-r1
+        l3=r-r2
+        x=(l2**2-l3**2+l1**2)/(2*l1)
+        h=sqrt(l2**2-x**2)
+        v1=cp2-cp1
+        u1=v1/norm(v1)
+        p0=cp1+u1*x
+        if side==0:
+            cp3=p0-(u1@rm(90))*h
+        elif side==1:
+            cp3=p0+(u1@rm(90))*h
 
+        v2=cp2-cp3
+        u2=v2/norm(v2)
+        v3=cp1-cp3
+        u3=v3/norm(v3)
+        p1=cp2+u2*r2
+        p2=cp1+u3*r1
+
+        if side==0:
+            arc1=arc_2p(p1,p2,r,-1,s=s)
+        elif side==1:
+            arc1=arc_2p(p2,p1,r,-1,s=s)
+
+
+
+    else:
+        if side==0:
+            arc1=filleto_2cir(r1,r2,cp1,cp2,r,s=s)[1]
+        elif side==1:
+            arc1=filleto_2cir(r1,r2,cp1,cp2,r,s=s)[0]
+            
+    return arc1
+    
+    
 def tcct(r1,r2,cp1,cp2,cw=-1): # two circle cross tangent
     '''
     function to draw cross tangent between 2 circles
@@ -3912,3 +3933,24 @@ def wrap_around(sec,path):
         p2=path[m]+v1[m]*l2/dy[m+1]+array([sec[n][0],0,sec[n][2]])
         sec1.append(p2.tolist())
     return sec1
+
+def align_sec(sec1,sec2,ang=10):
+    '''
+    function to align 2 3d sections to obtain the non twisted optimised solid
+    ang: is the resolution for the angle of rotation, 1 degree will have much higher resolution and hence will take longer to compute
+    refer file "examples of various functions" for application examples
+    '''
+    nv1=nv(sec2)
+    cp1=array(sec2).mean(0)
+    sec2=translate(-cp1,sec2)
+    i=arange(0,360,ang)
+    area1=[]
+    sol1=[]
+    for j in i:
+        sec3=(array(axis_rot(nv1,sec2,j))+cp1).tolist()
+        sol=[sec1]+[sec3]
+        a1=array([l_len(p) for p in cpo(sol)]).sum()
+        area1.append(a1)
+        sol1.append(sol)
+    sol2=sol1[array(area1).argmin()]
+    return sol2
