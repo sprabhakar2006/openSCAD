@@ -3695,7 +3695,7 @@ def intersections(segments):
     b=segments
     a,b=array([a,b])
     p0,p1,p2,p3=a[:,0],a[:,1],b[:,0],b[:,1]
-    v1,v2=p1-p0,p3-p2
+    v1,v2=p1-p0,p3-p2+.00001
     #     v1t1-v2t2=p2-p0
     im=inv(array([v1,-v2]).transpose(1,0,2).transpose(0,2,1))
     p=p2-p0  
@@ -3916,7 +3916,7 @@ def min_d_points(sec,min_d=.1):
     return c
     
 def wrap_around(sec,path):
-    sec=sec if array(sec).shape[1]==3 else c2t3(sec)
+    sec=sec if array(sec).shape[-1]==3 else c2t3(sec)
     path=array(path)
     dy=[0]+[l_len([path[i],path[i+1]]) for i in range(len(path)-1)]
     v1=[path[i+1]-path[i] for i in range(len(path)-1)]
@@ -3933,6 +3933,26 @@ def wrap_around(sec,path):
         p2=path[m]+v1[m]*l2/dy[m+1]+array([sec[n][0],0,sec[n][2]])
         sec1.append(p2.tolist())
     return sec1
+    
+def wrap_around1(sec,path):
+    sec=sec if array(sec).shape[-1]==3 else c2t3(sec)
+    path=array(path)
+    dy=[0]+[l_len([path[i],path[i+1]]) for i in range(len(path)-1)]
+    v1=[path[i+1]-path[i] for i in range(len(path)-1)]
+    dy,v1=array(dy),array(v1)
+    y=dy.cumsum()
+    l1=array([p for p in array(sec)[:,1]])
+
+    sec1=[]
+    for n in range(len(sec)):
+        m=arange(len(y))[y>l1[n]][0]
+        m=0 if m-1<0 else m-1
+        l2=l1[n]-y[m]
+        l2=l1[n] if l2<0 else l2
+        p2=path[m]+v1[m]*l2/dy[m+1]+array([sec[n][0],0,sec[n][2]])
+        sec1.append(p2.tolist())
+    return sec1
+
 
 def align_sec(sec1,sec2,ang=10):
     '''
