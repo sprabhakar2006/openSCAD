@@ -50,22 +50,51 @@ def pts1(p):
     c=array([array(p)[:,2].tolist()])
     return concatenate((b,c.T),1).tolist()
 
-def cw(p):
-    '''
-    function to identify whether the section is clockwise or counter clockwise. 
-    cw(sec)==1 means clockwise and -1 means counterclockwise. 
-    e.g.
-    cw(pts([[0,0],[4,0],[0,4],[-4,0]])) => -1
-    '''
-    p=array(p)[:,0:2]
-    q=p[1:].tolist()+[p[0].tolist()]
-    r=[p[len(p)-1].tolist()]+p[0:len(p)-1].tolist()
-    a=array(q)-p
-    b=p-array(r)
-    c=where(cross(b,a)>0,1,0).sum()
-    d=where(cross(b,a)<0,1,0).sum()
-    e=1 if c<d else -1
-    return e    
+#def cw(p):
+#    '''
+#    function to identify whether the section is clockwise or counter clockwise. 
+#    cw(sec)==1 means clockwise and -1 means counterclockwise. 
+#    e.g.
+#    cw(pts([[0,0],[4,0],[0,4],[-4,0]])) => -1
+#    '''
+#    p=array(p)[:,0:2]
+#    q=p[1:].tolist()+[p[0].tolist()]
+#    r=[p[len(p)-1].tolist()]+p[0:len(p)-1].tolist()
+#    a=array(q)-p
+#    b=p-array(r)
+#    c=where(cross(b,a)>0,1,0).sum()
+#    d=where(cross(b,a)<0,1,0).sum()
+#    e=1 if c<d else -1
+#    return e
+    
+def cw(sec):
+    cp1=array(sec).mean(0)
+    p0=[array(sec)[:,0].min()-1,cp1[1]]
+    v1=array([[1,0]]*len(sec))
+
+    p1=array(sec)
+    p2=array(sec[1:]+[sec[0]])
+    v2=p2-p1+.0000001
+    iim=array([v1,-v2]).transpose(1,0,2).transpose(0,2,1)
+    im=inv(iim)
+    p=p1-p0
+    t=einsum('ijk,ik->ij',im,p)
+
+    t1=t[:,0][(t[:,0]>0)&(t[:,1]>=0)&(t[:,1]<=1)]
+    ip1=(array(p0)+array([[1,0]])*t1[:,None])
+    a=ip1[:,0]
+    b=sort(ip1[:,0])
+    ip2=ip1[a==b[0]].tolist()+ip1[a==b[1]].tolist()
+    v3=ip2[1]-p1
+    u3=(v3/norm(v3,axis=1).reshape(-1,1)).round(3)
+    u2=(v2/norm(v2,axis=1).reshape(-1,1)).round(3)
+    p3=array(p1)[(norm(v3,axis=1)<=norm(v2,axis=1))&(u2==u3).all(1)].tolist()[0]
+    n=arange(len(sec))[(p1==p3).all(1)][0]
+    p4=sec[n+1 if n<len(sec)-1 else 0]
+
+    cw=-1 if cross(array(p4)-array(p3),array(ip2[0])-array(p3))>0 else 1
+    return cw
+
 
 def cwv(sec):
     '''
@@ -75,12 +104,12 @@ def cwv(sec):
     cwv(pts([[0,0],[4,0],[0,4],[2,0],[0,2],[-6,0]])) => [-1, -1, 1, -1, -1, -1]
     '''
     p=sec
-    p0=[p[len(p)-1]]+p[:-1]
+    p0=[p[-1]]+p[:-1]
     p1=p
     p2=p[1:]+[p[0]]
     p0,p1,p2=array([p0,p1,p2])
-    p=array([p0,p1,p2]).transpose(1,0,2).tolist()
-    return [cw(p1) for p1 in p]
+    p=array([p0,p1,p2]).transpose(1,0,2)
+    return [ -1 if cross(p1[1]-p1[0],p1[2]-p1[0])>0 else 1 for p1 in p]
 
 
 def ang(x,y):
@@ -200,11 +229,9 @@ def f2d(p1,p2,p3,r0,r1,r2,theta0,theta1,theta2,u2,u3,s):
     rf2=[r1[i] if l3[i]>l4[i] else 0 if l4[i]==0 else l3[i]/l4[i]*r1[i] for i in range(len(l3))]
     rf=swapaxes([rf1,rf2],0,1).min(axis=1)
     p=p2+u2*(rf*tan(theta1*pi/180)).reshape(-1,1)
-    q=swapaxes([p1,p2,p3],0,1)
-    r=[]
-    for i in range(len(q)):
-        r.append(cw(q[i]))
-    r=array(r)
+    q=array([p1,p2,p3]).transpose(1,0,2)
+
+    r=array([-1 if cross(p[1]-p[0],p[2]-p[0])>0 else 1 for p in q])
     n=r==-1
     n1=p-u2@array(rm(90))*rf.reshape(-1,1)
     n2=p-u2@array(rm(-90))*rf.reshape(-1,1)
@@ -2139,7 +2166,7 @@ def c_hull(pnt): # convex hull for an array of points
             break
     return [s_pnt(pnt)]+c
 
-def convex(sec): # to check whether a closed section is convex
+def convex(sec):
     '''
     function to check whether a section is convex or not
     example:
@@ -2149,8 +2176,8 @@ def convex(sec): # to check whether a closed section is convex
     
     refer file "example of various functions" for application example
     '''
-    s=flip(sec) if cw(sec)==1 else sec
-    return True if offset_points_cw(s,-1)==[] else False
+
+    return (array(cwv(c3t2(sec)))==-1).all()|(array(cwv(c3t2(sec)))==1).all()
 
 def oo_convex(sec,r): #outer offset of a convex section
     s=flip(sec) if cw(sec)==1 else sec
@@ -3151,8 +3178,11 @@ def path_extrude(sec,path):
         a1=arccos(u1@ua)*180/pi
         a2=ang(v1[0],v1[1])
         s1=q_rot([f'z{a2}'],s)
+
         if i<len(p)-1:
-            s2.append(translate(p[i],[q(v2,p,a1) for p in s1]))
+            s001=translate(p[i],[q(v2,p,a1) for p in s1])
+            
+            s2.append(s001)
         else:
             s2.append(translate(p[i],[q(v2,p,a1) for p in s1]))
             s2.append(translate(p[i+1],[q(v2,p,a1) for p in s1]))
