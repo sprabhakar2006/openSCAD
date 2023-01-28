@@ -4023,7 +4023,7 @@ def slice_sol(sol,n=10):
     function to slice a solid with 'n' intermediate steps
     '''
     a=cpo(sol)
-    sol1=[[ls(p,10)+[p[1]] for p in seg(a[i])[:-1]] for i in range(len(a))]
+    sol1=[[ls(p,n)+[p[1]] for p in seg(a[i])[:-1]] for i in range(len(a))]
     sol2=array(sol1).transpose(1,2,0,3)
     b,c,d,e=sol2.shape
     sol2=sol2.reshape(b*c,d,e).tolist()
