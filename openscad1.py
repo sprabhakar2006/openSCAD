@@ -2252,29 +2252,24 @@ def p_extrudec(sec,path): # section extrude through a path (closed path)
     a=concatenate(c).tolist()
     return flip(a+[a[0]])
 
-def v_sec_extrude(sec,path,o): #variable section extrude through a given path
+def v_sec_extrude(sec,path,o):
     '''
     extrude a section 'sec' through a path 'path' 
     section will vary from start to end such that at the end the section will be offset by 'o' distance
     refer to the file "example of various functions" for application example
     '''
-    sec=[offset(sec,i) for i in linspace(0,o,len(path))]
-    p0=path
-    p1=p0[1:]+[p0[0]]
-    p0,p1=array(p0),array(p1)
-    v=p1-p0
-    a1=vectorize(ang)(v[:,0],v[:,1])
-    b=sqrt(v[:,0]**2+v[:,1]**2)
-    a2=vectorize(ang)(b,v[:,2])
-    c=[]
-    for i in range(len(path)-1):
-        sec1=translate(p0[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec[i]))
-        sec2=translate(p1[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec[i]))
-        if i<len(path)-2:
-            c.append([sec1])
-        else:
-            c.append([sec1,sec2])
-    return concatenate(c).tolist()
+    sec0=[offset(sec,i) for i in linspace(0,o,len(path))]
+    p1=path[:-1]
+    p2=path[1:]
+    p1,p2=array([p1,p2])
+    v1=p2-p1
+    u1=v1/norm(v1,axis=1).reshape(-1,1)
+    v2=concatenate([[u1[0]],(u1[1:]+u1[:-1])/2,[u1[-1]]])
+    sec2=[]
+    for i in range(len(path)):
+        sec1=translate(path[i],sec2vector(v2[i],sec0[i]))
+        sec2.append(sec1)
+    return sec2
 
 def t_cir_tarc(r1,r2,cp1,cp2,r,side=0,s=50): #two circle tangent arc
     '''
@@ -3163,31 +3158,17 @@ def path_extrude(sec,path):
     function to extrude a section 'sec' along a open path 'path'
     refer to file "example of various functions" for application example
     '''
-    a=array(path[len(path)-1])+array(uv(array(path[len(path)-1])-array(path[len(path)-2])))*.1
-    a=a.tolist()
-    path=path+[a]
-    s=q_rot(['x90','z-90'],sec)
-    p=array(path)
-    s2=[]
-    for i in range(len(p)-1):
-        v1=p[i+1]-p[i]+array([0,0,0.00001])
-        va=[v1[0],v1[1],0]
-        u1=array(uv(v1))
-        ua=array(uv(va))
-        v2=cross(va,v1)
-        a1=arccos(u1@ua)*180/pi
-        a2=ang(v1[0],v1[1])
-        s1=q_rot([f'z{a2}'],s)
-
-        if i<len(p)-1:
-            s001=translate(p[i],[q(v2,p,a1) for p in s1])
-            
-            s2.append(s001)
-        else:
-            s2.append(translate(p[i],[q(v2,p,a1) for p in s1]))
-            s2.append(translate(p[i+1],[q(v2,p,a1) for p in s1]))
-        
-    return flip(s2)
+    p1=path[:-1]
+    p2=path[1:]
+    p1,p2=array([p1,p2])
+    v1=p2-p1
+    u1=v1/norm(v1,axis=1).reshape(-1,1)
+    v2=concatenate([[u1[0]],(u1[1:]+u1[:-1])/2,[u1[-1]]])
+    sec2=[]
+    for i in range(len(path)):
+        sec1=translate(path[i],sec2vector(v2[i],sec))
+        sec2.append(sec1)
+    return sec2
 
 
 def path_extrudec(sec,path):
@@ -3195,24 +3176,19 @@ def path_extrudec(sec,path):
     function to extrude a section 'sec' along a closed loop path 'path'
     refer to file "example of various functions" for application example
     '''
-    a=array(path[len(path)-1])+array(uv(array(path[0])-array(path[len(path)-1])))*.1
-    a=a.tolist()
-    path=path+[a]
-    s=q_rot(['x90','z-90'],sec)
-    p=array(path)
-    s2=[]
-    for i in range(len(p)):
-        v1=(p[i+1]-p[i] if i<len(p)-1 else p[0]-p[i])+array([0,0,0.00001])
-        va=[v1[0],v1[1],0]
-        u1=array(uv(v1))
-        ua=array(uv(va))
-        v2=cross(va,v1)
-        a1=arccos(u1@ua)*180/pi
-        a2=ang(v1[0],v1[1])
-        s1=q_rot([f'z{a2}'],s)
-        s2.append(translate(p[i],[q(v2,p,a1) for p in s1]))
-        
-    return flip(s2+[s2[0]])
+    p1=path
+    p2=path[1:]+[path[0]]
+    p1,p2=array([p1,p2])
+    v1=p2-p1
+    u1=v1/norm(v1,axis=1).reshape(-1,1)
+    v2=concatenate([[(u1[-1]+u1[0])/2], (u1[1:]+u1[:-1])/2])
+    sec2=[]
+    for i in range(len(path)):
+        sec1=translate(path[i],sec2vector(v2[i],sec))
+        sec2.append(sec1)
+    sec2=sec2+[sec2[0]]
+    # sec3=concatenate([align_sec(sec2[i-1],sec2[i]) for i in range(1,len(sec2))]).tolist()
+    return sec2
 
 
 def multiple_sec_extrude(path_points=[],radiuses_list=[],sections_list=[],option=0,s=10):
@@ -4003,4 +3979,52 @@ def align_sec(sec1,sec2,ang=10):
         area1.append(a1)
         sol1.append(sol)
     sol2=sol1[array(area1).argmin()]
+    return sol2
+    
+def sec2vector(v1=[1,0,0],sec=[]):
+    '''
+    function to align a section 'sec' with a vector 'v1'
+    refer file "example of various function" for application examples
+    '''
+    vz=[0,0,1]
+    vz,v1=array([vz,v1])
+
+    nvzv1=cross(vz,v1)
+    u1=v1/norm(v1)
+    theta=r2d(arccos(u1@vz))
+    x1=(array(sec)[:,0].max()+array(sec)[:,0].min())/2
+#    sec=translate([x1,0,0],q_rot(['z180'],translate([-x1,0,0],sec)))
+    sec=flip(q_rot(['x180'],sec))
+    sec1=axis_rot([1,0,0],sec,-theta)
+#     vector1=array([[0,0,0],v1]).tolist()
+    theta1=ang(v1[0],v1[1])
+    sec1=q_rot(['z-90',f'z{theta1}'],sec1)
+    return sec1
+    
+def cut_plane(nv=[0,0,1],radius=10,thickness=10,trns=0):
+    '''
+    function for defining cutting plane to show the cross sections of a solid
+
+    nv: normal vector for defining plane orientation
+    radius: radius of the cutting plane
+    thickness: thickness of the cutting plane
+    trns: translate the cutting plane in the direction of normal vector 'nv'
+    '''
+    plane1=plane(nv,radius)
+    v1=array(nv)
+    u1=v1/norm(v1)
+    plane2=translate(u1*thickness,flip(plane1))
+    sol=plane1+plane2
+    sol=translate(u1*trns,sol)
+    return sol
+    
+def slice_sol(sol,n=10):
+    '''
+    function to slice a solid with 'n' intermediate steps
+    '''
+    a=cpo(sol)
+    sol1=[[ls(p,10)+[p[1]] for p in seg(a[i])[:-1]] for i in range(len(a))]
+    sol2=array(sol1).transpose(1,2,0,3)
+    b,c,d,e=sol2.shape
+    sol2=sol2.reshape(b*c,d,e).tolist()
     return sol2
