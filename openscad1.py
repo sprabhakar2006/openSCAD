@@ -68,32 +68,40 @@ def pts1(p):
 #    return e
     
 def cw(sec):
-    cp1=array(sec).mean(0)
-    p0=[array(sec)[:,0].min()-1,cp1[1]]
-    v1=array([[1,0]]*len(sec))
+    '''
+    function to identify if an enclosed section is clockwise(cw) or counterclockwise(ccw)
+    this returns 1 if section is clockwise and -1 if it is counterclockwise
+    '''
+    if len(sec)==3:
+        p=array(sec)
+        return -1 if cross(p[1]-p[0],p[2]-p[0])>0 else 1
+    else:
+        cp1=array(sec).mean(0)
+        p0=[array(sec)[:,0].min()-1,cp1[1]]
+        v1=array([[1,0]]*len(sec))
 
-    p1=array(sec)
-    p2=array(sec[1:]+[sec[0]])
-    v2=p2-p1+.0000001
-    iim=array([v1,-v2]).transpose(1,0,2).transpose(0,2,1)
-    im=inv(iim)
-    p=p1-p0
-    t=einsum('ijk,ik->ij',im,p)
+        p1=array(sec)
+        p2=array(sec[1:]+[sec[0]])
+        v2=p2-p1+.0000001
+        iim=array([v1,-v2]).transpose(1,0,2).transpose(0,2,1)
+        im=inv(iim)
+        p=p1-p0
+        t=einsum('ijk,ik->ij',im,p)
 
-    t1=t[:,0][(t[:,0]>0)&(t[:,1]>=0)&(t[:,1]<=1)]
-    ip1=(array(p0)+array([[1,0]])*t1[:,None])
-    a=ip1[:,0]
-    b=sort(ip1[:,0])
-    ip2=ip1[a==b[0]].tolist()+ip1[a==b[1]].tolist()
-    v3=ip2[1]-p1
-    u3=(v3/norm(v3,axis=1).reshape(-1,1)).round(3)
-    u2=(v2/norm(v2,axis=1).reshape(-1,1)).round(3)
-    p3=array(p1)[(norm(v3,axis=1)<=norm(v2,axis=1))&(u2==u3).all(1)].tolist()[0]
-    n=arange(len(sec))[(p1==p3).all(1)][0]
-    p4=sec[n+1 if n<len(sec)-1 else 0]
+        t1=t[:,0][(t[:,0]>0)&(t[:,1]>=0)&(t[:,1]<=1)]
+        ip1=(array(p0)+array([[1,0]])*t1[:,None])
+        a=ip1[:,0]
+        b=sort(ip1[:,0])
+        ip2=ip1[a==b[0]].tolist()+ip1[a==b[1]].tolist()
+        v3=ip2[1]-p1
+        u3=(v3/norm(v3,axis=1).reshape(-1,1)).round(3)
+        u2=(v2/norm(v2,axis=1).reshape(-1,1)).round(3)
+        p3=array(p1)[(norm(v3,axis=1)<=norm(v2,axis=1))&(u2==u3).all(1)].tolist()[0]
+        n=arange(len(sec))[(p1==p3).all(1)][0]
+        p4=sec[n+1 if n<len(sec)-1 else 0]
 
-    cw=-1 if cross(array(p4)-array(p3),array(ip2[0])-array(p3))>0 else 1
-    return cw
+        cw=-1 if cross(array(p4)-array(p3),array(ip2[0])-array(p3))>0 else 1
+        return cw
 
 
 def cwv(sec):
@@ -455,7 +463,7 @@ def convert_secv(sec):
         r3=r_3pv(array(p_i),array(pi_plus),array(pi_2plus)).round(3)
         r=where((l2!=l3) & ((r1!=r2) | (r2!=r3)),0,r2)
         arr=swapaxes([pi_minus,p_i,pi_plus],0,1)
-        clock=array(list(map(cw,arr)))
+        clock=array([-1 if cross(p[1]-p[0],p[2]-p[0])>0 else 1 for p in arr])
         c1=where(r==0,True,False)
         c2=where(r>=d,True,False)
         c3=where(clock==1,True,False)
@@ -538,7 +546,7 @@ def convert_secv1(sec):
         r3=r_3pv(array(p_i),array(pi_plus),array(pi_2plus)).round(3)
         r=where((l2!=l3) & ((r1!=r2) | (r2!=r3)),0,r2)
         arr=swapaxes([pi_minus,p_i,pi_plus],0,1)
-        clock=array(list(map(cw,arr)))
+        clock=array([-1 if cross(p[1]-p[0],p[2]-p[0])>0 else 1 for p in arr])
         c1=where(r==0,True,False)
         c2=where(r>=d,True,False)
         c3=where(clock==-1,True,False)
@@ -621,7 +629,7 @@ def convert_secv2(sec,d):
         r3=r_3pv(array(p_i),array(pi_plus),array(pi_2plus)).round(3)
         r=where((l2!=l3) & ((r1!=r2) | (r2!=r3)),0,r2)
         arr=swapaxes([pi_minus,p_i,pi_plus],0,1)
-        clock=array(list(map(cw,arr)))
+        clock=array([-1 if cross(p[1]-p[0],p[2]-p[0])>0 else 1 for p in arr])
         c1=where(r==0,True,False)
         c2=where(r>=d,True,False)
         c3=where(clock==-1,True,False)
