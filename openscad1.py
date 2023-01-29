@@ -4069,7 +4069,7 @@ def r_arc(arc1):
     p2=arc1[n*2]
     return r_3p([p0,p1,p2])
     
-def fillet_l_cir(line,circle,fillet_radius,s=20):
+def fillet_l_cir(line=[],cir1=[],fillet_radius=1,s=20):
     '''
     function to draw fillet between a line and a circle
     '''
