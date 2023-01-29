@@ -4009,22 +4009,32 @@ def sec2vector(v1=[1,0,0],sec=[]):
     sec1=q_rot(['z-90',f'z{theta1}'],sec1)
     return sec1
     
-def cut_plane(nv=[0,0,1],radius=10,thickness=10,trns=0):
+def cut_plane(nv=[0,0,1],size=[5,5],thickness=10,trns1=0,trns2=0,trns3=0): #oriented solid
     '''
-    function for defining cutting plane to show the cross sections of a solid
-
-    nv: normal vector for defining plane orientation
-    radius: radius of the cutting plane
-    thickness: thickness of the cutting plane
-    trns: translate the cutting plane in the direction of normal vector 'nv'
+    function for defining a solid (cutting plane) oriented as per the defined normal vector
+    nv: normal vector for defining plane orientation of the section
+    thickness: thickness or height of the cutting plane
+    trns1: translate the solid in the direction of normal vector 'nv'
+    trns2: translate the solid in the direction 'left' to the normal vector 'nv'
+    trns3: translate the solid in the direction 'up' to the normal vector 'nv'
+    '-ve' values given to the trns1,trns2,trns3 will translate the solid in the reverse direction 
     '''
-    plane1=plane(nv,radius)
+    sec=square(size,center=True)
+    plane1=sec2vector(nv,sec)
     v1=array(nv)
     u1=v1/norm(v1)
-    plane2=translate(u1*thickness,flip(plane1))
-    sol=plane1+plane2
-    sol=translate(u1*trns,sol)
+    ua=array([0,0,-1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([-1,0,0]) if (u1==[0,0,-1]).all() else array([u1[0],u1[1],0])
+    v2=cross(u1,ua) if u1[2]>=0 else cross(ua,u1)
+    u2=v2/norm(v2)
+    u3=array(q(u2,u1,-90))
+#     u1,u2,u3=array([u1,u2,u3]).tolist()
+    plane2=translate(u1*thickness,plane1)
+    sol=[plane1]+[plane2]
+    sol=translate(u1*trns1,sol)
+    sol=translate(u2*trns2,sol)
+    sol=translate(u3*trns3,sol)
     return sol
+    
     
 def slice_sol(sol,n=10):
     '''
@@ -4103,7 +4113,7 @@ def o_solid(nv=[0,0,1],sec=[],thickness=10,trns1=0,trns2=0,trns3=0): #oriented s
     v1=array(nv)
     u1=v1/norm(v1)
     ua=array([0,0,-1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([-1,0,0]) if (u1==[0,0,-1]).all() else array([u1[0],u1[1],0])
-    v2=cross(u1,ua)
+    v2=cross(u1,ua) if u1[2]>=0 else cross(ua,u1)
     u2=v2/norm(v2)
     u3=array(q(u2,u1,-90))
 #     u1,u2,u3=array([u1,u2,u3]).tolist()
