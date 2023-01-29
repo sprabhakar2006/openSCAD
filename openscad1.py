@@ -4036,3 +4036,54 @@ def slice_sol(sol,n=10):
     b,c,d,e=sol2.shape
     sol2=sol2.reshape(b*c,d,e).tolist()
     return sol2
+    
+def cp_arc(arc1):
+    '''
+    function returns the center point of a given circle or arc
+    
+    '''
+    n=int(len(arc1)/360*120)
+    p0=arc1[0]
+    p1=arc1[n]
+    p2=arc1[n*2]
+    return cp_3p(p0,p1,p2)
+    
+def r_arc(arc1):
+    '''
+    function returns the radius of a given circle or arc
+    
+    '''
+    n=int(len(arc1)/360*120)
+    p0=arc1[0]
+    p1=arc1[n]
+    p2=arc1[n*2]
+    return r_3p([p0,p1,p2])
+    
+def fillet_l_cir(line,circle,fillet_radius,s=20):
+    '''
+    function to draw fillet between a line and a circle
+    '''
+    p0,p1=array(line)
+    cp=array(cp_arc(cir1))
+    r1=r_arc(cir1)
+    r2=fillet_radius
+    v1=p1-p0
+    v2=cp-p0
+    u1=v1/norm(v1)
+    u2=v2/norm(v2)
+    d1=u1@v2
+    p2=p0+u1*d1
+    v3=p2-cp
+    u3=v3/norm(v3)
+    h=norm(p2-cp)-r2
+    r=r1+r2
+    d=sqrt(r**2-h**2)
+    cp1=cp+u3*h-u1*d
+    cp2=cp+u3*h+u1*d
+    p3=p0+u1*(d1-d)
+    p4=l_cir_ip([cp1,cp],cir1)[0]
+    p5=p0+u1*(d1+d)
+    p6=l_cir_ip([cp2,cp],cir1)[0]
+    fillet1=arc_2p(p3,p4,r2,cw([p0,p2,cp]),s=s)
+    fillet2=arc_2p(p5,p6,r2,cw([p1,p2,cp]),s=s)
+    return [fillet1, fillet2]
