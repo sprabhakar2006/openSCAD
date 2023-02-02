@@ -4123,3 +4123,48 @@ def o_solid(nv=[0,0,1],sec=[],thickness=10,trns1=0,trns2=0,trns3=0): #oriented s
     sol=translate(u2*trns2,sol)
     sol=translate(u3*trns3,sol)
     return sol
+    
+def ppesec(p0,sec): #point's projection on an enclosed 3d section
+    '''
+    function to find projected points of a given point list 'p0' on a 3d sec which is on 1 plane
+'''
+    
+    v1=array(nv(sec))
+    u1=v1/norm(v1)
+    sec1=array(sec)
+    v2=seg(array([sec1[0]-p for p in sec1[1:]]).tolist())[:-1]
+    iim=array([[u1.tolist()]+p for p in v2]).transpose(0,2,1)
+    im=array([inv(iim)]*len(p0))
+    p=array([sec1[0]-array(p0)]*len(v2)).transpose(1,0,2)
+    t=einsum('ijkl,ijl->ijk',im,p)
+    decision=(t[:,:,1]>=0)&(t[:,:,1]<=1)&(t[:,:,2]>=0)&(t[:,:,2]<=1)&((t[:,:,1]+t[:,:,2])<=1)
+    t1=t[decision][:,0]
+    p1=array([p0]*len(v2)).transpose(1,0,2)
+    p1=p1[decision]
+    ip1=(p1+u1*t1[:,None]).tolist()
+    return ip1
+
+
+def ppplane(p0,v1,loc):#point's projection on a plane
+    '''
+    function to find projected points of a given list of points 'p0' on a plane defined by normal'v1' and location 'loc'
+    example:
+    p0=[20,0,0]
+    v1=[2,3,4]
+    loc=[0,10,0]
+    ppplane([p0],v1,loc) => [19.310359216374945, -1.034461175437585, -1.3792815672501133]
+    
+    '''
+    p0=array(p0)
+    sec=pts([[-50/2,-50/2],[50,0],[0,50],[-50,0]])
+    plane1=translate(loc,o_solid(v1,sec,.001))
+    v1=array(v1)
+    u1=v1/norm(v1)
+    sec1=array(plane1[0])
+    v2=seg(array([sec1[0]-p for p in sec1[1:]]).tolist())[:-1]
+    iim=array([[u1.tolist()]+p for p in v2]).transpose(0,2,1)
+    im=array([inv(iim)]*len(p0))
+    p=sec1[0]-array(p0)
+    t=einsum('ijkl,il->ijk',im,p)[:,:,0][:,0]
+    ip1=(p0+u1*t[:,None]).tolist()
+    return ip1
