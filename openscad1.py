@@ -4168,3 +4168,21 @@ def ppplane(p0,v1,loc):#point's projection on a plane
     t=einsum('ijkl,il->ijk',im,p)[:,:,0][:,0]
     ip1=(p0+u1*t[:,None]).tolist()
     return ip1
+
+def honeycomb(r,n1,n2):
+    '''
+    function to draw a honeycomb structure with radius 'r' 
+    n1: number of hexagons in 1 layer
+    n2: number of layers
+    '''
+    cir1=circle(r,s=7)
+    cir2=c3t2(q_rot(['z30'],cir1))
+    sec=[translate([i,0,0],cir1) for i in arange(0,3*n1*r,3*r)]
+    sec1=[translate([i,r*sin(d2r(60)),0],cir1) for i in arange(r*1.5,3*n1*r,3*r)]
+    sec2=array([sec,sec1]).transpose(1,0,2,3)
+    a,b,c,d=sec2.shape
+    sec3=sec2.reshape(a*b,c,d)
+    sec3=array([translate([0,i,0],sec3) for i in arange(0,r*sin(d2r(60))*(n2*2),2*r*sin(d2r(60)))])
+    a,b,c,d=sec3.shape
+    sec4=c3t2(sec3.reshape(a*b,c,d))
+    return sec4
