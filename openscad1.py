@@ -4142,7 +4142,9 @@ def ppesec(p0,sec): #point's projection on an enclosed 3d section
     p1=array([p0]*len(v2)).transpose(1,0,2)
     p1=p1[decision]
     ip1=(p1+u1*t1[:,None]).tolist()
-    return ip1
+    ip2=p1.tolist()
+    return [ip1,ip2]
+
 
 
 def ppplane(p0,v1,loc):#point's projection on a plane
