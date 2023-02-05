@@ -117,7 +117,7 @@ def cwv(sec):
     p2=p[1:]+[p[0]]
     p0,p1,p2=array([p0,p1,p2])
     p=array([p0,p1,p2]).transpose(1,0,2)
-    return [ -1 if cross(p1[1]-p1[0],p1[2]-p1[0])>0 else 1 for p1 in p]
+    return [ -1 if cross(p1[1]-p1[0],p1[2]-p1[0])>=0 else 1 for p1 in p]
 
 
 def ang(x,y):
