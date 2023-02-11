@@ -4235,3 +4235,22 @@ def offset_3d(sec,d):
     sec2=axis_rot(nr,sec2,-theta)
     sec2=translate(array(sec).mean(0),sec2)
     return sec2
+    
+def path_extrude2msec(sec_list,path):
+    '''
+    function to extrude multiple sections 'sec_list' along an open path 'path'
+    number of sections in the 'sec_list' >= len(path)
+    refer to file "example of various functions" for application example
+    '''
+    p1=path[:-1]
+    p2=path[1:]
+    p1,p2=array([p1,p2])
+    v1=p2-p1
+    u1=v1/norm(v1,axis=1).reshape(-1,1)
+    v2=concatenate([[u1[0]],(u1[1:]+u1[:-1])/2,[u1[-1]]])
+    sec2=[]
+    for i in range(len(path)):
+        sec=sec_list[i]
+        sec1=translate(path[i],sec2vector(v2[i],sec))
+        sec2.append(sec1)
+    return sec2
