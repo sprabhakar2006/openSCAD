@@ -4016,7 +4016,7 @@ def sec2vector(v1=[1,0,0],sec=[]):
     theta=r2d(arccos(u1@vz))
     x1=(array(sec)[:,0].max()+array(sec)[:,0].min())/2
 #    sec=translate([x1,0,0],q_rot(['z180'],translate([-x1,0,0],sec)))
-    sec=flip(q_rot(['x180'],sec))
+#    sec=flip(q_rot(['x180'],sec))
     sec1=axis_rot([1,0,0],sec,-theta)
 #     vector1=array([[0,0,0],v1]).tolist()
     theta1=ang(v1[0],v1[1])
@@ -4254,3 +4254,7 @@ def path_extrude2msec(sec_list,path):
         sec1=translate(path[i],sec2vector(v2[i],sec))
         sec2.append(sec1)
     return sec2
+    
+def sol2vector(v1=[],sol=[],loc=[0,0,0]):
+    sol1=translate(loc,[sec2vector(v1,p) for p in sol])
+    return sol1
