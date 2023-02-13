@@ -1183,17 +1183,34 @@ def c3t2(a): # converts 3d list to 2d list
         p=array(a)
         return swapaxes([p[:,0],p[:,1]],0,1).tolist()
 
-def nv(p):# normal vector to the plane 'p' with atleast 3 known points
+#def nv(p):# normal vector to the plane 'p' with atleast 3 known points
+#    '''
+#    given 3 points ['p1','p2',p3] function calculates unit normal vector
+#    example:
+#    p1,p2,p3=[1,0,0],[0,10,0],[-5,0,0]
+#    nv([p1,p2,p3]) => [0.0, 0.0, -1.0]
+#    '''
+#    p0,p1,p2=array(translate([0,0,0],[p[0],p[1],p[2]]))
+#    nv=cross(p0-p1,p2-p1)
+#   m=1/norm(nv) if norm(nv)>0 else 1e5
+#  return (nv*m).tolist()
+    
+    
+def nv(sec):# normal vector to the plane 'sec' with atleast 3 known points
     '''
     given 3 points ['p1','p2',p3] function calculates unit normal vector
     example:
     p1,p2,p3=[1,0,0],[0,10,0],[-5,0,0]
     nv([p1,p2,p3]) => [0.0, 0.0, -1.0]
     '''
-    p0,p1,p2=array(translate([0,0,0],[p[0],p[1],p[2]]))
-    nv=cross(p0-p1,p2-p1)
-    m=1/norm(nv) if norm(nv)>0 else 1e5
-    return (nv*m).tolist()
+    avg1=array(sec).mean(0)
+    sec1=translate(-avg1,sec)
+    v1=array([array(p)-avg1 for p in sec]).tolist()
+    v2=v1[1:]+[v1[0]]
+    v1,v2=array([v1,v2])
+    n1=cross(v1,v2)
+    nv1=-n1.mean(0)
+    return nv1.tolist()
 
 def fillet_3p_3d(p0,p1,p2,r,s):# fillet with 3 known points 'p0,p1,p2' in 3d space. 'r' is the radius of fillet and 's' is the number of segments in the fillet
     '''
@@ -4037,10 +4054,11 @@ def cut_plane(nv=[0,0,1],size=[5,5],thickness=10,trns1=0,trns2=0,trns3=0): #orie
     plane1=sec2vector(nv,sec)
     v1=array(nv)
     u1=v1/norm(v1)
-    ua=array([0,0,-1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([-1,0,0]) if (u1==[0,0,-1]).all() else array([u1[0],u1[1],0])
-    v2=cross(u1,ua) if u1[2]>=0 else cross(ua,u1)
+    ua=array([0,0,1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([0,1,0]) if (u1==[0,0,-1]).all() else array([0,0,1])
+    v2=cross(u1,ua) if u1[2]>0 else cross(u1,ua)
     u2=v2/norm(v2)
-    u3=array(q(u2,u1,-90))
+    v3=cross(u2,u1) if u1[2]==0 else cross(u2,u1)
+    u3=v3/norm(v3)
 #     u1,u2,u3=array([u1,u2,u3]).tolist()
     plane2=translate(u1*thickness,plane1)
     sol=[plane1]+[plane2]
@@ -4126,10 +4144,11 @@ def o_solid(nv=[0,0,1],sec=[],thickness=10,trns1=0,trns2=0,trns3=0): #oriented s
     plane1=sec2vector(nv,sec)
     v1=array(nv)
     u1=v1/norm(v1)
-    ua=array([0,0,-1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([-1,0,0]) if (u1==[0,0,-1]).all() else array([u1[0],u1[1],0])
-    v2=cross(u1,ua) if u1[2]>=0 else cross(ua,u1)
+    ua=array([0,0,1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([0,1,0]) if (u1==[0,0,-1]).all() else array([0,0,1])
+    v2=cross(u1,ua) if u1[2]>0 else cross(u1,ua)
     u2=v2/norm(v2)
-    u3=array(q(u2,u1,-90))
+    v3=cross(u2,u1) if u1[2]==0 else cross(u2,u1)
+    u3=v3/norm(v3)
 #     u1,u2,u3=array([u1,u2,u3]).tolist()
     plane2=translate(u1*thickness,plane1)
     sol=[plane1]+[plane2]
