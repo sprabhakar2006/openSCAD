@@ -1183,34 +1183,17 @@ def c3t2(a): # converts 3d list to 2d list
         p=array(a)
         return swapaxes([p[:,0],p[:,1]],0,1).tolist()
 
-#def nv(p):# normal vector to the plane 'p' with atleast 3 known points
-#    '''
-#    given 3 points ['p1','p2',p3] function calculates unit normal vector
-#    example:
-#    p1,p2,p3=[1,0,0],[0,10,0],[-5,0,0]
-#    nv([p1,p2,p3]) => [0.0, 0.0, -1.0]
-#    '''
-#    p0,p1,p2=array(translate([0,0,0],[p[0],p[1],p[2]]))
-#    nv=cross(p0-p1,p2-p1)
-#   m=1/norm(nv) if norm(nv)>0 else 1e5
-#  return (nv*m).tolist()
-    
-    
-def nv(sec):# normal vector to the plane 'sec' with atleast 3 known points
+def nv(p):# normal vector to the plane 'p' with atleast 3 known points
     '''
     given 3 points ['p1','p2',p3] function calculates unit normal vector
     example:
     p1,p2,p3=[1,0,0],[0,10,0],[-5,0,0]
     nv([p1,p2,p3]) => [0.0, 0.0, -1.0]
     '''
-    avg1=array(sec).mean(0)
-    sec1=translate(-avg1,sec)
-    v1=array([array(p)-avg1 for p in sec]).tolist()
-    v2=v1[1:]+[v1[0]]
-    v1,v2=array([v1,v2])
-    n1=cross(v1,v2)
-    nv1=-n1.mean(0)
-    return nv1.tolist()
+    p0,p1,p2=array(translate([0,0,0],[p[0],p[1],p[2]]))
+    nv=cross(p0-p1,p2-p1)
+    m=1/norm(nv) if norm(nv)>0 else 1e5
+    return (nv*m).tolist()
 
 def fillet_3p_3d(p0,p1,p2,r,s):# fillet with 3 known points 'p0,p1,p2' in 3d space. 'r' is the radius of fillet and 's' is the number of segments in the fillet
     '''
@@ -4054,11 +4037,10 @@ def cut_plane(nv=[0,0,1],size=[5,5],thickness=10,trns1=0,trns2=0,trns3=0): #orie
     plane1=sec2vector(nv,sec)
     v1=array(nv)
     u1=v1/norm(v1)
-    ua=array([0,0,1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([0,1,0]) if (u1==[0,0,-1]).all() else array([0,0,1])
-    v2=cross(u1,ua) if u1[2]>0 else cross(u1,ua)
+    ua=array([0,0,-1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([-1,0,0]) if (u1==[0,0,-1]).all() else array([u1[0],u1[1],0])
+    v2=cross(u1,ua) if u1[2]>=0 else cross(ua,u1)
     u2=v2/norm(v2)
-    v3=cross(u2,u1) if u1[2]==0 else cross(u2,u1)
-    u3=v3/norm(v3)
+    u3=array(q(u2,u1,-90))
 #     u1,u2,u3=array([u1,u2,u3]).tolist()
     plane2=translate(u1*thickness,plane1)
     sol=[plane1]+[plane2]
@@ -4144,11 +4126,10 @@ def o_solid(nv=[0,0,1],sec=[],thickness=10,trns1=0,trns2=0,trns3=0): #oriented s
     plane1=sec2vector(nv,sec)
     v1=array(nv)
     u1=v1/norm(v1)
-    ua=array([0,0,1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([0,1,0]) if (u1==[0,0,-1]).all() else array([0,0,1])
-    v2=cross(u1,ua) if u1[2]>0 else cross(u1,ua)
+    ua=array([0,0,-1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([-1,0,0]) if (u1==[0,0,-1]).all() else array([u1[0],u1[1],0])
+    v2=cross(u1,ua) if u1[2]>=0 else cross(ua,u1)
     u2=v2/norm(v2)
-    v3=cross(u2,u1) if u1[2]==0 else cross(u2,u1)
-    u3=v3/norm(v3)
+    u3=array(q(u2,u1,-90))
 #     u1,u2,u3=array([u1,u2,u3]).tolist()
     plane2=translate(u1*thickness,plane1)
     sol=[plane1]+[plane2]
@@ -4277,3 +4258,41 @@ def path_extrude2msec(sec_list,path):
 def sol2vector(v1=[],sol=[],loc=[0,0,0]):
     sol1=translate(loc,[sec2vector(-array(v1),p) for p in sol])
     return sol1
+    
+def ip_sol2line(sol,line):
+    '''
+    function to calculate intersection point between a 3d solid and a line. 
+     "sol" is the 3d object which is intersected with a "line".
+     try below code for better understanding:
+    sec=circle(10)
+    path=cr(pts1([[-10+.1,0],[12,0],[-2,0,2],[0,10,3],[-10,0]]),5)
+    sol=prism(sec,path)
+
+    line=[[0,0,-1],[20,20,10]]
+
+    ip1=ip_sol2line(sol,line)
+    
+    refer to file "example of various functions" for application
+    '''
+
+
+    pa=sol
+    line=array(line)
+    p1=array([[ [[pa[i][j],pa[i][j+1],pa[i+1][j]],[pa[i+1][j+1],pa[i+1][j],pa[i][j+1]]] if j<len(pa[i])-1 
+     else [[pa[i][j],pa[i][0],pa[i+1][j]],[pa[i+1][0],pa[i+1][j],pa[i][0]]] 
+     for j in range(len(pa[i]))] 
+              for i in range(len(pa)-1)]).reshape(-1,3,3)
+    pm=p1[:,0]
+    pn=p1[:,1]
+    po=p1[:,2]
+    px=array(line[0])
+    py=array(line[1])
+    v1,v2,v3=py-px,pn-pm,po-pm
+    iim=array([[v1]*len(v2),-v2,-v3]).transpose(1,0,2).transpose(0,2,1)+.00001
+    im=inv(iim)
+    t=einsum('ijk,ik->ij',im,pm-px)
+    condition=(t[:,0]>=0)&(t[:,0]<=1)&(t[:,1]>=0)&(t[:,1]<=1)&(t[:,2]>=0)&(t[:,2]<=1)&((t[:,1]+t[:,2])<=1)
+    t1=t[:,0][condition]
+    i_p1=px+v1[None,:]*t1[:,None]
+    i_p1=i_p1[argsort([norm(p-px) for p in i_p1])].tolist()
+    return i_p1
