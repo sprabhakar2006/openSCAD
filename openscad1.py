@@ -3750,6 +3750,19 @@ def c2ro(sol,s):#circular to rectangulat orientation
     sol=cpo(sol)
     return q_rot([f'z{angle}'],[m_points1(sol[i]+flip(sol[len(sol)-1-i]),s) for i in range(int(len(sol)/2))])
 
+
+def c2ro_(sol,s):#circular to rectangulat orientation
+    '''
+    change the orientation of points of a cylinder from circular to rectangular orientation
+    'sol': is a cylindrical type 3d shape
+    's': number of segments required between each straight line segments
+    refer to the file 'example of various functions' for application examples 
+    '''
+    angle=360/len(sol[0])/2
+    sol=cpo(sol)
+    return q_rot([f'z{0}'],[m_points1(sol[i]+flip(sol[len(sol)-1-i]),s) for i in range(int(len(sol)/2))])
+    
+    
 def vsp_extrude(sec,extrude_path, shape_path):
     '''
     function variable section and path extrude
@@ -4296,3 +4309,14 @@ def ip_sol2line(sol,line):
     i_p1=px+v1[None,:]*t1[:,None]
     i_p1=i_p1[argsort([norm(p-px) for p in i_p1])].tolist()
     return i_p1
+
+def align_sol(sol,ang=10):
+    '''
+    function to straighten the twists in the path_extruded sections for better alignments
+    refer to the file "example of various functions.ipynb" for application examples
+    '''
+    sol1=[sol[0]]
+    for i in range(1,len(sol)):
+        a=align_sec(sol1[i-1],sol[i],ang=ang)
+        sol1.append(a[1])
+    return sol1
