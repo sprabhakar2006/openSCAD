@@ -4036,13 +4036,40 @@ def sec2vector(v1=[1,0,0],sec=[]):
     sec1=q_rot(['z-90',f'z{theta1}'],sec1)
     return sec1
     
+# def cut_plane(nv=[0,0,1],size=[5,5],thickness=10,trns1=0,trns2=0,trns3=0): #oriented solid
+#     '''
+#     function for defining a solid (cutting plane) oriented as per the defined normal vector
+#     nv: normal vector for defining plane orientation of the section
+#     thickness: thickness or height of the cutting plane
+#     trns1: translate the solid in the direction of normal vector 'nv'
+#     trns2: translate the solid in the direction 'left' to the normal vector 'nv'
+#     trns3: translate the solid in the direction 'up' to the normal vector 'nv'
+#     '-ve' values given to the trns1,trns2,trns3 will translate the solid in the reverse direction 
+#     '''
+#     sec=square(size,center=True)
+#     plane1=sec2vector(nv,sec)
+#     v1=array(nv)
+#     u1=v1/norm(v1)
+#     ua=array([0,0,-1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([-1,0,0]) if (u1==[0,0,-1]).all() else array([u1[0],u1[1],0])
+#     v2=cross(u1,ua) if u1[2]>=0 else cross(ua,u1)
+#     u2=v2/norm(v2)
+#     u3=array(q(u2,u1,-90))
+# #     u1,u2,u3=array([u1,u2,u3]).tolist()
+#     plane2=translate(u1*thickness,plane1)
+#     sol=[plane1]+[plane2]
+#     sol=translate(u1*trns1,sol)
+#     sol=translate(u2*trns2,sol)
+#     sol=translate(u3*trns3,sol)
+#     return sol
+
+
 def cut_plane(nv=[0,0,1],size=[5,5],thickness=10,trns1=0,trns2=0,trns3=0): #oriented solid
     '''
     function for defining a solid (cutting plane) oriented as per the defined normal vector
     nv: normal vector for defining plane orientation of the section
     thickness: thickness or height of the cutting plane
     trns1: translate the solid in the direction of normal vector 'nv'
-    trns2: translate the solid in the direction 'left' to the normal vector 'nv'
+    trns2: translate the solid in the direction 'right' to the normal vector 'nv'
     trns3: translate the solid in the direction 'up' to the normal vector 'nv'
     '-ve' values given to the trns1,trns2,trns3 will translate the solid in the reverse direction 
     '''
@@ -4050,10 +4077,11 @@ def cut_plane(nv=[0,0,1],size=[5,5],thickness=10,trns1=0,trns2=0,trns3=0): #orie
     plane1=sec2vector(nv,sec)
     v1=array(nv)
     u1=v1/norm(v1)
-    ua=array([0,0,-1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([-1,0,0]) if (u1==[0,0,-1]).all() else array([u1[0],u1[1],0])
-    v2=cross(u1,ua) if u1[2]>=0 else cross(ua,u1)
+    ua=array([0,0,1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([0,1,0]) if (u1==[0,0,-1]).all() else array([0,0,1])
+    v2=cross(u1,ua) if u1[2]>0 else cross(u1,ua)
     u2=v2/norm(v2)
-    u3=array(q(u2,u1,-90))
+    v3=cross(u2,u1) if u1[2]==0 else cross(u2,u1)
+    u3=v3/norm(v3)
 #     u1,u2,u3=array([u1,u2,u3]).tolist()
     plane2=translate(u1*thickness,plane1)
     sol=[plane1]+[plane2]
@@ -4125,6 +4153,33 @@ def fillet_l_cir(line=[],cir1=[],fillet_radius=1,s=20):
     fillet2=arc_2p(p5,p6,r2,cw([p1,p2,cp]),s=s)
     return [fillet1, fillet2]
 
+# def o_solid(nv=[0,0,1],sec=[],thickness=10,trns1=0,trns2=0,trns3=0): #oriented solid
+#     '''
+#     function for defining a solid with any defined section. solid gets oriented as per the defined normal vector
+#     nv: normal vector for defining plane orientation of the section
+#     sec: cross section of the solid
+#     thickness: thickness or height of the solid
+#     trns1: translate the solid in the direction of normal vector 'nv'
+#     trns2: translate the solid in the direction 'left' to the normal vector 'nv'
+#     trns3: translate the solid in the direction 'up' to the normal vector 'nv'
+#     '-ve' values given to the trns1,trns2,trns3 will translate the solid in the reverse direction 
+#     '''
+#     plane1=sec2vector(nv,sec)
+#     v1=array(nv)
+#     u1=v1/norm(v1)
+#     ua=array([0,0,-1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([-1,0,0]) if (u1==[0,0,-1]).all() else array([u1[0],u1[1],0])
+#     v2=cross(u1,ua) if u1[2]>=0 else cross(ua,u1)
+#     u2=v2/norm(v2)
+#     u3=array(q(u2,u1,-90))
+# #     u1,u2,u3=array([u1,u2,u3]).tolist()
+#     plane2=translate(u1*thickness,plane1)
+#     sol=[plane1]+[plane2]
+#     sol=translate(u1*trns1,sol)
+#     sol=translate(u2*trns2,sol)
+#     sol=translate(u3*trns3,sol)
+#     return sol
+
+
 def o_solid(nv=[0,0,1],sec=[],thickness=10,trns1=0,trns2=0,trns3=0): #oriented solid
     '''
     function for defining a solid with any defined section. solid gets oriented as per the defined normal vector
@@ -4132,17 +4187,18 @@ def o_solid(nv=[0,0,1],sec=[],thickness=10,trns1=0,trns2=0,trns3=0): #oriented s
     sec: cross section of the solid
     thickness: thickness or height of the solid
     trns1: translate the solid in the direction of normal vector 'nv'
-    trns2: translate the solid in the direction 'left' to the normal vector 'nv'
+    trns2: translate the solid in the direction 'right' to the normal vector 'nv'
     trns3: translate the solid in the direction 'up' to the normal vector 'nv'
     '-ve' values given to the trns1,trns2,trns3 will translate the solid in the reverse direction 
     '''
     plane1=sec2vector(nv,sec)
     v1=array(nv)
     u1=v1/norm(v1)
-    ua=array([0,0,-1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([-1,0,0]) if (u1==[0,0,-1]).all() else array([u1[0],u1[1],0])
-    v2=cross(u1,ua) if u1[2]>=0 else cross(ua,u1)
+    ua=array([0,0,1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([0,1,0]) if (u1==[0,0,-1]).all() else array([0,0,1])
+    v2=cross(u1,ua) if u1[2]>0 else cross(u1,ua)
     u2=v2/norm(v2)
-    u3=array(q(u2,u1,-90))
+    v3=cross(u2,u1) if u1[2]==0 else cross(u2,u1)
+    u3=v3/norm(v3)
 #     u1,u2,u3=array([u1,u2,u3]).tolist()
     plane2=translate(u1*thickness,plane1)
     sol=[plane1]+[plane2]
