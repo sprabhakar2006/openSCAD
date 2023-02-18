@@ -4328,7 +4328,9 @@ def sol2vector(v1=[],sol=[],loc=[0,0,0]):
     sol1=translate(loc,[sec2vector(-array(v1),p) for p in sol])
     return sol1
     
-def ip_sol2line(sol,line):
+
+    
+def ip_sol2line(sol,line):# when line has more than 2 points
     '''
     function to calculate intersection point between a 3d solid and a line. 
      "sol" is the 3d object which is intersected with a "line".
@@ -4346,7 +4348,6 @@ def ip_sol2line(sol,line):
 
 
     pa=sol
-    line=array(line)
     p1=array([[ [[pa[i][j],pa[i][j+1],pa[i+1][j]],[pa[i+1][j+1],pa[i+1][j],pa[i][j+1]]] if j<len(pa[i])-1 
      else [[pa[i][j],pa[i][0],pa[i+1][j]],[pa[i+1][0],pa[i+1][j],pa[i][0]]] 
      for j in range(len(pa[i]))] 
@@ -4354,17 +4355,29 @@ def ip_sol2line(sol,line):
     pm=p1[:,0]
     pn=p1[:,1]
     po=p1[:,2]
-    px=array(line[0])
-    py=array(line[1])
+    px=array(line)
+    py=array(line[1:]+[line[0]])
     v1,v2,v3=py-px,pn-pm,po-pm
-    iim=array([[v1]*len(v2),-v2,-v3]).transpose(1,0,2).transpose(0,2,1)+.00001
+    a,_=v1.shape
+    b,_=v2.shape
+    v1=array([v1]*b)
+    v2=-array([v2]*a).transpose(1,0,2)
+    v3=-array([v3]*a).transpose(1,0,2)
+    iim=array([v1,v2,v3]).transpose(1,2,0,3).transpose(0,1,3,2)+.00001
     im=inv(iim)
-    t=einsum('ijk,ik->ij',im,pm-px)
-    condition=(t[:,0]>=0)&(t[:,0]<=1)&(t[:,1]>=0)&(t[:,1]<=1)&(t[:,2]>=0)&(t[:,2]<=1)&((t[:,1]+t[:,2])<=1)
-    t1=t[:,0][condition]
-    i_p1=px+v1[None,:]*t1[:,None]
-    i_p1=i_p1[argsort([norm(p-px) for p in i_p1])].tolist()
-    return i_p1
+    p=array([pm]*a).transpose(1,0,2)-array([px]*b)
+    t=einsum('ijkl,ijl->ijk',im,p)
+    condition=(t[:,:,0]>=0)&(t[:,:,0]<=1)&(t[:,:,1]>=0)&(t[:,:,1]<=1)&(t[:,:,2]>=0)&(t[:,:,2]<=1)&((t[:,:,1]+t[:,:,2])<=1)
+    t1=t[:,:,0][condition]
+    i_p1=array([px]*b)[condition]+einsum('ij,i->ij',v1[condition],t1)
+    i_p2=i_p1[argsort([norm(p-px[0]) for p in i_p1])]
+    s_planes=array([p1]*a).transpose(1,0,2,3)[condition][argsort([norm(p-px[0]) for p in i_p1])]
+    nv1=[nv(p) for p in s_planes]
+
+    i_p2,s_planes,nv1=i_p2[::2].tolist(),s_planes[::2].tolist(),array(nv1)[::2].tolist()
+    return i_p2
+    
+
 
 def align_sol(sol,ang=10):
     '''
