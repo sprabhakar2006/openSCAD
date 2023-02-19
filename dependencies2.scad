@@ -36,7 +36,7 @@ module points(p,d=.5){
 // sec=trns([5,10,6],q_rot(["x45"],circle(10)));
 // p_line3d(sec,.2);
     
-module p_line3d(path,r,rec=0){
+module p_line3d(path,r,rec=0,$fn=20){
     for(i=[0:len(path)-2])
         
     hull(){
@@ -49,7 +49,7 @@ module p_line3d(path,r,rec=0){
 // sec=trns([5,10,6],q_rot(["x45"],circle(10)));
 // p_line3dc(sec,.2);    
 
-module p_line3dc(path,r,rec=0){
+module p_line3dc(path,r,rec=0,$fn=20){
     for(i=[0:len(path)-1])
         let(
     i_plus=i<len(path)-1?i+1:0
