@@ -4389,3 +4389,20 @@ def align_sol(sol,ang=10):
         a=align_sec(sol1[i-1],sol[i],ang=ang)
         sol1.append(a[1])
     return sol1
+
+def extrude_sol2path(sec,path1,path2):
+    '''
+    extrude a solid to a different path
+    "sec" and "path1" defines the original solid
+    "path2" defines the path where the shape of the original solid to be extruded
+    refer file "example of various functions.ipynb" for application example
+    '''
+    min_l=array([l_len(p) for p in seg(path1)[:-1]]).min()
+    path1=m_points_o(path1,min_l)
+    l1=array([l_len(p) for p in seg(path2)[:-1]]).sum()
+    l2=l1/len(path1)
+    path3=m_points_o(path2,l2)[:len(path1)]
+    #    path3=bezier(path2,len(path1))
+    sec_list=[offset(sec,x) for (x,y) in path1]
+    sol=path_extrude2msec(sec_list,path3)
+    return sol
