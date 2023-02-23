@@ -4355,8 +4355,8 @@ def ip_sol2line(sol,line):# when line has more than 2 points
     pm=p1[:,0]
     pn=p1[:,1]
     po=p1[:,2]
-    px=array(line)
-    py=array(line[1:]+[line[0]])
+    px=array(line[:-1])
+    py=array(line[1:])
     v1,v2,v3=py-px,pn-pm,po-pm
     a,_=v1.shape
     b,_=v2.shape
@@ -4374,7 +4374,7 @@ def ip_sol2line(sol,line):# when line has more than 2 points
     s_planes=array([p1]*a).transpose(1,0,2,3)[condition][argsort([norm(p-px[0]) for p in i_p1])]
     nv1=[nv(p) for p in s_planes]
 
-    i_p2,s_planes,nv1=i_p2[::2].tolist(),s_planes[::2].tolist(),array(nv1)[::2].tolist()
+    i_p2,s_planes,nv1=i_p2.tolist(),s_planes.tolist(),array(nv1).tolist()
     return i_p2
     
 
@@ -4406,3 +4406,94 @@ def extrude_sol2path(sec,path1,path2):
     sec_list=[offset(sec,x) for (x,y) in path1]
     sol=path_extrude2msec(sec_list,path3)
     return sol
+    
+def fillet_between2sol(sol=[],sol1=[],r=1,ip=0,fs=0,s=10):
+    '''
+    function to draw fillet between 2 solids
+    sol: solid which is intersected
+    sol1: solid which is intersecting the 'sol'.please note that reversing the order may change the results drastically and may not be valid
+    r: radius of fillet
+    ip: value can be 0 or -1 in case the cut lines as described in 'logic of creating fillets' are intersecting the 'sol' at 2 points
+    fs: can be 0 or 1 based on which side the fillet needs to be drawn
+    s: segments in each fillet
+    '''
+    ip1=[ip_sol2line(sol,p)[ip] for p in cpo(sol1) if ip_sol2line(sol,p)!=[] ]
+    nr1=[ip_normal_sol2line(sol,p)[ip] for p in cpo(sol1) if ip_sol2line(sol,p)!=[] ]
+    nr1=array(nr1)*r
+    r_axis1=seg(ip1)[:-1]
+    r_axis1=array([p[1]-p[0] for p in array(r_axis1)]).tolist()
+    r_axis1=r_axis1+[r_axis1[-1]]
+    if fs==0:
+        rnr1=array([[q(r_axis1[i],nr1[i],-j) for j in linspace(0,180,5) ]for i in range(len(nr1))])
+        cir1=array(ip1)[:,None]+rnr1
+        cir1=cir1.tolist()
+
+        rnr2=array([[q(r_axis1[i],nr1[i],j) for j in linspace(90,270,5) ]for i in range(len(nr1))])
+        cir2=array(ip1)[:,None]+rnr2
+        cir2=cir2.tolist()
+    else:
+        rnr1=array([[q(r_axis1[i],nr1[i],j) for j in linspace(0,180,5) ]for i in range(len(nr1))])
+        cir1=array(ip1)[:,None]+rnr1
+        cir1=cir1.tolist()
+
+        rnr2=array([[q(r_axis1[i],nr1[i],-j) for j in linspace(90,270,5) ]for i in range(len(nr1))])
+        cir2=array(ip1)[:,None]+rnr2
+        cir2=cir2.tolist()
+        
+    ip2=[ip_sol2line(sol,p)[0] for p in cir1 if ip_sol2line(sol,p)!=[]]
+    ip3=[ip_sol2line(sol1,p)[0] for p in cir2 if ip_sol2line(sol1,p)!=[]]
+    ip2=sort_points(ip1,ip2)
+    ip3=sort_points(ip1,ip3)
+
+    fillet1=convert_3lines2fillet(ip1,ip3,ip2,s=s)
+    return fillet1
+    
+    
+
+def ip_normal_sol2line(sol,line):
+    '''
+    function to find the normal from intersection points between a 3d solid and a line. 
+     "sol" is the 3d object which is intersected with a "line".
+     try below code for better understanding:
+    sec=circle(10)
+    path=cr(pts1([[-10+.1,0],[12,0],[-2,0,2],[0,10,3],[-10,0]]),5)
+    sol=prism(sec,path)
+
+    line=[[0,0,-1],[20,20,10]]
+
+    ip1=ip_normal_sol2line(sol,line)
+    
+    refer to file "example of various functions" for application
+    '''
+
+
+    pa=sol
+    p1=array([[ [[pa[i][j],pa[i][j+1],pa[i+1][j]],[pa[i+1][j+1],pa[i+1][j],pa[i][j+1]]] if j<len(pa[i])-1 
+     else [[pa[i][j],pa[i][0],pa[i+1][j]],[pa[i+1][0],pa[i+1][j],pa[i][0]]] 
+     for j in range(len(pa[i]))] 
+              for i in range(len(pa)-1)]).reshape(-1,3,3)
+    pm=p1[:,0]
+    pn=p1[:,1]
+    po=p1[:,2]
+    px=array(line[:-1])
+    py=array(line[1:])
+    v1,v2,v3=py-px,pn-pm,po-pm
+    a,_=v1.shape
+    b,_=v2.shape
+    v1=array([v1]*b)
+    v2=-array([v2]*a).transpose(1,0,2)
+    v3=-array([v3]*a).transpose(1,0,2)
+    iim=array([v1,v2,v3]).transpose(1,2,0,3).transpose(0,1,3,2)+.00001
+    im=inv(iim)
+    p=array([pm]*a).transpose(1,0,2)-array([px]*b)
+    t=einsum('ijkl,ijl->ijk',im,p)
+    condition=(t[:,:,0]>=0)&(t[:,:,0]<=1)&(t[:,:,1]>=0)&(t[:,:,1]<=1)&(t[:,:,2]>=0)&(t[:,:,2]<=1)&((t[:,:,1]+t[:,:,2])<=1)
+    t1=t[:,:,0][condition]
+    i_p1=array([px]*b)[condition]+einsum('ij,i->ij',v1[condition],t1)
+    i_p2=i_p1[argsort([norm(p-px[0]) for p in i_p1])]
+    s_planes=array([p1]*a).transpose(1,0,2,3)[condition][argsort([norm(p-px[0]) for p in i_p1])]
+    nv1=[nv(p) for p in s_planes]
+
+    i_p2,s_planes,nv1=i_p2.tolist(),s_planes.tolist(),array(nv1).tolist()
+    un1=array(nv1)/norm(array(nv1),axis=1).reshape(-1,1)
+    return un1.tolist()
