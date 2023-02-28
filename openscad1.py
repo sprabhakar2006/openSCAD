@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import time
 from scipy.spatial import cKDTree
 import pandas as pd
+import igl
 
 
 def arc(radius=0,start_angle=0,end_angle=0,cp=[0,0],s=20):
@@ -4497,3 +4498,38 @@ def ip_normal_sol2line(sol,line):
     i_p2,s_planes,nv1=i_p2.tolist(),s_planes.tolist(),array(nv1).tolist()
     un1=array(nv1)/norm(array(nv1),axis=1).reshape(-1,1)
     return un1.tolist()
+    
+def pntsnfaces_c(bead2):
+    '''
+    returns vertices and faces for a closed loop solid
+    
+    '''
+    n1=arange(len(bead2[0])).tolist()
+    n2=array([[[[(j+1)+i*len(bead2[0]),j+i*len(bead2[0]),j+(i+1)*len(bead2[0])],[(j+1)+i*len(bead2[0]),j+(i+1)*len(bead2[0]),(j+1)+(i+1)*len(bead2[0])]] \
+             if j<len(bead2[0])-1 else \
+             [[0+i*len(bead2[0]),j+i*len(bead2[0]),j+(i+1)*len(bead2[0])],[0+i*len(bead2[0]),j+(i+1)*len(bead2[0]),0+(i+1)*len(bead2[0])]] \
+                 for j in range(len(bead2[0]))] for i in range(len(bead2)-1)]).reshape(-1,3).tolist()
+    n3=(array(flip(arange(len(bead2[0]))))+(len(bead2)-1)*len(bead2[0])).tolist()
+    n=[n1]+n2+[n3]
+    pnt=array(bead2).reshape(-1,3).round(4).tolist()
+    return [pnt,n2]
+
+def vnf1(surf):
+    n1,n2,_=array(surf).shape
+    v=array(surf2).reshape(-1,3)    
+    f1=array([[[[i*n2+j,i*n2+j+1,(i+1)*n2+j],[(i+1)*n2+j,i*n2+j+1,(i+1)*n2+j+1]] for j in range(n2-1)] for i in range(n1-1)]).reshape(-1,3)
+    return [v.tolist(),f1.tolist()]
+    
+    
+def resurface(v,f1):
+    v,f1=array(v),array(f1)
+    v2=v[igl.boundary_loop(f1)]
+    v3=exclude_points(v,v2)
+    v4=[v2]
+    while(len(v3)>=1):
+        v2=array(sort_points(v2,v3))
+        v4.append(v2)
+        v3=exclude_points(v3,v2)
+
+    v4=array(v4).tolist()
+    return v4
