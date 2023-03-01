@@ -4516,20 +4516,38 @@ def pntsnfaces_c(bead2):
 
 def vnf1(surf):
     n1,n2,_=array(surf).shape
-    v=array(surf2).reshape(-1,3)    
+    v=array(surf).reshape(-1,3)    
     f1=array([[[[i*n2+j,i*n2+j+1,(i+1)*n2+j],[(i+1)*n2+j,i*n2+j+1,(i+1)*n2+j+1]] for j in range(n2-1)] for i in range(n1-1)]).reshape(-1,3)
     return [v.tolist(),f1.tolist()]
     
     
 def resurface(v,f1):
     v,f1=array(v),array(f1)
-    v2=v[igl.boundary_loop(f1)]
-    v3=exclude_points(v,v2)
-    v4=[v2]
-    while(len(v3)>=1):
-        v2=array(sort_points(v2,v3))
-        v4.append(v2)
-        v3=exclude_points(v3,v2)
-
-    v4=array(v4).tolist()
-    return v4
+    f2=f1
+    v3=[]
+    while(len(f2)>=1):
+        a=igl.boundary_loop(f2)
+        v2=v[a]
+        if len(v3)>0:
+            v3.append(sort_points(v3[-1],v2.tolist()))
+        else:
+            v3.append(v2.tolist())
+        f2=f2[~isin(f2,a).any(1)]
+    return v3
+    
+def equidistant_path(path,s=10):
+    v=[p[1]-p[0] for p in array(seg(path)[:-1])]
+    l=[l_len(p) for p in seg(path)[:-1]]
+    c=array(l).cumsum().tolist()
+    l1=c[-1]/s
+    d=[l1*i for i in arange(1,s+1)]
+    p_rev=[]
+    for i in range(len(c)):
+        for j in range(len(d)):
+            if c[i]>d[j]:
+                t=d[j]/l[i] if i==0 else (d[j]-c[i-1])/l[i]
+                px=array(path[i])+array(v[i])*t
+                p_rev.append(px.tolist())
+                d[j]=c[-1]+1
+    p_rev=[path[0]]+p_rev+[path[-1]]
+    return p_rev
