@@ -4551,3 +4551,41 @@ def equidistant_path(path,s=10):
                 d[j]=c[-1]+1
     p_rev=[path[0]]+p_rev+[path[-1]]
     return p_rev
+
+def surface_base(v,f2,h,up=0):
+    if up==0:
+        f2=[flip(p) for p in f2]
+        v1=array(c2t3(c3t2(v)))+[0,0,h]
+        v1=v1.tolist()
+        v2=v+v1
+        f3=array(f2)+array(f2).max()+1
+        f3=f3.tolist()
+        f3=[flip(p) for p in f3]
+        f3p=igl.boundary_loop(array(f3)).tolist()
+        f2p=flip(igl.boundary_loop(array(f2))).tolist()
+        f4p=f3p+f2p
+        n1=len(f3p)
+        f5=[ [[f4p[i],f4p[i+n1],f4p[i+1]],[f4p[i+1],f4p[i+n1],f4p[i+1+n1]]] 
+            if i < n-1 else  
+            [[f4p[i],f4p[i+n1],f4p[0]],[f4p[0],f4p[i+n1],f4p[n1]]]
+            for i in range(n1)]
+        f5=array(f5).reshape(-1,3).tolist()
+        f4=f2+f3+f5
+    elif up==1:
+        v1=array(c2t3(c3t2(v)))+[0,0,h]
+        v1=v1.tolist()
+        v2=v+v1
+        f3=array(f2)+array(f2).max()+1
+        f3=f3.tolist()
+        f3=[flip(p) for p in f3]
+        f3p=igl.boundary_loop(array(f3)).tolist()
+        f2p=flip(igl.boundary_loop(array(f2))).tolist()
+        f4p=f3p+f2p
+        n1=len(f3p)
+        f5=[ [[f4p[i],f4p[i+n1],f4p[i+1]],[f4p[i+1],f4p[i+n1],f4p[i+1+n1]]] 
+            if i < n-1 else  
+            [[f4p[i],f4p[i+n1],f4p[0]],[f4p[0],f4p[i+n1],f4p[n1]]]
+            for i in range(n1)]
+        f5=array(f5).reshape(-1,3).tolist()
+        f4=f2+f3+f5
+    return [v2,f4]
