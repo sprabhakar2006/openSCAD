@@ -4551,7 +4551,7 @@ def equidistant_path(path,s=10):
                 d[j]=c[-1]+1
     p_rev=[path[0]]+p_rev+[path[-1]]
     return p_rev
-
+    
 def surface_base(v,f2,h,up=0):
     if up==0:
         f2=[flip(p) for p in f2]
@@ -4566,7 +4566,7 @@ def surface_base(v,f2,h,up=0):
         f4p=f3p+f2p
         n1=len(f3p)
         f5=[ [[f4p[i],f4p[i+n1],f4p[i+1]],[f4p[i+1],f4p[i+n1],f4p[i+1+n1]]] 
-            if i < n-1 else  
+            if i < n1-1 else  
             [[f4p[i],f4p[i+n1],f4p[0]],[f4p[0],f4p[i+n1],f4p[n1]]]
             for i in range(n1)]
         f5=array(f5).reshape(-1,3).tolist()
@@ -4583,7 +4583,7 @@ def surface_base(v,f2,h,up=0):
         f4p=f3p+f2p
         n1=len(f3p)
         f5=[ [[f4p[i],f4p[i+n1],f4p[i+1]],[f4p[i+1],f4p[i+n1],f4p[i+1+n1]]] 
-            if i < n-1 else  
+            if i < n1-1 else  
             [[f4p[i],f4p[i+n1],f4p[0]],[f4p[0],f4p[i+n1],f4p[n1]]]
             for i in range(n1)]
         f5=array(f5).reshape(-1,3).tolist()
