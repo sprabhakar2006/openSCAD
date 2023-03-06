@@ -1191,7 +1191,8 @@ def nv(p):# normal vector to the plane 'p' with atleast 3 known points
     p1,p2,p3=[1,0,0],[0,10,0],[-5,0,0]
     nv([p1,p2,p3]) => [0.0, 0.0, -1.0]
     '''
-    p0,p1,p2=array(translate([0,0,0],[p[0],p[1],p[2]]))
+    l1=len(p)
+    p0,p1,p2=array(translate([0,0,0],[p[0],p[int(l1/3)],p[int(l1*2/3)]]))
     nv=cross(p0-p1,p2-p1)
     m=1/norm(nv) if norm(nv)>0 else 1e5
     return (nv*m).tolist()
@@ -4563,6 +4564,32 @@ def equidistant_path(path,s=10):
                 d[j]=c[-1]+1
     p_rev=[path[0]]+p_rev+[path[-1]]
     return p_rev
+
+def equidistant_pathc(path,s=10):
+    '''
+    divides a path in to equally spaced points
+    refer file 'example of various functions.ipynb' for application examples
+    '''
+    v=[p[1]-p[0] for p in array(seg(path))]
+    l=[l_len(p) for p in seg(path)]
+    c=array(l).cumsum().tolist()
+    l1=c[-1]/s
+    d=[l1*i for i in arange(1,s+1)]
+    p_rev=[]
+    for i in range(len(c)):
+        for j in range(len(d)):
+            if c[i]>d[j]:
+                t=d[j]/l[i] if i==0 else (d[j]-c[i-1])/l[i]
+                px=array(path[i])+array(v[i])*t
+                p_rev.append(px.tolist())
+                d[j]=c[-1]+1
+    p_rev=[path[0]]+p_rev+[path[-1]]
+    return p_rev
+
+
+
+
+
     
 def surface_base(v,f2,h,up=0):
     '''
