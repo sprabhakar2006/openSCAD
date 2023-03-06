@@ -4515,6 +4515,10 @@ def pntsnfaces_c(bead2):
     return [pnt,n2]
 
 def vnf1(surf):
+    '''
+    function calculates vertices and faces for a given surface
+    refer file 'example of various functions.ipynb' for application examples
+    '''
     n1,n2,_=array(surf).shape
     v=array(surf).reshape(-1,3)    
     f1=array([[[[i*n2+j,i*n2+j+1,(i+1)*n2+j],[(i+1)*n2+j,i*n2+j+1,(i+1)*n2+j+1]] for j in range(n2-1)] for i in range(n1-1)]).reshape(-1,3)
@@ -4522,6 +4526,10 @@ def vnf1(surf):
     
     
 def resurface(v,f1):
+    '''
+    arranges the vertices in a circular fashion for a surface defined by v- vertices and f1- triangulated faces
+    refer file 'example of various functions.ipynb' for application examples
+    '''
     v,f1=array(v),array(f1)
     f2=f1
     v3=[]
@@ -4536,6 +4544,10 @@ def resurface(v,f1):
     return v3
     
 def equidistant_path(path,s=10):
+    '''
+    divides a path in to equally spaced points
+    refer file 'example of various functions.ipynb' for application examples
+    '''
     v=[p[1]-p[0] for p in array(seg(path)[:-1])]
     l=[l_len(p) for p in seg(path)[:-1]]
     c=array(l).cumsum().tolist()
@@ -4553,6 +4565,15 @@ def equidistant_path(path,s=10):
     return p_rev
     
 def surface_base(v,f2,h,up=0):
+    '''
+    makes a solid with flat base keeping the top surface as the defined surface
+    v : vertices
+    f2: triangulated faces for defining the surface for the purpose of drawing polyhedron
+    h: 'z' height of the base e.g. 0 means the base will be drawn at z=0 ans so on.
+    up: if the base is below the surface 'up' should be 0 and if the base is above the surface 'up' should be 1 
+    
+    
+    '''
     if up==0:
         f2=[flip(p) for p in f2]
         v1=array(c2t3(c3t2(v)))+[0,0,h]
@@ -4589,3 +4610,109 @@ def surface_base(v,f2,h,up=0):
         f5=array(f5).reshape(-1,3).tolist()
         f4=f2+f3+f5
     return [v2,f4]
+    
+def surface_offset_sol(v,f2,t=-1):
+    '''
+    function to draw a solid by offsetting the surface
+    v and f2 are the vertices and faces of the surface and t is the thickness of the surface
+    't' can be given any number - or +
+    refer file 'example of various functions.ipynb' for application examples
+    
+    '''
+    v1=(array(v)+igl.per_vertex_normals(array(v),array(f2))*t).tolist()
+    if t<0:
+        f2=[flip(p) for p in f2]
+        v2=v+v1
+        f3=array(f2)+array(f2).max()+1
+        f3=f3.tolist()
+        f3=[flip(p) for p in f3]
+        f3p=igl.boundary_loop(array(f3)).tolist()
+        f2p=flip(igl.boundary_loop(array(f2))).tolist()
+        f4p=f3p+f2p
+        n1=len(f3p)
+        f5=[ [[f4p[i],f4p[i+n1],f4p[i+1]],[f4p[i+1],f4p[i+n1],f4p[i+1+n1]]] 
+            if i < n1-1 else  
+            [[f4p[i],f4p[i+n1],f4p[0]],[f4p[0],f4p[i+n1],f4p[n1]]]
+            for i in range(n1)]
+        f5=array(f5).reshape(-1,3).tolist()
+        f4=f2+f3+f5
+    elif t>1:
+        v2=v+v1
+        f3=array(f2)+array(f2).max()+1
+        f3=f3.tolist()
+        f3=[flip(p) for p in f3]
+        f3p=igl.boundary_loop(array(f3)).tolist()
+        f2p=flip(igl.boundary_loop(array(f2))).tolist()
+        f4p=f3p+f2p
+        n1=len(f3p)
+        f5=[ [[f4p[i],f4p[i+n1],f4p[i+1]],[f4p[i+1],f4p[i+n1],f4p[i+1+n1]]] 
+            if i < n1-1 else  
+            [[f4p[i],f4p[i+n1],f4p[0]],[f4p[0],f4p[i+n1],f4p[n1]]]
+            for i in range(n1)]
+        f5=array(f5).reshape(-1,3).tolist()
+        f4=f2+f3+f5
+    return [v2,f4]
+    
+def ang_2lineccw(p0,p1,p2):
+    '''
+    ccw angle of the line p0p2 from base line p0p1
+    '''
+    p0,p1,p2=array([p0,p1,p2])
+    v1,v2=p1-p0,p2-p0
+    a1=ang(v1[0],v1[1])
+    a2=ang(v2[0],v2[1])
+    return 360 if (p2==p1).all() else 360-(a1-a2) if a2<a1 else a2-a1 
+
+def ang_2linecw(p0,p1,p2):
+    '''
+    cw angle of the line p0p2 from the base line p0p1
+    '''
+    p0,p1,p2=array([p0,p1,p2])
+    v1,v2=p1-p0,p2-p0
+    a1=ang(v1[0],v1[1])
+    a2=ang(v2[0],v2[1])
+    return 0 if (p2==p1).all() else a1-a2 if a2<a1 else 360+(a1-a2) 
+
+def l_lenv(l):
+    '''
+    calculates sum of lengths of all the segments in a line 'l'
+    '''
+    return array([l_len(p) for p in seg(l)]).sum()
+
+def a_3seg(s):
+    '''
+    area of the triangle enclosed with in 3 vertices 's'
+    '''
+    return norm(cross(array(s[1])-array(s[0]),array(s[2])-array(s[0])))/2
+
+def concave_hull1(sec,k=3):
+    '''
+    based on the maximum cw angle approach with k-nearest neigbours
+    
+    '''
+    sec=remove_extra_points(sec)
+    p_x=[]
+    a=array(sec)
+    b=a[a[:,1]==a[:,1].min()]
+    if len(a)>1:
+        c=b[b[:,0].argmin()]
+
+    s1=c if len(a)>1 else b[0] 
+    p_x.append(s1.tolist())
+    a=array(exclude_points(a,s1))
+
+    b=a[array([l_len([s1,p]) for p in a]).argsort()[:k]]
+    c=b[array([ang_2linecw(s1,[s1[0],-1e5],p) for p in b]).argmax()]
+    p_x.append(c.tolist())
+
+    a=array(exclude_points(a,c)+[s1])
+
+    while ((c!=s1).all() ):
+        b=a[array([l_len([p_x[-1],p]) for p in a ]).argsort()[:k]]
+        c=b[array([ang_2linecw(p_x[-1],p_x[-2],p) for p in b]).argmax()]
+        if s_int1(seg(p_x+[c.tolist()]))==[]:
+            p_x.append(c.tolist())
+            a=array(exclude_points(a,c)+[s1])
+        else:
+            a=array(exclude_points(a,c)+[s1])
+    return p_x
