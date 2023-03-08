@@ -3909,7 +3909,7 @@ def concave_hull(pnts,x):
 
     d=c_hull(pnts)
     c=pnts
-    for i in range(100):
+    for i in range(1000):
         e=con_hull(d,c,x)
         if d==e:
             break
@@ -4743,3 +4743,59 @@ def concave_hull1(sec,k=3):
         else:
             a=array(exclude_points(a,c)+[s1])
     return p_x
+
+
+def points2line_min_d_point(line,points,f=1):
+    if len(points)>0:
+        line=array(line)
+        pnts=array(points)
+        v1=line[1]-line[0]
+        u1=v1/norm(v1)
+        v2=pnts-line[0]
+        u2=v2/norm(v2,axis=1).reshape(-1,1)
+        u1.shape,v2.shape
+        v2cost=einsum('j,ij->i',u1,v2)
+        v2sint=cross(v1,v2)/norm(v1)
+        decision=(v2cost<=l_len(line))&(v2cost>=0)&(v2sint<l_len(line)/f)
+        pnts1=pnts[decision]
+        v2=pnts1-line[0]
+        u2=v2/norm(v2,axis=1).reshape(-1,1)
+        u1.shape,v2.shape
+        v2sint=cross(v1,v2)/norm(v1)
+        if v2sint.tolist()!=[]:
+            d=v2sint.argmin()
+            return pnts1[d].tolist()
+        else:
+            return []
+    else:
+        return []
+    
+
+
+def concave_hull2(sec,points,f):
+    points1=exclude_points(points,sec)
+    sec1=sec
+    for p in seg(sec):
+        p0=points2line_min_d_point(p,points1,f)
+        if p0!=[]:
+            i=arange(len(sec1))[(array(sec1)==array(p[0])).all(1)][0]
+            if s_int1(seg(insert(sec1,i+1,p0,axis=0)))==[]:
+                sec1=insert(sec1,i+1,p0,axis=0).tolist()
+                points1=exclude_points(points1,[p0])
+            else:
+                points1=exclude_points(points1,[p0])
+    return [sec1,points1]
+    
+def concave_hull_f(points,f):
+    sec=c_hull(points)
+    points=exclude_points(points,sec)
+    sec1,points1=sec,points
+    sec2=sec1
+    for i in range(10000):
+        sec1,points1=concave_hull2(sec1,points1,f)
+        if sec1==sec2 or points1==[]:
+            break
+        else:
+            sec2=sec1
+        
+    return sec2
