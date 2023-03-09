@@ -1075,10 +1075,12 @@ def translate(p,sec):#translates a prism or section by [x,y,z] distance
 
 
 
-def prism1(sec,path,n):
-        a=m_points(sec,n)
-        return [ translate([0,0,y], array(m_points(offset(sec,x),n))[cKDTree(m_points(offset(sec,x),n)).query(a)[1]]) for (x,y) in path ]
-
+def prism1(sec,path,s=100):
+    sol=prism(sec,path)
+    sol=[equidistant_pathc(p,s) for p in sol][:s]
+    return sol
+    
+    
 def offset_points_cw(sec,r):
     '''
     function to offset only those points which are clockwise 
@@ -3938,6 +3940,8 @@ def convert_3lines2fillet(pnt1,pnt2,pnt3,f=1.9,s=10):
     refer to the file "example of various functions" for application examples
     
     '''
+    
+    
     sol=array([pnt3,pnt1,pnt2]).transpose(1,0,2)
     sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*f,s) for (p1,p2,p3) in sol]
     sol=sol
@@ -4799,3 +4803,7 @@ def concave_hull_f(points,f):
             sec2=sec1
         
     return sec2
+    
+def offset_sol(sol,d):
+    sol=[offset_3d(p,d) for p in sol]
+    return sol
