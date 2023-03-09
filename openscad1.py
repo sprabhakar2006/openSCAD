@@ -4286,14 +4286,15 @@ def offset_3d(sec,d):
     refer to the file"example of various functions" for application examples
     
     '''
+    sec=remove_extra_points(sec)
     avg1=array(sec).mean(0)
     sec1=translate(-avg1,sec)
-    v1=array([array(p)-avg1 for p in sec]).tolist()
-    v2=v1[1:]+[v1[0]]
-    v1,v2=array([v1,v2])
-    n1=cross(v1,v2)
-    nv1=n1.mean(0)
-#     nv1=-array(nv(sec1))
+#     v1=array([array(p)-avg1 for p in sec]).tolist()
+#     v2=v1[1:]+[v1[0]]
+#     v1,v2=array([v1,v2])
+#     n1=cross(v1,v2)
+#     nv1=n1.mean(0)
+    nv1=-array(nv(sec1))
     nz=[0,0,1]
     nr=cross(nv1,nz)
     theta=r2d(arcsin(norm(nr)/(norm(nz)*norm(nv1))))
@@ -4310,6 +4311,8 @@ def offset_3d(sec,d):
     sec2=axis_rot(nr,sec2,-theta)
     sec2=translate(array(sec).mean(0),sec2)
     return sec2
+    
+    
     
 def path_extrude2msec(sec_list,path):
     '''
@@ -4805,5 +4808,6 @@ def concave_hull_f(points,f):
     return sec2
     
 def offset_sol(sol,d):
-    sol=[offset_3d(p,d) for p in sol]
+    n=array([len(remove_extra_points(p)) for p in sol]).argmax()
+    sol=[sort_points(sol[n],offset_3d(p,d)) for p in sol]
     return sol
