@@ -4807,7 +4807,18 @@ def concave_hull_f(points,f):
         
     return sec2
     
-def offset_sol(sol,d):
+def offset_sol(sol,d,o=0):
+    '''
+    function to calculate offset of a 3d object by distance 'd'
+    option 'o' can be set to '0' or '1' depending on the shape of the object.
+    in case the shape of the 3d object is twisted,option should be set to '1'
+    in few cases this function may not work 
+    
+    '''
+
     n=array([len(remove_extra_points(p)) for p in sol]).argmax()
-    sol=[sort_points(sol[n],offset_3d(p,d)) for p in sol]
+    if o==0:
+        sol=[sort_points(sol[n],offset_3d(p,d)) for p in sol]
+    else:
+        sol=[offset_3d(p,d) for p in sol]
     return sol
