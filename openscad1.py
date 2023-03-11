@@ -7,6 +7,7 @@ import pandas as pd
 import igl
 
 
+
 def arc(radius=0,start_angle=0,end_angle=0,cp=[0,0],s=20):
     '''
     function for calculating 2d arc
@@ -2806,6 +2807,33 @@ def swp(bead2):
     n=[n1]+n2+[n3]
     pnt=array(bead2).reshape(-1,3).round(4).tolist()
     return f'polyhedron({pnt},{n},convexity=10);'
+    
+def swp1(bead2):
+    '''
+    function to render various 3d shapes with first and the last section triangulated. only works with convex sections
+    example:
+    swp(cylinde(d=10,h=20)) will render a cylinder with dia 10 and height 20
+    refer to the file "example of various functions " for application examples
+    
+    '''
+    n1=arange(len(bead2[0])).tolist()
+    cp1=array(bead2[0]).mean(0).tolist()
+    n1=[[0,p[0]+1,p[1]+1] for p in seg(n1)]
+    n2=array([[[[(j+1)+i*len(bead2[0]),j+i*len(bead2[0]),j+(i+1)*len(bead2[0])],[(j+1)+i*len(bead2[0]),j+(i+1)*len(bead2[0]),(j+1)+(i+1)*len(bead2[0])]] \
+             if j<len(bead2[0])-1 else \
+             [[0+i*len(bead2[0]),j+i*len(bead2[0]),j+(i+1)*len(bead2[0])],[0+i*len(bead2[0]),j+(i+1)*len(bead2[0]),0+(i+1)*len(bead2[0])]] \
+                 for j in range(len(bead2[0]))] for i in range(len(bead2)-1)]).reshape(-1,3)
+    n2=(n2+1).tolist()
+    n3=(array(flip(arange(len(bead2[0]))))+(len(bead2)-1)*len(bead2[0]))
+    n3=n3+1
+    cp2=array(bead2[-1]).mean(0).tolist()
+    n3=[[len(bead2)*len(bead2[0])+1,p[0],p[1]] for p in seg(n3)]
+    n=n1+n2+n3
+    pnt=[cp1]+array(bead2).reshape(-1,3).round(4).tolist()+[cp2]
+    return f'polyhedron({pnt},{n},convexity=10);'
+    
+
+    
 
 def swp_c(bead2):
     '''
@@ -4822,3 +4850,42 @@ def offset_sol(sol,d,o=0):
     else:
         sol=[offset_3d(p,d) for p in sol]
     return sol
+    
+def ip_sol2sol(sol,sol1,i=0):
+    '''
+    function to find the intersection point between 2 solids
+    this function is to be used where the cutting lines of sol1 are intersecting sol at more than 1 times.
+    sol: solid which is intersected
+    sol1: this intersects the solid 'sol'
+    i: if the first intersection points of all the cutting lines are to be considered, value of i should be '0'.
+    if the last intersection points of all the cutting lines are to be considered, value of 'i' should be set to '-1'
+    if all the intersection points are required, value of 'i' should be set to 'all'
+    '''
+    if i=='all':
+        a=[ip_sol2line(sol,p) for p in cpo(sol1)]
+    else:
+        a=[ip_sol2line(sol,p)[i] for p in cpo(sol1)]
+    
+    return a
+    
+    
+def vnf2(bead2):
+    '''
+    function returns vertices and faces of 3d shapes with first and the last section triangulated. only works with convex sections
+    
+    '''
+    n1=arange(len(bead2[0])).tolist()
+    cp1=array(bead2[0]).mean(0).tolist()
+    n1=[[0,p[0]+1,p[1]+1] for p in seg(n1)]
+    n2=array([[[[(j+1)+i*len(bead2[0]),j+i*len(bead2[0]),j+(i+1)*len(bead2[0])],[(j+1)+i*len(bead2[0]),j+(i+1)*len(bead2[0]),(j+1)+(i+1)*len(bead2[0])]] \
+             if j<len(bead2[0])-1 else \
+             [[0+i*len(bead2[0]),j+i*len(bead2[0]),j+(i+1)*len(bead2[0])],[0+i*len(bead2[0]),j+(i+1)*len(bead2[0]),0+(i+1)*len(bead2[0])]] \
+                 for j in range(len(bead2[0]))] for i in range(len(bead2)-1)]).reshape(-1,3)
+    n2=(n2+1).tolist()
+    n3=(array(flip(arange(len(bead2[0]))))+(len(bead2)-1)*len(bead2[0]))
+    n3=n3+1
+    cp2=array(bead2[-1]).mean(0).tolist()
+    n3=[[len(bead2)*len(bead2[0])+1,p[0],p[1]] for p in seg(n3)]
+    n=n1+n2+n3
+    pnt=[cp1]+array(bead2).reshape(-1,3).round(4).tolist()+[cp2]
+    return [pnt,n]
