@@ -2150,6 +2150,9 @@ def l_cir_ip(line,cir):
 
 
 def s_pnt(pnt): # starting point for calculating convex hull (bottom left point)
+    '''
+    starting point for calculating convex hull (bottom left point)
+    '''
     pnt=array(pnt)
     c1=pnt[:,1]==pnt[:,1].min()
     s1=pnt[c1]
@@ -2503,22 +2506,49 @@ def perp(sec,point,radius):
     cond3=d==round(abs(radius),3)
     return point if cond3 else []
 
-def perp_point(line,point,distance):
+#def perp_point(line,point,distance):
+#    p0=line[0]
+#    p1=line[1]
+#    p0,p1=array([p0,p1])
+#    v1=p1-p0
+#    u1=v1/(norm(v1)+.00001)
+#    v2=array(point)-p0
+#    v1norm=norm(v1)
+#    v2norm=norm(v2)
+#    v2cost=u1@v2
+#    cond1=v2cost>=0
+#    cond2=v2cost<=v1norm
+#    d=sqrt(v2norm**2-v2cost**2)
+#    cond3=d<=distance
+#    return point if cond1 & cond2 & cond3  else []
+
+
+
+def perp_points(line,points):
     p0=line[0]
     p1=line[1]
     p0,p1=array([p0,p1])
     v1=p1-p0
     u1=v1/(norm(v1)+.00001)
-    v2=array(point)-p0
-    v1norm=norm(v1)
-    v2norm=norm(v2)
-    v2cost=u1@v2
-    cond1=v2cost>=0
-    cond2=v2cost<=v1norm
-    d=sqrt(v2norm**2-v2cost**2)
-    cond3=d<=distance
-    return point if cond1 & cond2 & cond3  else []
+    v2=array(points)-p0
+    v2cost=einsum('j,ij->i',u1,v2)
+    cond=(v2cost>=0)&(v2cost<=l_len(line))
+    pnts=array(points)[cond]
+    return pnts.tolist()
 
+#def perp_dist(line,point):
+#    p0=line[0]
+#    p1=line[1]
+#    p0,p1=array([p0,p1])
+#    v1=p1-p0
+#    u1=v1/(norm(v1)+.00001)
+#    v2=array(point)-p0
+#    v1norm=norm(v1)
+#    v2norm=norm(v2)
+#    v2cost=u1@v2
+#    d=sqrt(v2norm**2-v2cost**2)
+#    return d
+    
 def perp_dist(line,point):
     p0=line[0]
     p1=line[1]
@@ -2526,10 +2556,8 @@ def perp_dist(line,point):
     v1=p1-p0
     u1=v1/(norm(v1)+.00001)
     v2=array(point)-p0
-    v1norm=norm(v1)
-    v2norm=norm(v2)
-    v2cost=u1@v2
-    d=sqrt(v2norm**2-v2cost**2)
+    n1=cross(v1,v2)
+    d=n1/norm(v1)
     return d
 
 
@@ -2911,14 +2939,24 @@ def swp_prism_h(prism_big,prism_small):
     p3=p1+p2+[p1[0]]
     return p3
     
+#def pmdp(line,pnts): #perpendicular minimum distance point
+#    if pnts==[]:
+#        return line
+#    else:
+#        a=[perp_dist(line,p) for p in pnts if perp_dist(line,p)>0]
+#        if a!=[]:
+#            b=array(pnts)[min(a)==array(a)][0].tolist()
+#            return [line[0],b,line[1]]
+    
 def pmdp(line,pnts): #perpendicular minimum distance point
     if pnts==[]:
         return line
     else:
-        a=[perp_dist(line,p) for p in pnts]
-        b=array(pnts)[min(a)==array(a)][0].tolist()
-        return [line[0],b,line[1]]
-    
+        a=array([perp_dist(line,p) for p in pnts])
+        if a.tolist()!=[]:
+            b=array(pnts)[a.argsort()[a>0][0]].tolist()
+            return [line[0],b,line[1]]
+
 
 
 def surf_base(surf,h=0):
