@@ -2606,6 +2606,32 @@ def i_p2dw(l1,l):
     return  (p0+v1*t).tolist() if (0<t<1)& (0<u<1) else []
 
 
+# def pies1(sec,pnts):
+#     '''
+#     function to find points 'pnts' which are inside an enclosed section 'sec'
+#     refer to the file "example of various functions " for application examples
+    
+    
+#     '''
+#     s8,s4=[sec,pnts]
+#     p0=array(s4)
+#     p2=s8
+#     p3=s8[1:]+[s8[0]]
+#     p2,p3=array([p2,p3])
+#     # v1=array([[[1,0]]*len(p2)]*len(p0))
+#     v1=array([ones(len(p2)),zeros(len(p2))]).transpose(1,0)
+#     v2=(p3-p2)+[0,.00001]
+#     p=p2-p0[:,None]
+#     im=pinv(array([v1,-v2]).transpose(1,0,2).transpose(0,2,1))
+#     im=array([im]*len(p0))
+#     t=einsum('ijkl,ijl->ijk',im,p)
+
+#     s10=[p0[i] for i in range(len(p0)) if \
+#             t[i][(t[i][:,0]>=0)&(t[i][:,1]>=0)&(t[i][:,1]<=1)].shape[0]%2 \
+#          ==1]
+#     return array(s10).tolist()
+
+
 def pies1(sec,pnts):
     '''
     function to find points 'pnts' which are inside an enclosed section 'sec'
@@ -2613,23 +2639,26 @@ def pies1(sec,pnts):
     
     
     '''
-    s8,s4=[sec,pnts]
-    p0=array(s4)
-    p2=s8
-    p3=s8[1:]+[s8[0]]
-    p2,p3=array([p2,p3])
-    # v1=array([[[1,0]]*len(p2)]*len(p0))
-    v1=array([ones(len(p2)),zeros(len(p2))]).transpose(1,0)
-    v2=(p3-p2)+[0,.00001]
-    p=p2-p0[:,None]
-    im=pinv(array([v1,-v2]).transpose(1,0,2).transpose(0,2,1))
-    im=array([im]*len(p0))
-    t=einsum('ijkl,ijl->ijk',im,p)
+    
+    p0=sec
+    p1=sec[1:]+[sec[0]]
+    p2=pnts
+    p0,p1,p2=array(p0),array(p1),array(p2)
+    n1,n2=len(sec),len(pnts)
+    v1=array([p1-p0]*n2)+.00001
 
-    s10=[p0[i] for i in range(len(p0)) if \
-            t[i][(t[i][:,0]>=0)&(t[i][:,1]>=0)&(t[i][:,1]<=1)].shape[0]%2 \
-         ==1]
-    return array(s10).tolist()
+    v2=array([[[1,0]]*n1]*n2)
+    iim=array([v1,-v2]).transpose(1,2,0,3).transpose(0,1,3,2)
+    im=inv(iim)
+    p=p2[:,None]-p0
+    t=einsum('ijkl,ijl->ijk',im,p)
+    cond=[(t[i][:,0]>=0)&(t[i][:,0]<1)&(t[i][:,1]>=0) for i in range(len(t))]
+    a=array([t[i][cond[i]] for i in range(len(t))])
+    b=array([v1[i][cond[i]] for i in range(len(t))])
+    bnorm=array([p/norm(p,axis=1).reshape(-1,1) for p in b])
+    cond1=array([((p[:,0].round(3)==1)&(p[:,1].round(3)==0))|((p[:,0].round(3)==-1)&(p[:,1].round(3)==0)) for p in bnorm])
+    pnts1=[pnts[i] for i in range(len(a)) if len(a[i])%2==1 and cond1[i].any()!=1]
+    return pnts1
 
 
 
@@ -2949,14 +2978,17 @@ def swp_prism_h(prism_big,prism_small):
 #            return [line[0],b,line[1]]
     
 def pmdp(line,pnts): #perpendicular minimum distance point
+    pnts=remove_extra_points(pnts)
+    pnts=perp_points(line,pnts)
     if pnts==[]:
         return line
     else:
         a=array([perp_dist(line,p) for p in pnts])
-        if a.tolist()!=[]:
-            b=array(pnts)[a.argsort()[a>0][0]].tolist()
+        if a.tolist()!=[] and (a>0).any():
+            b=array(pnts)[a>0][a[a>0].argmin()].tolist()
             return [line[0],b,line[1]]
-
+        else:
+            return line
 
 
 def surf_base(surf,h=0):
@@ -4927,3 +4959,59 @@ def vnf2(bead2):
     n=n1+n2+n3
     pnt=[cp1]+array(bead2).reshape(-1,3).round(4).tolist()+[cp2]
     return [pnt,n]
+
+
+        
+def p_outside(triangle,p):
+    p0,p1,p2,p3=triangle+[p]
+    t1=[]
+    if pies1(cir_3p(p0,p1,p2,100),[p3])==[]:
+        t1.append([p0,p1,p2])
+    if pies1(cir_3p(p1,p2,p3,100),[p0])==[]:
+        t1.append([p1,p2,p3])
+    if pies1(cir_3p(p2,p3,p0,100),[p1])==[]:
+        t1.append([p2,p3,p0])
+    if pies1(cir_3p(p3,p0,p1,100),[p2])==[]:
+        t1.append([p3,p0,p1])
+    t1=[flip(p) if cw(p)==1 else p for p in t1]
+    return t1
+
+def p_inside(triangle,p):
+    t1=[[p,p1[0],p1[1]] for p1 in seg(triangle) ]
+    t1=[flip(p) if cw(p)==1 else p for p in t1]
+    return t1
+
+def p_online(triangle,p):
+    for p1 in seg(triangle):
+        v1=array(p1[1])-array(p1[0])
+        u1=(v1/norm(v1)).round(3)
+        v2=array(p)-array(p1[0])
+        u2=(v2/norm(v2)).round(3)
+        if u1.tolist()==u2.tolist() and l_len([p1[0],p1[1]])>l_len([p1[0],p]):
+            px=exclude_points(triangle,p1)[0]
+            t1=[[p1[0],p,px],[p1[1],p,px]]
+        if u1.tolist()==u2.tolist() and l_len([p1[0],p1[1]])<l_len([p1[0],p]):
+            px=exclude_points(triangle,p1)[0]
+            t1=[[p1[0],p1[1],px],[p1[1],p,px]]
+        elif u1.tolist()==(-u2).tolist():
+            px=exclude_points(triangle,p1)[0]
+            t1=[[p1[0],p1[1],px],[p1[0],px,p]]
+    t1=[flip(p) if cw(p)==1 else p for p in t1]
+    return t1
+
+def triangulate_4p(triangle,p):
+    if pies1(triangle,[p])==[]:
+        c1=[]
+        for p1 in seg(triangle):
+            v1=array(p1[1])-array(p1[0])
+            u1=(v1/norm(v1)).round(3)
+            v2=array(p)-array(p1[0])
+            u2=(v2/norm(v2)).round(3)
+            if u1.tolist()==u2.tolist() or u1.tolist()==(-u2).tolist():
+                c1.append(1)
+        if c1!=[]:
+            return p_online(triangle,p)
+        else:
+            return p_outside(triangle,p)
+    else:
+        return p_inside(triangle,p)
