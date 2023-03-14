@@ -2632,6 +2632,80 @@ def i_p2dw(l1,l):
 #     return array(s10).tolist()
 
 
+# def pies1(sec,pnts):
+#     '''
+#     function to find points 'pnts' which are inside an enclosed section 'sec'
+#     refer to the file "example of various functions " for application examples
+    
+    
+#     '''
+    
+#     p0=sec
+#     p1=sec[1:]+[sec[0]]
+#     p2=pnts
+#     p0,p1,p2=array(p0),array(p1),array(p2)
+#     n1,n2=len(sec),len(pnts)
+#     v1=array([p1-p0]*n2)+.00001
+
+#     v2=array([[[1,0]]*n1]*n2)
+#     iim=array([v1,-v2]).transpose(1,2,0,3).transpose(0,1,3,2)
+#     im=inv(iim)
+#     p=p2[:,None]-p0
+#     t=einsum('ijkl,ijl->ijk',im,p)
+#     cond=[(t[i][:,0]>=0)&(t[i][:,0]<1)&(t[i][:,1]>=0) for i in range(len(t))]
+#     a=array([t[i][cond[i]] for i in range(len(t))])
+#     b=array([v1[i][cond[i]] for i in range(len(t))])
+#     bnorm=array([p/norm(p,axis=1).reshape(-1,1) for p in b])
+#     cond1=array([((p[:,0].round(3)==1)&(p[:,1].round(3)==0))|((p[:,0].round(3)==-1)&(p[:,1].round(3)==0)) for p in bnorm])
+#     pnts1=[pnts[i] for i in range(len(a)) if len(a[i])%2==1 and cond1[i].any()!=1]
+#     return pnts1
+
+
+
+# def pies1(sec,pnts):
+#     '''
+#     function to find points 'pnts' which are inside an enclosed section 'sec'
+#     refer to the file "example of various functions " for application examples
+    
+    
+#     '''
+#     s8,s4=[sec,pnts]
+#     p0=array(s4)
+#     p2=s8
+#     p3=s8[1:]+[s8[0]]
+#     p2,p3=array([p2,p3])
+#     y_min,y_max=p2[:,1].min().round(3),p2[:,1].max().round(3)
+#     con1=(p0[:,1].round(3)!=y_min)&(p0[:,1].round(3)!=y_max)
+#     p0=p0[con1]
+#     if p0.tolist()!=[]:
+#         # v1=array([[[1,0]]*len(p2)]*len(p0))
+#         v1=array([ones(len(p2)),zeros(len(p2))]).transpose(1,0)
+#         v2=(p3-p2)+[0,.00001]
+#         p=p2-p0[:,None]
+#         im=pinv(array([v1,-v2]).transpose(1,0,2).transpose(0,2,1))
+#         im=array([im]*len(p0))
+#         t=einsum('ijkl,ijl->ijk',im,p)
+
+#         s10=[p0[i] for i in range(len(p0)) if \
+#                 t[i][(t[i][:,0]>=0)&(t[i][:,1]>=0)&(t[i][:,1]<=1)].shape[0]%2 \
+#              ==1]
+#         return array(s10).tolist()
+
+
+        
+def rev_pnts(sec,pnts):
+    s8,s4=[sec,pnts]
+    p0=array(s4)
+    p2=s8
+    p3=s8[1:]+[s8[0]]
+    p2,p3=array([p2,p3])
+    v2=(p3-p2)
+    con1=v2.round(3)[:,1]==0
+    y_list=p2[con1][:,1].round(3)
+    p0=p0[(p0[:,1][:,None]!=y_list).all(1)]
+    return p0.tolist()
+    
+
 def pies1(sec,pnts):
     '''
     function to find points 'pnts' which are inside an enclosed section 'sec'
@@ -2639,27 +2713,25 @@ def pies1(sec,pnts):
     
     
     '''
-    
-    p0=sec
-    p1=sec[1:]+[sec[0]]
-    p2=pnts
-    p0,p1,p2=array(p0),array(p1),array(p2)
-    n1,n2=len(sec),len(pnts)
-    v1=array([p1-p0]*n2)+.00001
+    pnts=rev_pnts(sec,pnts)
+    if pnts!=[]:
+        s8,s4=[sec,pnts]
+        p0=array(s4)
+        p2=s8
+        p3=s8[1:]+[s8[0]]
+        p2,p3=array([p2,p3])
+        # v1=array([[[1,0]]*len(p2)]*len(p0))
+        v1=array([ones(len(p2)),zeros(len(p2))]).transpose(1,0)
+        v2=(p3-p2)+.000001
+        p=p2-p0[:,None]
+        im=pinv(array([v1,-v2]).transpose(1,0,2).transpose(0,2,1))
+        im=array([im]*len(p0))
+        t=einsum('ijkl,ijl->ijk',im,p)
 
-    v2=array([[[1,0]]*n1]*n2)
-    iim=array([v1,-v2]).transpose(1,2,0,3).transpose(0,1,3,2)
-    im=inv(iim)
-    p=p2[:,None]-p0
-    t=einsum('ijkl,ijl->ijk',im,p)
-    cond=[(t[i][:,0]>=0)&(t[i][:,0]<1)&(t[i][:,1]>=0) for i in range(len(t))]
-    a=array([t[i][cond[i]] for i in range(len(t))])
-    b=array([v1[i][cond[i]] for i in range(len(t))])
-    bnorm=array([p/norm(p,axis=1).reshape(-1,1) for p in b])
-    cond1=array([((p[:,0].round(3)==1)&(p[:,1].round(3)==0))|((p[:,0].round(3)==-1)&(p[:,1].round(3)==0)) for p in bnorm])
-    pnts1=[pnts[i] for i in range(len(a)) if len(a[i])%2==1 and cond1[i].any()!=1]
-    return pnts1
-
+        s10=[p0[i] for i in range(len(p0)) if \
+                t[i][(t[i][:,0]>=0)&(t[i][:,1]>=0)&(t[i][:,1]<=1)].shape[0]%2 \
+             ==1]
+        return array(s10).tolist()
 
 
 def rsec(line,radius):
