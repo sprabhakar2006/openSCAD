@@ -5072,18 +5072,19 @@ def p_online(triangle,p):
     return t1
 
 def triangulate_4p(triangle,p):
-    if pies1(triangle,[p])==[]:
-        c1=[]
-        for p1 in seg(triangle):
-            v1=array(p1[1])-array(p1[0])
-            u1=(v1/norm(v1)).round(3)
-            v2=array(p)-array(p1[0])
-            u2=(v2/norm(v2)).round(3)
-            if u1.tolist()==u2.tolist() or u1.tolist()==(-u2).tolist():
-                c1.append(1)
-        if c1!=[]:
-            return p_online(triangle,p)
-        else:
-            return p_outside(triangle,p)
+    c1=[]
+    for p1 in seg(triangle):
+        v1=array(p1[1])-array(p1[0])
+        u1=(v1/norm(v1)).round(3)
+        v2=array(p)-array(p1[0])
+        u2=(v2/norm(v2)).round(3)
+        if u1.tolist()==u2.tolist() or u1.tolist()==(-u2).tolist():
+            c1.append(1)
+    if c1!=[]:
+        return p_online(triangle,p)
+    elif pies1(triangle,[p])==[]:
+        return p_outside(triangle,p)
     else:
         return p_inside(triangle,p)
+    
+    
