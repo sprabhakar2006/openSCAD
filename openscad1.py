@@ -4709,3 +4709,14 @@ def convex_hull(pnts):
         p_x.append(c.tolist())
         a=array(exclude_points(a,c))
     return p_x[:-1]
+
+def lexicographic_sort(p):
+    '''
+    function sorts the points list 'p' first with x and then with y smallest to largest 
+    '''
+    p=array(p)
+    p1=p[p[:,0].argsort()]
+    pux=unique(p1[:,0])
+    p2=concatenate([p1[p1[:,0]==p][p1[p1[:,0]==p][:,1].argsort()] for p in pux])
+    p2=p2.tolist()
+    return p2
