@@ -2516,8 +2516,31 @@ def perp_points(line,points):
     v2cost=einsum('j,ij->i',u1,v2)
     cond=(v2cost>=0)&(v2cost<=l_len(line))
     pnts=array(points)[cond]
+    v2=pnts-p0
+    
     return pnts.tolist()
 
+def perp_points_with_dist(line,points,f=1):
+    '''
+    function returns all the points which are projected on the line and has a perpendicular distance of line_length/f.
+    
+    
+    '''
+
+    p0=line[0]
+    p1=line[1]
+    p0,p1=array([p0,p1])
+    v1=p1-p0
+    u1=v1/(norm(v1)+.00001)
+    v2=array(points)-p0
+    v2cost=einsum('j,ij->i',u1,v2)
+    cond=(v2cost>=0)&(v2cost<=l_len(line))
+    pnts=array(points)[cond]
+    v2=pnts-p0
+    d=cross(v1,v2)/norm(v1)
+    cond=d<=l_len(line)/f
+    pnts=pnts[cond].tolist()
+    return pnts
 
     
 def perp_dist(line,point):
@@ -2868,9 +2891,13 @@ def swp_prism_h(prism_big,prism_small):
     
 
     
-def pmdp(line,pnts): #perpendicular minimum distance point
+def pmdp(line,pnts,f=1): #perpendicular minimum distance point
+    '''
+    function returns a points which projects on the line and has minimum perpendicular distance from a list of points with distances <= line_length/f
+
+    '''
     pnts=remove_extra_points(pnts)
-    pnts=perp_points(line,pnts)
+    pnts=perp_points_with_dist(line,pnts,f=f)
     if pnts==[]:
         return line
     else:
@@ -4710,7 +4737,7 @@ def convex_hull(pnts):
         a=array(exclude_points(a,c))
     return p_x[:-1]
 
-def lexicographic_sort(p):
+def lexicographic_sort_xy(p):
     '''
     function sorts the points list 'p' first with x and then with y smallest to largest 
     '''
@@ -4718,5 +4745,16 @@ def lexicographic_sort(p):
     p1=p[p[:,0].argsort()]
     pux=unique(p1[:,0])
     p2=concatenate([p1[p1[:,0]==p][p1[p1[:,0]==p][:,1].argsort()] for p in pux])
+    p2=p2.tolist()
+    return p2
+
+def lexicographic_sort_yx(p):
+    '''
+    function sorts the points list 'p' first with y and then with x smallest to largest 
+    '''
+    p=array(p)
+    p1=p[p[:,1].argsort()]
+    puy=unique(p1[:,1])
+    p2=concatenate([p1[p1[:,1]==p][p1[p1[:,1]==p][:,0].argsort()] for p in puy])
     p2=p2.tolist()
     return p2
