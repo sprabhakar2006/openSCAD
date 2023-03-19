@@ -1774,13 +1774,7 @@ def bb(prism):
     min_z=prism1[:,2].min()
     return [max_x-min_x,max_y-min_y,max_z-min_z]
 
-# def cube(s,center=False):
-#     m=s if type(s)==int or type(s)==float else s[0]
-#     n=s if type(s)==int or type(s)==float else s[1]
-#     o=s if type(s)==int or type(s)==float else s[2]
-#     path=cr(pts1([[-m/2,0],[m/2,0],[0,o],[-m/2,0]]),1)
-#     p=translate([-m/2,-n/2,-o/2],rsz3d(prism(square(m),path),[m,n,o])) if center==True else rsz3d(prism(square(m),path),[m,n,o])
-#     return array(p).tolist()
+
 
 def cube(s,center=False):
     '''
@@ -2085,12 +2079,7 @@ def arc_3d(v=[0,0,1],r=1,theta1=0,theta2=360,cw=-1,s=50):
     
     refer file "example of various functions" for application example
     '''
-#     theta=0 if v[:2]==[0,0] else ang(v[0],v[1])
-#     v=q([0,0,1],v,-theta)
-#     alpha=ang(v[0],v[2])
-#     arc1=arc(r,theta1,theta2,[0,0],s=s) if cw==-1 else flip(arc(r,theta1,theta2,[0,0],s=s))
-#     arc2=q_rot(['x90','z90'],arc1)
-#     return array(q_rot([f'z{theta}',f'y{-alpha}'],arc2)).tolist()
+
     if uv(v)==[0,0,1]:
         arc1=arc(r,theta1,theta2,[0,0],s) if cw==-1 else flip(arc(r,theta1,theta2,[0,0],s))
         return c2t3(arc1)
