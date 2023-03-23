@@ -3423,3 +3423,29 @@ function median(a)=(len(a)+1)/2%1==0?sort(a)[(len(a))/2]:(sort(a)[round(len(a)/2
 // function to calculate mean of a given array of numbers
 
 function mean(a)=sum(a)/len(a);
+
+// equivalent rotation axis and angle of rotation w.r.t vector vz
+//example:
+//
+//r1=["x30","y40","z100","y10","x70","y45"];
+//rotate([0,45,0])
+//rotate([70,0,0])
+//rotate([0,10,0])
+//rotate([30,40,100])
+//cylinder(h=50);
+//
+//sol=l_extrude(circle(1),50);
+//a=equivalent_rot_axis(r1);
+//sol1=rot(a.x,sol,a.y);
+//color("magenta")swp(sol1);
+//echo(a.x,a.y);
+
+
+function equivalent_rot_axis(r1=[])=
+let(
+vz=[0,0,1],
+v1=q_rot(r1,[vz])[0],
+v2=cross(vz,v1),
+theta=acos(vz*v1/norm(v1))
+)
+[v2,theta];
