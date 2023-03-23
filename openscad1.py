@@ -4747,3 +4747,20 @@ def lexicographic_sort_yx(p):
     p2=concatenate([p1[p1[:,1]==p][p1[p1[:,1]==p][:,0].argsort()] for p in puy])
     p2=p2.tolist()
     return p2
+    
+def equivalent_rot_axis(r1=[]):
+    '''
+    function returns an equivalent axis for rotation and angle of rotation for a sequence of rotations given by list 'r1'
+    example:
+    r1=['x30','y40','z100','y10','x70','y45']
+    rotation_axis,theta=equivalent_rot_axis(r1)
+    following is returned by the function:
+    v2=> [0.33215577139188024, 0.9203587619795575, -0.0]
+    theta=> 78.09373872704292
+    
+    '''
+    vz=array([0,0,1])
+    v1=array(q_rot(r1,[vz])[0])
+    v2=cross(vz,v1)
+    theta=r2d(arccos(vz@v1/norm(v1)))
+    return [v2.tolist(),theta]
