@@ -2669,7 +2669,7 @@ def r_sec(r1,r2,cp1,cp2):
 
 def cs(sec,d):
     '''
-    cleaning section for remove excess points from offset
+    cleaning section for removing excess points from offset
     refer to the file "example of various functions " for application examples
     
     '''
@@ -4354,7 +4354,7 @@ def equidistant_path(path,s=10):
 
 def equidistant_pathc(path,s=10):
     '''
-    divides a path in to equally spaced points
+    divides a closed path in to equally spaced points
     refer file 'example of various functions.ipynb' for application examples
     '''
     v=[p[1]-p[0] for p in array(seg(path))]
@@ -4755,7 +4755,7 @@ def equivalent_rot_axis(r1=[]):
     r1=['x30','y40','z100','y10','x70','y45']
     rotation_axis,theta=equivalent_rot_axis(r1)
     following is returned by the function:
-    v2=> [0.33215577139188024, 0.9203587619795575, -0.0]
+    rotation_axis=> [0.33215577139188024, 0.9203587619795575, -0.0]
     theta=> 78.09373872704292
     
     '''
