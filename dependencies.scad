@@ -3448,4 +3448,4 @@ v1=q_rot(r1,[vz])[0],
 v2=cross(vz,v1),
 theta=acos(vz*v1/norm(v1))
 )
-[v2,theta];
+[theta,v2];
