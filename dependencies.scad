@@ -3436,7 +3436,7 @@ function mean(a)=sum(a)/len(a);
 //
 //sol=l_extrude(circle(1),50);
 //a=equivalent_rot_axis(r1);
-//sol1=rot(a.x,sol,a.y);
+//sol1=rot(a.y,sol,a.x);
 //color("magenta")swp(sol1);
 //echo(a.x,a.y);
 
