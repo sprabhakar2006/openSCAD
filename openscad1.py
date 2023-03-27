@@ -3870,6 +3870,20 @@ def sec2vector(v1=[1,0,0],sec=[]):
     sec1=q_rot(['z-90',f'z{theta1}'],sec1)
     return sec1
     
+#def sec2vector(v1=[1,0,0],sec=[]):
+#    '''
+#    function to align a section 'sec' with a vector 'v1'
+#    refer file "example of various function" for application examples
+#    '''
+#    sec=flip(sec)
+#    th1=ang(v1[0],v1[1])
+#    s1=q_rot(['x90','z-90',f'z{th1}'],sec)
+#    a=array([v1[0],v1[1],0])
+#    b=array(v1)
+#    th2=r2d(arccos((a/norm(a))@(b/norm(b)))) if v1[2]!=0 else 0
+#    c=cross(a,b)
+#    s1=axis_rot(c,s1,th2)
+#    return s1
 
 
 
@@ -4450,7 +4464,7 @@ def surface_offset_sol(v,f2,t=-1):
             for i in range(n1)]
         f5=array(f5).reshape(-1,3).tolist()
         f4=f2+f3+f5
-    elif t>1:
+    elif t>0:
         v2=v+v1
         f3=array(f2)+array(f2).max()+1
         f3=f3.tolist()
