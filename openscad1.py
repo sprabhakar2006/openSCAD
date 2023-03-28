@@ -3861,11 +3861,10 @@ def sec2vector(v1=[1,0,0],sec=[]):
     nvzv1=cross(vz,v1)
     u1=v1/norm(v1)
     theta=r2d(arccos(u1@vz))
-    x1=(array(sec)[:,0].max()+array(sec)[:,0].min())/2
-#    sec=translate([x1,0,0],q_rot(['z180'],translate([-x1,0,0],sec)))
+
     sec=flip(q_rot(['x180'],sec))
     sec1=axis_rot([1,0,0],sec,-theta)
-#     vector1=array([[0,0,0],v1]).tolist()
+
     theta1=ang(v1[0],v1[1])
     sec1=q_rot(['z-90',f'z{theta1}'],sec1)
     return sec1
@@ -4091,7 +4090,7 @@ def offset_3d(sec,d):
     nv1=-array(nv(sec1))
     nz=[0,0,1]
     nr=cross(nv1,nz)
-    theta=r2d(arcsin(norm(nr)/(norm(nz)*norm(nv1))))
+    theta=r2d(arccos(nv1@array(nz)))
     sec1=axis_rot(nr,sec1,theta)
     z_values=array(sec1)[:,2]-avg1[2]
     sec1=ppplane(sec1,[0,0,1],[0,0,0])
