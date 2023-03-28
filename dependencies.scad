@@ -2171,13 +2171,13 @@ function uv(v)=v/norm(v);
 // echo(sum([1,3,2,5,7])); //=> echo: 18
 
 
-function sum(list)=[for(i=[0:len(list)-1])1]*list;
+function sum(a,s=0,n=0)= n==len(a)?s:sum(a,s+a[n],n+1);
 
 // function to find cumsum of a list of numbers
 // example:
 // echo(cumsum([1,3,2,5,7])); //=> echo: [1, 4, 6, 11, 18]
 
-function cumsum(list)=[for(i=[0:len(list)-1])sum([for(j=[0:i])list[j]])];
+function cumsum(a,s=0,s1=[ ],n=0)= n==len(a)?concat(s1,s):cumsum(a,s+a[n],n>0?concat(s1,s):[],n+1);
 
 // experimental
 
@@ -3436,7 +3436,7 @@ function mean(a)=sum(a)/len(a);
 //
 //sol=l_extrude(circle(1),50);
 //a=equivalent_rot_axis(r1);
-//sol1=rot(a.y,sol,a.x);
+//sol1=rot(a.x,sol,a.y);
 //color("magenta")swp(sol1);
 //echo(a.x,a.y);
 
