@@ -4385,7 +4385,7 @@ def equidistant_pathc(path,s=10):
                 p_rev.append(px.tolist())
                 d[j]=c[-1]+1
     p_rev=[path[0]]+p_rev
-    return p_rev
+    return p_rev[:s]
 
 
 
