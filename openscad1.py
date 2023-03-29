@@ -3855,15 +3855,16 @@ def sec2vector(v1=[1,0,0],sec=[]):
     function to align a section 'sec' with a vector 'v1'
     refer file "example of various function" for application examples
     '''
-    vz=[0,0,1]
+    vz=[0,0,-1]
     vz,v1=array([vz,v1])
 
     nvzv1=cross(vz,v1)
     u1=v1/norm(v1)
     theta=r2d(arccos(u1@vz))
+    sec=flip(sec)
 
-    sec=flip(q_rot(['x180'],sec))
-    sec1=axis_rot([1,0,0],sec,-theta)
+#    sec=flip(q_rot(['x180'],sec))
+    sec1=axis_rot([1,0,0],sec,theta)
 
     theta1=ang(v1[0],v1[1])
     sec1=q_rot(['z-90',f'z{theta1}'],sec1)
