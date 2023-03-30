@@ -3449,3 +3449,30 @@ v2=cross(vz,v1),
 theta=acos(vz*v1/norm(v1))
 )
 [theta,v2];
+
+function sec2vector(v1,sec)=
+let(
+    theta_y=ang((v1[0]^2+v1[1]^2)^.5,v1[2]),
+    theta_z=ang(v1[0],v1[1])
+    )
+    q_rot(["x90","z-90",str("y",-theta_y),str("z",theta_z)],sec);
+    
+function path_extrudec(sec,path)= let(
+prism=[for(i=[0:len(path)-1])let(
+p0=path[i],
+p1=i<len(path)-1?path[i+1]:path[0],
+v=p1-p0,
+prism=trns(p0,sec2vector(v,sec))
+)prism]
+
+)concat(prism,[prism[0]]);
+
+function path_extrude(sec,path)= let(
+prism=[for(i=[0:len(path)-1])let(
+p0=path[i],
+p1=i<len(path)-1?path[i+1]:path[0],
+v=p1-p0,
+prism=trns(p0,sec2vector(v,sec))
+)prism]
+
+)prism;
