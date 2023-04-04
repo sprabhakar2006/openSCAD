@@ -4796,13 +4796,13 @@ def path_extrude_closed(sec,path,twist=0):
         sol=sol+[sol[0]]
         return sol
         
-def rationalise_path(path):
+def rationalise_path(path,eps=.01):
     p2=array(path)
     p_v=array([ p2[i+1]-p2[i] if i<len(p2)-1 else
                p2[i]-p2[i-1]
         for i in range(len(p2))])
     p_v=p_v/norm(p_v,axis=1).reshape(-1,1)
-    p3=p2[1:][(abs(p_v[1:]-p_v[:-1])>.01).any(1)].tolist()
+    p3=p2[1:][(abs(p_v[1:]-p_v[:-1])>eps).any(1)].tolist()
     p3=[p2[0].tolist()]+p3
     return p3
 
