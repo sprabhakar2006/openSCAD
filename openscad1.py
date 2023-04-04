@@ -136,7 +136,7 @@ def q(vector=[1,0,0],point=[0,5,0],theta=0):
     '''
 
     t=theta
-    v=vector/(norm(vector)+.00001)
+    v=vector/(norm(vector))
     a=t/2*pi/180
     p=[cos(a),multiply(v,sin(a))]
     p1=[p[0],-p[1]]
@@ -2216,42 +2216,6 @@ def p_cir_t(p,cir): # point to circle tangent line (point should be outside the 
     tp=tp.tolist()
     return tp
 
-def p_extrude(sec,path): # section extrude through a path
-    p0=path
-    p1=p0[1:]+[p0[0]]
-    p0,p1=array(p0),array(p1)
-    v=p1-p0
-    a1=vectorize(ang)(v[:,0],v[:,1])
-    b=sqrt(v[:,0]**2+v[:,1]**2)
-    a2=vectorize(ang)(b,v[:,2])
-    c=[]
-    for i in range(len(path)-1):
-        sec1=translate(p0[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec))
-        sec2=translate(p1[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec))
-        if i<len(path)-2:
-            c.append([sec1])
-        else:
-            c.append([sec1,sec2])
-    return flip(concatenate(c).tolist())
-
-def p_extrudec(sec,path): # section extrude through a path (closed path)
-    p0=path
-    p1=p0[1:]+[p0[0]]
-    p0,p1=array(p0),array(p1)
-    v=p1-p0
-    a1=vectorize(ang)(v[:,0],v[:,1])
-    b=sqrt(v[:,0]**2+v[:,1]**2)
-    a2=vectorize(ang)(b,v[:,2])
-    c=[]
-    for i in range(len(path)-1):
-        sec1=translate(p0[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec))
-        sec2=translate(p1[i],q_rot(['x90','z-90',f'y{-a2[i]}',f'z{a1[i]}'],sec))
-        if i<len(path)-2:
-            c.append([sec1])
-        else:
-            c.append([sec1,sec2])
-    a=concatenate(c).tolist()
-    return flip(a+[a[0]])
 
 def v_sec_extrude(sec,path,o):
     '''
@@ -2936,61 +2900,7 @@ def cr_3d(p,s=5): # Corner radius 3d where 'p' are the list of points (turtle mo
     c=array(c).reshape(-1,3).tolist()
     return remove_extra_points(c) 
 
-def p_exc(sec,path,option=0):
-    p=array(path)
-    c,d,e=[],[],[]
-    a2,j=0,0
-    for i in range(len(p)):
-        i_plus=i+1 if i<len(p)-1 else 0
-        p0=p[i]
-        p1=p[i_plus]
-        v1=uv(p1-p0)
-        vz=[0,0,1]
-        v2=cross(vz,v1).tolist()
-        theta=0 if v2==[0,0,0] else arccos(array(vz)@array(v1))*180/pi
-        a=0 if theta==0 else ang(v2[0],v2[1])
-        a1=0 if v1[2]==0 else ang(v1[0],v1[1]) if v1[2]<0 else -ang(v1[0],v1[1])
-        d.append(a1)
-        if i>0:
-            j= j+1 if abs(a1-d[i-1])>179 else j
-            e.append(j)
-            a2=a1+j*180
-        if option==0:
-            sec1=translate(path[i],[q(v2,q([0,0,1],p,a+a2),theta) for p in sec])
-        else:
-            sec1=translate(path[i],[q(v2,q([0,0,1],p,a+a1),theta) for p in sec])
-            
-        c.append(sec1)
-    c=c+[c[0]]
-    return c
 
-def p_ex(sec,path,option=0):
-    p=array(path)
-    c,d,e=[],[],[]
-    a2,j=0,0
-    for i in range(len(p)-1):
-        i_plus=i+1 if i<len(p)-1 else 0
-        p0=p[i]
-        p1=p[i_plus]
-        v1=uv(p1-p0)
-        vz=[0,0,1]
-        v2=cross(vz,v1).tolist()
-        theta=0 if v2==[0,0,0] else arccos(array(vz)@array(v1))*180/pi
-        a=0 if theta==0 else ang(v2[0],v2[1])
-        a1=0 if v1[2]==0 else ang(v1[0],v1[1]) if v1[2]<0 else -ang(v1[0],v1[1])
-        d.append(a1)
-        if i>0:
-            j= j+1 if abs(abs(a1)-d[i-1])>100 else j
-            e.append(j)
-            a2=a1+j*180
-        if option==0:
-            sec1=translate(path[i],[q(v2,q([0,0,1],p,a+a2),theta) for p in sec])
-        else:
-            sec1=translate(path[i],[q(v2,q([0,0,1],p,a+a1),theta) for p in sec])
-            
-        c.append(sec1)
-    c=c+[translate(array(path[-1])-array(path[-2]),c[-1])]
-    return c
 
 def helix(radius=10,pitch=10, number_of_coils=1, step_angle=1):
     '''
@@ -3869,6 +3779,15 @@ def sec2vector(v1=[1,0,0],sec=[]):
     theta1=ang(v1[0],v1[1])
     sec1=q_rot(['z-90',f'z{theta1}'],sec1)
     return sec1
+    
+def sec2vector1(v1,sec):
+    '''
+    same as sec2vector but simpler method
+    '''
+    theta_y=ang((v1[0]**2+v1[1]**2)**.5,v1[2])
+    theta_z=ang(v1[0],v1[1])
+    return q_rot(['x90','z-90',f'y{-theta_y}',f'z{theta_z}'],sec)
+
     
 #def sec2vector(v1=[1,0,0],sec=[]):
 #    '''
@@ -4778,3 +4697,113 @@ def equivalent_rot_axis(r1=[]):
     v2=cross(vz,v1)
     theta=r2d(arccos(vz@v1/norm(v1)))
     return [v2.tolist(),theta]
+    
+def path_extrude_open(sec,path,twist=0):
+    if twist==0:
+        p1=path[:-1]
+        p2=path[1:]
+        p1,p2=array([p1,p2])
+        v1=p2-p1
+        u1=v1/norm(v1,axis=1).reshape(-1,1)
+        v2=concatenate([[u1[0]],(u1[1:]+u1[:-1])/2,[u1[-1]]])
+        sec2=[]
+        for i in range(len(path)):
+            sec1=translate(path[i],sec2vector(v2[i],sec))
+            sec2.append(sec1)
+        return sec2
+
+    if twist==1:
+        sec=flip(sec) if cw(sec)==-1 else sec
+        p1=array(seg(path))[:-1]
+        p2=array(path)
+        t_v=array([ p2[i+1]-p2[i] if i==0 else
+                   ((p2[i]-p2[i-1])+(p2[i+1]-p2[i]))/2 if i<len(p2)-1 else
+                   p2[i]-p2[i-1]
+            for i in range(len(p2))])
+
+        n_v=array([ cross(p2[i+1]-p2[i],p2[i+2]-p2[i+1]) if i==0 else
+             cross(p2[i]-p2[i-1],p2[i+1]-p2[i]) if i<len(p2)-1 else
+             cross(p2[i-1]-p2[i-2],p2[i]-p2[i-1])
+            for i in range(len(p2))])
+        o_v=array([cross(n_v[i],t_v[i]) for i in range(len(t_v))])
+
+        t_v=t_v/norm(t_v,axis=1).reshape(-1,1)
+        n_v=n_v/norm(n_v,axis=1).reshape(-1,1)
+        o_v=o_v/norm(o_v,axis=1).reshape(-1,1)
+
+        map_v=array([t_v,n_v,o_v]).transpose(1,0,2)
+        sec2=[]
+        for p in map_v:
+            v2=[[0,0,0],[0,0,-1],[0,1,0]]
+            a1=cross(v2[1],p[0])
+            t1=r2d(arccos(array(v2[1])@p[0]))
+            sec1=axis_rot(a1,sec,t1)
+            v3=axis_rot(a1,v2,t1)
+            a2=cross(v3[2],p[1])
+            t2=r2d(arccos(array(v3[2])@p[1]))
+            sec1=axis_rot(a2,sec1,t2)
+            sec2.append(sec1)
+        sol=[ translate(path[i],sec2[i]) for i in range(len(path))]
+
+        return sol
+    
+def path_extrude_closed(sec,path,twist=0):
+    if twist==0:
+        p1=path
+        p2=path[1:]+[path[0]]
+        p1,p2=array([p1,p2])
+        v1=p2-p1
+        u1=v1/norm(v1,axis=1).reshape(-1,1)
+        v2=concatenate([[(u1[-1]+u1[0])/2], (u1[1:]+u1[:-1])/2])
+        sec2=[]
+        for i in range(len(path)):
+            sec1=translate(path[i],sec2vector(v2[i],sec))
+            sec2.append(sec1)
+        sec2=sec2+[sec2[0]]
+        # sec3=concatenate([align_sec(sec2[i-1],sec2[i]) for i in range(1,len(sec2))]).tolist()
+        return sec2
+        
+    if twist==1:
+        sec=flip(sec) if cw(sec)==-1 else sec
+        p1=array(seg(path))
+        p2=array(path)
+        t_v=array([ ((p1[-1][1]-p1[-1][0])+(p1[i][1]-p1[i][0]))/2 if i==0 else
+             ((p1[i-1][1]-p1[i-1][0])+(p1[i][1]-p1[i][0]))/2
+            for i in range(len(p1))])
+        n_v=array([ cross(p2[i]-p2[-1],p2[i+1]-p2[i]) if i==0 else
+             cross(p2[i]-p2[i-1],p2[i+1]-p2[i]) if i<len(p2)-1 else
+             cross(p2[i]-p2[i-1],p2[0]-p2[i])
+            for i in range(len(p2))])
+        o_v=array([cross(n_v[i],t_v[i]) for i in range(len(t_v))])
+
+        t_v=t_v/norm(t_v,axis=1).reshape(-1,1)
+        n_v=n_v/norm(n_v,axis=1).reshape(-1,1)
+        o_v=o_v/norm(o_v,axis=1).reshape(-1,1)
+
+        map_v=array([t_v,n_v,o_v]).transpose(1,0,2)
+        sec2=[]
+        for p in map_v:
+            v2=[[0,0,0],[0,0,-1],[0,1,0]]
+            a1=cross(v2[1],p[0])
+            t1=r2d(arccos(array(v2[1])@p[0]))
+            sec1=axis_rot(a1,sec,t1)
+            v3=axis_rot(a1,v2,t1)
+            a2=cross(v3[2],p[1])
+            t2=r2d(arccos(array(v3[2])@p[1]))
+            sec1=axis_rot(a2,sec1,t2)
+            sec2.append(sec1)
+        sol=[ translate(path[i],sec2[i]) for i in range(len(path))]
+        sol=sol+[sol[0]]
+        return sol
+        
+def rationalise_path(path):
+    p2=array(path)
+    p_v=array([ p2[i+1]-p2[i] if i<len(p2)-1 else
+               p2[i]-p2[i-1]
+        for i in range(len(p2))])
+    p_v=p_v/norm(p_v,axis=1).reshape(-1,1)
+    p3=p2[1:][(abs(p_v[1:]-p_v[:-1])>.01).any(1)].tolist()
+    p3=[p2[0].tolist()]+p3
+    return p3
+
+
