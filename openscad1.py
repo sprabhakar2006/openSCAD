@@ -4699,6 +4699,10 @@ def equivalent_rot_axis(r1=[]):
     return [v2.tolist(),theta]
     
 def path_extrude_open(sec,path,twist=0):
+    '''
+    function to extrude a closed section to an open path
+    twist can be set either to '0' or '1' depending on the shape produced
+    '''
     if twist==0:
         p1=path[:-1]
         p2=path[1:]
@@ -4716,9 +4720,10 @@ def path_extrude_open(sec,path,twist=0):
         sec=flip(sec) if cw(sec)==-1 else sec
         p1=array(seg(path))[:-1]
         p2=array(path)
-        t_v=array([ p2[i+1]-p2[i] if i==0 else
-                   ((p2[i]-p2[i-1])+(p2[i+1]-p2[i]))/2 if i<len(p2)-1 else
-                   p2[i]-p2[i-1]
+        v1=array([(p[1]-p[0])/norm(p[1]-p[0]) for p in p1])
+        t_v=array([ v1[i] if i==0 else
+                   (v1[i-1]+v1[i])/2 if i<len(p2)-1 else
+                   v1[-1]
             for i in range(len(p2))])
 
         n_v=array([ cross(p2[i+1]-p2[i],p2[i+2]-p2[i+1]) if i==0 else
@@ -4748,6 +4753,10 @@ def path_extrude_open(sec,path,twist=0):
         return sol
     
 def path_extrude_closed(sec,path,twist=0):
+    '''
+    function to extrude a closed section to a closed path
+    closed path means the path provided has it's first and the last point same example a circle
+    '''
     if twist==0:
         p1=path
         p2=path[1:]+[path[0]]
@@ -4767,9 +4776,11 @@ def path_extrude_closed(sec,path,twist=0):
         sec=flip(sec) if cw(sec)==-1 else sec
         p1=array(seg(path))
         p2=array(path)
-        t_v=array([ ((p1[-1][1]-p1[-1][0])+(p1[i][1]-p1[i][0]))/2 if i==0 else
-             ((p1[i-1][1]-p1[i-1][0])+(p1[i][1]-p1[i][0]))/2
+        v1=array([(p[1]-p[0])/norm(p[1]-p[0]) for p in p1])
+        t_v=array([ (v1[-1]+v1[i])/2 if i==0 else
+             (v1[i-1]+v1[i])/2
             for i in range(len(p1))])
+
         n_v=array([ cross(p2[i]-p2[-1],p2[i+1]-p2[i]) if i==0 else
              cross(p2[i]-p2[i-1],p2[i+1]-p2[i]) if i<len(p2)-1 else
              cross(p2[i]-p2[i-1],p2[0]-p2[i])
