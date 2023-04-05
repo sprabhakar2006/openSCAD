@@ -1249,34 +1249,21 @@ def i_p3d(l1,l2): # intersection point between 2 lines 'l1' and 'l2' in 3d space
     ip=l1[0]+v1*t1
     return ip.tolist()
 
-def arc_3p_3d(points,s): # arc with 3 known list of 'points' in 3d space where 's' is the number of segments in the arc
+def arc_3p_3d(points,s=20):
     '''
-    function to create arc given 3 points 'p1','p2','p3' 
-    s: number of segments in the arc
-    refer file "example of various functions" for application example
+    draws an arc through the 3 points list
+    's' is the number of segments of the circle
     '''
-    points=array(points)
-    v1=points[0]-points[1]
-    v2=points[2]-points[1]
-    u1=v1/norm(v1)
-    u2=v2/norm(v2)
-    n=cross(u1,u2)
-    alpha=arccos(u1@u2)*180/pi
-    pa=v1/2
-    pb=v2/2
-    pap=pa+q(n,u1,90)
-    pbp=pb+q(n,u2,-90)
-    l1=[pa,pap]
-    l2=[pb,pbp]
-    cp=i_p3d(l1,l2)
-    v3=points[0]-(points[1]+cp)
-    u3=v3/norm(v3)
-    v4=points[2]-(points[1]+cp)
-    u4=v4/norm(v4)
-    theta= 360-arccos(u3@u4)*180/pi if alpha<90 else arccos(u3@u4)*180/pi
-    radius=norm(pa-cp)
-    arc=translate(points[1]+cp,[ q(n,points[0]-(points[1]+cp),-i)  for i in linspace(0,theta,s) ])
-    return array(arc).tolist()
+    n1=array(nv(points))
+    a1=cross(n1,[0,0,-1])
+    t1=r2d(arccos(n1@[0,0,-1]))
+    sec1=translate(-array(points).mean(0),points)
+    sec2=c3t2(axis_rot(a1,sec1,t1))
+    l1=len(sec2)
+    p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
+    arc1=arc_3p(p0,p1,p2,s=s)
+    arc1=translate(array(points).mean(0),axis_rot(a1,arc1,-t1))
+    return arc1
 
 def r_3p_3d(points):# radius of the circle with 3 known list of 'points' in 3d space
     '''
