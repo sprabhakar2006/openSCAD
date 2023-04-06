@@ -4832,3 +4832,77 @@ def centroid_3p(points):
     centroid=i_p2d([points[0],mid[1]],[points[1],mid[2]])
     return centroid
 
+def tangents_along_path(path,scale=1):
+    p1=array(seg(path))
+    p2=array(path)
+    v1=array([(p[1]-p[0])/norm(p[1]-p[0]) for p in p1])
+    t_v=array([ (v1[-1]+v1[i])/2 if i==0 else
+         (v1[i-1]+v1[i])/2
+        for i in range(len(p1))])
+
+    n_v=array([ cross(p2[i]-p2[-1],p2[i+1]-p2[i]) if i==0 else
+         cross(p2[i]-p2[i-1],p2[i+1]-p2[i]) if i<len(p2)-1 else
+         cross(p2[i]-p2[i-1],p2[0]-p2[i])
+        for i in range(len(p2))])
+    o_v=array([cross(n_v[i],t_v[i]) for i in range(len(t_v))])
+
+    t_v=t_v/norm(t_v,axis=1).reshape(-1,1)
+    n_v=n_v/norm(n_v,axis=1).reshape(-1,1)
+    o_v=o_v/norm(o_v,axis=1).reshape(-1,1)
+
+
+    t_v1=array([array([p2[i],p2[i]+t_v[i]*scale]).tolist() for i in range(len(p2))])
+    n_v1=array([array([p2[i],p2[i]+n_v[i]*scale]).tolist() for i in range(len(p2))])
+    o_v1=array([array([p2[i],p2[i]+o_v[i]*scale]).tolist() for i in range(len(p2))])
+    
+    return t_v1.tolist()
+
+def normals_along_path(path,scale=1):
+    p1=array(seg(path))
+    p2=array(path)
+    v1=array([(p[1]-p[0])/norm(p[1]-p[0]) for p in p1])
+    t_v=array([ (v1[-1]+v1[i])/2 if i==0 else
+         (v1[i-1]+v1[i])/2
+        for i in range(len(p1))])
+
+    n_v=array([ cross(p2[i]-p2[-1],p2[i+1]-p2[i]) if i==0 else
+         cross(p2[i]-p2[i-1],p2[i+1]-p2[i]) if i<len(p2)-1 else
+         cross(p2[i]-p2[i-1],p2[0]-p2[i])
+        for i in range(len(p2))])
+    o_v=array([cross(n_v[i],t_v[i]) for i in range(len(t_v))])
+
+    t_v=t_v/norm(t_v,axis=1).reshape(-1,1)
+    n_v=n_v/norm(n_v,axis=1).reshape(-1,1)
+    o_v=o_v/norm(o_v,axis=1).reshape(-1,1)
+
+
+    t_v1=array([array([p2[i],p2[i]+t_v[i]*scale]).tolist() for i in range(len(p2))])
+    n_v1=array([array([p2[i],p2[i]+n_v[i]*scale]).tolist() for i in range(len(p2))])
+    o_v1=array([array([p2[i],p2[i]+o_v[i]*scale]).tolist() for i in range(len(p2))])
+    
+    return n_v1.tolist()
+
+def orthos_along_path(path,scale=1):
+    p1=array(seg(path))
+    p2=array(path)
+    v1=array([(p[1]-p[0])/norm(p[1]-p[0]) for p in p1])
+    t_v=array([ (v1[-1]+v1[i])/2 if i==0 else
+         (v1[i-1]+v1[i])/2
+        for i in range(len(p1))])
+
+    n_v=array([ cross(p2[i]-p2[-1],p2[i+1]-p2[i]) if i==0 else
+         cross(p2[i]-p2[i-1],p2[i+1]-p2[i]) if i<len(p2)-1 else
+         cross(p2[i]-p2[i-1],p2[0]-p2[i])
+        for i in range(len(p2))])
+    o_v=array([cross(n_v[i],t_v[i]) for i in range(len(t_v))])
+
+    t_v=t_v/norm(t_v,axis=1).reshape(-1,1)
+    n_v=n_v/norm(n_v,axis=1).reshape(-1,1)
+    o_v=o_v/norm(o_v,axis=1).reshape(-1,1)
+
+
+    t_v1=array([array([p2[i],p2[i]+t_v[i]*scale]).tolist() for i in range(len(p2))])
+    n_v1=array([array([p2[i],p2[i]+n_v[i]*scale]).tolist() for i in range(len(p2))])
+    o_v1=array([array([p2[i],p2[i]+o_v[i]*scale]).tolist() for i in range(len(p2))])
+    
+    return o_v1.tolist()
