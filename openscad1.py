@@ -4906,3 +4906,100 @@ def orthos_along_path(path,scale=1):
     o_v1=array([array([p2[i],p2[i]+o_v[i]*scale]).tolist() for i in range(len(p2))])
     
     return o_v1.tolist()
+
+
+def i_line_planes(p1,p2):
+    n1=nv(p1)
+    n2=nv(p2)
+
+    l1=cross(n1,n2)
+    t1=axis_rot(l1,[n1],90)[0]
+    t2=axis_rot(l1,[n2],90)[0]
+
+    m1=array(p1).mean(0).tolist()
+    m2=array(p2).mean(0).tolist()
+
+    i_line1=((cross(n1,n2)*10+array(p1).mean(0))).tolist()
+    i_line2=((cross(n1,n2)*10+array(p2).mean(0))).tolist()
+
+
+    n_line1=((array(n1)*10+array(p1).mean(0))).tolist()
+    n_line2=((array(n2)*10+array(p2).mean(0))).tolist()
+
+    t_line1=((array(t1)*10+array(p1).mean(0))).tolist()
+    t_line2=((array(t2)*10+array(p2).mean(0))).tolist()
+
+    px=ppplane([m1,t_line1,m2,t_line2],l1,m1)
+
+    i_p1=i_p3d([px[0],px[1]],[px[2],px[3]])
+
+    l_i=(cross(n1,n2)*10+array(i_p1)).tolist()
+
+    line1=[i_p1,l_i]
+
+    pnts=l_sec_ip_3d(p2,line1)
+    pnts1=l_sec_ip_3d(p1,line1)
+
+    if pnts!=[] and pnts1!=[]:
+        pa,pb=array(pnts),array(pnts1)
+        la,lb=pb[1]-pa[0],pa[1]-pa[0]
+        la=abs(la/norm(la)).round(4)
+        lb=abs(lb/norm(lb)).round(4)
+        d1=la.tolist()==lb.tolist()
+        v1=pa[1]-pa[0]
+        u1=v1/norm(v1)
+        v2=pb[0]-pa[0]
+        v3=pb[1]-pa[0]
+        t1=u1@v2
+        t2=u1@v3
+        d2=(t1>=0)&(t1<=norm(v1))
+        d3=(t2>=0)&(t2<=norm(v1))
+        
+        v1=pb[1]-pb[0]
+        u1=v1/norm(v1)
+        v2=pa[0]-pb[0]
+        v3=pa[1]-pb[0]
+        t3=u1@v2
+        t4=u1@v3
+        d4=(t3>=0)&(t3<=norm(v1))
+        d5=(t4>=0)&(t4<=norm(v1))
+        
+        
+        decision=d1 & ((d2 | d3) | (d4 |d5))
+    else:
+        decision=0
+
+    if decision==1:
+        return pnts
+
+def l_sec_ip(line,sec):
+    l1=array(line)
+    s1=array(seg(sec))
+    v1=l1[1]-l1[0]
+    p_l=[]
+    for p in s1:
+        v2=p[1]-p[0]
+    #     l[0]+v1*t1=p[0]+v2*t2
+    #     v1*t1-v2*t2=p[0]-l[0]
+        iim=array([v1,-v2]).transpose(1,0)
+        im=inv(iim)
+        px=p[0]-l1[0]
+        t2=(im@px)[1]
+        pnts=p[0]+v2*t2
+        if 0<=t2<=1:
+            p_l.append(pnts.tolist())
+    return p_l
+
+def l_sec_ip_3d(sec,line):
+    n1=array(nv(sec))
+    a1=cross(n1,[0,0,-1])
+    t1=r2d(arccos(n1@[0,0,-1]))
+    sec1=translate(-array(sec).mean(0),sec)
+    sec2=c3t2(axis_rot(a1,sec1,t1))
+    line1=translate(-array(sec).mean(0),line)
+    line2=c3t2(axis_rot(a1,line1,t1))
+    l1=len(sec2)
+    p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
+    pnts=l_sec_ip(line2,sec2)
+    pnts=translate(array(sec).mean(0),axis_rot(a1,pnts,-t1)) if pnts!=[] else []
+    return pnts
