@@ -4506,9 +4506,9 @@ def ip_sol2sol(sol,sol1,i=0):
     if all the intersection points are required, value of 'i' should be set to 'all'
     '''
     if i=='all':
-        a=[ip_sol2line(sol,p) for p in cpo(sol1)]
+        a=[ip_sol2line(sol,p) for p in cpo(sol1) if ip_sol2line(sol,p)!=[]]
     else:
-        a=[ip_sol2line(sol,p)[i] for p in cpo(sol1)]
+        a=[ip_sol2line(sol,p)[i] for p in cpo(sol1) if ip_sol2line(sol,p)!=[]]
     
     return a
     
@@ -4969,8 +4969,9 @@ def i_line_planes(p1,p2):
     else:
         decision=0
 
-    if decision==1:
-        return pnts
+#     if decision==1:
+    return pnts if decision==1 else []
+
 
 def l_sec_ip(line,sec):
     l1=array(line)
@@ -4981,7 +4982,7 @@ def l_sec_ip(line,sec):
         v2=p[1]-p[0]
     #     l[0]+v1*t1=p[0]+v2*t2
     #     v1*t1-v2*t2=p[0]-l[0]
-        iim=array([v1,-v2]).transpose(1,0)
+        iim=array([v1,-v2]).transpose(1,0)+.00001
         im=inv(iim)
         px=p[0]-l1[0]
         t2=(im@px)[1]
@@ -5003,3 +5004,30 @@ def l_sec_ip_3d(sec,line):
     pnts=l_sec_ip(line2,sec2)
     pnts=translate(array(sec).mean(0),axis_rot(a1,pnts,-t1)) if pnts!=[] else []
     return pnts
+
+def path_offset_n(sec,r):
+    sec=flip(sec) if cw(path)==1 else path
+    r=round(r,3)
+    sec1=offset_segv(sec,r)[:-1]
+    s=offset_points(sec,r)[:-1]+[sec1[-1][1]]
+    a=s_int1(sec1)
+    if a!=[]:
+        sec2=a+s
+    #         sec2=pies1(sec,sec2)
+        sec2=array(sec2)
+        clean=cs1(sec,abs(r)-.01)[:-1]
+        clean1=[p[1:]+[p[0]] for p in clean]
+        m,n,_=array(clean).shape
+        o,_=sec2.shape
+        v1=array([[[1,0]]*n]*m)
+        v2=array(clean1)-array(clean)
+        iim=array([v1,-v2]).transpose(1,2,0,3).transpose(0,1,3,2)+[0,.00001]
+        im=array([pinv(iim)]*o)
+        p=(array(clean)[:,:,None]-sec2).transpose(2,0,1,3)
+        t=einsum('ijklm,ijkm->ijkl',im,p)
+        decision1=((t[:,:,:,0]>=0)&(t[:,:,:,1]>=0)&(t[:,:,:,1]<=1))
+        sec3=sec2[(decision1.sum(2)==1).any(1)]
+        sec4=sort_points(sec,exclude_points(sec2,sec3))
+    else:
+        sec4=s
+    return sec4
