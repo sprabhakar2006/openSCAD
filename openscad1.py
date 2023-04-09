@@ -1748,31 +1748,31 @@ def cube(s,center=False):
         return translate([0,0,-s[2]/2],linear_extrude(square([s[0],s[1]],True),s[2]))
 
 
-#def sphere(r=0,cp=[0,0,0],s=50):
-#    '''
-#    function to draw sphere with radius 'r' , center point 'cp' and number of segments 's'
-#    refer to the file "example of various functions " for application example
-#    
-#    '''
-#    path=arc(r,-90,90,s=int(s/2))
-#    p=[ translate([cp[0],cp[1],p[1]+cp[2]],circle(p[0],s=s)) for p in path]
-#    return array(p).tolist()
+def sphere(r=0,cp=[0,0,0],s=50):
+   '''
+   function to draw sphere with radius 'r' , center point 'cp' and number of segments 's'
+   refer to the file "example of various functions " for application example
+   
+   '''
+   path=arc(r,-90,90,s=int(s/2))
+   p=[ translate([cp[0],cp[1],p[1]+cp[2]],circle(p[0],s=s)) for p in path]
+   return array(p).tolist()
 
-def sphere(r=1,c=[0,0,0],s=20):
-    '''
-    function to draw sphere with radius 'r' , center point 'c' and number of segments 's'
-    refer to the file "example of various functions " for application example
+# def sphere(r=1,c=[0,0,0],s=20):
+#     '''
+#     function to draw sphere with radius 'r' , center point 'c' and number of segments 's'
+#     refer to the file "example of various functions " for application example
     
-    '''
-    p_l=[]
-    for i in linspace(0,r,int(s/2)+1):
-        i=r*cos(d2r(180/(r+.0001)*(i+.0001)))
-        a=sqrt(r**2-i**2)
-        for j in linspace(a,-a,s)[:-1]:
-            j1=a*cos(d2r(180/(a+.0001)*(j+.0001)))
-            k=sqrt((r**2-i**2-j1**2).round(5))*sign(j)
-            p_l.append([j1+c[0],k+c[1],i+c[2]])
-    return array(p_l).reshape(-1,s-1,3).tolist()
+#     '''
+#     p_l=[]
+#     for i in linspace(0,r,int(s/2)+1):
+#         i=r*cos(d2r(180/(r+.0001)*(i+.0001)))
+#         a=sqrt(r**2-i**2)
+#         for j in linspace(a,-a,s)[:-1]:
+#             j1=a*cos(d2r(180/(a+.0001)*(j+.0001)))
+#             k=sqrt((r**2-i**2-j1**2).round(5))*sign(j)
+#             p_l.append([j1+c[0],k+c[1],i+c[2]])
+#     return array(p_l).reshape(-1,s-1,3).tolist()
 
 def rsz2d(sec,rsz):
     '''
