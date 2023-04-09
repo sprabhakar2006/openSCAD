@@ -1748,15 +1748,33 @@ def cube(s,center=False):
         return translate([0,0,-s[2]/2],linear_extrude(square([s[0],s[1]],True),s[2]))
 
 
-def sphere(r=0,cp=[0,0,0],s=50):
+#def sphere(r=0,cp=[0,0,0],s=50):
+#    '''
+#    function to draw sphere with radius 'r' , center point 'cp' and number of segments 's'
+#    refer to the file "example of various functions " for application example
+#    
+#    '''
+#    path=arc(r,-90,90,s=s)
+#    p=[ translate([cp[0],cp[1],p[1]+cp[2]],circle(p[0],s=s)) for p in path]
+#    return array(p).tolist()
+
+def sphere(r=1,c=[0,0,0],s=20):
     '''
-    function to draw sphere with radius 'r' , center point 'cp' and number of segments 's'
+    function to draw sphere with radius 'r' , center point 'c' and number of segments 's'
     refer to the file "example of various functions " for application example
     
     '''
-    path=arc(r,-90,90,s=s)
-    p=[ translate([cp[0],cp[1],p[1]+cp[2]],circle(p[0],s=s)) for p in path]
-    return array(p).tolist()
+    p_l=[]
+    for i in linspace(-r,r,s+1):
+        i=r*cos(d2r(180/(r+.0001)*(i+.0001)))
+
+        a=sqrt(r**2-i**2)
+
+        for j in linspace(-a,a,s):
+            j1=a*cos(d2r(180/(a+.0001)*(j+.0001)))
+            k=sqrt((r**2-i**2-j1**2).round(5))*sign(j)
+            p_l.append([k+c[0],j1+c[1],i+c[2]])
+    return array(p_l).reshape(-1,s,3).tolist()
 
 def rsz2d(sec,rsz):
     '''
@@ -5031,3 +5049,50 @@ def path_offset_n(sec,r):
     else:
         sec4=s
     return sec4
+    
+def faces(l,m):
+    '''
+    calculate the faces for the vertices with shape l x m with first and the last end closed
+    '''
+    n1=arange(m).tolist()
+    n2=array([[[[(j+1)+i*m,j+i*m,j+(i+1)*m],[(j+1)+i*m,j+(i+1)*m,(j+1)+(i+1)*m]] \
+             if j<m-1 else \
+             [[0+i*m,j+i*m,j+(i+1)*m],[0+i*m,j+(i+1)*m,0+(i+1)*m]] \
+                 for j in range(m)] for i in range(l-1)]).reshape(-1,3).tolist()
+    n3=(array(flip(arange(m)))+(l-1)*m).tolist()
+    n=[n1]+n2+[n3]
+    return n
+
+
+def faces_1(l,m):
+    '''
+    calculate the faces for the vertices with shape l x m 
+    '''
+    n=array([[[[(j+1)+i*m,j+i*m,j+(i+1)*m],[(j+1)+i*m,j+(i+1)*m,(j+1)+(i+1)*m]] \
+             if j<m-1 else \
+             [[0+i*m,j+i*m,j+(i+1)*m],[0+i*m,j+(i+1)*m,0+(i+1)*m]] \
+                 for j in range(m)] for i in range(l-1)]).reshape(-1,3).tolist()
+
+    return n
+
+def faces_2(l,m):
+    '''
+    calculate the faces for the vertices with shape l x m with first and the last end open
+    '''
+    n=array([[[[(j+1)+i*m,j+i*m,j+(i+1)*m],[(j+1)+i*m,j+(i+1)*m,(j+1)+(i+1)*m]] \
+             if j<m-1 else \
+             [[0+i*m,j+i*m,j+(i+1)*m],[0+i*m,j+(i+1)*m,0+(i+1)*m]] \
+                 for j in range(m-1)] for i in range(l-1)]).reshape(-1,3).tolist()
+
+    return n
+
+def faces_3(l,m):
+    '''
+    calculate the faces for the vertices with shape l x m with first and the last end open and faces flipped
+    '''
+    n=array([[[[(j+1)+i*m,j+i*m,j+(i+1)*m],[(j+1)+i*m,j+(i+1)*m,(j+1)+(i+1)*m]] \
+             if j<m-1 else \
+             [[0+i*m,j+i*m,j+(i+1)*m],[0+i*m,j+(i+1)*m,0+(i+1)*m]] \
+                 for j in range(m-1)] for i in range(l-1)]).reshape(-1,3).tolist()
+
+    return [flip(p) for p in n]
