@@ -5094,3 +5094,17 @@ def faces_3(l,m):
                  for j in range(m-1)] for i in range(l-1)]).reshape(-1,3).tolist()
 
     return [flip(p) for p in n]
+
+def surface_for_fillet(sol,vector,radius,thickness,forward,right,top,num,s=50):
+    '''
+    sol: the object where the surface needs to be created
+    vector,radius,thickness,forward,right and top are the parameters to define the o_solid which covers the surface
+    num: number of slices in a surface
+    s: number of segments in the circle
+    '''
+    sol3=o_solid(vector,circle(radius,s=s),thickness,forward,right,top)
+    a=cpo([ls([array(sol3[0]).mean(0).tolist(),p],num) for p in sol3[0]])
+    b=cpo([ls([array(sol3[1]).mean(0).tolist(),p],num) for p in sol3[1]])
+    c=[[a[i]]+[b[i]] for i in range(len(a))]
+    sol4=[ip_sol2sol(sol1,p,0) for p in c if ip_sol2sol(sol1,p,0)!=[]]
+    return sol4
