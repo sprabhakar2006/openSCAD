@@ -5095,16 +5095,40 @@ def faces_3(l,m):
 
     return [flip(p) for p in n]
 
-def surface_for_fillet(sol,vector,radius,thickness,forward,right,top,num,s=50):
-    '''
-    sol: the object where the surface needs to be created
-    vector,radius,thickness,forward,right and top are the parameters to define the o_solid which covers the surface
-    num: number of slices in a surface
-    s: number of segments in the circle
-    '''
-    sol3=o_solid(vector,circle(radius,s=s),thickness,forward,right,top)
-    a=cpo([ls([array(sol3[0]).mean(0).tolist(),p],num) for p in sol3[0]])
-    b=cpo([ls([array(sol3[1]).mean(0).tolist(),p],num) for p in sol3[1]])
-    c=[[a[i]]+[b[i]] for i in range(len(a))]
-    sol4=[ip_sol2sol(sol1,p,0) for p in c if ip_sol2sol(sol1,p,0)!=[]]
-    return sol4
+# def surface_for_fillet(sol,vector,radius,thickness,forward,right,top,num,s=50):
+#     '''
+#     sol: the object where the surface needs to be created
+#     vector,radius,thickness,forward,right and top are the parameters to define the o_solid which covers the surface
+#     num: number of slices in a surface
+#     s: number of segments in the circle
+#     '''
+#     sol3=o_solid(vector,circle(radius,s=s),thickness,forward,right,top)
+#     a=cpo([ls([array(sol3[0]).mean(0).tolist(),p],num) for p in sol3[0]])
+#     b=cpo([ls([array(sol3[1]).mean(0).tolist(),p],num) for p in sol3[1]])
+#     c=[[a[i]]+[b[i]] for i in range(len(a))]
+#     sol4=[ip_sol2sol(sol1,p,0) for p in c if ip_sol2sol(sol1,p,0)!=[]]
+#     return sol4
+    
+def surface_for_fillet(sol1=[],sol2=[],factor1=50,factor2=10,factor3=1,factor4=100):
+    p0= array(prism_center(sol1))
+    p1= array(prism_center(sol2))
+    v1=p1-p0
+    u1=v1/norm(v1)
+    cir1=circle(1,s=factor1)
+    sur1=sol2vector(v1,cpo([ls([[0,0],p],factor2) for p in cir1]),u1*factor3)
+    lines1=[[[[0,0,0],(array(p1)/norm(p1)*factor4).tolist()] for p1 in p] for p in sur1]
+    sol3=[translate(p0,cpo(p)) for p in lines1]
+    sur2=[ip_sol2sol(sol1,p) for p in sol3]
+    return sur2
+    
+def prism_center(sol):
+    x_max=array(sol)[:,:,0].max()
+    x_min=array(sol)[:,:,0].min()
+
+    y_max=array(sol)[:,:,1].max()
+    y_min=array(sol)[:,:,1].min()
+
+    z_max=array(sol)[:,:,2].max()
+    z_min=array(sol)[:,:,2].min()
+
+    return [array([x_max,x_min]).mean(),array([y_max,y_min]).mean(),array([z_max,z_min]).mean()]
