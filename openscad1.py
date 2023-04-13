@@ -5022,7 +5022,7 @@ def l_sec_ip_3d(sec,line):
     return pnts
 
 def path_offset_n(sec,r):
-    sec=flip(sec) if cw(path)==1 else path
+    sec=flip(sec) if cw(sec)==1 else sec
     r=round(r,3)
     sec1=offset_segv(sec,r)[:-1]
     s=offset_points(sec,r)[:-1]+[sec1[-1][1]]
@@ -5130,10 +5130,16 @@ def surface_for_fillet(sol1=[],sol2=[],factor1=50,factor2=10,factor3=1,factor4=1
     v,f1=vnf2(sol1)
     v,f1=array(v),array(f1)
     bc1=v[f1].mean(1)
-    f2=f1[(sqrt((bc1[:,0]-cp1[0])**2+(bc1[:,1]-cp1[1])**2+(bc1[:,2]-cp1[2])**2)<=dia)]
-    solx=v[f1].tolist()
-    sur2=[ipx(solx,p) for p in sol3]
-    return sur2
+    f2=f1[(sqrt((bc1[:,0]-p1[0])**2+(bc1[:,1]-p1[1])**2+(bc1[:,2]-p1[2])**2)<=dia)]
+    solx=v[f2].tolist()
+    sur2=[ipx(solx,p) for p in sol3][1:]
+    sur3=[sur2[0]]
+    for i in range(1,len(sur2)):
+        s1=sort_points(sur3[-1],sur2[i])
+        sur3.append(s1)
+        
+    
+    return sur3
 
     
 def prism_center(sol):
@@ -5179,3 +5185,76 @@ def ipx(prism,prism1):
     p=p[condition]
 #     p=p[unique(p,return_index=True)[1]]
     return p.tolist()
+    
+def ipx_sol2sol(sol,sol1,i=0):
+    '''
+    function to find the intersection point between 2 solids
+    this function is to be used where the cutting lines of sol1 are intersecting sol at more than 1 times.
+    sol: solid which is intersected
+    sol1: this intersects the solid 'sol'
+    i: if the first intersection points of all the cutting lines are to be considered, value of i should be '0'.
+    if the last intersection points of all the cutting lines are to be considered, value of 'i' should be set to '-1'
+    if all the intersection points are required, value of 'i' should be set to 'all'
+    '''
+    if i=='all':
+        a=[ipx_sol2line(sol,p) for p in cpo(sol1) if ipx_sol2line(sol,p)!=[]]
+    else:
+        a=[ipx_sol2line(sol,p)[i] for p in cpo(sol1) if ipx_sol2line(sol,p)!=[]]
+    
+    return a
+    
+def ipx_sol2line(sol,line):# when line has more than 2 points
+    '''
+    function to calculate intersection point between a 3d solid and a line. 
+     "sol" is the 3d tri-mesh which is intersected with a "line".
+     try below code for better understanding:
+    sec=circle(10)
+    path=cr(pts1([[-10+.1,0],[12,0],[-2,0,2],[0,10,3],[-10,0]]),5)
+    sol=prism(sec,path)
+
+    line=[[0,0,-1],[20,20,10]]
+
+    ip1=ip_sol2line(sol,line)
+    
+    refer to file "example of various functions" for application
+    '''
+
+
+    pa=sol
+    p1=array(sol)
+    pm=p1[:,0]
+    pn=p1[:,1]
+    po=p1[:,2]
+    px=array(line[:-1])
+    py=array(line[1:])
+    v1,v2,v3=py-px,pn-pm,po-pm
+    a,_=v1.shape
+    b,_=v2.shape
+    v1=array([v1]*b)
+    v2=-array([v2]*a).transpose(1,0,2)
+    v3=-array([v3]*a).transpose(1,0,2)
+    iim=array([v1,v2,v3]).transpose(1,2,0,3).transpose(0,1,3,2)+.00001
+    im=inv(iim)
+    p=array([pm]*a).transpose(1,0,2)-array([px]*b)
+    t=einsum('ijkl,ijl->ijk',im,p)
+    condition=(t[:,:,0]>=0)&(t[:,:,0]<=1)&(t[:,:,1]>=0)&(t[:,:,1]<=1)&(t[:,:,2]>=0)&(t[:,:,2]<=1)&((t[:,:,1]+t[:,:,2])<=1)
+    t1=t[:,:,0][condition]
+    i_p1=array([px]*b)[condition]+einsum('ij,i->ij',v1[condition],t1)
+    i_p2=i_p1[argsort([norm(p-px[0]) for p in i_p1])]
+    s_planes=array([p1]*a).transpose(1,0,2,3)[condition][argsort([norm(p-px[0]) for p in i_p1])]
+    nv1=[nv(p) for p in s_planes]
+
+    i_p2,s_planes,nv1=i_p2.tolist(),s_planes.tolist(),array(nv1).tolist()
+    return i_p2
+    
+def partial_surface(sol,cp1,dia):
+    '''
+    return the part of the surface of a given solid 'sol' in terms of vertices and faces
+    cp1: center point around which the surface is needed
+    dia: dia of the sphere inside which the surface needs tobe extracted
+    '''
+    v,f1=vnf2(sol)
+    v,f1=array(v),array(f1)
+    bc1=v[f1].mean(1)
+    f2=f1[(sqrt((bc1[:,0]-cp1[0])**2+(bc1[:,1]-cp1[1])**2+(bc1[:,2]-cp1[2])**2)<=dia)]
+    return [v.tolist(),f2.tolist()]
