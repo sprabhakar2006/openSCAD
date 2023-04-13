@@ -5160,7 +5160,7 @@ def prism_center(sol):
     return [array([x_max,x_min]).mean(),array([y_max,y_min]).mean(),array([z_max,z_min]).mean()]
     
     
-def ipx(prism,prism1):
+def ipx(sol1,sol2):
     '''
     function to calculate intersection point between two 3d objects. 
      "prism" is the 3d tri-mesh which is intersected with "prism1".
@@ -5168,8 +5168,8 @@ def ipx(prism,prism1):
     
     refer to file "example of various functions" for application
     '''
-    pb=prism1
-    p1=array(prism)
+    pb=sol2
+    p1=array(sol1)
     p2=array([[[pb[i][j],pb[i+1][j]] for j in range(len(pb[i]))] for i in range(len(pb)-1)]).reshape(-1,2,3)
     pm=p1[:,0]
     pn=p1[:,1]
@@ -5182,9 +5182,11 @@ def ipx(prism,prism1):
     t3=einsum('ijk,ijk->ij',px[:,None]-pm,cross(-v1[:,None],v2))/einsum('ik,jk->ij',-v1,cross(v2,v3)+[.00001,.00001,.00001])
     p=px[:,None]+einsum('ik,ij->ijk',v1,t1)
     condition=(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)>=0)&((t2+t3)<=1)
-    p=p[condition]
+#     p=p[condition]
+    p=array([p[i][condition[i]] for i in range(len(p))])
+    p=array([p1[0] for p1 in p if p1.tolist()!=[]]).tolist()
 #     p=p[unique(p,return_index=True)[1]]
-    return p.tolist()
+    return p
     
 def ipx_sol2sol(sol,sol1,i=0):
     '''
