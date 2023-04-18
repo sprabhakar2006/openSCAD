@@ -1806,10 +1806,46 @@ def rsz2dc(sec,rsz):
     s=array([ avg+array([r_x*(sec[i][0]-avg[0]),r_y*(sec[i][1]-avg[1])]) for i in range(len(sec))]).round(4)
     return s[sort(unique(s,axis=0,return_index=True)[1])].tolist()
 
-def ip(prism,prism1):
+# def ip(prism,prism1):
+#     '''
+#     function to calculate intersection point between two 3d prisms. 
+#      "prism" is the 3d object which is intersected with "prism1".
+#      try below code for better understanding:
+#     sec=circle(10)
+#     path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-9.9,0]]),5)
+#     p=prism(sec,path)
+#     p1=cylinder(r=3,h=15,s=30)
+#     ip1=ip(p,p1)
+    
+#     refer to file "example of various functions" for application
+#     '''
+#     pa=prism
+#     pb=prism1
+#     p1=array([[ [[pa[i][j],pa[i][j+1],pa[i+1][j]],[pa[i+1][j+1],pa[i+1][j],pa[i][j+1]]] if j<len(pa[i])-1 
+#      else [[pa[i][j],pa[i][0],pa[i+1][j]],[pa[i+1][0],pa[i+1][j],pa[i][0]]] 
+#      for j in range(len(pa[i]))] 
+#               for i in range(len(pa)-1)]).reshape(-1,3,3)
+#     p2=array([[[pb[i][j],pb[i+1][j]] for j in range(len(pb[i]))] for i in range(len(pb)-1)]).reshape(-1,2,3)
+#     pm=p1[:,0]
+#     pn=p1[:,1]
+#     po=p1[:,2]
+#     px=p2[:,0]
+#     py=p2[:,1]
+#     v1,v2,v3=py-px,pn-pm,po-pm
+#     t1=einsum('ijk,jk->ij',px[:,None]-pm,cross(v2,v3))/einsum('ik,jk->ij',-v1,cross(v2,v3)+[.00001,.00001,.00001])
+#     t2=einsum('ijk,ijk->ij',px[:,None]-pm,cross(v3,-v1[:,None]))/einsum('ik,jk->ij',-v1,cross(v2,v3)+[.00001,.00001,.00001])
+#     t3=einsum('ijk,ijk->ij',px[:,None]-pm,cross(-v1[:,None],v2))/einsum('ik,jk->ij',-v1,cross(v2,v3)+[.00001,.00001,.00001])
+#     p=px[:,None]+einsum('ik,ij->ijk',v1,t1)
+#     condition=(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)>=0)&((t2+t3)<=1)
+#     p=p[condition]
+# #     p=p[unique(p,return_index=True)[1]]
+#     return p.tolist()
+    
+def ip(prism,prism1,side=-1):
     '''
     function to calculate intersection point between two 3d prisms. 
      "prism" is the 3d object which is intersected with "prism1".
+     side: when a ray intersects a solid it can intersect at 2 locations, if the ray is travelling from outside, in that case if '0' is given meaning only the first intersection point is considered, and in case '-1' is given meaning the last intersection point will be considered.
      try below code for better understanding:
     sec=circle(10)
     path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-9.9,0]]),5)
@@ -1837,9 +1873,17 @@ def ip(prism,prism1):
     t3=einsum('ijk,ijk->ij',px[:,None]-pm,cross(-v1[:,None],v2))/einsum('ik,jk->ij',-v1,cross(v2,v3)+[.00001,.00001,.00001])
     p=px[:,None]+einsum('ik,ij->ijk',v1,t1)
     condition=(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)>=0)&((t2+t3)<=1)
-    p=p[condition]
+#     p=p[condition]
 #     p=p[unique(p,return_index=True)[1]]
+    p=array([[p[i][condition[i]],i] for i in range(len(p))],dtype=object)
+    if side=='all':
+        p=concatenate([a[array([l_len([p2[:,0][b],p1]) for p1 in a]).argsort()] for (a,b) in p if a.tolist()!=[]])
+    else:
+        p=array([a[array([l_len([p2[:,0][b],p1]) for p1 in a]).argsort()[side]] for (a,b) in p if a.tolist()!=[]])
+        
     return p.tolist()
+
+
 
 def ipf(prism,prism1,r,s,o=0):
     '''
@@ -5133,13 +5177,8 @@ def surface_for_fillet(sol1=[],sol2=[],factor1=50,factor2=10,factor3=1,factor4=1
     f2=f1[(sqrt((bc1[:,0]-p1[0])**2+(bc1[:,1]-p1[1])**2+(bc1[:,2]-p1[2])**2)<=dia)]
     solx=v[f2].tolist()
     sur2=[ipx(solx,p) for p in sol3][1:]
-    sur3=[sur2[0]]
-    for i in range(1,len(sur2)):
-        s1=sort_points(sur3[-1],sur2[i])
-        sur3.append(s1)
-        
     
-    return sur3
+    return sur2
 
     
 def prism_center(sol):
@@ -5160,16 +5199,22 @@ def prism_center(sol):
     return [array([x_max,x_min]).mean(),array([y_max,y_min]).mean(),array([z_max,z_min]).mean()]
     
     
-def ipx(sol1,sol2):
+def ipx(prism,prism1,side=-1):
     '''
-    function to calculate intersection point between two 3d objects. 
-     "prism" is the 3d tri-mesh which is intersected with "prism1".
-    
+    function to calculate intersection point between two 3d prisms. 
+     "prism" is the 3d object which is intersected with "prism1".
+     side: when a ray intersects a solid it can intersect at 2 locations, if the ray is travelling from outside, in that case if '0' is given meaning only the first intersection point is considered, and in case '-1' is given meaning the last intersection point will be considered.
+     try below code for better understanding:
+    sec=circle(10)
+    path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-9.9,0]]),5)
+    p=prism(sec,path)
+    p1=cylinder(r=3,h=15,s=30)
+    ip1=ip(p,p1)
     
     refer to file "example of various functions" for application
     '''
-    pb=sol2
-    p1=array(sol1)
+    pb=prism1
+    p1=array(prism)
     p2=array([[[pb[i][j],pb[i+1][j]] for j in range(len(pb[i]))] for i in range(len(pb)-1)]).reshape(-1,2,3)
     pm=p1[:,0]
     pn=p1[:,1]
@@ -5183,10 +5228,11 @@ def ipx(sol1,sol2):
     p=px[:,None]+einsum('ik,ij->ijk',v1,t1)
     condition=(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)>=0)&((t2+t3)<=1)
 #     p=p[condition]
-    p=array([p[i][condition[i]] for i in range(len(p))])
-    p=array([p1[0] for p1 in p if p1.tolist()!=[]]).tolist()
 #     p=p[unique(p,return_index=True)[1]]
-    return p
+    p=array([[p[i][condition[i]],i] for i in range(len(p))],dtype=object)
+    p=array([a[array([l_len([p2[:,0][b],p1]) for p1 in a]).argsort()[side]] for (a,b) in p if a.tolist()!=[]])
+
+    return p.tolist()
     
 def ipx_sol2sol(sol,sol1,i=0):
     '''
