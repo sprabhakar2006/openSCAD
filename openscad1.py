@@ -4113,11 +4113,11 @@ def ip_sol2line(sol,line):# when line has more than 2 points
     t1=t[:,:,0][condition]
     i_p1=array([px]*b)[condition]+einsum('ij,i->ij',v1[condition],t1)
     i_p2=i_p1[argsort([norm(p-px[0]) for p in i_p1])]
-    s_planes=array([p1]*a).transpose(1,0,2,3)[condition][argsort([norm(p-px[0]) for p in i_p1])]
-    nv1=[nv(p) for p in s_planes]
+#    s_planes=array([p1]*a).transpose(1,0,2,3)[condition][argsort([norm(p-px[0]) for p in i_p1])]
+#    nv1=[nv(p) for p in s_planes]
 
-    i_p2,s_planes,nv1=i_p2.tolist(),s_planes.tolist(),array(nv1).tolist()
-    return i_p2
+#    i_p2,s_planes,nv1=i_p2.tolist(),s_planes.tolist(),array(nv1).tolist()
+    return i_p2.tolist()
     
 
 
@@ -4566,9 +4566,11 @@ def ip_sol2sol(sol,sol1,i=0):
     if all the intersection points are required, value of 'i' should be set to 'all'
     '''
     if i=='all':
-        a=[ip_sol2line(sol,p) for p in cpo(sol1) if ip_sol2line(sol,p)!=[]]
+        a=[ip_sol2line(sol,p) for p in cpo(sol1)]
+        a=[p for p in a if p!=[]]
     else:
-        a=[ip_sol2line(sol,p)[i] for p in cpo(sol1) if ip_sol2line(sol,p)!=[]]
+        a=[ip_sol2line(sol,p) for p in cpo(sol1)]
+        a=[p[i] for p in a if p!=[]]
     
     return a
     
