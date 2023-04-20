@@ -1875,11 +1875,14 @@ def ip(prism,prism1,side=-1):
     condition=(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)>=0)&((t2+t3)<=1)
 #     p=p[condition]
 #     p=p[unique(p,return_index=True)[1]]
-    p=array([[p[i][condition[i]],i] for i in range(len(p))],dtype=object)
+    p=array([[p[i][condition[i]],i%len(pb[0])] for i in range(len(p))],dtype=object)
+    p=concatenate([concatenate([[[p2,i] for p2 in p1[0]] for p1 in p if (p1[0].tolist()!=[])&(p1[1]==i)],dtype=object) for i in range(len(pb[0]))],dtype=object)
+    p=array([p]*len(pb[0]),dtype=object)[p[:,1]==unique(p[:,1])[:,None]]
+    p=array([[array([p1[0] for p1 in p if p1[1]==i],dtype=object),i] for i in range(len(pb[0]))],dtype=object)
     if side=='all':
-        p=concatenate([a[array([l_len([p2[:,0][b],p1]) for p1 in a]).argsort()] for (a,b) in p if a.tolist()!=[]])
+        p=concatenate([a[array([l_len([p2[:,0][b],p1]) for p1 in a],dtype=object).argsort()] for (a,b) in p ],dtype=object)
     else:
-        p=array([a[array([l_len([p2[:,0][b],p1]) for p1 in a]).argsort()[side]] for (a,b) in p if a.tolist()!=[]])
+        p=array([a[array([l_len([p2[:,0][b],p1]) for p1 in a],dtype=object).argsort()[side]] for (a,b) in p if a.tolist()!=[]],dtype=object)
         
     return p.tolist()
 
@@ -4567,7 +4570,7 @@ def ip_sol2sol(sol,sol1,i=0):
     '''
     if i=='all':
         a=[ip_sol2line(sol,p) for p in cpo(sol1)]
-        a=[p for p in a if p!=[]]
+        a=array([p for p in a if p!=[]]).reshape(-1,3).tolist()
     else:
         a=[ip_sol2line(sol,p) for p in cpo(sol1)]
         a=[p[i] for p in a if p!=[]]
