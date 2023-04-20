@@ -1876,9 +1876,10 @@ def ip(prism,prism1,side=-1):
 #     p=p[condition]
 #     p=p[unique(p,return_index=True)[1]]
     p=array([[p[i][condition[i]],i%len(pb[0])] for i in range(len(p))],dtype=object)
-    p=concatenate([concatenate([[[p2,i] for p2 in p1[0]] for p1 in p if (p1[0].tolist()!=[])&(p1[1]==i)],dtype=object) for i in range(len(pb[0]))],dtype=object)
-    p=array([p]*len(pb[0]),dtype=object)[p[:,1]==unique(p[:,1])[:,None]]
-    p=array([[array([p1[0] for p1 in p if p1[1]==i],dtype=object),i] for i in range(len(pb[0]))],dtype=object)
+    n=array([p1[1] for p1 in p if p1[0].tolist()!=[]])
+    p=concatenate([concatenate([[[p2,i] for p2 in p1[0]] for p1 in p if (p1[0].tolist()!=[])&(p1[1]==i)],dtype=object) for i in n],dtype=object)
+    p=array([p]*len(n),dtype=object)[p[:,1]==unique(p[:,1])[:,None]]
+    p=array([[array([p1[0] for p1 in p if p1[1]==i],dtype=object),i] for i in n],dtype=object)
     if side=='all':
         p=concatenate([a[array([l_len([p2[:,0][b],p1]) for p1 in a],dtype=object).argsort()] for (a,b) in p ],dtype=object)
     else:
