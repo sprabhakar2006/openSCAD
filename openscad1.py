@@ -3763,6 +3763,27 @@ def wrap_around1(sec,path):
     return sec1
 
 
+#def align_sec(sec1,sec2,ang=10):
+#    '''
+#    function to align 2 3d sections to obtain the non twisted optimised solid
+#    ang: is the resolution for the angle of rotation, 1 degree will have much higher resolution and hence will take longer to compute
+#    refer file "examples of various functions" for application examples
+#    '''
+#    nv1=nv(sec2)
+#    cp1=array(sec2).mean(0)
+#    sec2=translate(-cp1,sec2)
+#    i=arange(0,360,ang)
+#    area1=[]
+#    sol1=[]
+#    for j in i:
+#        sec3=(array(axis_rot(nv1,sec2,j))+cp1).tolist()
+#        sol=[sec1]+[sec3]
+#        a1=array([l_len(p) for p in cpo(sol)]).sum()
+#        area1.append(a1)
+#        sol1.append(sol)
+#    sol2=sol1[array(area1).argmin()]
+#    return sol2
+    
 def align_sec(sec1,sec2,ang=10):
     '''
     function to align 2 3d sections to obtain the non twisted optimised solid
@@ -3773,15 +3794,9 @@ def align_sec(sec1,sec2,ang=10):
     cp1=array(sec2).mean(0)
     sec2=translate(-cp1,sec2)
     i=arange(0,360,ang)
-    area1=[]
-    sol1=[]
-    for j in i:
-        sec3=(array(axis_rot(nv1,sec2,j))+cp1).tolist()
-        sol=[sec1]+[sec3]
-        a1=array([l_len(p) for p in cpo(sol)]).sum()
-        area1.append(a1)
-        sol1.append(sol)
-    sol2=sol1[array(area1).argmin()]
+    area1=[norm((array(axis_rot(nv1,sec2,j))+cp1)-array(sec1),axis=1).sum() for j in i]
+    sec3=(array(axis_rot(nv1,sec2,array(area1).argmin()*ang))+cp1).tolist()
+    sol2=[sec1]+[sec3]
     return sol2
     
 def sec2vector(v1=[1,0,0],sec=[]):
@@ -5235,9 +5250,16 @@ def ipx(prism,prism1,side=-1):
     condition=(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)>=0)&((t2+t3)<=1)
 #     p=p[condition]
 #     p=p[unique(p,return_index=True)[1]]
-    p=array([[p[i][condition[i]],i] for i in range(len(p))],dtype=object)
-    p=array([a[array([l_len([p2[:,0][b],p1]) for p1 in a]).argsort()[side]] for (a,b) in p if a.tolist()!=[]])
-
+    p=array([[p[i][condition[i]],i%len(pb[0])] for i in range(len(p))],dtype=object)
+    n=array([p1[1] for p1 in p if p1[0].tolist()!=[]])
+    p=concatenate([concatenate([[[p2,i] for p2 in p1[0]] for p1 in p if (p1[0].tolist()!=[])&(p1[1]==i)],dtype=object) for i in n],dtype=object)
+    p=array([p]*len(n),dtype=object)[p[:,1]==unique(p[:,1])[:,None]]
+    p=array([[array([p1[0] for p1 in p if p1[1]==i],dtype=object),i] for i in n],dtype=object)
+    if side=='all':
+        p=concatenate([a[array([l_len([p2[:,0][b],p1]) for p1 in a],dtype=object).argsort()] for (a,b) in p ],dtype=object)
+    else:
+        p=array([a[array([l_len([p2[:,0][b],p1]) for p1 in a],dtype=object).argsort()[side]] for (a,b) in p if a.tolist()!=[]],dtype=object)
+        
     return p.tolist()
     
 def ipx_sol2sol(sol,sol1,i=0):
@@ -5312,3 +5334,25 @@ def partial_surface(sol,cp1,dia):
     bc1=v[f1].mean(1)
     f2=f1[(sqrt((bc1[:,0]-cp1[0])**2+(bc1[:,1]-cp1[1])**2+(bc1[:,2]-cp1[2])**2)<=dia)]
     return [v.tolist(),f2.tolist()]
+    
+def align_sol_1(sol):
+    '''
+    function to straighten the twists in the path_extruded sections for better alignments
+    refer to the file "example of various functions.ipynb" for application examples
+    '''
+    sol1=[sol[0]]
+    for i in range(1,len(sol)):
+        a=align_sec_1(sol1[i-1],sol[i])
+        sol1.append(a[1])
+    return sol1
+    
+def align_sec_1(sec1,sec2):
+    '''
+    function to align 2 3d sections to obtain the non twisted optimised solid
+    refer file "examples of various functions" for application examples
+    '''
+    
+    area1=[ norm(array(sec2[i:]+sec2[:i])-array(sec1),axis=1).sum() for i in range(len(sec2)) ]
+    i=array(area1).argmin()
+    sol2=[sec1]+[sec2[i:]+sec2[:i]]
+    return sol2
