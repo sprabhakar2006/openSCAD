@@ -5356,3 +5356,24 @@ def align_sec_1(sec1,sec2):
     i=array(area1).argmin()
     sol2=[sec1]+[sec2[i:]+sec2[:i]]
     return sol2
+
+def convert_3lines2fillet_closed(pnt1,pnt2,pnt3,f=1.9,s=10,n=500):
+    '''
+    Develops a fillet with 3 list of points (pnt1,pnt2,pnt3) in 3d space
+    f: is a factor which can be reduced to 1.5 in case of self intersection observed
+    s: number of segments in the fillet, increase the segments in case finer model is required
+    n: number of points required in points list 'pnt1, pnt2,pnt3'
+    refer to the file "example of various functions" for application examples
+    
+    '''
+    pnt1=equidistant_pathc(pnt1,n)
+    pnt2=equidistant_pathc(pnt2,n)
+    pnt3=equidistant_pathc(pnt3,n)
+    
+    pnt2=align_sec_1(pnt1,pnt2)[1]
+    pnt3=align_sec_1(pnt1,pnt3)[1]
+    
+    sol=array([pnt3,pnt1,pnt2]).transpose(1,0,2)
+    sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*f,s) for (p1,p2,p3) in sol]
+    sol=sol+[sol[0]]
+    return sol
