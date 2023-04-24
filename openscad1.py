@@ -3938,7 +3938,7 @@ def fillet_l_cir(line=[],cir1=[],fillet_radius=1,s=20):
 
 
 
-def o_solid(nv=[0,0,1],sec=[],thickness=10,trns1=0,trns2=0,trns3=0): #oriented solid
+def o_solid(nv=[0,0,1],sec=[],thickness=10,trns1=0,trns2=0,trns3=0, theta=[0,0,0]): #oriented solid
     '''
     function for defining a solid with any defined section. solid gets oriented as per the defined normal vector
     nv: normal vector for defining plane orientation of the section
@@ -3948,6 +3948,7 @@ def o_solid(nv=[0,0,1],sec=[],thickness=10,trns1=0,trns2=0,trns3=0): #oriented s
     trns2: translate the solid in the direction 'right' to the normal vector 'nv'
     trns3: translate the solid in the direction 'up' to the normal vector 'nv'
     '-ve' values given to the trns1,trns2,trns3 will translate the solid in the reverse direction 
+    theta: rotate the section around axis  fox example if nv is [1,0,0] or x-axis, the sequence of rotation will be x, y ,z axis
     '''
     plane1=sec2vector(nv,sec)
     v1=array(nv)
@@ -3960,6 +3961,7 @@ def o_solid(nv=[0,0,1],sec=[],thickness=10,trns1=0,trns2=0,trns3=0): #oriented s
 #     u1,u2,u3=array([u1,u2,u3]).tolist()
     plane2=translate(u1*thickness,plane1)
     sol=[plane1]+[plane2]
+    sol=axis_rot(u3,axis_rot(-u2,axis_rot(nv,sol,theta[0]),theta[1]),theta[2])
     sol=translate(u1*trns1,sol)
     sol=translate(u2*trns2,sol)
     sol=translate(u3*trns3,sol)
@@ -4048,7 +4050,7 @@ def offset_3d(sec,d):
 #     nv1=n1.mean(0)
     nv1=-array(nv(sec1))
     nz=[0,0,1]
-    nr=cross(nv1,nz)
+    nr=cross(nv1,nz) if abs(nv1).tolist()!=[0,0,1] else nv1
     theta=r2d(arccos(nv1@array(nz)))
     sec1=axis_rot(nr,sec1,theta)
     z_values=array(sec1)[:,2]-avg1[2]
