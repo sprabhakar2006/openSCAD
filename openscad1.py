@@ -2,7 +2,7 @@ from numpy import *
 from numpy.linalg import *
 import matplotlib.pyplot as plt
 import time
-from scipy.spatial import cKDTree
+from scipy.spatial import cKDTree,Delaunay, Voronoi
 import pandas as pd
 import igl
 
@@ -5379,3 +5379,76 @@ def convert_3lines2fillet_closed(pnt1,pnt2,pnt3,f=1.9,s=10,n=500):
     sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*f,s) for (p1,p2,p3) in sol]
     sol=sol+[sol[0]]
     return sol
+
+def ip_s2l(sol,line,side=-1):
+    '''
+    function to calculate intersection point between solid to line. 
+     "sol" is the 3d object which is intersected with "line".
+     side: when a ray intersects a solid it can intersect at 2 locations, if the ray is travelling from outside, in that case if '0' is given meaning only the first intersection point is considered, and in case '-1' is given meaning the last intersection point will be considered.
+     try below code for better understanding:
+    refer to file "example of various functions" for application
+    '''
+    pa=sol
+    p1=array([[ [[pa[i][j],pa[i][j+1],pa[i+1][j]],[pa[i+1][j+1],pa[i+1][j],pa[i][j+1]]] if j<len(pa[i])-1 
+     else [[pa[i][j],pa[i][0],pa[i+1][j]],[pa[i+1][0],pa[i+1][j],pa[i][0]]] 
+     for j in range(len(pa[i]))] 
+              for i in range(len(pa)-1)]).reshape(-1,3,3)
+    p2=array(seg(line)[:-1])
+    pm=p1[:,0]
+    pn=p1[:,1]
+    po=p1[:,2]
+    px=p2[:,0]
+    py=p2[:,1]
+    # px+v1*t1=pm+v2*t2+v3*t3
+    v1,v2,v3=py-px,pn-pm,po-pm
+
+    iim=array([array([v1]*len(v2)).transpose(1,0,2),array([-v2]*len(v1)),array([-v3]*len(v1))]).transpose(1,2,0,3)
+    im=inv(iim+.0001)
+    p=array([pm]*len(v1))-array([px]*len(v2)).transpose(1,0,2)
+    t=einsum('ijk,ijkl->ijl',p,im)
+    condition=(t[:,:,0]>=0)&(t[:,:,0]<=1)&(t[:,:,1]>=0)&(t[:,:,1]<=1)&(t[:,:,2]>=0)&(t[:,:,2]<=1)&(t[:,:,1]+t[:,:,2]<=1)
+
+    p=array([px]*len(v2)).transpose(1,0,2)[condition]+array([v1]*len(v2)).transpose(1,0,2)[condition]*t[condition][:,0][:,None]
+    p=p[norm(p-px[0],axis=1).argsort()]
+    return p.tolist()
+    
+def gcd(a,b):
+    '''
+    calculates the greatest common divisor of 2 numbers 'a','b'
+    '''
+    for _ in range(max(a,b)):
+        if a>b:
+            a=a-b
+        elif b>a:
+            b=b-a
+        elif a==b:
+            break
+    return a
+
+def lcm(a,b):
+    '''
+    calculates the least common multiple of 2 numbers 'a','b'
+    '''
+    return a*b/gcd(a,b)
+
+def perp_min_dist_point(line,points):
+    '''
+    out of all the "points" in the list, first this function selects points which have a perpendicular projection on the line.
+    subsequently select the point which is shortest distance from the line.
+    In case no point is projected on the line, function returns an empty list.
+    '''
+    p0=line[0]
+    p1=line[1]
+    p0,p1=array([p0,p1])
+    v1=p1-p0
+    u1=v1/(norm(v1)+.00001)
+    v2=array(points)-p0
+    v2cost=einsum('j,ij->i',u1,v2)
+    cond=(v2cost>=0)&(v2cost<=l_len(line))
+    pnts=array(points)[cond]
+    if pnts.tolist()!=[]:
+        dist=array(perp_dist(line,pnts)).argmin()
+        pnts=pnts[dist]
+        return pnts.tolist()
+    else:
+        return []
