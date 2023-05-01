@@ -1072,11 +1072,27 @@ def translate(p,sec):#translates a prism or section by [x,y,z] distance
 
 
 
-def prism1(sec,path,s=100):
-    sol=prism(sec,path)
-    sol=[equidistant_pathc(p,s) for p in sol][:s]
-    return sol
+def prism1(sec,path,s=100,sp=0):
+    '''
+    produces a prism with each section divided in 's' number of points
+    sp: this gives a flexibility of defining the starting point of the section
+    '''
+    sec0=equidistant_pathc(sec,s)
+    sol=prism(sec0,path)
+    sol=[p[sp:]+p[:sp] for p in sol]
     
+    return sol
+
+def prism2(sec,path,s=100,sp=0):
+    '''
+    similar to prism1 only order of offset is changed
+    '''
+    sol=prism(sec,path)
+    sol=[equidistant_pathc(p,s) for p in sol]
+    sol=[p[sp:]+p[:sp] for p in sol]
+    
+    return sol
+
     
 def offset_points_cw(sec,r):
     '''
@@ -4560,7 +4576,7 @@ def concave_hull_f(points,f):
         
     return sec2
     
-def offset_sol(sol,d,o=0):
+def offset_sol(sol,d,o=0,s=100):
     '''
     function to calculate offset of a 3d object by distance 'd'
     option 'o' can be set to '0' or '1' depending on the shape of the object.
@@ -4568,12 +4584,12 @@ def offset_sol(sol,d,o=0):
     in few cases this function may not work 
     
     '''
-
+    sol=q_rot(['x.001'],sol)
     n=array([len(remove_extra_points(p)) for p in sol]).argmax()
     if o==0:
         sol=[sort_points(sol[n],offset_3d(p,d)) for p in sol]
     else:
-        sol=[offset_3d(p,d) for p in sol]
+        sol=[equidistant_pathc(offset_3d(p,d),s) for p in sol]
     return sol
     
 def ip_sol2sol(sol,sol1,i=0):
@@ -5452,3 +5468,11 @@ def perp_min_dist_point(line,points):
         return pnts.tolist()
     else:
         return []
+
+def axis_rot_o(axis,solid,angle):
+    '''
+    rotate a solid around an axis considering the solid is centered at origin
+    '''
+    cp1=array(prism_center(solid))
+    solid=translate(-cp1,solid)
+    return translate(cp1,[[q(axis,p1,angle) for p1 in p] for p in solid])
