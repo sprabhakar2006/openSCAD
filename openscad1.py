@@ -5135,13 +5135,13 @@ def faces(l,m):
     '''
     calculate the faces for the vertices with shape l x m with first and the last end closed
     '''
-    n1=arange(m).tolist()
+    n1=arange(m,dtype=int)
     n2=array([[[[(j+1)+i*m,j+i*m,j+(i+1)*m],[(j+1)+i*m,j+(i+1)*m,(j+1)+(i+1)*m]] \
              if j<m-1 else \
              [[0+i*m,j+i*m,j+(i+1)*m],[0+i*m,j+(i+1)*m,0+(i+1)*m]] \
-                 for j in range(m)] for i in range(l-1)]).reshape(-1,3).tolist()
-    n3=(array(flip(arange(m)))+(l-1)*m).tolist()
-    n=[n1]+n2+[n3]
+                 for j in range(m)] for i in range(l-1)],dtype=int).reshape(-1,3)
+    n3=(array(flip(arange(m)),dtype=int)+(l-1)*m)
+    n=array([n1,n2,n3])
     return n
 
 
@@ -5476,3 +5476,58 @@ def axis_rot_o(axis,solid,angle):
     cp1=array(prism_center(solid))
     solid=translate(-cp1,solid)
     return translate(cp1,[[q(axis,p1,angle) for p1 in p] for p in solid])
+
+def edges(l,m):
+    return array([[[i+j*m,i+(j+1)*m] for j in range(l-1)] for i in range(m)]).reshape(-1,2)
+    
+def i_p_n(sol,i_p):
+    '''
+    calculates normal at the intersection points
+    sol: solid on which the normal is required
+    i_p: list of intersection points between 2 solids
+    '''
+    l,m,_=array(sol).shape
+    f1=faces(l,m)
+    v=array(sol).reshape(-1,3)
+    tri=v[f1[1]]
+    v2,v3=tri[:,1]-tri[:,0], tri[:,2]-tri[:,0]
+    v1=cross(v2,v3)
+    v1=v1/norm(v1,axis=1).reshape(-1,1)
+    p0=array(i_p)
+    p2=tri[:,0]
+    n1,n2=len(p0),len(p2)
+    v1=array([v1]*n1)
+    v2=array([v2]*n1)
+    v3=array([v3]*n1)
+    p0=array([p0]*n2).transpose(1,0,2)
+    p2=array([p2]*n1)
+    iim=array([v1,-v2,-v3]).transpose(1,2,0,3).transpose(0,1,3,2)
+    im=inv(iim)
+    t=einsum('ijkl,ijl->ijk',im,p2-p0)
+    d1=(t[:,:,0]>-.1)&(t[:,:,0]<.1)&(t[:,:,1]>=0)&(t[:,:,1]<=1) \
+    &(t[:,:,2]>=0)&(t[:,:,2]<=1)&(t[:,:,1]+t[:,:,2]<1)
+    nx=v1[d1]
+    return nx
+
+def i_p_p(sol,i_p,r):
+    '''
+    function to project the intersection point on the cutting lines based on the distance 'r'
+    '''
+    sol=array(sol)
+    i_p=array(i_p)
+    s1=[]
+    for j in range(len(sol[0])):
+        for i in range(len(sol)-1):
+            v1=sol[i+1][j]-sol[i][j]
+            u1=v1/norm(v1)
+            l1=norm(v1)
+            v2=i_p[j]-sol[i][j]
+            v2cost=u1@v2
+            if v2cost>=0 and v2cost<=l1:
+                l2=[i_p[j].tolist()]+array(cpo(sol)[j])[arange(i+1,len(sol))].tolist()
+                len_l2=path_length(l2)
+                s=len_l2/r
+                p1=equidistant_path(l2,s)[1]
+                s1.append(p1)
+    return s1
+
