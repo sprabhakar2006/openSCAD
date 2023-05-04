@@ -5599,7 +5599,7 @@ def trim_points(o,pl,r):
     u1=einsum('ijk,ij->ijk',v1,1/v1norm)
     v2=o[:,None]-px[:,0]
     v2cost=einsum('ijk,ijk->ij',u1,v2)
-    v2sint=norm(cross(v1,v2))/norm(v1,axis=2)
+    v2sint=norm(cross(v1,v2),axis=2)/norm(v1,axis=2)
     d1=(v2cost>=0)&(v2cost<=norm(v1,axis=2))&(v2sint<r)
     pnts1=array([o]*len(px)).transpose(1,0,2)[d1]
     pnts1=exclude_points(o,pnts1)
