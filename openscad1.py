@@ -5589,3 +5589,19 @@ def o_p_p(sol,i_p,d):
     nx=p0+einsum('ijk,ij->ijk',v1,t[:,:,0])
     nx=nx[d1].tolist()
     return nx
+
+def trim_points(o,pl,r):
+    px=array(seg(pl))
+    o=array(o)
+    v1=px[:,1]-px[:,0]
+    v1=array([v1]*len(o))
+    v1norm=einsum('ijk,ijk->ij',v1,v1)**0.5
+    u1=einsum('ijk,ij->ijk',v1,1/v1norm)
+    v2=o[:,None]-px[:,0]
+    v2cost=einsum('ijk,ijk->ij',u1,v2)
+    v2sint=norm(cross(v1,v2))/norm(v1,axis=2)
+    d1=(v2cost>=0)&(v2cost<=norm(v1,axis=2))&(v2sint<r)
+    pnts1=array([o]*len(px)).transpose(1,0,2)[d1]
+    pnts1=exclude_points(o,pnts1)
+    return pnts1
+    
