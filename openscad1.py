@@ -5589,7 +5589,7 @@ def o_p_p(sol,i_p,d):
     nx=p0+einsum('ijk,ij->ijk',v1,t[:,:,0])
     nx=nx[d1].tolist()
     return nx
-
+    
 def trim_points(o,pl,r):
     px=array(seg(pl))
     o=array(o)
@@ -5604,4 +5604,56 @@ def trim_points(o,pl,r):
     pnts1=array([o]*len(px)).transpose(1,0,2)[d1]
     pnts1=exclude_points(o,pnts1)
     return pnts1
+
+def arc_2p_3d(n1,p0,p1,r,cw=1,s=20):
+    '''
+    draws an arc through 2 points 
+    n1: normal vector to define plane on which the arc will be drawn
+    r: radius of the arc
+    cw: '1' stands for clockwise and '-1'stands for counter-clockwise
+    's' is the number of segments of the circle
+    '''
+    n1=array(n1)
+    a1=cross(n1,[0,0,-1])
+    t1=r2d(arccos(n1@[0,0,-1]))
+    sec1=translate(-array([p0,p1]).mean(0),[p0,p1])
+    sec2=c3t2(axis_rot(a1,sec1,t1))
+    pa,pb=sec2
+    arc1=arc_2p(pa,pb,r,cw,s=s)
+    arc1=translate(array([p0,p1]).mean(0),axis_rot(a1,arc1,-t1))
+    return arc1
+
+def arc_long_2p_3d(n1,p0,p1,r,cw=1,s=20):
+    '''
+    draws a long arc through 2 points 
+    n1: normal vector to define plane on which the arc will be drawn
+    r: radius of the arc
+    cw: '1' stands for clockwise and '-1'stands for counter-clockwise
+    's' is the number of segments of the circle
+    '''
+    n1=array(n1)
+    a1=cross(n1,[0,0,-1])
+    t1=r2d(arccos(n1@[0,0,-1]))
+    sec1=translate(-array([p0,p1]).mean(0),[p0,p1])
+    sec2=c3t2(axis_rot(a1,sec1,t1))
+    pa,pb=sec2
+    arc1=arc_long_2p(pa,pb,r,cw,s=s)
+    arc1=translate(array([p0,p1]).mean(0),axis_rot(a1,arc1,-t1))
+    return arc1
     
+def arc_2p_3d_cp(n1,p0,p1,r,cw=1):
+    '''
+    calculates the center point of the circle drawn through 2 points 
+    n1: normal vector to define plane on which the arc/ circle drawn
+    r: radius of the arc/ circle
+    cw: '1' stands for clockwise and '-1'stands for counter-clockwise
+    '''
+    n1=array(n1)
+    a1=cross(n1,[0,0,-1])
+    t1=r2d(arccos(n1@[0,0,-1]))
+    sec1=translate(-array([p0,p1]).mean(0),[p0,p1])
+    sec2=c3t2(axis_rot(a1,sec1,t1))
+    pa,pb=sec2
+    cp=arc_2p_cp(pa,pb,r,cw)
+    cp=translate(array([p0,p1]).mean(0),axis_rot(a1,[cp],-t1))[0]
+    return cp
