@@ -5531,3 +5531,61 @@ def i_p_p(sol,i_p,r):
                 s1.append(p1)
     return s1
 
+def path_length(path):
+    '''
+    calculates the length of the path
+    '''
+    v=[p[1]-p[0] for p in array(seg(path)[:-1])]
+    l=[l_len(p) for p in seg(path)[:-1]]
+    c=array(l).cumsum()
+    
+    return c[-1]
+
+def i_p_t(path):
+    '''
+    function to calculate tangent vectors to a given path
+    '''
+    p1=array(seg(path))
+    p2=array(path)
+    v1=array([(p[1]-p[0])/norm(p[1]-p[0]) for p in p1])
+    t_v=array([ (v1[-1]+v1[i])/2 if i==0 else
+         (v1[i-1]+v1[i])/2
+        for i in range(len(p1))])
+
+    t_v=t_v/norm(t_v,axis=1).reshape(-1,1)
+
+    return t_v
+
+def o_p_p(sol,i_p,d):
+    '''
+    calculates projected points on the surface of a solid 
+    sol: solid on which the points to be projected
+    i_p: list of points in 3d space near the solid
+    d: approximate distance of the points from the surface, specifying too big distance 
+    may create multiple projection of the same point on the solid
+    '''
+    l,m,_=array(sol).shape
+    f1=faces(l,m)
+    v=array(sol).reshape(-1,3)
+    tri=v[f1[1]]
+    v2,v3=tri[:,1]-tri[:,0], tri[:,2]-tri[:,0]
+    v1=cross(v2,v3)
+    v1=v1/norm(v1,axis=1).reshape(-1,1)
+    p0=array(i_p)
+    p2=tri[:,0]
+    n1,n2=len(p0),len(p2)
+    v1=array([v1]*n1)
+    v2=array([v2]*n1)
+    v3=array([v3]*n1)
+    p0=array([p0]*n2).transpose(1,0,2)
+    p2=array([p2]*n1)
+    iim=array([v1,-v2,-v3]).transpose(1,2,0,3).transpose(0,1,3,2)
+    im=inv(iim)
+    t=einsum('ijkl,ijl->ijk',im,p2-p0)
+    d1=(t[:,:,0]>-d)&(t[:,:,0]<d)&(t[:,:,1]>=0)&(t[:,:,1]<=1) \
+    &(t[:,:,2]>=0)&(t[:,:,2]<=1)&(t[:,:,1]+t[:,:,2]<1)
+
+    p0.shape,v1.shape,t[:,:,0].shape
+    nx=p0+einsum('ijk,ij->ijk',v1,t[:,:,0])
+    nx=nx[d1].tolist()
+    return nx
