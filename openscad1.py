@@ -5650,3 +5650,38 @@ def arc_2p_3d_cp(n1,p0,p1,r,cw=1):
     cp=arc_2p_cp(pa,pb,r,cw)
     cp=translate(array([p0,p1]).mean(0),axis_rot(a1,[cp],-t1))[0]
     return cp
+
+def sec_lines_ip2d(sec,lines):
+    # p0+v1*t1=p2+v2*t2
+    px=array(lines)
+    py=array(seg(sec))
+    p0=px[:,0]
+    v1=px[:,1]-px[:,0]
+    p2=py[:,0]
+    v2=py[:,1]-py[:,0]
+    n1,n2=len(p0),len(p2)
+    p0=array([p0]*n2).transpose(1,0,2)
+    p2=array([p2]*n1)
+    v1=array([v1]*n2).transpose(1,0,2)
+    v2=array([v2]*n1)
+
+    iim=array([v1,-v2]).transpose(1,2,0,3).transpose(0,1,3,2)+.0001
+    im=inv(iim)
+    t=einsum('ijkl,ijl->ijk',im,p2-p0)
+    d=(t[:,:,0]>=0)&(t[:,:,0]<=1)&(t[:,:,1]>=0)&(t[:,:,1]<=1)
+    i_p1=p0[d]+einsum('ij,i->ij',v1[d],t[:,:,0][d])
+    return i_p1.tolist()
+    
+def aligned_cut_lines_prism(sec,path,s=100):
+    sec_list=[offset(sec,x) for (x,y) in path]
+    i=array([path_length(p) for p in sec_list]).argmin()
+    j=array([path_length(p) for p in sec_list]).argmax()
+
+    cp=array(sec_list[i]).mean(0)
+    r=max([l_len([cp,p]) for p in sec_list[j]])+10
+    c1=circle(.1,cp,s)
+    c2=circle(r,cp,s)
+    p1=cpo([c1,c2])
+    sec_list_r=[sec_lines_ip2d(p,p1) for p in sec_list]
+    sol3=[translate([0,0,path[i][1]],sec_list_r[i]) for i in range(len(path))]
+    return sol3
