@@ -3656,47 +3656,6 @@ def end_cap(fillet,f=-1):
     fillet1=swp_prism_h(fillet01,fillet1)
     return fillet1
 
-def con_hull(d,c,f=1):
-    d=seg(d)
-    revised_list=[]
-    rv=[]
-    for i in range(len(d)):
-        line=d[i]
-        v1=array(line[1])-array(line[0])
-        v2=array(c)-array(line[0])
-        c1=einsum('j,ij->i',v1/norm(v1),v2)
-        c2=cross(v1/norm(v1),v2)
-        condition=(c1>=0)&(c1<=l_len(line))&(c2<=l_len(line)/f)
-        pl=array(c)[condition]
-        v2=pl-array(line[0])
-        c2=cross(v1/norm(v1),v2).round(5)
-        if len(c2[c2>0])!=0 :
-            pl=pl[c2==min(c2[c2>0])].tolist()[0]
-#             if s_int1(seg(remove_extra_points(concatenate(revised_list+[[pl]]))))==[]:
-            revised_list.append([line[0],pl,line[1]])
-#             else:
-#                 revised_list.append(line)
-                
-        else:
-            revised_list.append(line)
-    points=remove_extra_points(concatenate(revised_list))
-    return points
-def concave_hull(pnts,x):
-    '''
-    x is sensitivity where 1 is max and 100 is almost like a convex hull, 
-    refer file "example of various functions" for application example
-    '''
-
-    d=convex_hull(pnts)
-    c=pnts
-    for i in range(1000):
-        e=con_hull(d,c,x)
-        if d==e:
-            break
-        else:
-            d=e
-            c=exclude_points(c,d)
-    return d
         
 def d2r(d):
     '''
@@ -4489,36 +4448,7 @@ def a_3seg(s):
     '''
     return norm(cross(array(s[1])-array(s[0]),array(s[2])-array(s[0])))/2
 
-def concave_hull1(sec,k=3):
-    '''
-    based on the maximum cw angle approach with k-nearest neigbours
-    
-    '''
-    pnts=remove_extra_points(pnts)
-    p_x=[]
-    a=array(pnts)
-    b=a[a[:,1]==a[:,1].min()]
-    if len(b)>1:
-        c=b[b[:,0].argmin()]
 
-    s1=c if len(b)>1 else b[0]
-    p_x.append(s1.tolist())
-    a=array(exclude_points(a,s1))
-
-    b1=a[array([l_len([s1,p]) for p in a]).argsort()[:k]]
-    c=b1[array([ang_2linecw(s1,[s1[0],-1e5],p) for p in b1]).argmax()]
-    p_x.append(c.tolist())
-    a=array(exclude_points(a,c)+[s1])
-
-    while ((c!=s1).all() ):
-        b=a[array([l_len([p_x[-1],p]) for p in a ]).argsort()[:k]]
-        c=b[array([ang_2linecw(p_x[-1],p_x[-2],p) for p in b]).argmax()]
-        if s_int1(seg(p_x+[c.tolist()]))==[]:
-            p_x.append(c.tolist())
-            a=array(exclude_points(a,c))
-        else:
-            a=array(exclude_points(a,c))
-    return p_x
 
 
 def points2line_min_d_point(line,points,f=1):
@@ -4545,37 +4475,8 @@ def points2line_min_d_point(line,points,f=1):
             return []
     else:
         return []
-    
 
 
-def concave_hull2(sec,points,f):
-    points1=exclude_points(points,sec)
-    sec1=sec
-    for p in seg(sec):
-        p0=points2line_min_d_point(p,points1,f)
-        if p0!=[]:
-            i=arange(len(sec1))[(array(sec1)==array(p[0])).all(1)][0]
-            if s_int1(seg(insert(sec1,i+1,p0,axis=0)))==[]:
-                sec1=insert(sec1,i+1,p0,axis=0).tolist()
-                points1=exclude_points(points1,[p0])
-            else:
-                points1=exclude_points(points1,[p0])
-    return [sec1,points1]
-    
-def concave_hull_f(points,f):
-    sec=convex_hull(points)
-    points=exclude_points(points,sec)
-    sec1,points1=sec,points
-    sec2=sec1
-    for i in range(10000):
-        sec1,points1=concave_hull2(sec1,points1,f)
-        if sec1==sec2 or points1==[]:
-            break
-        else:
-            sec2=sec1
-        
-    return sec2
-    
 def offset_sol(sol,d,o=0,s=100):
     '''
     function to calculate offset of a 3d object by distance 'd'
@@ -5685,3 +5586,52 @@ def aligned_cut_lines_prism(sec,path,s=100):
     sec_list_r=[sec_lines_ip2d(p,p1) for p in sec_list]
     sol3=[translate([0,0,path[i][1]],sec_list_r[i]) for i in range(len(path))]
     return sol3
+
+def ch1(p_l,k=3):
+    p_l=array(p_l)
+    s_p=p_l[p_l[:,1].argmin()]
+    p_l=array(exclude_points(p_l,[s_p]))
+    p_l1=p_l[norm(p_l-s_p,axis=1).argsort()[:k]]
+
+    n_p=p_l1[array([ang_2linecw(s_p,s_p-[0,1],p) for p in p_l1]).argmax()]
+
+    p_l=array(exclude_points(p_l,[n_p])+[s_p])
+    s1=[s_p,n_p]
+
+    while((array(s1[-1]).tolist()!=s_p.tolist())&(len(p_l)>3)):
+        p_l1=p_l[norm(p_l-s1[-1],axis=1).argsort()[:k]]
+        n_p=p_l1[array([-ang_2linecw(s1[-1],s1[-2],p) for p in p_l1]).argsort()]
+        for p in n_p:
+            if s_int1(seg(array(s1).tolist()+[p.tolist()])[:-1])==[]:
+                s1.append(p)
+                p_l=array(exclude_points(p_l,[p]))
+                break
+            else:
+                continue
+            break
+        else:
+            return array(s1).tolist()
+        
+        if len(p_l)==3:
+            n_p=p_l[array([ang_2linecw(s1[-1],s1[-2],p) for p in p_l]).argsort()]
+            s1=array(s1).tolist()+array(n_p).tolist()
+    return array(s1).tolist()
+
+
+def concave_hull(p_l,k=3):
+    '''
+    calculate the concave hull of a random list of points
+    '''
+    s1=ch1(p_l,k)
+    py=exclude_points(p_l,s1)
+    x=pies1(s1,py)
+    pz=exclude_points(py,x) if x!=[] else py
+
+    while (pz!=[]):
+        k=k+1
+        s1=ch1(p_l,k)
+        py=exclude_points(p_l,s1)
+        x=pies1(s1,py)
+        pz=exclude_points(py,x) if x!=[] else py
+
+    return s1
