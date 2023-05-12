@@ -5105,12 +5105,15 @@ def surface_for_fillet(sol1=[],sol2=[],factor1=50,factor2=10,factor3=1,factor4=1
     '''
     p0= array(prism_center(sol1))
     p1= array(prism_center(sol2))
+    
     v1=p1-p0
     u1=v1/norm(v1)
+    p3=p0-u1*factor4
+    p3=ip_sol2line(sol1,[p0,p3])[0]
     cir1=circle(1,s=factor1)
     sur1=sol2vector(v1,cpo([ls([[0,0],p],factor2) for p in cir1]),u1*factor3)
     lines1=[[[[0,0,0],(array(p1)/norm(p1)*factor4).tolist()] for p1 in p] for p in sur1]
-    sol3=[translate(p0,cpo(p)) for p in lines1]
+    sol3=[translate(p3,cpo(p)) for p in lines1]
     v,f1=vnf2(sol1)
     v,f1=array(v),array(f1)
     bc1=v[f1].mean(1)
@@ -5621,6 +5624,7 @@ def ch1(p_l,k=3):
 def concave_hull(p_l,k=3):
     '''
     calculate the concave hull of a random list of points
+    larger number for 'k' will give smoother shape
     '''
     s1=ch1(p_l,k)
     py=exclude_points(p_l,s1)
