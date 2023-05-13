@@ -5639,3 +5639,19 @@ def concave_hull(p_l,k=3):
         pz=exclude_points(py,x) if x!=[] else py
 
     return s1
+    
+def axis_rot_1(sol,ax1,loc1,theta):
+    '''
+    rotate a solid on any pivot point 'loc1' with axis of rotation 'ax1' by an angle 'theta'
+    
+    '''
+    c1=array(prism_center(sol))
+    loc1=array(loc1)
+    c2=c1-loc1
+    s1=translate(-c1,sol)
+    s1=translate(c2,s1)
+    s2=axis_rot(ax1,s1,theta)
+    s2=translate(-c2,s2)
+    s2=translate(c1,s2)
+    return s2
+
