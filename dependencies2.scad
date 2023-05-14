@@ -58,3 +58,59 @@ module p_line3dc(path,r,rec=0,$fn=20){
     translate(path[i])if(rec==0)sphere(r); else cube(r*2,true);
     translate(path[i_plus])if(rec==0)sphere(r);else cube(r*2,true);
     }}
+    
+function faces(sol)=
+
+//    calculate the faces for the vertices with shape l x m with first and the last end closed
+    let(
+    l=len(sol),
+    m=len(sol[0]),
+    n1=[for(i=[0:m-1])i],
+    n2=[for(i=[0:l-2]) each ([ for(j=[0:m-1])
+    each
+    j<m-1?[[(j+1)+i*m,j+i*m,j+(i+1)*m],[(j+1)+i*m,j+(i+1)*m,(j+1)+(i+1)*m]]:
+    [[0+i*m,j+i*m,j+(i+1)*m],[0+i*m,j+(i+1)*m,0+(i+1)*m]]
+    ])],
+    n3=[for(i=[0:m-1])i+(l-1)*m],
+    n4=[for(i=[len(n3)-1:-1:0])n3[i]],
+    n=[n1,each (n2),n4]
+    )n;
+    
+
+function faces_1(sol)=
+
+//    calculate the faces for the vertices with shape l x m with first and the last end open
+    let(
+    l=len(sol),
+    m=len(sol[0]),
+    n2=[for(i=[0:l-2])each([ for(j=[0:m-1])
+    each
+    j<m-1?[[(j+1)+i*m,j+i*m,j+(i+1)*m],[(j+1)+i*m,j+(i+1)*m,(j+1)+(i+1)*m]]:
+    [[0+i*m,j+i*m,j+(i+1)*m],[0+i*m,j+(i+1)*m,0+(i+1)*m]]
+    ])],
+    
+    )n2; 
+   
+ function vertices(sol)=
+[each for (p=sol)p];
+
+// module for rendering the polyhedron with ends closed
+module swp(sol){
+let(
+v1=vertices(sol),
+f1=faces(sol)
+)
+polyhedron(v1,f1,convexity=10);
+
+}
+
+// module for rendering polyhedron with ends open (mainly for closed polyhedron)
+module swp_c(sol){
+let(
+v1=vertices(sol),
+f1=faces_1(sol)
+)
+polyhedron(v1,f1,convexity=10);
+
+}
+ 
