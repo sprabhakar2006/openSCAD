@@ -1382,19 +1382,6 @@ def scl3dc(p,s):# scale a 3d prism 'p' with scaling factor 's'. This places the 
     return rev.tolist()
 
 
-def io(sec,r):# used for inner offset in offset function
-    if r<0:
-        s=flip(sec) if cw(sec)==1 else sec
-        s1=s
-#         s1=convert_secv(s,max_r(s)+1 if abs(r)>=max_r(s) else abs(r))
-        s2=offset_segv(s1,r)
-        s3=offset_seg_cw(s1,r)
-        s4=s_int(s2)
-        s5=sec_clean(s1,s4+s3,abs(r))
-        s6=array(s5)[cKDTree(s5).query(s)[1]]
-        return s6.tolist()
-
-
     
 def m_points1(sec,s,d=.25):# multiple points with in the straight lines in the closed section 'sec'. 's' is the number of segments between each straight line
     '''
@@ -2535,6 +2522,27 @@ def perp_points_with_dist(line,points,f=1):
     pnts=pnts[cond].tolist()
     return pnts
 
+def perp_points_within_d(line,points,l=1):
+    '''
+    function returns all the points which are projected on the line and has a perpendicular distance of < l.
+    '''
+
+    p0=line[0]
+    p1=line[1]
+    p0,p1=array([p0,p1])
+    v1=p1-p0
+    u1=v1/(norm(v1)+.00001)
+    v2=array(points)-p0
+    v2cost=einsum('j,ij->i',u1,v2)
+    cond=(v2cost>=0)&(v2cost<=l_len(line))
+    pnts=array(points)[cond]
+    v2=pnts-p0
+    d=cross(v1,v2)/norm(v1)
+    cond=d<l
+    pnts=pnts[cond].tolist()
+    return pnts
+
+
     
 def perp_dist(line,point):
     p0=line[0]
@@ -2666,13 +2674,31 @@ def cleaning_sec_outer(sec,r):
 
 
 
+#def r_sec(r1,r2,cp1,cp2):
+#    '''
+#    rounded section around a line with points 'cp1' and  'cp2' with radiuses 'r1' and 'r2' respectively
+#    '''
+#    l=tctpf(r1,r2,cp1,cp2)
+#    l=l[:2]+arc_2p(l[1],l[2],r1)+l[2:]+arc_2p(l[3],l[0],r2)
+#    return l
+
 def r_sec(r1,r2,cp1,cp2):
-    l=tctpf(r1,r2,cp1,cp2)
-    l=l[:2]+arc_2p(l[1],l[2],r1)+l[2:]+arc_2p(l[3],l[0],r2)
-    return l
+    '''
+    creates a rounded section around a line defined by points 'cp1' and 'cp2'
+    radius around 'cp1' is 'r1' and radius around 'cp2' is 'r2'
+    
+    '''
+    sec=tctpf(r1,r2,cp1,cp2)
+    a1=arc_2p(sec[3],sec[0],r1,1) if r1<r2 else arc_long_2p(sec[3],sec[0],r1,1)
+    a2=arc_long_2p(sec[1],sec[2],r2,1) if r1<r2 else arc_2p(sec[1],sec[2],r2,1)
+    sec1=a2+a1
+    return sec1
+
+
 
 def cs(sec,d):
     '''
+    please use function cs1 instead of this
     cleaning section for removing excess points from offset
     refer to the file "example of various functions " for application examples
     
@@ -2686,6 +2712,10 @@ def cs(sec,d):
     return cs
 
 def cs1(sec,d):
+    '''
+    creates a cleaning section for removing excess points for offseting a section 'sec' with offset distance 'd'
+    
+    '''
     r=abs(d)
     a=seg(sec)
     cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in a]
@@ -2697,68 +2727,7 @@ def cs2(sec,d):
     cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in a if l_len(p2)>.5]
     return cs
 
-def inner_offset(sec,d):
-    p=sec+[sec[0]]
-    r=abs(d)
-    a=array(sec)[array(list_r(sec))==0]
-    a=seg(a)
-    p1=array([a[i] for i in range(len(a)) if i%2!=0]).tolist()
-    ol=[path_offset(p,d) for p in p1]
-    om=seg(offset_points_cw(sec,d))
-    #     o_circles=array([tctp(r,r,p[i],p[i+1])for i in range(len(p)-1)])
-    o_circle=offset_pointsv(sec,d)
-    # ip1=s_int1(seg(o_circles.reshape(-1,2)))
-    ip1=s_int(ol+om) if om != [] else s_int(ol)
-    if ip1==[]:
-    #         op=sort_pointsv(sec,o_circles.reshape(-1,2))
-        op=offset_pointsv(sec,d)
-    else:
-    #         ocp=o_circles.reshape(-1,2).tolist()+ip1
-        ocp=o_circle+ip1
-        cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in p1]
-        j=[pies1(cs[i],o_circle) for i in range(len(cs))]
-        k=[pies1(cs[i],ip1) for i in range(len(cs)) ]
-        l=j+k
-        l=[p for p in l if p != [] ]
-        l=concatenate([p for p in l if p != [] ]).tolist() if l != [] else []
-        op=exclude_points(ocp,l)
-        op=array(op)[cKDTree(op).query(sec)[1]].tolist()
-    return op
 
-
-
-def outer_offset(sec,r):
-    sec=flip(sec) if cw(sec)==1 else sec
-    p=sec+[sec[0]]
-    r=abs(r)
-    a=array(sec)[array(list_r(sec))==0]
-    a=seg(a)
-    p1=array([a[i] for i in range(len(a)) if i%2!=0]).tolist()
-    
-    s=offset_points(sec,r)
-    if s_int1(seg(s))!=[]:
-        s1=unique(s_int(seg(s)),axis=0).tolist()
-        cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in p1]
-        for p in cs:
-            s2=pies1(p,s1)
-            s1=exclude_points(s1,s2)
-        s1=array(s1)[cKDTree(s1).query(sec)[1]].tolist()
-        return s1
-    else:
-        return s
-
-def out_offset(sec,r):
-    sec=flip(sec) if cw(sec)==1 else sec
-    s=offset_points(sec,r)
-    if s_int1(seg(s))!=[]:
-        s1=unique(s_int(seg(s)),axis=0).tolist()
-        for p in cleaning_sec_outer(sec,r):
-            s2=pies1(p,s1)
-            s1=exclude_points(s1,s2)
-        s1=array(s1)[cKDTree(s1).query(sec)[1]].tolist()
-        return s1
-    else:
-        return s
 
 
 def swp(bead2):
@@ -3431,16 +3400,7 @@ def sec_radiuses(sec):
 def bb2d(sec):
     return [array(sec)[:,0].max()-array(sec)[:,0].min(),array(sec)[:,1].max()-array(sec)[:,1].min()]
 
-def inner_convex_offset(sec,d):
-    sec1=offset_segv(sec,d)
-    sec2=s_int1(sec1)
-    clean=cs(sec,abs(d)-.01)
-    sec3=[pies1(p,sec2) for p in clean if pies1(p,sec2)!=[]]
-    sec3=[] if sec3==[] else concatenate(sec3).tolist()
-    sec4=sort_points(sec,exclude_points(sec2,sec3))
 
-    return sec4
-    
 
 
     
@@ -5655,3 +5615,23 @@ def axis_rot_1(sol,ax1,loc1,theta):
     s2=translate(c1,s2)
     return s2
 
+def oset(sec,r):
+    '''
+    Simpler algorithm for offset
+    Takes a little longer to compute
+    '''
+    s1=offset_segv(sec,r)
+    s2=min_d_points(intersections(s1),.01)
+    s3=s_int1(seg(s2))
+    if s3==[]:
+        s4=s2
+    else:
+
+        s4=s2+s3
+        c1=cs1(sec,abs(r))
+        for p in c1:
+            p1=pies1(p,s4)
+            if p1!=[]:
+                s4=exclude_points(s4,p1)
+    s4=sort_points(sec,s4)
+    return s4
