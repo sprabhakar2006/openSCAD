@@ -36,12 +36,12 @@ module points(p,d=.5){
 // sec=trns([5,10,6],q_rot(["x45"],circle(10)));
 // p_line3d(sec,.2);
     
-module p_line3d(path,r,rec=0,$fn=20){
+module p_line3d(path,d,rec=0,$fn=20){
     for(i=[0:len(path)-2])
         
     hull(){
-    translate(path[i])if(rec==0)sphere(r); else cube(r*2,true);
-    translate(path[i+1])if(rec==0)sphere(r);else cube(r*2,true);
+    translate(path[i])if(rec==0)sphere(d/2); else cube(r,true);
+    translate(path[i+1])if(rec==0)sphere(d/2);else cube(r,true);
     }}
 
 //module to draw a polyline in 3d space (loop closed)
@@ -49,14 +49,14 @@ module p_line3d(path,r,rec=0,$fn=20){
 // sec=trns([5,10,6],q_rot(["x45"],circle(10)));
 // p_line3dc(sec,.2);    
 
-module p_line3dc(path,r,rec=0,$fn=20){
+module p_line3dc(path,d,rec=0,$fn=20){
     for(i=[0:len(path)-1])
         let(
     i_plus=i<len(path)-1?i+1:0
     )
     hull(){
-    translate(path[i])if(rec==0)sphere(r); else cube(r*2,true);
-    translate(path[i_plus])if(rec==0)sphere(r);else cube(r*2,true);
+    translate(path[i])if(rec==0)sphere(d/2); else cube(r,true);
+    translate(path[i_plus])if(rec==0)sphere(d/2);else cube(r,true);
     }}
     
 function faces(sol)=
