@@ -100,23 +100,7 @@ function cytz(path)=[for(p=path)[p.x,0,p.y]];
 //function for creating points in circle with radius "r", center point "cp" and number of segments "s"           
 function circle(r,cp=[0,0],s=50)=[for(i=[0:360/s:360-360/s])[cp.x+r*cos(i),cp.y+r*sin(i)]];
 
-//module for drawing a closed 2d polyline from a group of points "path" and width of the polyline is defined by parameter "size".
-module p_line(path,size=.5){
-    for(i=[0:len(path)-1])
-        let(p0=path[i],p1=i<len(path)-1?path[i+1]:path[0])
-    
-    hull(){
-    translate(p0)circle(size/2,$fn=20);
-    translate(p1)circle(size/2,$fn=20);}}
-    
-//module for drawing an open 2d polyline from a group of points "path" and width of the polyline is defined by parameter "size".
-module p_lineo(path,size=.5){
-    for(i=[0:len(path)-2])
-        let(p0=path[i],p1=path[i+1])
-    
-    hull(){
-    translate(p0)circle(size/2,$fn=20);
-    translate(p1)circle(size/2,$fn=20);}}
+
     
 module rd_line(path,size=.5){
     for(i=[0:len(path)-1])
@@ -564,33 +548,7 @@ t2=cp2+u1*r2*rm(90+ang1),
 t3=cp1+u1*r1*rm(-90-ang1),
 t4=cp2+u1*r2*rm(-90-ang1))[t1,t2,t4,t3];
 
-//module to draw a polyline in 3d space (loop not closed)
-// e.g. try following code:
-// sec=trns([5,10,6],q_rot(["x45"],circle(10)));
-// p_line3d(sec,.2);
-    
-module p_line3d(path,r,rec=0){
-    for(i=[0:len(path)-2])
-        
-    hull(){
-    translate(path[i])if(rec==0)sphere(r); else cube(r*2,true);
-    translate(path[i+1])if(rec==0)sphere(r);else cube(r*2,true);
-    }}
 
-//module to draw a polyline in 3d space (loop closed)
-// e.g. try following code:
-// sec=trns([5,10,6],q_rot(["x45"],circle(10)));
-// p_line3dc(sec,.2);    
-
-module p_line3dc(path,r,rec=0){
-    for(i=[0:len(path)-1])
-        let(
-    i_plus=i<len(path)-1?i+1:0
-    )
-    hull(){
-    translate(path[i])if(rec==0)sphere(r); else cube(r*2,true);
-    translate(path[i_plus])if(rec==0)sphere(r);else cube(r*2,true);
-    }}
   
 //function used as input to another function
   
@@ -799,17 +757,7 @@ function add_p2(p,p1=[0,0,0,0],n,i=0)= n==0?p1:add_p2(p,[p[i][0]+p1[0],p[i][1]+p
 
 function pts2(p)=[for(n=[1:len(p)])add_p2(p=p,p1=[0,0,0,0],n=n,i=0)];
 
-// module for rendering points along the various shapes 2d or 3d. parameter "d" is the size of cube which is used as point. a list has to be provided for parameter "p"
-// try following code:
-// sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5);
-// prism=l_extrude(sec,h=15,a=90,steps=20);
-// %swp(prism);
-// for(p=prism) points(p,.2);
- 
-module points(p,d=.5){
-    for(i=p)translate(i)cube(size=d,center=true);
-    
-    }
+
  
 // function to get the minimum radius for a defined section
 // example:
@@ -1386,55 +1334,7 @@ path6=[for(i=[0:len(path2)-1])[path2[i].x,path2[i].y,path5[i].y]]
 
 )path6;
 
-// module for rendering various 3d prism 
-// //example1:
-// sec=circle(10);
-// path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5);
-// prism=prism(sec,path);
-// swp(prism);
-// //example2:
-// prism1=l_extrude(square([10,6]),15);
-// translate([13,0,0])
-// swp(prism1);
-// //example3:
-// sec2=cr(pts1([[0,0,1],[5,0,1],[-2.5,4,1]]),5);
-// path2=[for(i=[0:5:360*5])[10*cos(i),10*sin(i),i/360*5]]; 
-// prism2=p_extrude(sec2,path2);
-// translate([35,0,0])
-// swp(prism2);
 
-module swp(surf1)
-
-let(l=len(surf1[0]),
-p0=[for(j=[0:len(surf1)-1])each surf1[j]],
-p1=[each [for(j=[0:len(surf1)-1])if(j==0)[for(i=[0:l-1])i+j*l]],
-each [for(j=[0:len(surf1)-2])each [for(i=[0:l-1])let(i_plus=i<l-1?i+1:0)[i+l*j,i+l+l*j,i_plus+l+l*j,i_plus+l*j]]],
-each [for(j=[0:len(surf1)-1])if(j==len(surf1)-1)[for(i=[l-1:-1:0])i+l*j]]
-    ]
-)
-polyhedron(p0,p1,convexity=10);
-
-// module for rendering 3d prisms with closed section
-// example:
-// sec=circle(10);
-// path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-9.9,0]]),5);
-// prism=prism(sec,path);
-// prism1=q_rot(["y40"],cylinder(r=3,h=15,s=30));
-//
-// %swp(prism);
-// %swp(prism1);
-// fillet=ipf(prism,prism1,r=1,option=1,s=5);
-// swp_c(fillet);
-
-module swp_c(surf1)
-
-let(l=len(surf1[0]),
-p0=[for(j=[0:len(surf1)-1])each surf1[j]],
-p1=[
-each [for(j=[0:len(surf1)-2])each [for(i=[0:l-1])let(i_plus=i<l-1?i+1:0)[i+l*j,i+l+l*j,i_plus+l+l*j,i_plus+l*j]]]
-    ]
-)
-polyhedron(p0,p1,convexity=10);
 
 //function for creating fillet between 2 cylinders. r1, r2 and cp1,cp2 are the radiuses and center points of 2 cylinders respectively. r -> is the fillet radius. path -> is given for rounding the cylinder edges
 //// example
@@ -3476,3 +3376,117 @@ prism=trns(p0,sec2vector(v,sec))
 )prism]
 
 )prism;
+
+//module for drawing a closed 2d polyline from a group of points "path" and width of the polyline is defined by parameter "size".
+module p_line(path,size=.5){
+    for(i=[0:len(path)-1])
+        let(p0=path[i],p1=i<len(path)-1?path[i+1]:path[0])
+    
+    hull(){
+    translate(p0)circle(size/2,$fn=20);
+    translate(p1)circle(size/2,$fn=20);}}
+    
+//module for drawing an open 2d polyline from a group of points "path" and width of the polyline is defined by parameter "size".
+module p_lineo(path,size=.5){
+    for(i=[0:len(path)-2])
+        let(p0=path[i],p1=path[i+1])
+    
+    hull(){
+    translate(p0)circle(size/2,$fn=20);
+    translate(p1)circle(size/2,$fn=20);}}
+    
+    
+// module for rendering points along the various shapes 2d or 3d. parameter "d" is the size of cube which is used as point. a list has to be provided for parameter "p"
+// try following code:
+// sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5);
+// prism=l_extrude(sec,h=15,a=90,steps=20);
+// %swp(prism);
+// for(p=prism) points(p,.2);
+ 
+module points(p,d=.5){
+    for(i=p)translate(i)cube(size=d,center=true);
+    
+    }
+    
+//module to draw a polyline in 3d space (loop not closed)
+// e.g. try following code:
+// sec=trns([5,10,6],q_rot(["x45"],circle(10)));
+// p_line3d(sec,.2);
+    
+module p_line3d(path,d,rec=0,$fn=20){
+    for(i=[0:len(path)-2])
+        
+    hull(){
+    translate(path[i])if(rec==0)sphere(d/2); else cube(r,true);
+    translate(path[i+1])if(rec==0)sphere(d/2);else cube(r,true);
+    }}
+
+//module to draw a polyline in 3d space (loop closed)
+// e.g. try following code:
+// sec=trns([5,10,6],q_rot(["x45"],circle(10)));
+// p_line3dc(sec,.2);    
+
+module p_line3dc(path,d,rec=0,$fn=20){
+    for(i=[0:len(path)-1])
+        let(
+    i_plus=i<len(path)-1?i+1:0
+    )
+    hull(){
+    translate(path[i])if(rec==0)sphere(d/2); else cube(r,true);
+    translate(path[i_plus])if(rec==0)sphere(d/2);else cube(r,true);
+    }}
+    
+function faces(sol)=
+
+//    calculate the faces for the vertices with shape l x m with first and the last end closed
+    let(
+    l=len(sol),
+    m=len(sol[0]),
+    n1=[for(i=[0:m-1])i],
+    n2=[for(i=[0:l-2]) each ([ for(j=[0:m-1])
+    each
+    j<m-1?[[(j+1)+i*m,j+i*m,j+(i+1)*m],[(j+1)+i*m,j+(i+1)*m,(j+1)+(i+1)*m]]:
+    [[0+i*m,j+i*m,j+(i+1)*m],[0+i*m,j+(i+1)*m,0+(i+1)*m]]
+    ])],
+    n3=[for(i=[0:m-1])i+(l-1)*m],
+    n4=[for(i=[len(n3)-1:-1:0])n3[i]],
+    n=[n1,each (n2),n4]
+    )n;
+    
+
+function faces_1(sol)=
+
+//    calculate the faces for the vertices with shape l x m with first and the last end open
+    let(
+    l=len(sol),
+    m=len(sol[0]),
+    n2=[for(i=[0:l-2])each([ for(j=[0:m-1])
+    each
+    j<m-1?[[(j+1)+i*m,j+i*m,j+(i+1)*m],[(j+1)+i*m,j+(i+1)*m,(j+1)+(i+1)*m]]:
+    [[0+i*m,j+i*m,j+(i+1)*m],[0+i*m,j+(i+1)*m,0+(i+1)*m]]
+    ])],
+    
+    )n2; 
+   
+ function vertices(sol)=
+[each for (p=sol)p];
+
+// module for rendering the polyhedron with ends closed
+module swp(sol){
+let(
+v1=vertices(sol),
+f1=faces(sol)
+)
+polyhedron(v1,f1,convexity=10);
+
+}
+
+// module for rendering polyhedron with ends open (mainly for closed polyhedron)
+module swp_c(sol){
+let(
+v1=vertices(sol),
+f1=faces_1(sol)
+)
+polyhedron(v1,f1,convexity=10);
+
+}
