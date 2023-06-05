@@ -4398,9 +4398,16 @@ def ang_2linecw(p0,p1,p2):
 
 def l_lenv(l):
     '''
-    calculates sum of lengths of all the segments in a line 'l'
+    calculates sum of lengths of all the segments in a line 'l' considering the section is closed
     '''
     return array([l_len(p) for p in seg(l)]).sum()
+
+def l_lenv_o(l):
+    '''
+    calculates sum of lengths of all the segments in a line 'l' considering the section is open
+    '''
+    return array([l_len(p) for p in seg(l)[:-1]]).sum()
+
 
 def a_3seg(s):
     '''
