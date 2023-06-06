@@ -4105,48 +4105,7 @@ def extrude_sol2path(sec,path1,path2):
     sol=path_extrude2msec(sec_list,path3)
     return sol
     
-def fillet_between2sol(sol=[],sol1=[],r=1,ip=0,fs=0,s=10):
-    '''
-    function to draw fillet between 2 solids
-    sol: solid which is intersected
-    sol1: solid which is intersecting the 'sol'.please note that reversing the order may change the results drastically and may not be valid
-    r: radius of fillet
-    ip: value can be 0 or -1 in case the cut lines as described in 'logic of creating fillets' are intersecting the 'sol' at 2 points
-    fs: can be 0 or 1 based on which side the fillet needs to be drawn
-    s: segments in each fillet
-    '''
-    ip1=[ip_sol2line(sol,p)[ip] for p in cpo(sol1) if ip_sol2line(sol,p)!=[] ]
-    nr1=[ip_normal_sol2line(sol,p)[ip] for p in cpo(sol1) if ip_sol2line(sol,p)!=[] ]
-    nr1=array(nr1)*r
-    r_axis1=seg(ip1)[:-1]
-    r_axis1=array([p[1]-p[0] for p in array(r_axis1)]).tolist()
-    r_axis1=r_axis1+[r_axis1[-1]]
-    if fs==0:
-        rnr1=array([[q(r_axis1[i],nr1[i],-j) for j in linspace(0,180,5) ]for i in range(len(nr1))])
-        cir1=array(ip1)[:,None]+rnr1
-        cir1=cir1.tolist()
 
-        rnr2=array([[q(r_axis1[i],nr1[i],j) for j in linspace(90,270,5) ]for i in range(len(nr1))])
-        cir2=array(ip1)[:,None]+rnr2
-        cir2=cir2.tolist()
-    else:
-        rnr1=array([[q(r_axis1[i],nr1[i],j) for j in linspace(0,180,5) ]for i in range(len(nr1))])
-        cir1=array(ip1)[:,None]+rnr1
-        cir1=cir1.tolist()
-
-        rnr2=array([[q(r_axis1[i],nr1[i],-j) for j in linspace(90,270,5) ]for i in range(len(nr1))])
-        cir2=array(ip1)[:,None]+rnr2
-        cir2=cir2.tolist()
-        
-    ip2=[ip_sol2line(sol,p)[0] for p in cir1 if ip_sol2line(sol,p)!=[]]
-    ip3=[ip_sol2line(sol1,p)[0] for p in cir2 if ip_sol2line(sol1,p)!=[]]
-    ip2=sort_points(ip1,ip2)
-    ip3=sort_points(ip1,ip3)
-
-    fillet1=convert_3lines2fillet(ip1,ip3,ip2,s=s)
-    return fillet1
-    
-    
 
 def ip_normal_sol2line(sol,line):
     '''
