@@ -3490,3 +3490,24 @@ f1=faces_1(sol)
 polyhedron(v1,f1,convexity=10);
 
 }
+
+// function to align 2 sections so as to have minimum distortion
+//sec1=trns([0,0,0],circle(10));
+//sec2=q_rot(["z110"],trns([0,0,5],circle(5)));
+//sol1=align_sec_1(sec1,sec2);
+//%swp(sol1);
+
+function align_sec_1(sec1,sec2)=
+let(
+sec3=[sec2,each [for(i=[1:len(sec2)-1])
+[each loop(sec2,i,len(sec2)-1),each loop(sec2,0,i-1)]
+]],
+
+s1=[for(j=[0:len(sec3)-1]) sum([for(i=[0:len(sec1)-1])norm(sec3[j][i]-sec1[i])])],
+
+i=search(min(s1),s1)[0],
+
+sec4=[each loop(sec2,i,len(sec2)-1),each loop(sec2,0,i-1)],
+
+sol1=[sec1,sec4]
+) sol1;
