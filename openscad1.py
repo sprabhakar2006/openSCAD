@@ -578,7 +578,7 @@ def convert_secv2(sec,d):
     function removes all the radiuses from the section 'sec' where points are cw
     example:
     sec=cr_c(pts1([[0,0,.1],[7,5,2],[5,7,3],[-5,7,5],[-7,5,5]]),20)
-    sec1=convert_secv2(sec)
+    sec1=convert_secv2(sec,5)
     sec1 will remove all the radius in 'sec' where points are ccw
     refer to file "examples of various functions" for application example
     '''
@@ -3466,6 +3466,9 @@ def outer_convex_offset(sec,d):
 
 
 def intersections(segments):
+    '''
+    calculates the intersections of adjacent line segments only
+    '''
     a=[segments[len(segments)-1]]+segments[:-1]
     b=segments
     a,b=array([a,b])
@@ -5601,3 +5604,22 @@ def oset(sec,r):
                 s4=exclude_points(s4,p1)
     s4=sort_points(sec,s4)
     return s4
+
+def pa2pb(path,zval):
+    '''
+    function to match the path to extrude points to the z-values of a solid to extrude along the path
+    '''
+    v=[p[1]-p[0] for p in array(seg(path)[:-1])]
+    l=[l_len(p) for p in seg(path)[:-1]]
+    c=array(l).cumsum().tolist()
+    d=[l_lenv_o(path)/zval[-1]*p for p in zval[1:-1]]
+    p_rev=[]
+    for i in range(len(c)):
+        for j in range(len(d)):
+            if c[i]>d[j]:
+                t=d[j]/l[i] if i==0 else (d[j]-c[i-1])/l[i]
+                px=array(path[i])+array(v[i])*t
+                p_rev.append(px.tolist())
+                d[j]=c[-1]+1
+    p_rev=[path[0]]+p_rev+[path[-1]]
+    return p_rev
