@@ -5623,3 +5623,26 @@ def pa2pb(path,zval):
                 d[j]=c[-1]+1
     p_rev=[path[0]]+p_rev+[path[-1]]
     return p_rev
+    
+def path2path1(path1,path):
+    '''
+    function to match the points of path1 with path
+    i.e. path1 is independent variable and path is dependent variable
+    '''
+    v=[p[1]-p[0] for p in array(seg(path)[:-1])]
+    l=[l_len(p) for p in seg(path)[:-1]]
+    c=array(l).cumsum().tolist()
+    e=[l_len(p) for p in seg(path1)[:-1]]
+    f=array(e).cumsum()
+    d=[l_lenv_o(path)/f[-1]*p for p in f[:-1]]
+    p_rev=[]
+    for i in range(len(c)):
+        for j in range(len(d)):
+            if c[i]>d[j]:
+                t=d[j]/l[i] if i==0 else (d[j]-c[i-1])/l[i]
+                px=array(path[i])+array(v[i])*t
+                p_rev.append(px.tolist())
+                d[j]=c[-1]+1
+    p_rev=[path[0]]+p_rev+[path[-1]]
+    return p_rev
+
