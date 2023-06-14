@@ -3432,8 +3432,8 @@ module p_line3dc(path,d,rec=0,$fn=20){
     i_plus=i<len(path)-1?i+1:0
     )
     hull(){
-    translate(path[i])if(rec==0)sphere(d/2); else cube(r,true);
-    translate(path[i_plus])if(rec==0)sphere(d/2);else cube(r,true);
+    translate(path[i])if(rec==0)sphere(d/2); else cube(d,true);
+    translate(path[i_plus])if(rec==0)sphere(d/2);else cube(d,true);
     }}
     
 function faces(sol)=
