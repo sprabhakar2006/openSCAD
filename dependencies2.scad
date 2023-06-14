@@ -40,8 +40,8 @@ module p_line3d(path,d,rec=0,$fn=20){
     for(i=[0:len(path)-2])
         
     hull(){
-    translate(path[i])if(rec==0)sphere(d/2); else cube(r,true);
-    translate(path[i+1])if(rec==0)sphere(d/2);else cube(r,true);
+    translate(path[i])if(rec==0)sphere(d/2); else cube(d,true);
+    translate(path[i+1])if(rec==0)sphere(d/2);else cube(d,true);
     }}
 
 //module to draw a polyline in 3d space (loop closed)
