@@ -5646,3 +5646,30 @@ def path2path1(path1,path):
     p_rev=[path[0]]+p_rev+[path[-1]]
     return p_rev
 
+def spline_curve(p0,n=10,f=1):
+    '''
+    cubic spline curve based on the bezier considering 3 points 
+    p0: control points
+    n: number of points between each 3 points
+    f: is a factor which an integer, lower values will make the spline sharp and higher values will be more curvy
+    example:
+p0 = pts2([[0,0,0],[10,0,2],[0,10,3],[5,-3,-6],[-5,5,1],[0,7,-2],[0,0,5]])
+    spline_curve(p0) => will give the spline curve
+    
+    '''
+    p0=[p0[0]]*3+p0
+
+    for i in range(1,len(p0)):
+        if i==1:
+            
+            c=bezier(p0[:3],n)[:-f]
+            s1=c
+        elif i==len(p0)-2:
+            p1=[s1[-1]]+p0[i:len(p0)]
+            c=bezier(p1,n)
+            s1=s1+c
+        else:
+            p1=[s1[-1]]+p0[i:i+2]
+            c=bezier(p1,n)[:-f]
+            s1=s1+c
+    return [p0[0]]+exclude_points(s1,p0[0])
