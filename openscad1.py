@@ -4971,7 +4971,7 @@ def faces(l,m):
              [[0+i*m,j+i*m,j+(i+1)*m],[0+i*m,j+(i+1)*m,0+(i+1)*m]] \
                  for j in range(m)] for i in range(l-1)],dtype=int).reshape(-1,3)
     n3=(array(flip(arange(m)),dtype=int)+(l-1)*m)
-    n=array([n1,n2,n3])
+    n=array([n1.tolist(),n2.tolist(),n3.tolist()]).tolist()
     return n
 
 
@@ -5678,8 +5678,10 @@ def ip_triangle(sol1,p0):
     '''
     finds the triangle where the intersection point lies in a solid
     '''
-    v,f1=vnf1(sol1)
-    tri=array(v)[f1]
+    l,m,_=array(sol1).shape
+    f1=concatenate(faces(l,m)[1:-1]).tolist()
+    v=array(sol1).reshape(-1,3)
+    tri=v[f1]
     pa,pb,pc=tri[:,0],tri[:,1],tri[:,2]
     v1,v2=pb-pa,pc-pa
     v0=cross(v1,v2)
