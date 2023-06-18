@@ -5680,13 +5680,17 @@ def ip_triangle(sol1,p0):
     '''
     v,f1=vnf1(sol1)
     tri=array(v)[f1]
-    v0=array([nv(p) for p in tri])
+    pa,pb,pc=tri[:,0],tri[:,1],tri[:,2]
+    v1,v2=pb-pa,pc-pa
+    v0=cross(v1,v2)
+#     v0=array([nv(p) for p in tri])
     tri=tri[~(v0==[0,0,0]).all(1)]
-    v0=array([nv(p) for p in tri])
+#     v0=array([nv(p) for p in tri])
 #     p0=array(p3[89])
     p0=array(p0)
     pa,pb,pc=tri[:,0],tri[:,1],tri[:,2]
     v1,v2=pb-pa,pc-pa
+    v0=cross(v1,v2)
     iim=array([v0,-v1,-v2]).transpose(1,0,2)
     im=inv(iim)
     p=pa-p0
@@ -5694,3 +5698,4 @@ def ip_triangle(sol1,p0):
     d=(t[:,0]>=-0.01)&(t[:,0]<=1)&(t[:,1]>=0)&(t[:,1]<=1)&(t[:,2]>=0)&(t[:,2]<=1)&(t[:,1]+t[:,2]<=1)
     sec2=tri[d].tolist()
     return sec2[0] if sec2!=[] else []
+
