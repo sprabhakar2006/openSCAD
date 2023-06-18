@@ -5673,3 +5673,24 @@ p0 = pts2([[0,0,0],[10,0,2],[0,10,3],[5,-3,-6],[-5,5,1],[0,7,-2],[0,0,5]])
             c=bezier(p1,n)[:-f]
             s1=s1+c
     return [p0[0]]+exclude_points(s1,p0[0])
+    
+def ip_triangle(sol1,p0):
+    '''
+    finds the triangle where the intersection point lies in a solid
+    '''
+    v,f1=vnf1(sol1)
+    tri=array(v)[f1]
+    v0=array([nv(p) for p in tri])
+    tri=tri[~(v0==[0,0,0]).all(1)]
+    v0=array([nv(p) for p in tri])
+#     p0=array(p3[89])
+    p0=array(p0)
+    pa,pb,pc=tri[:,0],tri[:,1],tri[:,2]
+    v1,v2=pb-pa,pc-pa
+    iim=array([v0,-v1,-v2]).transpose(1,0,2)
+    im=inv(iim)
+    p=pa-p0
+    t=einsum('ijk,ij->ik',im,p)
+    d=(t[:,0]>=-0.01)&(t[:,0]<=1)&(t[:,1]>=0)&(t[:,1]<=1)&(t[:,2]>=0)&(t[:,2]<=1)&(t[:,1]+t[:,2]<=1)
+    sec2=tri[d].tolist()
+    return sec2[0] if sec2!=[] else []
