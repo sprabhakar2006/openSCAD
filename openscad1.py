@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import time
 from scipy.spatial import cKDTree,Delaunay, Voronoi
 import pandas as pd
-import igl
+# import igl
 
 
 
@@ -4971,9 +4971,8 @@ def faces(l,m):
              [[0+i*m,j+i*m,j+(i+1)*m],[0+i*m,j+(i+1)*m,0+(i+1)*m]] \
                  for j in range(m)] for i in range(l-1)],dtype=int).reshape(-1,3)
     n3=(array(flip(arange(m)),dtype=int)+(l-1)*m)
-    n=array([n1.tolist(),n2.tolist(),n3.tolist()]).tolist()
+    n=[n1.tolist()]+n2.tolist()+[n3.tolist()]
     return n
-
 
 def faces_1(l,m):
     '''
@@ -4986,16 +4985,22 @@ def faces_1(l,m):
 
     return n
 
+# def faces_2(l,m):
+#     '''
+#     calculate the faces for the vertices with shape l x m with first and the last end open
+#     '''
+#     n=array([[[[(j+1)+i*m,j+i*m,j+(i+1)*m],[(j+1)+i*m,j+(i+1)*m,(j+1)+(i+1)*m]] \
+#              if j<m-1 else \
+#              [[0+i*m,j+i*m,j+(i+1)*m],[0+i*m,j+(i+1)*m,0+(i+1)*m]] \
+#                  for j in range(m-1)] for i in range(l-1)]).reshape(-1,3).tolist()
+
+#     return n
+
 def faces_2(l,m):
     '''
-    calculate the faces for the vertices with shape l x m with first and the last end open
+    returns the faces for the vertices with shape l x m with first and the last end open
     '''
-    n=array([[[[(j+1)+i*m,j+i*m,j+(i+1)*m],[(j+1)+i*m,j+(i+1)*m,(j+1)+(i+1)*m]] \
-             if j<m-1 else \
-             [[0+i*m,j+i*m,j+(i+1)*m],[0+i*m,j+(i+1)*m,0+(i+1)*m]] \
-                 for j in range(m-1)] for i in range(l-1)]).reshape(-1,3).tolist()
-
-    return n
+    return concatenate(faces(l,m)[1:-1]).tolist()
 
 def faces_3(l,m):
     '''
@@ -5679,7 +5684,7 @@ def ip_triangle(sol1,p0):
     finds the triangle where the intersection point lies in a solid
     '''
     l,m,_=array(sol1).shape
-    f1=concatenate(faces(l,m)[1:-1]).tolist()
+    f1=faces(l,m)[1:-1]
     v=array(sol1).reshape(-1,3)
     tri=v[f1]
     pa,pb,pc=tri[:,0],tri[:,1],tri[:,2]
