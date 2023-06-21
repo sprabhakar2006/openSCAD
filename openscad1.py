@@ -5311,34 +5311,47 @@ def axis_rot_o(axis,solid,angle):
 def edges(l,m):
     return array([[[i+j*m,i+(j+1)*m] for j in range(l-1)] for i in range(m)]).reshape(-1,2)
     
-def i_p_n(sol,i_p):
+# def i_p_n(sol,i_p):
+#     '''
+#     calculates normal at the intersection points
+#     sol: solid on which the normal is required
+#     i_p: list of intersection points between 2 solids
+#     '''
+#     l,m,_=array(sol).shape
+#     f1=faces(l,m)
+#     v=array(sol).reshape(-1,3)
+#     tri=v[f1[1]]
+#     v2,v3=tri[:,1]-tri[:,0], tri[:,2]-tri[:,0]
+#     v1=cross(v2,v3)
+#     v1=v1/norm(v1,axis=1).reshape(-1,1)
+#     p0=array(i_p)
+#     p2=tri[:,0]
+#     n1,n2=len(p0),len(p2)
+#     v1=array([v1]*n1)
+#     v2=array([v2]*n1)
+#     v3=array([v3]*n1)
+#     p0=array([p0]*n2).transpose(1,0,2)
+#     p2=array([p2]*n1)
+#     iim=array([v1,-v2,-v3]).transpose(1,2,0,3).transpose(0,1,3,2)
+#     im=inv(iim)
+#     t=einsum('ijkl,ijl->ijk',im,p2-p0)
+#     d1=(t[:,:,0]>-.1)&(t[:,:,0]<.1)&(t[:,:,1]>=0)&(t[:,:,1]<=1) \
+#     &(t[:,:,2]>=0)&(t[:,:,2]<=1)&(t[:,:,1]+t[:,:,2]<1)
+#     nx=v1[d1]
+#     return nx
+
+def i_p_n(sol,ip):
     '''
-    calculates normal at the intersection points
-    sol: solid on which the normal is required
-    i_p: list of intersection points between 2 solids
+    calculates the unit normal vectors for the intersection points "ip" on a solid "sol"
     '''
-    l,m,_=array(sol).shape
-    f1=faces(l,m)
-    v=array(sol).reshape(-1,3)
-    tri=v[f1[1]]
-    v2,v3=tri[:,1]-tri[:,0], tri[:,2]-tri[:,0]
-    v1=cross(v2,v3)
-    v1=v1/norm(v1,axis=1).reshape(-1,1)
-    p0=array(i_p)
-    p2=tri[:,0]
-    n1,n2=len(p0),len(p2)
-    v1=array([v1]*n1)
-    v2=array([v2]*n1)
-    v3=array([v3]*n1)
-    p0=array([p0]*n2).transpose(1,0,2)
-    p2=array([p2]*n1)
-    iim=array([v1,-v2,-v3]).transpose(1,2,0,3).transpose(0,1,3,2)
-    im=inv(iim)
-    t=einsum('ijkl,ijl->ijk',im,p2-p0)
-    d1=(t[:,:,0]>-.1)&(t[:,:,0]<.1)&(t[:,:,1]>=0)&(t[:,:,1]<=1) \
-    &(t[:,:,2]>=0)&(t[:,:,2]<=1)&(t[:,:,1]+t[:,:,2]<1)
-    nx=v1[d1]
-    return nx
+    sec2=[ip_triangle(sol,p) for p in ip]
+    pa,pb,pc=array(sec2)[:,0],array(sec2)[:,1],array(sec2)[:,2]
+    n1=cross(pc-pa,pb-pa)
+    n1=n1/norm(n1,axis=1).reshape(-1,1)
+    return n1
+
+
+
 
 def i_p_p(sol,i_p,r):
     '''
@@ -5396,9 +5409,9 @@ def o_p_p(sol,i_p,d):
     may create multiple projection of the same point on the solid
     '''
     l,m,_=array(sol).shape
-    f1=faces(l,m)
+    f1=faces(l,m)[1:-1]
     v=array(sol).reshape(-1,3)
-    tri=v[f1[1]]
+    tri=v[f1]
     v2,v3=tri[:,1]-tri[:,0], tri[:,2]-tri[:,0]
     v1=cross(v2,v3)
     v1=v1/norm(v1,axis=1).reshape(-1,1)
