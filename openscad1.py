@@ -3230,7 +3230,8 @@ def fillet_sol2sol(p=[],p1=[],r=1,s=10,o=0,f=1.8):
 
     
     sol=array([pnt3,pnt1,pnt2]).transpose(1,0,2)
-    sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*f,s) for (p1,p2,p3) in sol]
+#    sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*f,s) for (p1,p2,p3) in sol]
+    sol=[array(bezier([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],s)).tolist()[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
     sol=sol+[sol[0]]
     return sol
     
@@ -3371,7 +3372,8 @@ def fillet_surf2sol(p=[],p1=[],r=1,s=10,o=0,f=1.8):
 
     
     sol=array([pnt3,pnt1,pnt2]).transpose(1,0,2)
-    sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*f,s) for (p1,p2,p3) in sol]
+#    sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*f,s) for (p1,p2,p3) in sol]
+    sol=[array(bezier([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],s)).tolist()[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
     sol=sol+[sol[0]]
     return sol
     
@@ -3643,7 +3645,8 @@ def convert_3lines2fillet(pnt1,pnt2,pnt3,f=1.9,s=10):
     
     
     sol=array([pnt3,pnt1,pnt2]).transpose(1,0,2)
-    sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*f,s) for (p1,p2,p3) in sol]
+#     sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*f,s) for (p1,p2,p3) in sol]
+    sol=[array(bezier([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],s)).tolist()[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
     sol=sol
     return sol
     
@@ -5221,9 +5224,13 @@ def convert_3lines2fillet_closed(pnt1,pnt2,pnt3,f=1.9,s=10):
     refer to the file "example of various functions" for application examples
     
     '''
-    m1=min(len(pnt1),len(pnt2),len(pnt3))
-    sol=array([pnt3[:m1],pnt1[:m1],pnt2[:m1]]).transpose(1,0,2)
-    sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*f,s) for (p1,p2,p3) in sol]
+#     m1=min(len(pnt1),len(pnt2),len(pnt3))
+#     sol=array([pnt3[:m1],pnt1[:m1],pnt2[:m1]]).transpose(1,0,2)
+    sol=array([pnt3,pnt1,pnt2]).transpose(1,0,2)
+    
+#     sol=[equidistant_path(array(spline_curve([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],10,2)).tolist(),s)[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
+    sol=[array(bezier([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],s)).tolist()[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
+    
     sol=sol+[sol[0]]
     return sol
 
@@ -5426,12 +5433,15 @@ def o_p_p(sol,i_p,d):
     iim=array([v1,-v2,-v3]).transpose(1,2,0,3).transpose(0,1,3,2)
     im=inv(iim)
     t=einsum('ijkl,ijl->ijk',im,p2-p0)
-    d1=(t[:,:,0]>-d)&(t[:,:,0]<d)&(t[:,:,1]>=0)&(t[:,:,1]<=1) \
-    &(t[:,:,2]>=0)&(t[:,:,2]<=1)&(t[:,:,1]+t[:,:,2]<1)
-
-    p0.shape,v1.shape,t[:,:,0].shape
-    nx=p0+einsum('ijk,ij->ijk',v1,t[:,:,0])
-    nx=nx[d1].tolist()
+    for i in arange(.0001,.1,.0005):
+       d1=(t[:,:,0]>-d)&(t[:,:,0]<d)&(t[:,:,1]>=-i)&(t[:,:,1]<=1) \
+       &(t[:,:,2]>=-i)&(t[:,:,2]<=1)&(t[:,:,1]+t[:,:,2]<1)
+       
+       p0.shape,v1.shape,t[:,:,0].shape
+       nx=p0+einsum('ijk,ij->ijk',v1,t[:,:,0])
+       nx=nx[d1].tolist()
+       if len(nx)==len(i_p):
+          break
     return nx
     
 def trim_points(o,pl,r):
@@ -5697,25 +5707,23 @@ def ip_triangle(sol1,p0):
     finds the triangle where the intersection point lies in a solid
     '''
     l,m,_=array(sol1).shape
-    f1=faces(l,m)[1:-1]
+    f1=faces_1(l,m)
     v=array(sol1).reshape(-1,3)
     tri=v[f1]
     pa,pb,pc=tri[:,0],tri[:,1],tri[:,2]
     v1,v2=pb-pa,pc-pa
     v0=cross(v1,v2)
-#     v0=array([nv(p) for p in tri])
     tri=tri[~(v0==[0,0,0]).all(1)]
-#     v0=array([nv(p) for p in tri])
-#     p0=array(p3[89])
     p0=array(p0)
     pa,pb,pc=tri[:,0],tri[:,1],tri[:,2]
     v1,v2=pb-pa,pc-pa
     v0=cross(v1,v2)
-    iim=array([v0,-v1,-v2]).transpose(1,0,2)
+    v0=v0/norm(v0,axis=1).reshape(-1,1)
+    iim=array([v0,-v1,-v2]).transpose(1,0,2).transpose(0,2,1)
     im=inv(iim)
     p=pa-p0
-    t=einsum('ijk,ij->ik',im,p)
-    d=(t[:,0]>=-0.01)&(t[:,0]<=1)&(t[:,1]>=0)&(t[:,1]<=1)&(t[:,2]>=0)&(t[:,2]<=1)&(t[:,1]+t[:,2]<=1)
+    t=einsum('ijk,ik->ij',im,p)
+    d=(t[:,0]>=-0.01)&(t[:,0]<=1)&(t[:,1]>=-0.01)&(t[:,1]<=1)&(t[:,2]>=-0.01)&(t[:,2]<=1)&(t[:,1]+t[:,2]<=1)
     sec2=tri[d].tolist()
     return sec2[0] if sec2!=[] else []
 
