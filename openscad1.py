@@ -4409,7 +4409,7 @@ def points2line_min_d_point(line,points,f=1):
         return []
 
 
-def offset_sol(sol,d,o=0,s=100):
+def offset_sol(sol,d,o=0):
     '''
     function to calculate offset of a 3d object by distance 'd'
     option 'o' can be set to '0' or '1' depending on the shape of the object.
@@ -4422,7 +4422,7 @@ def offset_sol(sol,d,o=0,s=100):
     if o==0:
         sol=[sort_points(sol[n],offset_3d(p,d)) for p in sol]
     else:
-        sol=[equidistant_pathc(offset_3d(p,d),s) for p in sol]
+        sol=[offset_3d(p,d) for p in sol]
     return sol
     
 def ip_sol2sol(sol,sol1,i=0):
@@ -5433,15 +5433,12 @@ def o_p_p(sol,i_p,d):
     iim=array([v1,-v2,-v3]).transpose(1,2,0,3).transpose(0,1,3,2)
     im=inv(iim)
     t=einsum('ijkl,ijl->ijk',im,p2-p0)
-    for i in arange(.0001,.1,.0005):
-       d1=(t[:,:,0]>-d)&(t[:,:,0]<d)&(t[:,:,1]>=-i)&(t[:,:,1]<=1) \
-       &(t[:,:,2]>=-i)&(t[:,:,2]<=1)&(t[:,:,1]+t[:,:,2]<1)
-       
-       p0.shape,v1.shape,t[:,:,0].shape
-       nx=p0+einsum('ijk,ij->ijk',v1,t[:,:,0])
-       nx=nx[d1].tolist()
-       if len(nx)==len(i_p):
-          break
+    d1=(t[:,:,0]>-d)&(t[:,:,0]<d)&(t[:,:,1]>=0)&(t[:,:,1]<=1) \
+    &(t[:,:,2]>=0)&(t[:,:,2]<=1)&(t[:,:,1]+t[:,:,2]<1)
+
+    p0.shape,v1.shape,t[:,:,0].shape
+    nx=p0+einsum('ijk,ij->ijk',v1,t[:,:,0])
+    nx=nx[d1].tolist()
     return nx
     
 def trim_points(o,pl,r):
