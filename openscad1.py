@@ -5711,3 +5711,16 @@ def ip_triangle(sol1,p0):
     sec2=tri[d].tolist()
     return sec2[0] if sec2!=[] else []
 
+def perp_points_d(line,pnts,d):
+    '''
+    finds the points in list 'pnts' which are less than distance 'd' from the 'line'
+    '''
+    l1=array([line[0],line[1]])
+    v1=l1[1]-l1[0]
+    v2=array(pnts)-l1[0]
+    v2sint=norm(cross(v1,v2),axis=1)/norm(v1)
+    v2cost=einsum('j,ij->i',v1,v2)/norm(v1)
+    tx=v2cost/norm(v1)
+    d1=(tx>=0) & (tx<=1) & (v2sint<d)
+    p7=array(pnts)[d1].tolist()
+    return p7
