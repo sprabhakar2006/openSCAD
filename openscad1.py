@@ -5852,3 +5852,17 @@ def p2p_intersection_line(pa,pb):
     p8=array(p6)-v4*10
     line=array([p7,p8]).tolist()
     return array(line).astype(float).tolist()
+    
+def o_3d(i_p,sol,r,o=0):
+    '''
+    function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset
+    '''
+    a=i_p_n(sol,i_p)
+    b=i_p_t(i_p)
+    if o==0:
+        c=array(i_p)+cross(b,a)*r
+    elif o==1:
+        c=array(i_p)+cross(a,b)*r
+    s=array([c+a*r,c-a*r])
+    i_p1=ip_sol2sol(sol,s)
+    return i_p1
