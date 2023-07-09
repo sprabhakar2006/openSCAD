@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import time
 from scipy.spatial import cKDTree,Delaunay, Voronoi
 import pandas as pd
+import sympy as sym
 # import igl
 
 
@@ -1211,6 +1212,18 @@ def nv(p):# normal vector to the plane 'p' with atleast 3 known points
     nv=cross(p0-p1,p2-p1)
     m=1/norm(nv) if norm(nv)>0 else 1e5
     return (nv*m).tolist()
+    
+def nv1(p):# normal vector to the plane 'p' with atleast 3 known points
+    '''
+    given 3 points ['p1','p2',p3] function calculates normal vector
+    example:
+    p1,p2,p3=[1,0,0],[0,10,0],[-5,0,0]
+    nv1([p1,p2,p3]) => [0.0, 0.0, -60.0]
+    '''
+    l1=len(p)
+    p0,p1,p2=array(translate([0,0,0],[p[0],p[int(l1/3)],p[int(l1*2/3)]]))
+    nv=cross(p0-p1,p2-p1)
+    return nv.tolist()
 
 def fillet_3p_3d(p0,p1,p2,r,s):# fillet with 3 known points 'p0,p1,p2' in 3d space. 'r' is the radius of fillet and 's' is the number of segments in the fillet
     '''
@@ -1264,6 +1277,8 @@ def i_p3d(l1,l2): # intersection point between 2 lines 'l1' and 'l2' in 3d space
     t1= (pinv(array([v1,-v2,[1,1,1]]).T)@array(v3))[0]
     ip=l1[0]+v1*t1
     return ip.tolist()
+    
+
 
 def arc_3p_3d(points,s=20):
     '''
@@ -3590,6 +3605,30 @@ def sl_int(sec,line):
 
     return intersection_point
     
+def sl_int1(sec,line):
+    '''
+    section-line intersection:
+    function to find intersection between an plane in 3d space and a line
+    refer to the file "example of various functions" for application example
+    '''
+    vectors=array([p-array(sec[0]) for p in array(sec[1:])])
+    segments=array(seg(vectors))[:-1]
+    v1=array([array(line[1])-array(line[0])])
+    im=inv(array([concatenate([v1,-p]) for p in segments]))
+    point=array([array(sec[0])-array(line[0])]*len(im))
+    im.shape,point.shape
+    t=einsum('ijk,ij->ik',im,point)
+    p0=array(line[0])
+
+#     decision=(t[:,0]>=0)&(t[:,0]<=1)&(t[:,1]>=0)&(t[:,1]<=1)&(t[:,2]>=0)&(t[:,2]<=1)&((t[:,1]+t[:,2])<=1)
+    p0.shape,v1.shape,t.shape
+    v2=array([v1]*len(t)).reshape(-1,3)
+    intersection_point=(p0+einsum('ij,i->ij',v2,t[:,0])).tolist()
+
+    return intersection_point
+
+
+
 def pts2(path):
     '''
     returns the cumulative sum of points
@@ -4462,7 +4501,8 @@ def vnf2(bead2):
     n3=n3+1
     cp2=array(bead2[-1]).mean(0).tolist()
     n3=[[len(bead2)*len(bead2[0])+1,p[0],p[1]] for p in seg(n3)]
-    n=n1+n2+n3
+#    n=n1+n2+n3
+    n=n2
     pnt=[cp1]+array(bead2).reshape(-1,3).round(4).tolist()+[cp2]
     return [pnt,n]
 
@@ -4841,6 +4881,8 @@ def orthos_along_path(path,scale=1):
 
 
 def i_line_planes(p1,p2):
+    p1=array([p1[0],p1[1],array(p1[2])+.00001]).tolist()
+    p2=array([p2[0],p2[1],array(p2[2])+.00001]).tolist()
     n1=nv(p1)
     n2=nv(p2)
 
@@ -5056,7 +5098,7 @@ def surface_for_fillet(sol1=[],sol2=[],factor1=50,factor2=10,factor3=1,factor4=1
     bc1=v[f1].mean(1)
     f2=f1[(sqrt((bc1[:,0]-p1[0])**2+(bc1[:,1]-p1[1])**2+(bc1[:,2]-p1[2])**2)<=dia)]
     solx=v[f2].tolist()
-    sur2=[ip_sol2sol(solx,p,-1) for p in sol3]
+    sur2=[ipx(solx,p,-1) for p in sol3]
     
     return sur2
 
@@ -5764,3 +5806,49 @@ def perp_points_d(line,pnts,d):
     d1=(tx>=0) & (tx<=1) & (v2sint<d)
     p7=array(pnts)[d1].tolist()
     return p7
+    
+def l2l_intersection(l1,l2):
+    '''
+    function to calculate line to line intersection points in 3d space
+    '''
+    t1,t2=sym.symbols('t1 t2')
+    v1=array(l1[1])-array(l1[0])
+    v2=array(l2[1])-array(l2[0])
+    # array(p3[0])+v1*t1=array(p4[0])+v2*t2
+    eq1=v1[0]*t1-v2[0]*t2-(array(l2[0])-array(l1[0]))[0]
+    eq2=v1[1]*t1-v2[1]*t2-(array(l2[0])-array(l1[0]))[1]
+    eq3=v1[2]*t1-v2[2]*t2-(array(l2[0])-array(l1[0]))[2]
+    f=sym.solve((eq1,eq2,eq3),(t1,t2))
+    if len(f)<2:
+        f=sym.solve((eq1,eq2),(t1,t2))
+        if len(f)<2:
+            f=sym.solve((eq1,eq3),(t1,t2))
+            if len(f)<2:
+                f=sym.solve((eq2,eq3),(t1,t2))
+    i_p=(array(l1[0])+v1*f[t1]).tolist()
+    return array(i_p).astype(float).tolist()
+    
+def p2p_intersection_line(pa,pb):
+    '''
+    function to calculate intersection line between 2 planes
+    '''
+    x,y,z=sym.symbols('x y z')
+    p0,p1,p2=array(pa)
+    v1,v2=p1-p0,p2-p0
+    n1=cross(v1,v2)
+
+    p3,p4,p5=array(pb)
+    v1,v2=p4-p3,p5-p3
+    n2=cross(v1,v2)
+
+    eq1=n1[0]*x+n1[1]*y+n1[2]*z-p0@n1
+    eq2=n2[0]*x+n2[1]*y+n2[2]*z-p3@n2
+
+    f=sym.solve([eq1,eq2],x,y)
+
+    v4=cross(n1,n2)
+    p6=array([f[x].subs(z,0),f[y].subs(z,0),0])
+    p7=array(p6)+v4*10
+    p8=array(p6)-v4*10
+    line=array([p7,p8]).tolist()
+    return array(line).astype(float).tolist()
