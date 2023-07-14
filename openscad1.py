@@ -5817,6 +5817,32 @@ def perp_points_d(line,pnts,d):
         p7=array(pnts)[d1].tolist()
     return p7
     
+def perp_distance_within_line(line,pnts):
+    '''
+    finds the perpendicular distance of the points in list 'pnts' from the 'line'
+    only calculates if the projecton of the point lies within the line
+    '''
+    if array(line).shape[-1]==3:
+        l1=array([line[0],line[1]])
+        v1=l1[1]-l1[0]
+        v2=array(pnts)-l1[0]
+        v2sint=norm(cross(v1,v2),axis=1)/norm(v1)
+        v2cost=einsum('j,ij->i',v1,v2)/norm(v1)
+        tx=v2cost/norm(v1)
+        d1=(tx>=0) & (tx<=1)
+        v2sint=array(v2sint)[d1].tolist()
+    elif array(line).shape[-1]==2:
+        l1=array([line[0],line[1]])
+        v1=l1[1]-l1[0]
+        v2=array(pnts)-l1[0]
+        v2sint=cross(v1,v2)/norm(v1)
+        v2cost=einsum('j,ij->i',v1,v2)/norm(v1)
+        tx=v2cost/norm(v1)
+        d1=(tx>=0) & (tx<=1)
+        v2sint=array(v2sint)[d1].tolist()
+    return v2sint
+    
+    
 def l2l_intersection(l1,l2):
     '''
     function to calculate line to line intersection points in 3d space
