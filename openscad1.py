@@ -5376,47 +5376,44 @@ def axis_rot_o(axis,solid,angle):
 
 def edges(l,m):
     return array([[[i+j*m,i+(j+1)*m] for j in range(l-1)] for i in range(m)]).reshape(-1,2)
-    
-# def i_p_n(sol,i_p):
+
+
+# def i_p_n(sol,ip):
 #     '''
-#     calculates normal at the intersection points
-#     sol: solid on which the normal is required
-#     i_p: list of intersection points between 2 solids
+#     calculates the unit normal vectors for the intersection points "ip" on a solid "sol"
 #     '''
-#     l,m,_=array(sol).shape
-#     f1=faces(l,m)
-#     v=array(sol).reshape(-1,3)
-#     tri=v[f1[1]]
-#     v2,v3=tri[:,1]-tri[:,0], tri[:,2]-tri[:,0]
-#     v1=cross(v2,v3)
-#     v1=v1/norm(v1,axis=1).reshape(-1,1)
-#     p0=array(i_p)
-#     p2=tri[:,0]
-#     n1,n2=len(p0),len(p2)
-#     v1=array([v1]*n1)
-#     v2=array([v2]*n1)
-#     v3=array([v3]*n1)
-#     p0=array([p0]*n2).transpose(1,0,2)
-#     p2=array([p2]*n1)
-#     iim=array([v1,-v2,-v3]).transpose(1,2,0,3).transpose(0,1,3,2)
-#     im=inv(iim)
-#     t=einsum('ijkl,ijl->ijk',im,p2-p0)
-#     d1=(t[:,:,0]>-.1)&(t[:,:,0]<.1)&(t[:,:,1]>=0)&(t[:,:,1]<=1) \
-#     &(t[:,:,2]>=0)&(t[:,:,2]<=1)&(t[:,:,1]+t[:,:,2]<1)
-#     nx=v1[d1]
-#     return nx
+#     sec2=[ip_triangle(sol,p) for p in ip]
+#     pa,pb,pc=array(sec2)[:,0],array(sec2)[:,1],array(sec2)[:,2]
+#     n1=cross(pc-pa,pb-pa)
+#     n1=n1/norm(n1,axis=1).reshape(-1,1)
+#     return n1
 
-def i_p_n(sol,ip):
-    '''
-    calculates the unit normal vectors for the intersection points "ip" on a solid "sol"
-    '''
-    sec2=[ip_triangle(sol,p) for p in ip]
-    pa,pb,pc=array(sec2)[:,0],array(sec2)[:,1],array(sec2)[:,2]
-    n1=cross(pc-pa,pb-pa)
-    n1=n1/norm(n1,axis=1).reshape(-1,1)
-    return n1
-
-
+def i_p_n(p1,sol1):
+    v,f1=vnf2(sol1)
+    tri=array(v)[f1]
+    tri=array([p for p in tri if nv(p)!=[0,0,0]])
+    n1=array([nv(p) for p in tri])
+    pa,pb,pc=tri[:,0],tri[:,1],tri[:,2]
+    px=array(p1)
+    v1,v2=pb-pa,pc-pa
+    a,_=px.shape
+    b,_=v1.shape
+    py=px[:,None]+n1
+    px=array([px]*b).transpose(1,0,2)
+    v0=py-px
+    v1=array([v1]*a)
+    v2=array([v2]*a)
+    pa=array([pa]*a)
+    iim=array([v0,-v1,-v2]).transpose(1,2,0,3)
+    im=inv(iim)
+    pz=pa-px
+    t=einsum('ijkl,ijk->ijl',im,pz)
+    tri_1=array([ tri[(t[i][:,0]>=-.01)&(t[i][:,0]<=1)&(t[i][:,1]>=-0.01)&(t[i][:,1]<=1)&(t[i][:,2]>=-0.01)&(t[i][:,2]<=1)&(t[i][:,1]+t[i][:,2]<=1)][0] for i in range(len(p1)) ])
+    pa,pb,pc=tri_1[:,0],tri_1[:,1],tri_1[:,2]
+    v1,v2=pb-pa,pc-pa
+    v3=cross(v1,v2)
+    v3=v3/norm(v3,axis=1).reshape(-1,1)
+    return v3
 
 
 def i_p_p(sol,i_p,r):
@@ -5768,30 +5765,54 @@ def bspline_cubic(px,s=10):
     return array(b).reshape(-1,3).tolist()
 
     
-def ip_triangle(sol1,p0):
-    '''
-    finds the triangle where the intersection point lies in a solid
-    '''
-    l,m,_=array(sol1).shape
-    f1=faces_1(l,m)
-    v=array(sol1).reshape(-1,3)
-    tri=v[f1]
+# def ip_triangle(sol1,p0):
+#     '''
+#     finds the triangle where the intersection point lies in a solid
+#     '''
+#     l,m,_=array(sol1).shape
+#     f1=faces_1(l,m)
+#     v=array(sol1).reshape(-1,3)
+#     tri=v[f1]
+#     pa,pb,pc=tri[:,0],tri[:,1],tri[:,2]
+#     v1,v2=pb-pa,pc-pa
+#     v0=cross(v1,v2)
+#     tri=tri[~(v0==[0,0,0]).all(1)]
+#     p0=array(p0)
+#     pa,pb,pc=tri[:,0],tri[:,1],tri[:,2]
+#     v1,v2=pb-pa,pc-pa
+#     v0=cross(v1,v2)
+#     v0=v0/norm(v0,axis=1).reshape(-1,1)
+#     iim=array([v0,-v1,-v2]).transpose(1,0,2).transpose(0,2,1)
+#     im=inv(iim)
+#     p=pa-p0
+#     t=einsum('ijk,ik->ij',im,p)
+#     d=(t[:,0]>=-0.01)&(t[:,0]<=1)&(t[:,1]>=-0.01)&(t[:,1]<=1)&(t[:,2]>=-0.01)&(t[:,2]<=1)&(t[:,1]+t[:,2]<=1)
+#     sec2=tri[d].tolist()
+#     return sec2[0] if sec2!=[] else []
+
+
+def ip_triangle(p1,sol1):
+    v,f1=vnf2(sol1)
+    tri=array(v)[f1]
+    tri=array([p for p in tri if nv(p)!=[0,0,0]])
+    n1=array([nv(p) for p in tri])
     pa,pb,pc=tri[:,0],tri[:,1],tri[:,2]
+    px=array(p1)
     v1,v2=pb-pa,pc-pa
-    v0=cross(v1,v2)
-    tri=tri[~(v0==[0,0,0]).all(1)]
-    p0=array(p0)
-    pa,pb,pc=tri[:,0],tri[:,1],tri[:,2]
-    v1,v2=pb-pa,pc-pa
-    v0=cross(v1,v2)
-    v0=v0/norm(v0,axis=1).reshape(-1,1)
-    iim=array([v0,-v1,-v2]).transpose(1,0,2).transpose(0,2,1)
+    a,_=px.shape
+    b,_=v1.shape
+    py=px[:,None]+n1
+    px=array([px]*b).transpose(1,0,2)
+    v0=py-px
+    v1=array([v1]*a)
+    v2=array([v2]*a)
+    pa=array([pa]*a)
+    iim=array([v0,-v1,-v2]).transpose(1,2,0,3)
     im=inv(iim)
-    p=pa-p0
-    t=einsum('ijk,ik->ij',im,p)
-    d=(t[:,0]>=-0.01)&(t[:,0]<=1)&(t[:,1]>=-0.01)&(t[:,1]<=1)&(t[:,2]>=-0.01)&(t[:,2]<=1)&(t[:,1]+t[:,2]<=1)
-    sec2=tri[d].tolist()
-    return sec2[0] if sec2!=[] else []
+    pz=pa-px
+    t=einsum('ijkl,ijk->ijl',im,pz)
+    tri_1=array([ tri[(t[i][:,0]>=-.01)&(t[i][:,0]<=1)&(t[i][:,1]>=-0.01)&(t[i][:,1]<=1)&(t[i][:,2]>=-0.01)&(t[i][:,2]<=1)&(t[i][:,1]+t[i][:,2]<=1)][0] for i in range(len(p1)) ])
+    return tri_1.tolist()
 
 def perp_points_d(line,pnts,d):
     '''
@@ -5893,12 +5914,70 @@ def o_3d(i_p,sol,r,o=0):
     '''
     function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset
     '''
-    a=i_p_n(sol,i_p)
+    a=i_p_n(i_p,sol)
     b=i_p_t(i_p)
     if o==0:
-        c=array(i_p)+cross(b,a)*r
-    elif o==1:
         c=array(i_p)+cross(a,b)*r
+    elif o==1:
+        c=array(i_p)+cross(b,a)*r
     s=array([c+a*r,c-a*r])
     i_p1=ip_sol2sol(sol,s)
     return i_p1
+
+def o_3d_surf(i_p,sol,r,o=0):
+    '''
+    function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset
+    '''
+    a=i_p_n(i_p,sol)
+    b=i_p_t(i_p)
+    if o==0:
+        c=array(i_p)+cross(a,b)*r
+    elif o==1:
+        c=array(i_p)+cross(b,a)*r
+    s=array([c+a*r,c-a*r])
+    i_p1=ip_surf(sol,s)
+    return i_p1
+
+def ip_fillet(sol1,sol2,r1,r2,s=20,o=0):
+    '''
+    calculates a fillet at the intersection of 2 solids.
+    r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
+    r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on sol1 
+    '''
+    p1=ip_sol2sol(sol1,sol2,i=o)
+    p2=i_p_p(sol2,p1,r1)
+    if len(p1)!=len(p2):
+        p2=o_3d(p1,sol2,r1)
+    p3=o_3d(p1,sol1,r2)
+    if len(p1)==len(p2)==len(p3):
+        fillet1=convert_3lines2fillet_closed(p1,p2,p3,s=s)
+    else:
+        p2=sort_points(p1,p2)
+        p2=path2path1(p1,p2)
+        p3=sort_points(p1,p3)
+        p3=path2path1(p1,p3)
+        p1,p2,p3=align_sol_1([p1,p2,p3])
+        fillet1=convert_3lines2fillet_closed(p1,p2,p3)
+    return fillet1
+
+def ip_fillet_surf(surf,sol,r1,r2,s=20):
+    '''
+    calculates a fillet at the intersection of surface with solid.
+    r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
+    r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on surf 
+    '''
+    p1=ip_surf(surf,sol)
+    p2=i_p_p(sol,p1,r1)
+    if len(p1)!=len(p2):
+        p2=o_3d(p1,sol,r1)
+    p3=o_3d_surf(p1,surf,r2)
+    if len(p1)==len(p2)==len(p3):
+        fillet1=convert_3lines2fillet_closed(p1,p2,p3,s=s)
+    else:
+        p2=sort_points(p1,p2)
+        p2=path2path1(p1,p2)
+        p3=sort_points(p1,p3)
+        p3=path2path1(p1,p3)
+        p1,p2,p3=align_sol_1([p1,p2,p3])
+        fillet1=convert_3lines2fillet_closed(p1,p2,p3)
+    return fillet1
