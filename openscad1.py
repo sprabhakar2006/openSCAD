@@ -4463,55 +4463,55 @@ def offset_sol(sol,d,o=0):
     else:
         sol=[offset_3d(p,d) for p in sol]
     return sol
-
-def ip_sol2sol(sol1,sol2):
-    '''
-    function to find the intersection point between 2 solids
-    this function is to be used where the cutting lines of sol1 are intersecting sol at more than 1 times.
-    sol1: solid which is intersected
-    sol2: this intersects the solid 'sol1'
-    '''
-    line=array([ seg(p)[:-1] for p in cpo(sol2)])
-    v,f1=vnf2(sol1)
-    tri=array(v)[f1]
-
-    tri=array([p for p in tri if nv(p)!=[0,0,0]])
-
-    a,_,_=tri.shape
-    b,c,_,_=line.shape
-
-    pa,pb,p0,p1,p2=line[:,:,0],line[:,:,1],tri[:,0],tri[:,1],tri[:,2]
-    v0,v1,v2=pb-pa,p1-p0,p2-p0
-
-    v0,v1,v2,pa,p0=array([v0]*a).transpose(1,2,0,3),array([[v1]*c]*b),array([[v2]*c]*b),array([pa]*a).transpose(1,2,0,3),array([[p0]*c]*b)
-    iim=array([v0,-v1,-v2]).transpose(1,2,3,0,4).transpose(0,1,2,4,3)+.00001
-    im=inv(iim)
-    p=p0-pa
-    t=einsum('ijklm,ijkm->ijkl',im,p)
-    d=(t[:,:,:,0]>=0)&(t[:,:,:,0]<=1)&(t[:,:,:,1]>=0)&(t[:,:,:,1]<=1)&(t[:,:,:,2]>=0)&(t[:,:,:,2]<=1)&((t[:,:,:,1]+t[:,:,:,2])<1)
-    i_p=pa+einsum('ijkl,ijk->ijkl',v0,t[:,:,:,0])
-    i_p=[ i_p[i][d[i]].tolist() for i in range(len(line)) if i_p[i][d[i]].tolist()!=[]]
-    return i_p
-
-#def ip_sol2sol(sol,sol1,i=0):
-#   '''
-#    function to find the intersection point between 2 solids
-#    this function is to be used where the cutting lines of sol1 are intersecting sol at more than 1 times.
-#    sol: solid which is intersected
-#    sol1: this intersects the solid 'sol'
-#    i: if the first intersection points of all the cutting lines are to be considered, value of i should be '0'.
-#    if the last intersection points of all the cutting lines are to be considered, value of 'i' should be set to '-1'
-#    if all the intersection points are required, value of 'i' should be set to 'all'
-#    '''
+    
+def ip_sol2sol(sol,sol1):
+   '''
+   function to find the intersection point between 2 solids
+   this function is to be used where the cutting lines of sol1 are intersecting sol at more than 1 times.
+   sol: solid which is intersected
+   sol1: this intersects the solid 'sol'
+   i: if the first intersection points of all the cutting lines are to be considered, value of i should be '0'.
+   if the last intersection points of all the cutting lines are to be considered, value of 'i' should be set to '-1'
+   if all the intersection points are required, value of 'i' should be set to 'all'
+   '''
 #    if i=='all':
 #        a=[ip_sol2line(sol,p) for p in cpo(sol1)]
 #        a=array([p for p in a if p!=[]]).reshape(-1,3).tolist()
 #    else:
-#        a=[ip_sol2line(sol,p) for p in cpo(sol1)]
-#        a=[p[i] for p in a if p!=[]]
-#    
-#    return a
-    
+   a=[ip_sol2line(sol,p) for p in cpo(sol1)]
+   a=[p for p in a if p!=[]]
+   
+   return a
+
+# def ip_sol2sol(sol1,sol2):
+#     '''
+#     function to find the intersection point between 2 solids
+#     this function is to be used where the cutting lines of sol1 are intersecting sol at more than 1 times.
+#     sol1: solid which is intersected
+#     sol2: this intersects the solid 'sol1'
+#     '''
+#     line=array([ seg(p)[:-1] for p in cpo(sol2)])
+#     v,f1=vnf2(sol1)
+#     tri=array(v)[f1]
+
+#     tri=array([p for p in tri if nv(p)!=[0,0,0]])
+
+#     a,_,_=tri.shape
+#     b,c,_,_=line.shape
+
+#     pa,pb,p0,p1,p2=line[:,:,0],line[:,:,1],tri[:,0],tri[:,1],tri[:,2]
+#     v0,v1,v2=pb-pa,p1-p0,p2-p0
+
+#     v0,v1,v2,pa,p0=array([v0]*a).transpose(1,2,0,3),array([[v1]*c]*b),array([[v2]*c]*b),array([pa]*a).transpose(1,2,0,3),array([[p0]*c]*b)
+#     iim=array([v0,-v1,-v2]).transpose(1,2,3,0,4).transpose(0,1,2,4,3)+.00001
+#     im=inv(iim)
+#     p=p0-pa
+#     t=einsum('ijklm,ijkm->ijkl',im,p)
+#     d=(t[:,:,:,0]>=0)&(t[:,:,:,0]<=1)&(t[:,:,:,1]>=0)&(t[:,:,:,1]<=1)&(t[:,:,:,2]>=0)&(t[:,:,:,2]<=1)&((t[:,:,:,1]+t[:,:,:,2])<1)
+#     i_p=pa+einsum('ijkl,ijk->ijkl',v0,t[:,:,:,0])
+#     i_p=[ i_p[i][d[i]].tolist() for i in range(len(line)) if i_p[i][d[i]].tolist()!=[]]
+#     return i_p
+
     
 def vnf2(bead2):
     '''
@@ -5951,6 +5951,7 @@ def o_3d(i_p,sol,r,o=0):
         c=array(i_p)+cross(b,a)*r
     s=array([c+a*r,c-a*r])
     i_p1=ip_sol2sol(sol,s)
+    i_p1=[p[0] for p in i_p1]
     return i_p1
 
 def o_3d_surf(i_p,sol,r,o=0):
@@ -5973,7 +5974,8 @@ def ip_fillet(sol1,sol2,r1,r2,s=20,o=0):
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
     r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on sol1 
     '''
-    p1=ip_sol2sol(sol1,sol2,i=o)
+    p1=ip_sol2sol(sol1,sol2)
+    p1=[p[o] for p in p1]
     p2=i_p_p(sol2,p1,r1)
     if len(p1)!=len(p2):
         p2=o_3d(p1,sol2,r1)
