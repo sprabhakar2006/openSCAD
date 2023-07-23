@@ -1824,10 +1824,12 @@ def rsz2dc(sec,rsz):
     s=array([ avg+array([r_x*(sec[i][0]-avg[0]),r_y*(sec[i][1]-avg[1])]) for i in range(len(sec))]).round(4)
     return s[sort(unique(s,axis=0,return_index=True)[1])].tolist()
 
-# def ip(prism,prism1):
+    
+# def ip(prism,prism1,side=-1):
 #     '''
 #     function to calculate intersection point between two 3d prisms. 
 #      "prism" is the 3d object which is intersected with "prism1".
+#      side: when a ray intersects a solid it can intersect at 2 locations, if the ray is travelling from outside, in that case if '0' is given meaning only the first intersection point is considered, and in case '-1' is given meaning the last intersection point will be considered.
 #      try below code for better understanding:
 #     sec=circle(10)
 #     path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-9.9,0]]),5)
@@ -1855,56 +1857,41 @@ def rsz2dc(sec,rsz):
 #     t3=einsum('ijk,ijk->ij',px[:,None]-pm,cross(-v1[:,None],v2))/einsum('ik,jk->ij',-v1,cross(v2,v3)+[.00001,.00001,.00001])
 #     p=px[:,None]+einsum('ik,ij->ijk',v1,t1)
 #     condition=(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)>=0)&((t2+t3)<=1)
-#     p=p[condition]
+# #     p=p[condition]
 # #     p=p[unique(p,return_index=True)[1]]
+#     p=array([[p[i][condition[i]],i%len(pb[0])] for i in range(len(p))],dtype=object)
+#     n=array([p1[1] for p1 in p if p1[0].tolist()!=[]])
+#     p=concatenate([concatenate([[[p2,i] for p2 in p1[0]] for p1 in p if (p1[0].tolist()!=[])&(p1[1]==i)],dtype=object) for i in n],dtype=object)
+#     p=array([p]*len(n),dtype=object)[p[:,1]==unique(p[:,1])[:,None]]
+#     p=array([[array([p1[0] for p1 in p if p1[1]==i],dtype=object),i] for i in n],dtype=object)
+#     if side=='all':
+#         p=concatenate([a[array([l_len([p2[:,0][b],p1]) for p1 in a],dtype=object).argsort()] for (a,b) in p ],dtype=object)
+#     else:
+#         p=array([a[array([l_len([p2[:,0][b],p1]) for p1 in a],dtype=object).argsort()[side]] for (a,b) in p if a.tolist()!=[]],dtype=object)
+        
 #     return p.tolist()
-    
-def ip(prism,prism1,side=-1):
+
+
+def ip(sol1,sol2):
     '''
     function to calculate intersection point between two 3d prisms. 
-     "prism" is the 3d object which is intersected with "prism1".
-     side: when a ray intersects a solid it can intersect at 2 locations, if the ray is travelling from outside, in that case if '0' is given meaning only the first intersection point is considered, and in case '-1' is given meaning the last intersection point will be considered.
-     try below code for better understanding:
-    sec=circle(10)
-    path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-9.9,0]]),5)
-    p=prism(sec,path)
-    p1=cylinder(r=3,h=15,s=30)
-    ip1=ip(p,p1)
-    
-    refer to file "example of various functions" for application
+    "sol1" is the 3d object which is intersected with "sol2".
     '''
-    pa=prism
-    pb=prism1
-    p1=array([[ [[pa[i][j],pa[i][j+1],pa[i+1][j]],[pa[i+1][j+1],pa[i+1][j],pa[i][j+1]]] if j<len(pa[i])-1 
-     else [[pa[i][j],pa[i][0],pa[i+1][j]],[pa[i+1][0],pa[i+1][j],pa[i][0]]] 
-     for j in range(len(pa[i]))] 
-              for i in range(len(pa)-1)]).reshape(-1,3,3)
-    p2=array([[[pb[i][j],pb[i+1][j]] for j in range(len(pb[i]))] for i in range(len(pb)-1)]).reshape(-1,2,3)
-    pm=p1[:,0]
-    pn=p1[:,1]
-    po=p1[:,2]
-    px=p2[:,0]
-    py=p2[:,1]
-    v1,v2,v3=py-px,pn-pm,po-pm
-    t1=einsum('ijk,jk->ij',px[:,None]-pm,cross(v2,v3))/einsum('ik,jk->ij',-v1,cross(v2,v3)+[.00001,.00001,.00001])
-    t2=einsum('ijk,ijk->ij',px[:,None]-pm,cross(v3,-v1[:,None]))/einsum('ik,jk->ij',-v1,cross(v2,v3)+[.00001,.00001,.00001])
-    t3=einsum('ijk,ijk->ij',px[:,None]-pm,cross(-v1[:,None],v2))/einsum('ik,jk->ij',-v1,cross(v2,v3)+[.00001,.00001,.00001])
-    p=px[:,None]+einsum('ik,ij->ijk',v1,t1)
-    condition=(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)>=0)&((t2+t3)<=1)
-#     p=p[condition]
-#     p=p[unique(p,return_index=True)[1]]
-    p=array([[p[i][condition[i]],i%len(pb[0])] for i in range(len(p))],dtype=object)
-    n=array([p1[1] for p1 in p if p1[0].tolist()!=[]])
-    p=concatenate([concatenate([[[p2,i] for p2 in p1[0]] for p1 in p if (p1[0].tolist()!=[])&(p1[1]==i)],dtype=object) for i in n],dtype=object)
-    p=array([p]*len(n),dtype=object)[p[:,1]==unique(p[:,1])[:,None]]
-    p=array([[array([p1[0] for p1 in p if p1[1]==i],dtype=object),i] for i in n],dtype=object)
-    if side=='all':
-        p=concatenate([a[array([l_len([p2[:,0][b],p1]) for p1 in a],dtype=object).argsort()] for (a,b) in p ],dtype=object)
-    else:
-        p=array([a[array([l_len([p2[:,0][b],p1]) for p1 in a],dtype=object).argsort()[side]] for (a,b) in p if a.tolist()!=[]],dtype=object)
-        
-    return p.tolist()
-
+    line=array([ seg(p)[:-1] for p in cpo(sol2)])
+    v,f1=vnf2(sol1)
+    tri=array(v)[f1]
+    line=array([ seg(p)[:-1] for p in cpo(sol2)])
+    tri.shape,line.shape
+    la,lb=line[:,:,0],line[:,:,1]
+    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+    lab=lb-la
+    p01,p02=p1-p0,p2-p0
+    t=einsum('kl,ijkl->ijk',cross(p01,p02),la[:,:,None]-p0)/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00001)
+    u=einsum('ijkl,ijkl->ijk',cross(p02[None,None,:,:],(-lab)[:,:,None,:]),(la[:,:,None,:]-p0[None,None,:,:]))/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00001)
+    v=einsum('ijkl,ijkl->ijk',cross((-lab)[:,:,None,:],p01[None,None,:,:]),(la[:,:,None,:]-p0[None,None,:,:]))/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00001)
+    condition=(t>=0)&(t<=1)&(u>=-0.0001)&(u<=1)&(v>=-.0001)&(v<=1)&(u+v<1)
+    i_p=(array([la]*len(p0)).transpose(1,2,0,3)+einsum('ijl,ijk->ijkl',lab,t))[condition].tolist()
+    return i_p
 
 
 def ipf(prism,prism1,r,s,o=0):
@@ -4464,53 +4451,43 @@ def offset_sol(sol,d,o=0):
         sol=[offset_3d(p,d) for p in sol]
     return sol
     
-def ip_sol2sol(sol,sol1):
-   '''
-   function to find the intersection point between 2 solids
-   this function is to be used where the cutting lines of sol1 are intersecting sol at more than 1 times.
-   sol: solid which is intersected
-   sol1: this intersects the solid 'sol'
-   i: if the first intersection points of all the cutting lines are to be considered, value of i should be '0'.
-   if the last intersection points of all the cutting lines are to be considered, value of 'i' should be set to '-1'
-   if all the intersection points are required, value of 'i' should be set to 'all'
-   '''
-#    if i=='all':
-#        a=[ip_sol2line(sol,p) for p in cpo(sol1)]
-#        a=array([p for p in a if p!=[]]).reshape(-1,3).tolist()
-#    else:
-   a=[ip_sol2line(sol,p) for p in cpo(sol1)]
-   a=[p for p in a if p!=[]]
+# def ip_sol2sol(sol,sol1):
+#    '''
+#    function to find the intersection point between 2 solids
+#    this function is to be used where the cutting lines of sol1 are intersecting sol at more than 1 times.
+#    sol: solid which is intersected
+#    sol1: this intersects the solid 'sol'
+#    i: if the first intersection points of all the cutting lines are to be considered, value of i should be '0'.
+#    if the last intersection points of all the cutting lines are to be considered, value of 'i' should be set to '-1'
+#    if all the intersection points are required, value of 'i' should be set to 'all'
+#    '''
+#    a=[ip_sol2line(sol,p) for p in cpo(sol1)]
+#    a=[p for p in a if p!=[]]
    
-   return a
+#    return a
 
-# def ip_sol2sol(sol1,sol2):
-#     '''
-#     function to find the intersection point between 2 solids
-#     this function is to be used where the cutting lines of sol1 are intersecting sol at more than 1 times.
-#     sol1: solid which is intersected
-#     sol2: this intersects the solid 'sol1'
-#     '''
-#     line=array([ seg(p)[:-1] for p in cpo(sol2)])
-#     v,f1=vnf2(sol1)
-#     tri=array(v)[f1]
+def ip_sol2sol(sol1,sol2):
+    line=array([ seg(p)[:-1] for p in cpo(sol2)])
+    v,f1=vnf2(sol1)
+    tri=array(v)[f1]
+    line=array([ seg(p)[:-1] for p in cpo(sol2)])
+    tri.shape,line.shape
+    la,lb=line[:,:,0],line[:,:,1]
+    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+    lab=lb-la
+    p01,p02=p1-p0,p2-p0
+    t=einsum('kl,ijkl->ijk',cross(p01,p02),la[:,:,None]-p0)/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00001)
+    u=einsum('ijkl,ijkl->ijk',cross(p02[None,None,:,:],(-lab)[:,:,None,:]),(la[:,:,None,:]-p0[None,None,:,:]))/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00001)
+    v=einsum('ijkl,ijkl->ijk',cross((-lab)[:,:,None,:],p01[None,None,:,:]),(la[:,:,None,:]-p0[None,None,:,:]))/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00001)
+    condition=(t>=0)&(t<=1)&(u>=0)&(u<=1)&(v>=0)&(v<=1)&(u+v<1)
 
-#     tri=array([p for p in tri if nv(p)!=[0,0,0]])
+    a=(la[:,None,:,None,:]+lab[:,None,:,None,:]*t[:,None,:,:,None])
+    b=condition[:,None,:,:]
+    c=[]
+    for i in range(len(a)):
+        c.append(a[i][b[i]].tolist())
 
-#     a,_,_=tri.shape
-#     b,c,_,_=line.shape
-
-#     pa,pb,p0,p1,p2=line[:,:,0],line[:,:,1],tri[:,0],tri[:,1],tri[:,2]
-#     v0,v1,v2=pb-pa,p1-p0,p2-p0
-
-#     v0,v1,v2,pa,p0=array([v0]*a).transpose(1,2,0,3),array([[v1]*c]*b),array([[v2]*c]*b),array([pa]*a).transpose(1,2,0,3),array([[p0]*c]*b)
-#     iim=array([v0,-v1,-v2]).transpose(1,2,3,0,4).transpose(0,1,2,4,3)+.00001
-#     im=inv(iim)
-#     p=p0-pa
-#     t=einsum('ijklm,ijkm->ijkl',im,p)
-#     d=(t[:,:,:,0]>=0)&(t[:,:,:,0]<=1)&(t[:,:,:,1]>=0)&(t[:,:,:,1]<=1)&(t[:,:,:,2]>=0)&(t[:,:,:,2]<=1)&((t[:,:,:,1]+t[:,:,:,2])<1)
-#     i_p=pa+einsum('ijkl,ijk->ijkl',v0,t[:,:,:,0])
-#     i_p=[ i_p[i][d[i]].tolist() for i in range(len(line)) if i_p[i][d[i]].tolist()!=[]]
-#     return i_p
+    return [p for p in c if p!=[]]
 
     
 def vnf2(bead2):
@@ -5101,7 +5078,7 @@ def faces_3(l,m):
 #     sol4=[ip_sol2sol(sol1,p,0) for p in c if ip_sol2sol(sol1,p,0)!=[]]
 #     return sol4
     
-def surface_for_fillet(sol1=[],sol2=[],factor1=50,factor2=10,factor3=1,factor4=100,dia=40):
+def surface_for_fillet(sol1=[],sol2=[],factor1=50,factor2=20,factor3=4,factor4=25,dia=8):
     '''
     sol1: Solid on which the surface needs to be created
     sol2: Intersecting solid
@@ -5111,25 +5088,24 @@ def surface_for_fillet(sol1=[],sol2=[],factor1=50,factor2=10,factor3=1,factor4=1
     factor4: any high number should be ok like maybe 100 or greater, basically greater than the bounding box dimension of the "sol1"
     dia: diameter around the solid 2 where surfavce needs to be created
     '''
-    p0= array(prism_center(sol1))
-    p1= array(prism_center(sol2))
-    
-    v1=p1-p0
-    u1=v1/norm(v1)
-    p3=p0-u1*factor4
-    p3=ip_sol2line(sol1,[p0,p3])[0]
-    cir1=circle(1,s=factor1)
-    sur1=sol2vector(v1,cpo([ls([[0,0],p],factor2) for p in cir1]),u1*factor3)
-    lines1=[[[[0,0,0],(array(p1)/norm(p1)*factor4).tolist()] for p1 in p] for p in sur1]
-    sol3=[translate(p3,cpo(p)) for p in lines1]
-    v,f1=vnf2(sol1)
-    v,f1=array(v),array(f1)
-    bc1=v[f1].mean(1)
-    f2=f1[(sqrt((bc1[:,0]-p1[0])**2+(bc1[:,1]-p1[1])**2+(bc1[:,2]-p1[2])**2)<=dia)]
-    solx=v[f2].tolist()
-    sur2=[ipx(solx,p,-1) for p in sol3]
-    
-    return sur2
+    v,f1=partial_surface(sol1,prism_center(sol2),dia)
+    tri=array(v)[f1]
+    s1=shield(sol1,sol2,factor1,factor2,factor3,factor4)
+    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+    s2=array(s1).transpose(0,2,1,3)
+    la,lb=s2[:,:,0],s2[:,:,1]
+    p01,p02,lab=p1-p0,p2-p0,lb-la
+
+    p0.shape,array(s1).shape,s2.shape,la.shape,p01.shape,lab.shape
+    t=einsum('ijklm,ijklm->ijkl',cross(p01,p02)[None,None,None,:,:],(la[:,:,None,None,:]-p0[None,None,None,:,:]))/(einsum('ijklm,ijklm->ijkl',(-lab)[:,:,None,None,:],cross(p01,p02)[None,None,None,:,:])+.00001)
+    u=einsum('ijklm,ijklm->ijkl',cross(p02[None,None,None,:,:],(-lab)[:,:,None,None,:]),(la[:,:,None,None,:]-p0[None,None,None,:,:]))/(einsum('ijklm,ijklm->ijkl',(-lab)[:,:,None,None,:],cross(p01,p02)[None,None,None,:,:])+.00001)
+    v=einsum('ijklm,ijklm->ijkl',cross((-lab)[:,:,None,None,:],p01[None,None,None,:,:]),(la[:,:,None,None,:]-p0[None,None,None,:,:]))/(einsum('ijklm,ijklm->ijkl',(-lab)[:,:,None,None,:],cross(p01,p02)[None,None,None,:,:])+.00001)
+    condition=(t>=0)&(t<=1)&(u>=0)&(u<=1)&(v>=0)&(v<=1)&(u+v<=1)
+    i_p=la[:,:,None,None,:]+einsum('ijklm,ijkl->ijklm',lab[:,:,None,None,:],t)
+    i_p1=[]
+    for i in range(1,len(i_p)):
+        i_p1.append(i_p[i][condition[i]].tolist())
+    return i_p1
 
 def shield(sol1=[],sol2=[],factor1=50,factor2=10,factor3=1,factor4=100):
     '''
@@ -5417,30 +5393,39 @@ def edges(l,m):
 #     n1=n1/norm(n1,axis=1).reshape(-1,1)
 #     return n1
 
-def i_p_n(p1,sol1):
-    v,f1=vnf2(sol1)
-    tri=array(v)[f1]
-    tri=array([p for p in tri if nv(p)!=[0,0,0]])
-    n1=array([nv(p) for p in tri])
-    pa,pb,pc=tri[:,0],tri[:,1],tri[:,2]
-    px=array(p1)
-    v1,v2=pb-pa,pc-pa
-    a,_=px.shape
-    b,_=v1.shape
-    py=px[:,None]+n1
-    px=array([px]*b).transpose(1,0,2)
-    v0=py-px
-    v1=array([v1]*a)
-    v2=array([v2]*a)
-    pa=array([pa]*a)
-    iim=array([v0,-v1,-v2]).transpose(1,2,0,3)
-    im=inv(iim)
-    pz=pa-px
-    t=einsum('ijkl,ijk->ijl',im,pz)
-    tri_1=array([ tri[(t[i][:,0]>=-.01)&(t[i][:,0]<=1)&(t[i][:,1]>=-0.01)&(t[i][:,1]<=1)&(t[i][:,2]>=-0.01)&(t[i][:,2]<=1)&(t[i][:,1]+t[i][:,2]<=1)][0] for i in range(len(p1)) ])
-    pa,pb,pc=tri_1[:,0],tri_1[:,1],tri_1[:,2]
-    v1,v2=pb-pa,pc-pa
-    v3=cross(v1,v2)
+# def i_p_n(p1,sol1):
+#     v,f1=vnf2(sol1)
+#     tri=array(v)[f1]
+#     tri=array([p for p in tri if nv(p)!=[0,0,0]])
+#     n1=array([nv(p) for p in tri])
+#     pa,pb,pc=tri[:,0],tri[:,1],tri[:,2]
+#     px=array(p1)
+#     v1,v2=pb-pa,pc-pa
+#     a,_=px.shape
+#     b,_=v1.shape
+#     py=px[:,None]+n1
+#     px=array([px]*b).transpose(1,0,2)
+#     v0=py-px
+#     v1=array([v1]*a)
+#     v2=array([v2]*a)
+#     pa=array([pa]*a)
+#     iim=array([v0,-v1,-v2]).transpose(1,2,0,3)
+#     im=inv(iim)
+#     pz=pa-px
+#     t=einsum('ijkl,ijk->ijl',im,pz)
+#     tri_1=array([ tri[(t[i][:,0]>=-.01)&(t[i][:,0]<=1)&(t[i][:,1]>=-0.01)&(t[i][:,1]<=1)&(t[i][:,2]>=-0.01)&(t[i][:,2]<=1)&(t[i][:,1]+t[i][:,2]<=1)][0] for i in range(len(p1)) ])
+#     pa,pb,pc=tri_1[:,0],tri_1[:,1],tri_1[:,2]
+#     v1,v2=pb-pa,pc-pa
+#     v3=cross(v1,v2)
+#     v3=v3/norm(v3,axis=1).reshape(-1,1)
+#     return v3
+
+
+def i_p_n(px,sol1):
+    tri=array(ip_triangle(px,sol1))
+    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+    p01,p02=p1-p0,p2-p0
+    v3=cross(p01,p02)
     v3=v3/norm(v3,axis=1).reshape(-1,1)
     return v3
 
@@ -5820,28 +5805,58 @@ def bspline_cubic(px,s=10):
 #     return sec2[0] if sec2!=[] else []
 
 
-def ip_triangle(p1,sol1):
+# def ip_triangle(p1,sol1):
+#     v,f1=vnf2(sol1)
+#     tri=array(v)[f1]
+#     tri=array([p for p in tri if nv(p)!=[0,0,0]])
+#     n1=array([nv(p) for p in tri])
+#     pa,pb,pc=tri[:,0],tri[:,1],tri[:,2]
+#     px=array(p1)
+#     v1,v2=pb-pa,pc-pa
+#     a,_=px.shape
+#     b,_=v1.shape
+#     py=px[:,None]+n1
+#     px=array([px]*b).transpose(1,0,2)
+#     v0=py-px
+#     v1=array([v1]*a)
+#     v2=array([v2]*a)
+#     pa=array([pa]*a)
+#     iim=array([v0,-v1,-v2]).transpose(1,2,0,3)
+#     im=inv(iim)
+#     pz=pa-px
+#     t=einsum('ijkl,ijk->ijl',im,pz)
+#     tri_1=array([ tri[(t[i][:,0]>=-.01)&(t[i][:,0]<=1)&(t[i][:,1]>=-0.01)&(t[i][:,1]<=1)&(t[i][:,2]>=-0.01)&(t[i][:,2]<=1)&(t[i][:,1]+t[i][:,2]<=1)][0] for i in range(len(p1)) ])
+#     return tri_1.tolist()
+
+def ip_triangle(ip,sol1):
+    '''
+    function to find the triangles on the solid 'sol1' where the intersection points list 'ip' lies
+    '''
     v,f1=vnf2(sol1)
     tri=array(v)[f1]
-    tri=array([p for p in tri if nv(p)!=[0,0,0]])
-    n1=array([nv(p) for p in tri])
-    pa,pb,pc=tri[:,0],tri[:,1],tri[:,2]
-    px=array(p1)
-    v1,v2=pb-pa,pc-pa
-    a,_=px.shape
-    b,_=v1.shape
-    py=px[:,None]+n1
-    px=array([px]*b).transpose(1,0,2)
-    v0=py-px
-    v1=array([v1]*a)
-    v2=array([v2]*a)
-    pa=array([pa]*a)
-    iim=array([v0,-v1,-v2]).transpose(1,2,0,3)
+    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+    p01,p02=p1-p0,p2-p0
+    n1=cross(p01,p02)
+    n1=n1/(norm(n1,axis=1).reshape(-1,1)+.00001)
+    tri=tri[~((n1==[0,0,0]).all(1))]
+    n1=n1[~((n1==[0,0,0]).all(1))]
+    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+    p01,p02=p1-p0,p2-p0
+    la=array(ip)
+    lab=n1
+
+    iim=array([lab,-p01,-p02]).transpose(1,0,2).transpose(0,2,1)
     im=inv(iim)
-    pz=pa-px
-    t=einsum('ijkl,ijk->ijl',im,pz)
-    tri_1=array([ tri[(t[i][:,0]>=-.01)&(t[i][:,0]<=1)&(t[i][:,1]>=-0.01)&(t[i][:,1]<=1)&(t[i][:,2]>=-0.01)&(t[i][:,2]<=1)&(t[i][:,1]+t[i][:,2]<=1)][0] for i in range(len(p1)) ])
-    return tri_1.tolist()
+
+    x=einsum('jkl,ijl->ijk',im,(p0-la[:,None]))
+    t=x[:,:,0]
+    u=x[:,:,1]
+    v=x[:,:,2]
+    decision=(t>=-0.01)&(t<=1)&(u>=-0.01)&(u<=1)&(v>=-0.01)&(v<=1)&((u+v)<=1)
+    tri_1=array([tri[decision[i]][0] for i in range(len(ip))]).tolist()
+
+    return tri_1
+
 
 def perp_points_d(line,pnts,d):
     '''
