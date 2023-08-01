@@ -2,7 +2,7 @@ from numpy import *
 from numpy.linalg import *
 import matplotlib.pyplot as plt
 import time
-from scipy.spatial import cKDTree,Delaunay, Voronoi
+from scipy.spatial import cKDTree,Delaunay, Voronoi, ConvexHull
 import pandas as pd
 import sympy as sym
 # import igl
@@ -2824,21 +2824,30 @@ def resurf(surf,f):
     c= [surf[cKDTree(base).query(p)[1]].tolist() for p in c]
     return c
 
+# def surf_extrudef(surf,t=-.05):
+#     '''
+#     surface with a polyline 2d sketch and a 3d path. thickness of the surface can be set with parameter "t". 
+#     positive and negative value creates thickness towards +z and -z directions respectively
+#     refer file "example of various functions"
+#     '''
+#     s=cpo(surf)
+#     s1=translate([0,0,t],[flip(p) for p in s])
+#     s2=array([s,s1]).transpose(1,0,2,3)
+    
+#     i,j,k,l=s2.shape
+#     s2=s2.reshape(i,j*k,l).tolist()
+#     return s2 if t>0 else flip(s2)
+
 def surf_extrudef(surf,t=-.05):
     '''
     surface with a polyline 2d sketch and a 3d path. thickness of the surface can be set with parameter "t". 
     positive and negative value creates thickness towards +z and -z directions respectively
     refer file "example of various functions"
     '''
-    s=cpo(surf)
-    s1=translate([0,0,t],[flip(p) for p in s])
-    s2=array([s,s1]).transpose(1,0,2,3)
-    
-    i,j,k,l=s2.shape
-    s2=s2.reshape(i,j*k,l).tolist()
-    return s2 if t>0 else flip(s2)
-
-
+    if t<0:
+        return [p+flip(translate([0,0,t],p)) for p in surf]
+    else:
+        return [translate([0,0,t],p)+flip(p) for p in surf]
 
 def swp_prism_h(prism_big,prism_small):
     '''
@@ -3615,7 +3624,6 @@ def sl_int1(sec,line):
     return intersection_point
 
 
-
 def pts2(path):
     '''
     returns the cumulative sum of points
@@ -3635,17 +3643,30 @@ def axis_rot(axis,solid,angle):
     else:
         return [q(axis,p,angle) for p in solid]
     
-def end_cap(fillet,f=-1):
+def end_cap(sol,r=1,s=10):
     '''
-    for giving fillet at the end of a path_extruded solid
-    factor 'f' can be -1 or 1 depending on which side fillet needs to be created
-    
+    function to draw radius at the ends of 'path_extrude_open' models
+    sol: path extruded solid
+    r: radius at the ends
+    s: segments of the radius
     '''
-    fillet1=cpo(fillet)[1:]
-    v1=nv(fillet1[0])
-    fillet01=translate(f*array(v1),scl3dc(fillet1,1.5))
-    fillet1=swp_prism_h(fillet01,fillet1)
-    return fillet1
+    n1=nv(sol[0])
+    l1=i_p_p(sol,sol[0],r)
+    l2=offset_3d(sol[0],-r)
+    fil1=convert_3lines2fillet_closed(sol[0],l1,l2,s=s)
+    fil1=cpo(fil1)[:-1]
+    fil2=translate(array(n1)*r*2,scl3dc(fil1,1.5))
+    f3=flip(fil1)+fil2+[fil1[-1]]
+
+
+    n1=nv(sol[-1])
+    l1=i_p_p(flip(sol),sol[-1],r)
+    l2=offset_3d(sol[-1],-r)
+    fil1=convert_3lines2fillet_closed(sol[-1],l1,l2,s=s)
+    fil1=cpo(fil1)[:-1]
+    fil2=translate(array(n1)*r*-2,scl3dc(fil1,1.5))
+    f4=flip(fil1)+fil2+[fil1[-1]]
+    return [f3,flip(f4)]
 
         
 def d2r(d):
@@ -4489,6 +4510,30 @@ def ip_sol2sol(sol1,sol2):
 
     return [p for p in c if p!=[]]
 
+def ip_tri2sol(v,f1,sol2):
+    line=array([ seg(p)[:-1] for p in cpo(sol2)])
+    
+    tri=array(v)[f1]
+    line=array([ seg(p)[:-1] for p in cpo(sol2)])
+    tri.shape,line.shape
+    la,lb=line[:,:,0],line[:,:,1]
+    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+    lab=lb-la
+    p01,p02=p1-p0,p2-p0
+    t=einsum('kl,ijkl->ijk',cross(p01,p02),la[:,:,None]-p0)/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00001)
+    u=einsum('ijkl,ijkl->ijk',cross(p02[None,None,:,:],(-lab)[:,:,None,:]),(la[:,:,None,:]-p0[None,None,:,:]))/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00001)
+    v=einsum('ijkl,ijkl->ijk',cross((-lab)[:,:,None,:],p01[None,None,:,:]),(la[:,:,None,:]-p0[None,None,:,:]))/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00001)
+    condition=(t>=0)&(t<=1)&(u>=0)&(u<=1)&(v>=0)&(v<=1)&(u+v<1)
+
+    a=(la[:,None,:,None,:]+lab[:,None,:,None,:]*t[:,None,:,:,None])
+    b=condition[:,None,:,:]
+    c=[]
+    for i in range(len(a)):
+        c.append(a[i][b[i]].tolist())
+
+    return [p for p in c if p!=[]]
+
+
     
 def vnf2(bead2):
     '''
@@ -5105,11 +5150,17 @@ def surface_for_fillet(sol1=[],sol2=[],factor1=50,factor2=20,factor3=4,factor4=2
     i_p1=[]
     for i in range(1,len(i_p)):
         i_p1.append(i_p[i][condition[i]].tolist())
-    return i_p1
+    return align_sol_1([equidistant_pathc(p,factor1) for p in i_p1])
 
 def shield(sol1=[],sol2=[],factor1=50,factor2=10,factor3=1,factor4=100):
     '''
     function to check function surface_for_fillet.
+    sol1: Solid on which the surface needs to be created
+    sol2: Intersecting solid
+    factor1: number of segments in the circle
+    factor2: number of layers or slices of surface
+    factor3: decides the size of the surface lower value means bigger size. value can be set between 1 to any number
+    factor4: any high number should be ok like maybe 100 or greater, basically greater than the bounding box dimension of the "sol1"
     '''
     p0= array(prism_center(sol1))
     p1= array(prism_center(sol2))
@@ -5423,6 +5474,14 @@ def edges(l,m):
 
 def i_p_n(px,sol1):
     tri=array(ip_triangle(px,sol1))
+    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+    p01,p02=p1-p0,p2-p0
+    v3=cross(p01,p02)
+    v3=v3/norm(v3,axis=1).reshape(-1,1)
+    return v3
+
+def i_p_n_tri(px,v,f1):
+    tri=array(ip_triangle_tri(px,v,f1))
     p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
     p01,p02=p1-p0,p2-p0
     v3=cross(p01,p02)
@@ -5858,6 +5917,35 @@ def ip_triangle(ip,sol1):
     return tri_1
 
 
+def ip_triangle_tri(ip,v,f1):
+    '''
+    function to find the triangles on the triangular mesh where the intersection points list 'ip' lies
+    '''
+    tri=array(v)[f1]
+    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+    p01,p02=p1-p0,p2-p0
+    n1=cross(p01,p02)
+    n1=n1/(norm(n1,axis=1).reshape(-1,1)+.00001)
+    tri=tri[~((n1==[0,0,0]).all(1))]
+    n1=n1[~((n1==[0,0,0]).all(1))]
+    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+    p01,p02=p1-p0,p2-p0
+    la=array(ip)
+    lab=n1
+
+    iim=array([lab,-p01,-p02]).transpose(1,0,2).transpose(0,2,1)
+    im=inv(iim)
+
+    x=einsum('jkl,ijl->ijk',im,(p0-la[:,None]))
+    t=x[:,:,0]
+    u=x[:,:,1]
+    v=x[:,:,2]
+    decision=(t>=-0.01)&(t<=1)&(u>=-0.01)&(u<=1)&(v>=-0.01)&(v<=1)&((u+v)<=1)
+    tri_1=array([tri[decision[i]][0] for i in range(len(ip))]).tolist()
+
+    return tri_1
+
+
 def perp_points_d(line,pnts,d):
     '''
     finds the points in list 'pnts' which are less than distance 'd' from the 'line'
@@ -5954,7 +6042,7 @@ def p2p_intersection_line(pa,pb):
     line=array([p7,p8]).tolist()
     return array(line).astype(float).tolist()
     
-def o_3d(i_p,sol,r,o=0):
+def o_3d(i_p,sol,r,o=0,f=1):
     '''
     function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset
     '''
@@ -5964,7 +6052,7 @@ def o_3d(i_p,sol,r,o=0):
         c=array(i_p)+cross(a,b)*r
     elif o==1:
         c=array(i_p)+cross(b,a)*r
-    s=array([c+a*r,c-a*r])
+    s=array([c+a*r*f,c-a*r*f])
     i_p1=ip_sol2sol(sol,s)
     i_p1=[p[0] for p in i_p1]
     return i_p1
@@ -6027,3 +6115,82 @@ def ip_fillet_surf(surf,sol,r1,r2,s=20):
         p1,p2,p3=align_sol_1([p1,p2,p3])
         fillet1=convert_3lines2fillet_closed(p1,p2,p3)
     return fillet1
+
+
+def i_line_fillet(sol1,sol2,ip,r1,r2,s=20,o=0):
+    '''
+    calculates a fillet at the intersection of 2 solids when the intersection points 'ip' are separately defined.
+    r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
+    r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on sol1 
+    '''
+    p1=ip
+    p2=o_3d(p1,sol1,r2)
+    p3=o_3d(p1,sol2,r1)
+    if len(p1)==len(p2)==len(p3):
+        fillet1=convert_3lines2fillet_closed(p1,p2,p3,s=s)
+    else:
+        p2=sort_points(p1,p2)
+        p2=path2path1(p1,p2)
+        p3=sort_points(p1,p3)
+        p3=path2path1(p1,p3)
+        p1,p2,p3=align_sol_1([p1,p2,p3])
+        fillet1=convert_3lines2fillet_closed(p1,p2,p3)
+    return fillet1
+
+def i_line_tri_fillet(v,f1,sol2,ip,r1,r2,s=20,o=0):
+    '''
+    calculates a fillet at the intersection of 2 solids when the intersection points 'ip' are separately defined.
+    r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
+    r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on sol1 
+    '''
+    p1=ip
+    p2=o_3d_tri(p1,v,f1,r2)
+    p3=o_3d(p1,sol2,r1)
+    if len(p1)==len(p2)==len(p3):
+        fillet1=convert_3lines2fillet_closed(p1,p2,p3,s=s)
+    else:
+        p2=sort_points(p1,p2)
+        p2=path2path1(p1,p2)
+        p3=sort_points(p1,p3)
+        p3=path2path1(p1,p3)
+        p1,p2,p3=align_sol_1([p1,p2,p3])
+        fillet1=convert_3lines2fillet_closed(p1,p2,p3)
+    return fillet1
+
+def o_3d_tri(ip,v,f1,r):
+    '''
+    function to offset the intersection points 'i_p' on a triangular mesh with vertices 'v' and faces 'f1' by distance 'r'.
+    '''
+    n1=i_p_n_tri(ip,v,f1)
+    t1=i_p_t(ip)
+    o1=cross(t1,n1)
+    p5=array([ip,(array(ip)-n1*r)]).transpose(1,0,2).tolist()
+    p6=array([ip,(array(ip)-o1*r)]).transpose(1,0,2).tolist()
+    o2=array([(array(ip)-o1*r)+n1*r,(array(ip)-o1*r)-n1*r]).tolist()
+    o3=cpo(o2)
+    p7=ip_tri2sol(v,f1,o2)
+    p7=[p[0] for p in p7]
+    return p7
+
+
+def ip_random(sol1,sol2):
+    v,f1=vnf2(sol1)
+    a=array(v)[f1]
+    p0,p1,p2=a[:,0],a[:,1],a[:,2]
+    p01,p02=p1-p0,p2-p0
+    v,f1=vnf2(sol2)
+    b=array(v)[f1]
+    c=b[:,0]
+    d=b[:,1]
+    e=b[:,2]
+    lcd,lde,lec=d-c,e-d,c-e
+    x=zeros(len(p01)*3).reshape(len(p01),3)
+    y=zeros(len(lcd)*3).reshape(len(lcd),3)
+
+    t=einsum('jk,ijk->ij',cross(p01,p02),c[:,None]-p0[None,:])/(einsum('ik,jk->ij',-lcd,cross(p01,p02))+.00001)
+    u=einsum('ijk,ijk->ij',cross(p02[None,:],-lcd[:,None]),c[:,None]-p0[None,:])/(einsum('ik,jk->ij',-lcd,cross(p01,p02))+.00001)
+    v=einsum('ijk,ijk->ij',cross(-lcd[:,None],p01[None,:]),c[:,None]-p0[None,:])/(einsum('ik,jk->ij',-lcd,cross(p01,p02))+.00001)
+    dcn=(t>=0)&(t<=1)&(u>=0)&(u<=1)&(v>=0)&(v<=1)&(u+v<=1)
+    i_p=((c[:,None]+x[None,:])+einsum('ijk,ij->ijk',(lcd[:,None]+x[None,:]),t))[dcn]
+    
+    return i_p.tolist()
