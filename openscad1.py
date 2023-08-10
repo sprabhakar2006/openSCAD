@@ -1879,7 +1879,7 @@ def ip(sol1,sol2):
     '''
     line=array([ seg(p)[:-1] for p in cpo(sol2)])
     v,f1=vnf2(sol1)
-    tri=array(v)[f1]
+    tri=array(v)[array(f1)]
     line=array([ seg(p)[:-1] for p in cpo(sol2)])
     tri.shape,line.shape
     la,lb=line[:,:,0],line[:,:,1]
@@ -4490,7 +4490,7 @@ def offset_sol(sol,d,o=0):
 def ip_sol2sol(sol1,sol2):
     line=array([ seg(p)[:-1] for p in cpo(sol2)])
     v,f1=vnf2(sol1)
-    tri=array(v)[f1]
+    tri=array(v)[array(f1)]
     line=array([ seg(p)[:-1] for p in cpo(sol2)])
     tri.shape,line.shape
     la,lb=line[:,:,0],line[:,:,1]
@@ -4513,7 +4513,7 @@ def ip_sol2sol(sol1,sol2):
 def ip_tri2sol(v,f1,sol2):
     line=array([ seg(p)[:-1] for p in cpo(sol2)])
     
-    tri=array(v)[f1]
+    tri=array(v)[array(f1)]
     line=array([ seg(p)[:-1] for p in cpo(sol2)])
     tri.shape,line.shape
     la,lb=line[:,:,0],line[:,:,1]
@@ -5134,7 +5134,7 @@ def surface_for_fillet(sol1=[],sol2=[],factor1=50,factor2=20,factor3=4,factor4=2
     dia: diameter around the solid 2 where surfavce needs to be created
     '''
     v,f1=partial_surface(sol1,prism_center(sol2),dia)
-    tri=array(v)[f1]
+    tri=array(v)[array(f1)]
     s1=shield(sol1,sol2,factor1,factor2,factor3,factor4)
     p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
     s2=array(s1).transpose(0,2,1,3)
@@ -5892,7 +5892,7 @@ def ip_triangle(ip,sol1):
     function to find the triangles on the solid 'sol1' where the intersection points list 'ip' lies
     '''
     v,f1=vnf2(sol1)
-    tri=array(v)[f1]
+    tri=array(v)[array(f1)]
     p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
     p01,p02=p1-p0,p2-p0
     n1=cross(p01,p02)
@@ -5921,7 +5921,7 @@ def ip_triangle_tri(ip,v,f1):
     '''
     function to find the triangles on the triangular mesh where the intersection points list 'ip' lies
     '''
-    tri=array(v)[f1]
+    tri=array(v)[array(f1)]
     p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
     p01,p02=p1-p0,p2-p0
     n1=cross(p01,p02)
@@ -6175,11 +6175,11 @@ def o_3d_tri(ip,v,f1,r):
 
 def ip_random(sol1,sol2):
     v,f1=vnf2(sol1)
-    a=array(v)[f1]
+    a=array(v)[array(f1)]
     p0,p1,p2=a[:,0],a[:,1],a[:,2]
     p01,p02=p1-p0,p2-p0
     v,f1=vnf2(sol2)
-    b=array(v)[f1]
+    b=array(v)[array(f1)]
     c=b[:,0]
     d=b[:,1]
     e=b[:,2]
