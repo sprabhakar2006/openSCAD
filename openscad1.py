@@ -4497,9 +4497,9 @@ def ip_sol2sol(sol1,sol2):
     p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
     lab=lb-la
     p01,p02=p1-p0,p2-p0
-    t=einsum('kl,ijkl->ijk',cross(p01,p02),la[:,:,None]-p0)/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00001)
-    u=einsum('ijkl,ijkl->ijk',cross(p02[None,None,:,:],(-lab)[:,:,None,:]),(la[:,:,None,:]-p0[None,None,:,:]))/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00001)
-    v=einsum('ijkl,ijkl->ijk',cross((-lab)[:,:,None,:],p01[None,None,:,:]),(la[:,:,None,:]-p0[None,None,:,:]))/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00001)
+    t=einsum('kl,ijkl->ijk',cross(p01,p02),la[:,:,None]-p0)/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00000)
+    u=einsum('ijkl,ijkl->ijk',cross(p02[None,None,:,:],(-lab)[:,:,None,:]),(la[:,:,None,:]-p0[None,None,:,:]))/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00000)
+    v=einsum('ijkl,ijkl->ijk',cross((-lab)[:,:,None,:],p01[None,None,:,:]),(la[:,:,None,:]-p0[None,None,:,:]))/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00000)
     condition=(t>=0)&(t<=1)&(u>=0)&(u<=1)&(v>=0)&(v<=1)&(u+v<1)
 
     a=(la[:,None,:,None,:]+lab[:,None,:,None,:]*t[:,None,:,:,None])
@@ -6091,7 +6091,7 @@ def ip_fillet(sol1,sol2,r1,r2,s=20,o=0):
         p3=sort_points(p1,p3)
         p3=path2path1(p1,p3)
         p1,p2,p3=align_sol_1([p1,p2,p3])
-        fillet1=convert_3lines2fillet_closed(p1,p2,p3)
+        fillet1=convert_3lines2fillet_closed(p1,p2,p3,s=s)
     return fillet1
 
 def ip_fillet_surf(surf,sol,r1,r2,s=20):
@@ -6113,7 +6113,7 @@ def ip_fillet_surf(surf,sol,r1,r2,s=20):
         p3=sort_points(p1,p3)
         p3=path2path1(p1,p3)
         p1,p2,p3=align_sol_1([p1,p2,p3])
-        fillet1=convert_3lines2fillet_closed(p1,p2,p3)
+        fillet1=convert_3lines2fillet_closed(p1,p2,p3,s=s)
     return fillet1
 
 
@@ -6134,7 +6134,7 @@ def i_line_fillet(sol1,sol2,ip,r1,r2,s=20,o=0):
         p3=sort_points(p1,p3)
         p3=path2path1(p1,p3)
         p1,p2,p3=align_sol_1([p1,p2,p3])
-        fillet1=convert_3lines2fillet_closed(p1,p2,p3)
+        fillet1=convert_3lines2fillet_closed(p1,p2,p3,s=s)
     return fillet1
 
 def i_line_tri_fillet(v,f1,sol2,ip,r1,r2,s=20,o=0):
@@ -6154,7 +6154,7 @@ def i_line_tri_fillet(v,f1,sol2,ip,r1,r2,s=20,o=0):
         p3=sort_points(p1,p3)
         p3=path2path1(p1,p3)
         p1,p2,p3=align_sol_1([p1,p2,p3])
-        fillet1=convert_3lines2fillet_closed(p1,p2,p3)
+        fillet1=convert_3lines2fillet_closed(p1,p2,p3,s=s)
     return fillet1
 
 def o_3d_tri(ip,v,f1,r):
