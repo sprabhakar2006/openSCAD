@@ -1666,7 +1666,7 @@ def linear_extrude(sec,h=1,a=0,steps=1):
     s=2 if a==0 else steps
     return [translate([0,0,h*i if a==0 else h/a*i],q_rot([f"z{0 if a==0 else i}"],sec)) for i in linspace(0,1 if a==0 else a,s)]
 
-def cylinder(r1=1,r2=1,h=1,cp=[0,0],s=50,r=0,d=0,d1=0,d2=0,center=False):
+def cylinder(r1=1,r2=1,h=1,s=50,r=0,d=0,d1=0,d2=0,center=False):
     '''
     function for making a cylinder
     r1 or r: radius of circle at the bottom
@@ -1677,11 +1677,13 @@ def cylinder(r1=1,r2=1,h=1,cp=[0,0],s=50,r=0,d=0,d1=0,d2=0,center=False):
     '''
     ra=r if r>0 else d/2 if d>0 else d1/2 if d1>0 else r1
     rb=r if r>0 else d/2 if d>0 else d2/2 if d2>0 else r2
-    sec=circle(ra,cp,s)
-    
-    path=pts([[-ra+.1,0],[ra-.1,0],[rb-ra,h],[-rb+.1,0]])
-    p= translate([0,0,-h/2],prism(sec,path)) if center==True else prism(sec,path)
-    return p
+    sec=c2t3(circle(ra,s=s))
+    sec1=translate([0,0,h],circle(rb,s=s))
+    sol=[sec,sec1]
+    if center==True:
+        return translate([0,0,-h/2],sol)
+    else:
+        return sol
 
 def square(s=0,center=False):
     m= s if type(s)==int or type(s)==float else s[0]
