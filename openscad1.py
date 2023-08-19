@@ -1754,16 +1754,28 @@ def bb(prism):
 
 
 
-def cube(s,center=False):
+def cube(size=1,center=False):
     '''
-    function to draw cube with size 's'
+    function to draw cube with size 'size'
     refer to the file "example of various functions " for application example
     
     '''
-    if center==False:
-        return linear_extrude(square([s[0],s[1]]),s[2])
-    elif center==True:
-        return translate([0,0,-s[2]/2],linear_extrude(square([s[0],s[1]],True),s[2]))
+    if type(size)==list:
+        i,j,k=size[0],size[1],size[2]
+        sec=pts([[0,0],[i,0],[0,j],[-i,0]])
+        sol=linear_extrude(sec,k)
+        if center==1:
+            return translate([-i/2,-j/2,-k/2],sol)
+        else:
+            return sol
+    elif type(size)==int:
+        i,j,k=size,size,size
+        sec=pts([[0,0],[i,0],[0,j],[-i,0]])
+        sol=linear_extrude(sec,k)
+        if center==1:
+            return translate([-i/2,-j/2,-k/2],sol)
+        else:
+            return sol
 
 
 def sphere(r=0,cp=[0,0,0],s=50):
@@ -2684,15 +2696,15 @@ def cleaning_sec_outer(sec,r):
 #    l=l[:2]+arc_2p(l[1],l[2],r1)+l[2:]+arc_2p(l[3],l[0],r2)
 #    return l
 
-def r_sec(r1,r2,cp1,cp2):
+def r_sec(r1,r2,cp1,cp2,s=20):
     '''
     creates a rounded section around a line defined by points 'cp1' and 'cp2'
     radius around 'cp1' is 'r1' and radius around 'cp2' is 'r2'
     
     '''
     sec=tctpf(r1,r2,cp1,cp2)
-    a1=arc_2p(sec[3],sec[0],r1,1) if r1<r2 else arc_long_2p(sec[3],sec[0],r1,1)
-    a2=arc_long_2p(sec[1],sec[2],r2,1) if r1<r2 else arc_2p(sec[1],sec[2],r2,1)
+    a1=arc_2p(sec[3],sec[0],r1,1,s=s) if r1<r2 else arc_long_2p(sec[3],sec[0],r1,1,s=s)
+    a2=arc_long_2p(sec[1],sec[2],r2,1,s=s) if r1<r2 else arc_2p(sec[1],sec[2],r2,1,s=s)
     sec1=a2+a1
     return sec1
 
