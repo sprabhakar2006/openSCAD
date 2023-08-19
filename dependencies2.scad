@@ -87,7 +87,7 @@ function faces_1(sol)=
     each
     j<m-1?[[(j+1)+i*m,j+i*m,j+(i+1)*m],[(j+1)+i*m,j+(i+1)*m,(j+1)+(i+1)*m]]:
     [[0+i*m,j+i*m,j+(i+1)*m],[0+i*m,j+(i+1)*m,0+(i+1)*m]]
-    ])],
+    ])]
     
     )n2; 
    
@@ -113,4 +113,5 @@ f1=faces_1(sol)
 polyhedron(v1,f1,convexity=10);
 
 }
- 
+// function to select specific section of points from a list of points
+function loop ( list , a , b ) = [ for (i = [ a : b ] ) list[i] ];
