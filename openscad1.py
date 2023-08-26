@@ -3727,42 +3727,29 @@ def min_d_points(sec,min_d=.1):
     return c
     
 def wrap_around(sec,path):
-    sec=sec if array(sec).shape[-1]==3 else c2t3(sec)
-    path=array(path)
-    dy=[0]+[l_len([path[i],path[i+1]]) for i in range(len(path)-1)]
-    v1=[path[i+1]-path[i] for i in range(len(path)-1)]
-    dy,v1=array(dy),array(v1)
-    y=dy.cumsum()
-    l1=array([p for p in array(sec)[:,1]])
-
+    line1=array(sec) if array(sec).shape[-1]==3 else array(c2t3(sec))
+    c_dist_path=array([0]+[l_len(p) for p in seg(path)[:-1]]).cumsum()
+    v1_path=array([array(p[0])-array(p[1]) for p in seg(path)[:-1]])
+    v1_path=v1_path/norm(v1_path,axis=1).reshape(-1,1)
+    c_dist_line=line1[:,1]
     sec1=[]
-    for n in range(len(sec)):
-        m=arange(len(y))[y>l1[n]][0]
-        m=0 if m-1<0 else m-1
-        l2=l1[n]-y[m]
-        l2=l1[n] if l2<0 else l2
-        p2=path[m]+v1[m]*l2/dy[m+1]+array([sec[n][0],0,sec[n][2]])
-        sec1.append(p2.tolist())
+    for i in range(len(line1)):
+        if c_dist_line[i]==0:
+            a=c_dist_path[1]-c_dist_line[i]
+            b=array(path[1])+v1_path[0]*a
+            c=cross(v1_path[0],[1,0,0])
+            c=c/norm(c)
+            c=b+c*line1[i][2]+array([line1[i][0],0,0])
+        else:
+            j=arange(len(path))[c_dist_line[i]>c_dist_path][-1]+1
+            a=c_dist_path[j]-c_dist_line[i]
+            b=array(path[j])+v1_path[j-1]*a
+            c=cross(v1_path[j-1],[1,0,0])
+            c=c/norm(c)
+            c=b+c*line1[i][2]+array([line1[i][0],0,0])
+        sec1.append(c.tolist())  
     return sec1
-    
-def wrap_around1(sec,path):
-    sec=sec if array(sec).shape[-1]==3 else c2t3(sec)
-    path=array(path)
-    dy=[0]+[l_len([path[i],path[i+1]]) for i in range(len(path)-1)]
-    v1=[path[i+1]-path[i] for i in range(len(path)-1)]
-    dy,v1=array(dy),array(v1)
-    y=dy.cumsum()
-    l1=array([p for p in array(sec)[:,1]])
 
-    sec1=[]
-    for n in range(len(sec)):
-        m=arange(len(y))[y>l1[n]][0]
-        m=0 if m-1<0 else m-1
-        l2=l1[n]-y[m]
-        l2=l1[n] if l2<0 else l2
-        p2=path[m]+v1[m]*l2/dy[m+1]+array([sec[n][0],0,sec[n][2]])
-        sec1.append(p2.tolist())
-    return sec1
 
 
 #def align_sec(sec1,sec2,ang=10):
