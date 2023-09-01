@@ -6195,3 +6195,6 @@ def ip_random(sol1,sol2):
     i_p=((c[:,None]+x[None,:])+einsum('ijk,ij->ijk',(lcd[:,None]+x[None,:]),t))[dcn]
     
     return i_p.tolist()
+
+def ellipse(a,b,s=50):
+    return [[a*cos(d2r(i)),b*sin(d2r(i))]  for i in linspace(0,360,s)[:-1]]
