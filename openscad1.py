@@ -6243,4 +6243,7 @@ def round_corners(sec,s=10):
     for i in range(len(p)):
         arc_1=outside_3p_arc(p0[i],p[i],p1[i],r[i],s)
         a=a+arc_1
-    return a
+    if s_int1(seg(a))!=[]:
+        raise ValueError('radiuses specified are larger than acceptable')
+    else:
+        return a
