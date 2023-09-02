@@ -6206,17 +6206,20 @@ def outside_3p_arc(p0,p1,p2,r,s=20):
     so it draws an arc which is tangent to p0p1 and p1p2 and not inclusive of 3 points
     
     '''
-    p0,p1,p2=array([p0,p1,p2])
-    if cw([p0,p1,p2])==1:
-        a1=180-ang_2lineccw(p1,p0,p2)
+    if r>0:
+        p0,p1,p2=array([p0,p1,p2])
+        if cw([p0,p1,p2])==1:
+            a1=180-ang_2lineccw(p1,p0,p2)
+        else:
+            a1=180-ang_2linecw(p1,p0,p2)
+
+        d=r*tan(d2r(a1/2))
+        u10=(p0-p1)/norm(p0-p1)
+        u12=(p2-p1)/norm(p2-p1)
+        pa=p1+u10*d
+        pb=p1+u12*d
+
+        arc_1=arc_2p(pa,pb,r,cw([p0,p1,p2]))
+        return arc_1
     else:
-        a1=180-ang_2linecw(p1,p0,p2)
-
-    d=r*tan(d2r(a1/2))
-    u10=(p0-p1)/norm(p0-p1)
-    u12=(p2-p1)/norm(p2-p1)
-    pa=p1+u10*d
-    pb=p1+u12*d
-
-    arc_1=arc_2p(pa,pb,r,cw([p0,p1,p2]))
-    return arc_1
+        return [p1]
