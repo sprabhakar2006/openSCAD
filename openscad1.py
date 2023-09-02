@@ -6219,7 +6219,28 @@ def outside_3p_arc(p0,p1,p2,r,s=20):
         pa=p1+u10*d
         pb=p1+u12*d
 
-        arc_1=arc_2p(pa,pb,r,cw([p0,p1,p2]))
+        arc_1=arc_2p(pa,pb,r,cw([p0,p1,p2]),s)
         return arc_1
     else:
         return [p1]
+
+def round_corners(sec,s=10):
+    '''
+    function to create section with corner radiuses. e.g. 
+    following code has 3 points at [0,0],[10,0] and [7,15] and radiuses of 0.5,2 and 1 respectively,
+    s=5 represent the number of segments at each corner radius.
+    sec=round_corners(sec=[[0,0,.5],[10,0,2],[7,15,1]],s=5)
+    
+    refer file "example of various functions" for application
+    '''
+    sec=[p if len(p)==3 else [p[0],p[1],0] for p in sec]
+    p=array(sec)[:,:2].tolist()
+    p0=[p[-1]]+p[:-1]
+    p1=p[1:]+[p[0]]
+    r=array(sec)[:,2]
+
+    a=[]
+    for i in range(len(p)):
+        arc_1=outside_3p_arc(p0[i],p[i],p1[i],r[i],s)
+        a=a+arc_1
+    return a
