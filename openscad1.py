@@ -3834,7 +3834,7 @@ def sec2vector1(v1,sec):
 
 
 
-def cut_plane(nv=[0,0,1],size=[5,5],thickness=10,trns1=0,trns2=0,trns3=0): #oriented solid
+def cut_plane(nv=[0,0,1],size=[5,5],thickness=10,trns1=0,trns2=0,trns3=0,theta=[0,0,0]): #oriented solid
     '''
     function for defining a solid (cutting plane) oriented as per the defined normal vector
     nv: normal vector for defining plane orientation of the section
@@ -3856,6 +3856,7 @@ def cut_plane(nv=[0,0,1],size=[5,5],thickness=10,trns1=0,trns2=0,trns3=0): #orie
 #     u1,u2,u3=array([u1,u2,u3]).tolist()
     plane2=translate(u1*thickness,plane1)
     sol=[plane1]+[plane2]
+    sol=axis_rot(u3,axis_rot(-u2,axis_rot(nv,sol,theta[0]),theta[1]),theta[2])
     sol=translate(u1*trns1,sol)
     sol=translate(u2*trns2,sol)
     sol=translate(u3*trns3,sol)
@@ -6195,10 +6196,10 @@ def ip_random(sol1,sol2):
     i_p=((c[:,None]+x[None,:])+einsum('ijk,ij->ijk',(lcd[:,None]+x[None,:]),t))[dcn]
     
     return i_p.tolist()
-
+    
 def ellipse(a,b,s=50):
     return [[a*cos(d2r(i)),b*sin(d2r(i))]  for i in linspace(0,360,s)[:-1]]
-
+    
 def outside_3p_arc(p0,p1,p2,r,s=20):
     '''
     draws an arc with 3 points e.g. p0,p1,p2
@@ -6247,3 +6248,10 @@ def round_corners(sec,s=10):
         raise ValueError('radiuses specified are larger than acceptable')
     else:
         return a
+
+def sol2path(sol,path):
+    sol1=c3t2(sol)
+    zpath=[[0,0,p[0][2]] for p in sol]
+    path2=path2path1(zpath,path)
+    sol2=align_sol_1(path_extrude2msec(sol1,path2))
+    return sol2
