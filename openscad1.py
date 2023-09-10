@@ -2600,6 +2600,9 @@ def next_point(points,s_p):
 def exclude_points(list1,list_to_exclude):
     list1,list_to_exclude=array(list1),array(list_to_exclude)
     return list1[~(list_to_exclude==list1[:,None]).all(2).any(1)].tolist()
+    
+def exclude_seg(list1,list_to_exclude):
+    return array(list1)[~ (array(list1)==array(list_to_exclude)[:,None]).all(2).any(2).transpose(1,0).any(1)].tolist()
 
 def i_p2dw(l1,l):
     p0,p1=array(l1)
@@ -4665,6 +4668,19 @@ def lexicographic_sort_yx(p):
     p2=concatenate([p1[p1[:,1]==p][p1[p1[:,1]==p][:,0].argsort()] for p in puy])
     p2=p2.tolist()
     return p2
+    
+def lexicographic_seg_sort_xy(seg_list):
+    '''
+    function to sort the segment list in lexicographic order
+    '''
+    p=array(seg_list)[:,:,0]
+    p1=array(seg_list)[p[:,0].argsort()]
+    p2=p[p[:,0].argsort()]
+    pux=unique(p1[:,0])
+    p3=concatenate([p1[p2[:,0]==p][p2[p2[:,0]==p][:,1].argsort()] for p in pux])
+    p3=p3.tolist()
+    return p3
+
     
 def equivalent_rot_axis(r1=[]):
     '''
