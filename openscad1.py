@@ -1182,10 +1182,7 @@ def c2t3(p):# converts 2d list to 3d
     list=c2t3([[1,2],[3,4],[6,7]])
     output=> [[1, 2, 0], [3, 4, 0], [6, 7, 0]]
     '''
-    if len(array(p).shape)>2:
-        return [translate([0,0,0],p) for p in p]
-    else:
-        return translate([0,0,0],p)
+    return (array(p)@[[1,0,0],[0,1,0]]).tolist() if array(p).shape[-1]==2 else p
 
 def c3t2(a): # converts 3d list to 2d list 
     '''
@@ -1194,11 +1191,7 @@ def c3t2(a): # converts 3d list to 2d list
     list=c3t2([[1,2,3],[3,4,5],[6,7,8]])
     output=> [[1, 2], [3, 4], [6, 7]]
     '''
-    if len(array(a).shape)==3:
-        return array([ swapaxes([p[:,0],p[:,1]],0,1) for p in array(a)]).tolist()
-    else:
-        p=array(a)
-        return swapaxes([p[:,0],p[:,1]],0,1).tolist()
+    return (array(a)@[[1,0],[0,1],[0,0]]).tolist() if array(a).shape[-1]==3 else a
 
 def nv(p):# normal vector to the plane 'p' with atleast 3 known points
     '''
@@ -2277,8 +2270,8 @@ def convex(sec):
     
     refer file "example of various functions" for application example
     '''
-
-    return (array(cwv(c3t2(sec)))==-1).all()|(array(cwv(c3t2(sec)))==1).all()
+    sec= c3t2(sec) if array(sec).shape[-1]==3 else sec
+    return (array(cwv(sec))==-1).all()|(array(cwv(sec))==1).all()
 
 def oo_convex(sec,r): #outer offset of a convex section
     s=flip(sec) if cw(sec)==1 else sec
@@ -4107,7 +4100,7 @@ def offset_3d(sec,d):
     sec1=ppplane(sec1,[0,0,1],[0,0,0])
     sec1=c3t2(sec1)
     x_values=array([l_len([[0,0],p])  for p in sec1])
-    sec2=offset(c3t2(sec1),d)
+    sec2=offset(sec1,d)
     x1_values=array([l_len([[0,0],p])  for p in sec2])
     z1_values=z_values/x_values*x1_values
     z1_values=array([[0,0,p] for p in z1_values])
