@@ -2067,7 +2067,42 @@ def ipe(prism,prism1,r,s,o):
     return a
 
 
-def s_int1(s): #creates intersection between all the segments of a section which are crossing
+# def s_int1(s): #creates intersection between all the segments of a section which are crossing
+#     '''
+#     calulates the self intersection points of a list of line segments 's'
+#     it picks the intersection points only if the 2 lines are crossing each other
+#     e.g.
+#     sec=seg([[0,0],[10,0],[15,7]])
+#     s_int1(sec) => []
+    
+#     sec=offset_segv([[0,0],[10,0],[15,7]],-1)
+#     s_int1(sec) => 
+#     [[9.485, 1.0],
+#      [4.508, 1.0],
+#      [9.485266528793264, 0.9998381937190964],
+#      [11.974266528793265, 4.484438193719097],
+#      [4.507385465331124, 0.9999168600047348],
+#      [11.974385465331125, 4.484516860004734]]
+     
+#     refer to file 'example of various functions' for application example
+#     '''
+#     p0=array([array(s)[:,0]]*len(s)).transpose(1,0,2)
+#     p1=array([array(s)[:,1]]*len(s)).transpose(1,0,2)
+#     v1=p1-p0
+#     p2=array([array(s)[:,0]]*len(s))
+#     p3=array([array(s)[:,1]]*len(s))
+#     v2=p3-p2
+#     v1.shape,v2.shape
+#     A=inv(array([v1+[.00001,0],-v2+[.00001,.00001]]).transpose(1,0,2,3).transpose(0,2,1,3).transpose(0,1,3,2))
+#     B=p2-p0
+#     t=einsum('ijkl,ijl->ijk',A,B)[:,:,0].round(4)
+#     u=einsum('ijkl,ijl->ijk',A,B)[:,:,1].round(4)
+#     condition=(t>0)&(t<1)&(u>0)&(u<1)
+#     d=(p0+einsum('ijk,ij->ijk',v1,t))[condition].tolist()
+#     return remove_extra_points(d)
+
+
+def s_int1(sec1):
     '''
     calulates the self intersection points of a list of line segments 's'
     it picks the intersection points only if the 2 lines are crossing each other
@@ -2086,20 +2121,42 @@ def s_int1(s): #creates intersection between all the segments of a section which
      
     refer to file 'example of various functions' for application example
     '''
-    p0=array([array(s)[:,0]]*len(s)).transpose(1,0,2)
-    p1=array([array(s)[:,1]]*len(s)).transpose(1,0,2)
+    n=len(sec1)
+    a=array(sec1)[comb_list(n)]
+    p0=a[:,0][:,0]
+    p1=a[:,0][:,1]
+    p2=a[:,1][:,0]
+    p3=a[:,1][:,1]
     v1=p1-p0
-    p2=array([array(s)[:,0]]*len(s))
-    p3=array([array(s)[:,1]]*len(s))
     v2=p3-p2
-    v1.shape,v2.shape
-    A=inv(array([v1+[.00001,0],-v2+[.00001,.00001]]).transpose(1,0,2,3).transpose(0,2,1,3).transpose(0,1,3,2))
-    B=p2-p0
-    t=einsum('ijkl,ijl->ijk',A,B)[:,:,0].round(4)
-    u=einsum('ijkl,ijl->ijk',A,B)[:,:,1].round(4)
-    condition=(t>0)&(t<1)&(u>0)&(u<1)
-    d=(p0+einsum('ijk,ij->ijk',v1,t))[condition].tolist()
-    return remove_extra_points(d)
+    iim=array([v1+[.00001,0],-v2+.00001]).transpose(1,0,2).transpose(0,2,1)
+    im=inv(iim)
+    p=p2-p0
+
+    t=einsum('ijk,ik->ij',im,p)
+    dcn=(t[:,0].round(4)>0)&(t[:,0].round(4)<1)&(t[:,1].round(4)>0)&(t[:,1].round(4)<1)
+    i_p1=p0+einsum('ij,i->ij',v1,t[:,0])
+    i_p1=i_p1[dcn].tolist()
+    return i_p1
+
+    
+def self_intersections(sec1):
+    '''self intersections based on Bentley-Ottmann line sweep '''
+    sec2=lexicographic_seg_sort_xy(sec1)
+    s,s1,b=[],[],[]
+    for i in range(len(sec2)):
+        s=s+[sec2[i]]
+        s1.append(s_int1(s))
+        if i>1:
+            for j in range(len(s)):
+                if s[-1][0][0]>=s[j][1][0]:
+                    b=exclude_seg(s,[s[j]])
+            s=b if b!=[] else s
+            b=[]
+
+    s1=[p for p in s1 if p!=[]]
+    s1=concatenate(s1).tolist()
+    return s1
 
 def comb(n,i): 
     '''
@@ -2601,8 +2658,8 @@ def exclude_points(list1,list_to_exclude):
     list1,list_to_exclude=array(list1),array(list_to_exclude)
     return list1[~(list_to_exclude==list1[:,None]).all(2).any(1)].tolist()
     
-def exclude_seg(list1,list_to_exclude):
-    return array(list1)[~ (array(list1)==array(list_to_exclude)[:,None]).all(2).any(2).transpose(1,0).any(1)].tolist()
+def exclude_seg(list,list_to_exclude):
+    return array(list)[~ (array(list)==array(list_to_exclude)[:,None]).all(2).all(2).transpose(1,0).any(1)].tolist()
 
 def i_p2dw(l1,l):
     p0,p1=array(l1)
@@ -4669,17 +4726,12 @@ def lexicographic_sort_yx(p):
     p2=p2.tolist()
     return p2
     
-def lexicographic_seg_sort_xy(seg_list):
-    '''
-    function to sort the segment list in lexicographic order
-    '''
-    p=array(seg_list)[:,:,0]
-    p1=array(seg_list)[p[:,0].argsort()]
-    p2=p[p[:,0].argsort()]
-    pux=unique(p1[:,0])
-    p3=concatenate([p1[p2[:,0]==p][p2[p2[:,0]==p][:,1].argsort()] for p in pux])
-    p3=p3.tolist()
-    return p3
+def lexicographic_seg_sort_xy(sec1):
+
+    a=lexicographic_sort_xy(array(sec1)[:,0])
+    sec2=[[[p1,p2] if p1[0]<p2[0] else [p2,p1] for (p1,p2) in sec1 if (p2==p) or (p1==p)] for p in a]
+    sec2=remove_extra_points(concatenate(sec2))
+    return sec2
 
     
 def equivalent_rot_axis(r1=[]):
@@ -6271,3 +6323,11 @@ def sol2path(sol,path):
     path2=path2path1(zpath,path)
     sol2=align_sol_1(path_extrude2msec(sol1,path2))
     return sol2
+
+def comb_list(n):
+    n=arange(n)
+    a=array([n]*len(n)).transpose(1,0)
+    b=array([n]*len(n))
+    c=array([a,b]).transpose(1,0,2).transpose(0,2,1)
+    d=concatenate([c[i][i+1:] for i in range(len(c))])
+    return d
