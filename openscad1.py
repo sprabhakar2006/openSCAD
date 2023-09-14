@@ -2987,6 +2987,29 @@ def cr_3d(p,s=5): # Corner radius 3d where 'p' are the list of points (turtle mo
     c=array(c).reshape(-1,3).tolist()
     return remove_extra_points(c) 
 
+def cr_3d_abs(p,s=5): # Corner radius 3d where 'p' are the list of points and 's' is number of segments for each arc
+    pnts=array(p)[:,0:3]
+#     pnts=pnts.cumsum(0)
+
+    rds=array(p)[:,3]
+    c=[]
+    for i in range(len(pnts)):
+        if i==0:
+            p0=pnts[len(pnts)-1]
+            p1=pnts[i]
+            p2=pnts[i+1]
+        elif i<len(pnts)-1:
+            p0=pnts[i-1]
+            p1=pnts[i]
+            p2=pnts[i+1]
+        else:
+            p0=pnts[i-1]
+            p1=pnts[i]
+            p2=pnts[0]
+        c.append(fillet_3p_3d(p0,p1,p2,rds[i],s)[1:])
+    c=array(c).reshape(-1,3).tolist()
+    return remove_extra_points(c)
+
 
 
 def helix(radius=10,pitch=10, number_of_coils=1, step_angle=1):
