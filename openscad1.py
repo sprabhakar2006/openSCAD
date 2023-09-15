@@ -1053,23 +1053,7 @@ def translate(p,sec):#translates a prism or section by [x,y,z] distance
     
     refer to file "example of various functions " for application
     '''
-    p=[p[0],p[1],0] if len(p)==2 else p
-    if len(array(sec).shape)==3:
-        l,m,n=array(sec).shape
-        a=array(sec).reshape(-1,n)
-        if n==3:
-            return array([a[:,0]+p[0],a[:,1]+p[1],a[:,2]+p[2]]).transpose(1,0).reshape(l,m,n).tolist()
-        elif n==2:
-            return array([a[:,0]+p[0],a[:,1]+p[1],p[2]]).transpose(1,0).reshape(l,m,n+1).tolist()
-            
-        
-    elif len(array(sec).shape)==2:
-        m,n=array(sec).shape
-        a=array(sec).reshape(-1,n)
-        if n==3:
-            return array([a[:,0]+p[0],a[:,1]+p[1],a[:,2]+p[2]]).transpose(1,0).reshape(m,n).tolist()
-        elif n==2:
-            return array([a[:,0]+p[0],a[:,1]+p[1],array([p[2]]*m)]).transpose(1,0).reshape(m,n+1).tolist()
+    return (array(c2t3(sec))+p).tolist()
 
 
 
