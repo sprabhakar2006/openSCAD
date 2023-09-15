@@ -1556,17 +1556,8 @@ def tctp(r1,r2,cp1,cp2): # 2 circle tangent points (one side) r1 and r2 are the 
      refer to file "example of various functions" for application
  
     '''
-    cp1,cp2=array([cp1,cp2])
-    v1=cp2-cp1,
-    u1=v1/norm(v1)
-    ang1=arcsin((r2-r1)/norm(cp2-cp1))*180/pi
 
-    t1=cp1+u1@rm(90+ang1)*r1
-    t2=cp2+u1@rm(90+ang1)*r2
-
-    t3=cp1+u1@rm(-90-ang1)*r1
-    t4=cp2+u1@rm(-90-ang1)*r2
-    return [t1[0].tolist(),t2[0].tolist()]
+    return tctpf(r1,r2,cp1,cp2)[:2]
 
 def tctpf(r1,r2,cp1,cp2): #2 circle tangent point full (both the sides)
     '''
@@ -1589,7 +1580,8 @@ def tctpf(r1,r2,cp1,cp2): #2 circle tangent point full (both the sides)
 
     t3=cp1+u1@rm(-90-ang1)*r1
     t4=cp2+u1@rm(-90-ang1)*r2
-    return [t1[0].tolist(),t2[0].tolist(),t4[0].tolist(),t3[0].tolist()]
+#    return [t1[0].tolist(),t2[0].tolist(),t4[0].tolist(),t3[0].tolist()]
+    return [t3[0].tolist(),t4[0].tolist(),t2[0].tolist(),t1[0].tolist()]
 
 def circle(r,cp=[0,0],s=50): # circle with radius r and center point cp, s is the number of segments in the circle
     '''
@@ -2331,9 +2323,9 @@ def t_cir_tarc(r1,r2,cp1,cp2,r,side=0,s=50): #two circle tangent arc
         v1=cp2-cp1
         u1=v1/norm(v1)
         p0=cp1+u1*x
-        if side==0:
+        if side==1:
             cp3=p0-(u1@rm(90))*h
-        elif side==1:
+        elif side==0:
             cp3=p0+(u1@rm(90))*h
 
         v2=cp2-cp3
@@ -2343,17 +2335,17 @@ def t_cir_tarc(r1,r2,cp1,cp2,r,side=0,s=50): #two circle tangent arc
         p1=cp2+u2*r2
         p2=cp1+u3*r1
 
-        if side==0:
+        if side==1:
             arc1=arc_2p(p1,p2,r,-1,s=s)
-        elif side==1:
+        elif side==0:
             arc1=arc_2p(p2,p1,r,-1,s=s)
 
 
 
     else:
-        if side==0:
+        if side==1:
             arc1=filleto_2cir(r1,r2,cp1,cp2,r,s=s)[1]
-        elif side==1:
+        elif side==0:
             arc1=filleto_2cir(r1,r2,cp1,cp2,r,s=s)[0]
             
     return arc1
@@ -2741,11 +2733,12 @@ def r_sec(r1,r2,cp1,cp2,s=20):
     radius around 'cp1' is 'r1' and radius around 'cp2' is 'r2'
     
     '''
-    sec=tctpf(r1,r2,cp1,cp2)
-    a1=arc_2p(sec[3],sec[0],r1,1,s=s) if r1<r2 else arc_long_2p(sec[3],sec[0],r1,1,s=s)
-    a2=arc_long_2p(sec[1],sec[2],r2,1,s=s) if r1<r2 else arc_2p(sec[1],sec[2],r2,1,s=s)
-    sec1=a2+a1
+    sec=tctpf(r2,r1,cp2,cp1)
+    a1=arc_long_2p(sec[1],sec[2],r1,-1,s=s) if r1>r2 else arc_2p(sec[1],sec[2],r1,-1,s=s)
+    a2=arc_long_2p(sec[3],sec[0],r2,-1,s=s) if r2>r1 else arc_2p(sec[3],sec[0],r2,-1,s=s)
+    sec1=a1+a2
     return sec1
+
 
 
 
