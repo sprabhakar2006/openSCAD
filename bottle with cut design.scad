@@ -1,6 +1,4 @@
 
-
-include<dependencies2.scad>
             
 difference(){
 union(){
