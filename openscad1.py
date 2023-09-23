@@ -1053,7 +1053,7 @@ def translate(p,sec):#translates a prism or section by [x,y,z] distance
     
     refer to file "example of various functions " for application
     '''
-    return (array(c2t3(sec))+p).tolist()
+    return (array(c2t3(sec))+c2t3(p)).tolist()
 
 
 
