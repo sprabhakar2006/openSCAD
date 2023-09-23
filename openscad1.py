@@ -6324,3 +6324,36 @@ def comb_list(n):
     c=array([a,b]).transpose(1,0,2).transpose(0,2,1)
     d=concatenate([c[i][i+1:] for i in range(len(c))])
     return d
+
+def ip_nv_sol2sol(sol1,sol2):
+    '''
+    function finds the intersection point and the normal vector to that intersection point between 2 solids
+    sol1: solid on who's surface intersection points needs to be found
+    sol2: solid which intersects sol1
+    
+    '''
+    line=array([ seg(p)[:-1] for p in cpo(sol2)])
+    v,f1=vnf2(sol1)
+    tri=array(v)[array(f1)]
+    line=array([ seg(p)[:-1] for p in cpo(sol2)])
+    tri.shape,line.shape
+    la,lb=line[:,:,0],line[:,:,1]
+    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+    lab=lb-la
+    p01,p02=p1-p0,p2-p0
+    t=einsum('kl,ijkl->ijk',cross(p01,p02),la[:,:,None]-p0)/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00000)
+    u=einsum('ijkl,ijkl->ijk',cross(p02[None,None,:,:],(-lab)[:,:,None,:]),(la[:,:,None,:]-p0[None,None,:,:]))/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00000)
+    v=einsum('ijkl,ijkl->ijk',cross((-lab)[:,:,None,:],p01[None,None,:,:]),(la[:,:,None,:]-p0[None,None,:,:]))/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00000)
+    condition=(t>=0)&(t<=1)&(u>=0)&(u<=1)&(v>=0)&(v<=1)&(u+v<1)
+
+    a=(la[:,None,:,None,:]+lab[:,None,:,None,:]*t[:,None,:,:,None])
+    n1=-array([cross(p01,p02)/norm(cross(p01,p02),axis=1).reshape(-1,1)]*len(line))[:,None,None,:]
+    b=condition[:,None,:,:]
+    c,d=[],[]
+    for i in range(len(a)):
+        c.append(a[i][b[i]].tolist())
+        d.append(n1[i][b[i]].tolist())
+
+    p=[p for p in c if p!=[]]
+    n1=[d[i] for i in range(len(c)) if c[i]!=[]]
+    return [p,n1]
