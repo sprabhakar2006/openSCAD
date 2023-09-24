@@ -2,6 +2,7 @@ from numpy import *
 from numpy.linalg import *
 import matplotlib.pyplot as plt
 import time
+import math
 from scipy.spatial import cKDTree,Delaunay, Voronoi, ConvexHull
 import pandas as pd
 import sympy as sym
