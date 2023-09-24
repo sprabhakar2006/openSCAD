@@ -2,7 +2,6 @@ from numpy import *
 from numpy.linalg import *
 import matplotlib.pyplot as plt
 import time
-import math
 from scipy.spatial import cKDTree,Delaunay, Voronoi, ConvexHull
 import pandas as pd
 import sympy as sym
@@ -2099,7 +2098,7 @@ def s_int1(sec1):
     p3=a[:,1][:,1]
     v1=p1-p0
     v2=p3-p2
-    iim=array([v1+[.00001,0],-v2+.00001]).transpose(1,0,2).transpose(0,2,1)
+    iim=array([v1,-v2+.000001]).transpose(1,0,2).transpose(0,2,1)
     im=inv(iim)
     p=p2-p0
 
