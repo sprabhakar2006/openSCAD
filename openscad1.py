@@ -2098,7 +2098,7 @@ def s_int1(sec1):
     p3=a[:,1][:,1]
     v1=p1-p0
     v2=p3-p2
-    iim=array([v1,-v2+.000001]).transpose(1,0,2).transpose(0,2,1)
+    iim=array([v1,-v2+.00001]).transpose(1,0,2).transpose(0,2,1)
     im=inv(iim)
     p=p2-p0
 
@@ -2260,14 +2260,18 @@ def cir_p_t(cir,p):
     '''
     cp=cp_3p(cir[0],cir[int(len(cir)/3)],cir[int(len(cir)*2/3)])
     r=r_3p([cir[0],cir[int(len(cir)/3)],cir[int(len(cir)*2/3)]])
-    l1=l_len([p,cp])
-    v1=array(p)-array(cp)
-    theta1=ang(v1[0],v1[1])
-    theta2=arccos(r/l1)*180/pi
-    theta3=(theta1-theta2)*pi/180
-    tp=array([r*cos(theta3),r*sin(theta3)])+array(cp)
-    tp=tp.tolist()
+    if array(r).round(4)==norm(array(p)-array(cp)).round(4):
+        tp=p
+    else:
+        l1=l_len([p,cp])
+        v1=array(p)-array(cp)
+        theta1=ang(v1[0],v1[1])
+        theta2=arccos(r/l1)*180/pi
+        theta3=(theta1-theta2)*pi/180
+        tp=array([r*cos(theta3),r*sin(theta3)])+array(cp)
+        tp=tp.tolist()
     return tp
+
 
 def p_cir_t(p,cir): # point to circle tangent line (point should be outside the circle)
     '''
@@ -2276,13 +2280,16 @@ def p_cir_t(p,cir): # point to circle tangent line (point should be outside the 
     '''
     cp=cp_3p(cir[0],cir[int(len(cir)/3)],cir[int(len(cir)*2/3)])
     r=r_3p([cir[0],cir[int(len(cir)/3)],cir[int(len(cir)*2/3)]])
-    l1=l_len([p,cp])
-    v1=array(p)-array(cp)
-    theta1=ang(v1[0],v1[1])
-    theta2=arccos(r/l1)*180/pi
-    theta3=(theta1+theta2)*pi/180
-    tp=array([r*cos(theta3),r*sin(theta3)])+array(cp)
-    tp=tp.tolist()
+    if array(r).round(4)==norm(array(p)-array(cp)).round(4):
+        tp=p
+    else:
+        l1=l_len([p,cp])
+        v1=array(p)-array(cp)
+        theta1=ang(v1[0],v1[1])
+        theta2=arccos(r/l1)*180/pi
+        theta3=(theta1+theta2)*pi/180
+        tp=array([r*cos(theta3),r*sin(theta3)])+array(cp)
+        tp=tp.tolist()
     return tp
 
 
@@ -6358,6 +6365,7 @@ def ip_nv_sol2sol(sol1,sol2):
     n1=[d[i] for i in range(len(c)) if c[i]!=[]]
     return [p,n1]
 
+
 def corner_radius(sec,s=20):
     '''
     function to create section with corner radiuses. e.g. 
@@ -6418,7 +6426,7 @@ def corner_radius(sec,s=20):
         elif p_o_0[i]==-1 and r0[i]>0 and r1[i]==0:
             a.append([cir_p_t(c0[i],p1[i]),p1[i].tolist()])
         elif p_o_0[i]==1 and r0[i]>0 and r1[i]==0:
-            a.append([p_cir_t(p1[i],c1[i]),p1[i].tolist()])
+            a.append([p_cir_t(p1[i],c0[i]),p1[i].tolist()])
         elif p_o_1[i]==-1 and r0[i]==0 and r1[i]>0:
             a.append([p_cir_t(p0[i],c1[i])])
         elif p_o_1[i]==1 and r0[i]==0 and r1[i]>0:
@@ -6459,5 +6467,5 @@ def corner_radius(sec,s=20):
             d.append( arc_2p(c[b[i]-1],c[b[i]],r_l[i],p_o[i],s))
             
 
-    d=concatenate(d).tolist()
-    return d
+    d=remove_extra_points(concatenate(d))
+    return min_d_points(d,.0001)
