@@ -6357,3 +6357,107 @@ def ip_nv_sol2sol(sol1,sol2):
     p=[p for p in c if p!=[]]
     n1=[d[i] for i in range(len(c)) if c[i]!=[]]
     return [p,n1]
+
+def corner_radius(sec,s=20):
+    '''
+    function to create section with corner radiuses. e.g. 
+    following code has 3 points at [0,0],[10,0] and [7,15] and radiuses of 0.5,2 and 1 respectively,
+    s=5 represent the number of segments at each corner radius.
+    sec=corner_radius(pl=[[0,0,.5],[10,0,2],[7,15,1]],s=5)
+    
+    refer file "example of various functions" for application
+    '''
+    r_l=array(sec)[:,2].tolist()
+    sec=array(sec)[:,:2].tolist()
+    r_l=flip(r_l) if cw(sec)==1 else r_l
+    # sec=pts([[0,0],[0,10],[5,0],[0,-5],[10.001,0],[0,5],[5,0],[0,-10]])
+    sec= flip(sec) if cw(sec)==1 else sec
+
+
+    p0=[sec[-1]]+sec[:-1]
+    p1=sec
+    p2=sec[1:]+[sec[0]]
+    # r_l=[0,0,2,5,5,1,0,0]
+
+    p0,p1,p2=array([p0,p1,p2])
+    v1,v2=p0-p1,p2-p1
+    u1,u2=v1/norm(v1,axis=1).reshape(-1,1),v2/norm(v2,axis=1).reshape(-1,1)
+    p_o=cwv(p1.tolist())
+
+    theta=[(180-ang_2lineccw(p1[i],p0[i],p2[i]))/2  if p_o[i]==1 else (180-ang_2linecw(p1[i],p0[i],p2[i]))/2 for i in range(len(p0))]
+    th0=[theta[-1]]+theta[:-1]
+    th1=theta
+    c_p1=array([p1[i] if r_l[i]==0 else  
+                array(p1[i])+(u1[i]*r_l[i]/cos(d2r(theta[i])))@[[cos(d2r((180-2*theta[i])/2)),sin(d2r((180-2*theta[i])/2))],[-sin(d2r((180-2*theta[i])/2)),cos(d2r((180-2*theta[i])/2))]]
+                if p_o[i]==1 else 
+                array(p1[i])+(u1[i]*r_l[i]/cos(d2r(theta[i])))@[[cos(d2r((180-2*theta[i])/2)),-sin(d2r((180-2*theta[i])/2))],[sin(d2r((180-2*theta[i])/2)),cos(d2r((180-2*theta[i])/2))]]
+                for i in range(len(p0))]).tolist()
+
+    cir_1=[ 
+        [p1[i].tolist()]
+        if r_l[i]==0 else
+        circle(r_l[i],cp=c_p1[i])
+        for i in range(len(p0))]
+
+    # radiuses
+    r0=[r_l[-1]]+r_l[:-1]
+    r1=r_l
+    # circles
+    c0=[cir_1[-1]]+cir_1[:-1]
+    c1=cir_1
+    # center points
+    cp0=[c_p1[-1]]+c_p1[:-1]
+    cp1=c_p1
+    # orientations
+    p_o_0=[p_o[-1]]+p_o[:-1]
+    p_o_1=p_o
+    a=[]
+    for i in range(len(p0)):
+        if r0[i]==0 and r1[i]==0:
+            a.append([p1[i].tolist()])
+        elif p_o_0[i]==-1 and r0[i]>0 and r1[i]==0:
+            a.append([cir_p_t(c0[i],p1[i]),p1[i].tolist()])
+        elif p_o_0[i]==1 and r0[i]>0 and r1[i]==0:
+            a.append([p_cir_t(p1[i],c1[i]),p1[i].tolist()])
+        elif p_o_1[i]==-1 and r0[i]==0 and r1[i]>0:
+            a.append([p_cir_t(p0[i],c1[i])])
+        elif p_o_1[i]==1 and r0[i]==0 and r1[i]>0:
+            a.append([cir_p_t(c1[i],p0[i])])
+        elif p_o_0[i]==1 and p_o_1[i]==1 and r0[i]>0 and r1[i]>0:
+            if (r0[i]*tan(d2r(th0[i]))+r1[i]*tan(d2r(th1[i])))>norm(p1[i]-p0[i]):
+                raise ValueError('radiuses more tha acceptable limit')
+            else:
+                a.append(flip(tctpf(r0[i],r1[i],cp0[i],cp1[i])[2:]))
+        elif p_o_0[i]==1 and p_o_1[i]==-1 and r0[i]>0 and r1[i]>0:
+            a.append(tcct(r0[i],r1[i],cp0[i],cp1[i],1))
+        elif p_o_0[i]==-1 and p_o_1[i]==1 and r0[i]>0 and r1[i]>0:
+            a.append(tcct(r0[i],r1[i],cp0[i],cp1[i],-1))
+        elif p_o_0[i]==-1 and p_o_1[i]==-1 and r0[i]>0 and r1[i]>0:
+            if (r0[i]*tan(d2r(th0[i]))+r1[i]*tan(d2r(th1[i])))>norm(p1[i]-p0[i]):
+                raise ValueError('radiuses more tha acceptable limit')
+            else:
+                a.append(tctpf(r0[i],r1[i],cp0[i],cp1[i])[:2])
+
+    b=[0]
+    for i in range(len(p0)):
+        if r_l[i]>0:
+            b.append(b[-1]+2)
+        else:
+            b.append(b[-1]+1)
+
+    b=array(b[1:])-1
+
+    # for i in range(len(p0)):
+
+    c=concatenate(a).tolist()
+    c=c if r_l[-1]==0 else c[1:]+[c[0]]
+    d=[]
+    for i in range(len(p0)):
+        if r_l[i]==0:
+            d.append([c[b[i]]])
+        else:
+            d.append( arc_2p(c[b[i]-1],c[b[i]],r_l[i],p_o[i],s))
+            
+
+    d=concatenate(d).tolist()
+    return d
