@@ -3170,17 +3170,30 @@ def pntsnfaces(bead2):
     pnt=array(bead2).reshape(-1,3).round(4).tolist()
     return [pnt,n]
 
-def path_offset(path,d):
-    '''
-    function to offset a 'path' by 'd' distance
-    example:
-    line=[[0,0],[10,0]]
-    path_offset(line,-3) => [[0,3],[10,3]]
+# def path_offset(path,d):
+#     '''
+#     function to offset a 'path' by 'd' distance
+#     example:
+#     line=[[0,0],[10,0]]
+#     path_offset(line,-3) => [[0,3],[10,3]]
     
-    refer file "example of various functions" for application example
-    '''
-    p=array([offset_l(p,d) for p in seg(path)[:-1]])
-    return p[:,0].tolist()+[p[len(p)-1][1].tolist()]
+#     refer file "example of various functions" for application example
+#     '''
+#     p=array([offset_l(p,d) for p in seg(path)[:-1]])
+#     return p[:,0].tolist()+[p[len(p)-1][1].tolist()]
+
+def path_offset(path,d):
+    a=offset_segv(path,d)[:-1]
+    b=[a[0][0]]+intersections(a)[1:]+[a[-1][-1]]
+    c=s_int1(seg(b))
+    c=b+c if c!=[] else b
+    d=cs1(path,abs(d))[:-1]
+    e=[ pies1(p,c) for p in d]
+    e=[p for p in e if p!=[]]
+    f=remove_extra_points(concatenate(e)) if e!=[] else []
+    g=exclude_points(c,f) if f!=[] else c
+    g=sort_points(path,g)
+    return g
 
 
 def fillet_sol2sol(p=[],p1=[],r=1,s=10,o=0,f=1.8):
