@@ -6377,9 +6377,9 @@ def corner_radius(sec,s=20):
     '''
     r_l=array(sec)[:,2].tolist()
     sec=array(sec)[:,:2].tolist()
-    r_l=flip(r_l) if cw(sec)==1 else r_l
+    # r_l=flip(r_l) if cw(sec)==1 else r_l
     # sec=pts([[0,0],[0,10],[5,0],[0,-5],[10.001,0],[0,5],[5,0],[0,-10]])
-    sec= flip(sec) if cw(sec)==1 else sec
+    # sec= flip(sec) if cw(sec)==1 else sec
 
 
     p0=[sec[-1]]+sec[:-1]
@@ -6467,5 +6467,5 @@ def corner_radius(sec,s=20):
             d.append( arc_2p(c[b[i]-1],c[b[i]],r_l[i],p_o[i],s))
             
 
-    d=remove_extra_points(concatenate(d))
+    d=concatenate(d).tolist()
     return min_d_points(d,.0001)
