@@ -2261,7 +2261,7 @@ def cir_p_t(cir,p):
     cp=cp_3p(cir[0],cir[int(len(cir)/3)],cir[int(len(cir)*2/3)])
     r=r_3p([cir[0],cir[int(len(cir)/3)],cir[int(len(cir)*2/3)]])
     if array(r).round(4)==norm(array(p)-array(cp)).round(4):
-        tp=p
+        tp=array(p).tolist()
     else:
         l1=l_len([p,cp])
         v1=array(p)-array(cp)
@@ -2281,7 +2281,7 @@ def p_cir_t(p,cir): # point to circle tangent line (point should be outside the 
     cp=cp_3p(cir[0],cir[int(len(cir)/3)],cir[int(len(cir)*2/3)])
     r=r_3p([cir[0],cir[int(len(cir)/3)],cir[int(len(cir)*2/3)]])
     if array(r).round(4)==norm(array(p)-array(cp)).round(4):
-        tp=p
+        tp=array(p).tolist()
     else:
         l1=l_len([p,cp])
         v1=array(p)-array(cp)
@@ -6390,15 +6390,10 @@ def corner_radius(sec,s=20):
     '''
     r_l=array(sec)[:,2].tolist()
     sec=array(sec)[:,:2].tolist()
-    # r_l=flip(r_l) if cw(sec)==1 else r_l
-    # sec=pts([[0,0],[0,10],[5,0],[0,-5],[10.001,0],[0,5],[5,0],[0,-10]])
-    # sec= flip(sec) if cw(sec)==1 else sec
-
 
     p0=[sec[-1]]+sec[:-1]
     p1=sec
     p2=sec[1:]+[sec[0]]
-    # r_l=[0,0,2,5,5,1,0,0]
 
     p0,p1,p2=array([p0,p1,p2])
     v1,v2=p0-p1,p2-p1
@@ -6468,7 +6463,6 @@ def corner_radius(sec,s=20):
 
     b=array(b[1:])-1
 
-    # for i in range(len(p0)):
 
     c=concatenate(a).tolist()
     c=c if r_l[-1]==0 else c[1:]+[c[0]]
