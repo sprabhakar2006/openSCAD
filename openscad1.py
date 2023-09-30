@@ -6474,5 +6474,7 @@ def corner_radius(sec,s=20):
             d.append( arc_2p(c[b[i]-1],c[b[i]],r_l[i],p_o[i],s))
             
 
-    d=concatenate(d).tolist()
-    return min_d_points(d,.0001)
+    d=(concatenate(d).round(8)).tolist()
+    d=min_d_points(d,.0001)
+    d=c3t2(q_rot(['z.000001'],d))
+    return d
