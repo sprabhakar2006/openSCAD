@@ -5,6 +5,7 @@ import time
 from scipy.spatial import cKDTree,Delaunay, Voronoi, ConvexHull
 import pandas as pd
 import sympy as sym
+import math
 # import igl
 
 
@@ -3737,6 +3738,7 @@ def end_cap(sol,r=1,s=10):
     r: radius at the ends
     s: segments of the radius
     '''
+    sol=axis_rot_o([0,1,0],sol,.00001)
     n1=nv(sol[0])
     l1=i_p_p(sol,sol[0],r)
     l2=offset_3d(sol[0],-r)
