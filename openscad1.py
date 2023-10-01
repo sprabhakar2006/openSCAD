@@ -6443,7 +6443,7 @@ def corner_radius(sec,s=20):
             a.append([cir_p_t(c1[i],p0[i])])
         elif p_o_0[i]==1 and p_o_1[i]==1 and r0[i]>0 and r1[i]>0:
             if (r0[i]*tan(d2r(th0[i]))+r1[i]*tan(d2r(th1[i])))>norm(p1[i]-p0[i]):
-                raise ValueError('radiuses more tha acceptable limit')
+                raise ValueError('radiuses more than acceptable limit')
             else:
                 a.append(flip(tctpf(r0[i],r1[i],cp0[i],cp1[i])[2:]))
         elif p_o_0[i]==1 and p_o_1[i]==-1 and r0[i]>0 and r1[i]>0:
@@ -6452,7 +6452,7 @@ def corner_radius(sec,s=20):
             a.append(tcct(r0[i],r1[i],cp0[i],cp1[i],-1))
         elif p_o_0[i]==-1 and p_o_1[i]==-1 and r0[i]>0 and r1[i]>0:
             if (r0[i]*tan(d2r(th0[i]))+r1[i]*tan(d2r(th1[i])))>norm(p1[i]-p0[i]):
-                raise ValueError('radiuses more tha acceptable limit')
+                raise ValueError('radiuses more than acceptable limit')
             else:
                 a.append(tctpf(r0[i],r1[i],cp0[i],cp1[i])[:2])
 
