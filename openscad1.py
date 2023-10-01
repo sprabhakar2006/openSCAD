@@ -6480,3 +6480,18 @@ def corner_radius(sec,s=20):
     d=min_d_points(d,.0001)
     d=c3t2(q_rot(['z.000001'],d))
     return d
+
+def surround(sec,r,s=20):
+    '''
+    function to surround an open section with a boundary
+    '''
+    a=offset_segv(sec,-r)[:-1]
+    b=[a[0][0]]+intersections(a)[1:]+[a[-1][-1]]
+    b=flip(b)
+    c=offset_segv(sec,r)[:-1]
+    d=[c[0][0]]+intersections(c)[1:]+[c[-1][-1]]
+
+    arc1=arc_2p(d[-1],b[0],r,-1,s)
+    arc2=arc_2p(b[-1],d[0],r,-1,s)
+    sec1=d[1:-1]+arc1+b[1:-1]+arc2
+    return sec1
