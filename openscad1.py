@@ -1028,7 +1028,7 @@ def offset(sec,r):
         if r<0:
             return inner_concave_offset(sec,r)
         elif r>0:
-            return outer_concave_offset(sec,r)
+            return oset(sec,r)
         elif r==0:
             return sec
 
@@ -2082,12 +2082,9 @@ def s_int1(sec1):
     
     sec=offset_segv([[0,0],[10,0],[15,7]],-1)
     s_int1(sec) => 
-    [[9.485, 1.0],
-     [4.508, 1.0],
-     [9.485266528793264, 0.9998381937190964],
-     [11.974266528793265, 4.484438193719097],
-     [4.507385465331124, 0.9999168600047348],
-     [11.974385465331125, 4.484516860004734]]
+    [[9.485381933784767, 1.0],
+     [4.5075719388876445, 1.0],
+     [11.97429003208061, 4.4844710983213805]]
      
     refer to file 'example of various functions' for application example
     '''
@@ -2772,7 +2769,7 @@ def cs1(sec,d):
     '''
     r=abs(d)
     a=seg(sec)
-    cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in a]
+    cs=[r_sec(r-r/1000,r-r/1000,p2[0],p2[1]) for p2 in a ]
     return cs
     
 def cs2(sec,d):
@@ -5823,26 +5820,26 @@ def axis_rot_1(sol,ax1,loc1,theta):
     s2=translate(c1,s2)
     return s2
 
-def oset(sec,r):
-    '''
-    Simpler algorithm for offset
-    Takes a little longer to compute
-    '''
-    s1=offset_segv(sec,r)
-    s2=min_d_points(intersections(s1),.01)
-    s3=s_int1(seg(s2))
-    if s3==[]:
-        s4=s2
-    else:
+# def oset(sec,r):
+#     '''
+#     Simpler algorithm for offset
+#     Takes a little longer to compute
+#     '''
+#     s1=offset_segv(sec,r)
+#     s2=min_d_points(intersections(s1),.01)
+#     s3=s_int1(seg(s2))
+#     if s3==[]:
+#         s4=s2
+#     else:
 
-        s4=s2+s3
-        c1=cs1(sec,abs(r))
-        for p in c1:
-            p1=pies1(p,s4)
-            if p1!=[]:
-                s4=exclude_points(s4,p1)
-    s4=sort_points(sec,s4)
-    return s4
+#         s4=s2+s3
+#         c1=cs1(sec,abs(r))
+#         for p in c1:
+#             p1=pies1(p,s4)
+#             if p1!=[]:
+#                 s4=exclude_points(s4,p1)
+#     s4=sort_points(sec,s4)
+#     return s4
 
 def pa2pb(path,zval):
     '''
@@ -6493,3 +6490,46 @@ def surround(path,r,s=20):
     arc2=arc_2p(b[-1],a[0],r,-1,s)
     sec=a[1:-1]+arc1+b[1:-1]+arc2
     return sec
+
+def int_seg_list(sec1):
+    n=len(sec1)
+    a=array(sec1)[comb_list(n)]
+    p0=a[:,0][:,0]
+    p1=a[:,0][:,1]
+    p2=a[:,1][:,0]
+    p3=a[:,1][:,1]
+    v1=p1-p0
+    v2=p3-p2
+    iim=array([v1,-v2+.00001]).transpose(1,0,2).transpose(0,2,1)
+    im=inv(iim)
+    p=p2-p0
+
+    t=einsum('ijk,ik->ij',im,p)
+    dcn=(t[:,0].round(4)>0)&(t[:,0].round(4)<1)&(t[:,1].round(4)>0)&(t[:,1].round(4)<1)
+#     i_p1=p0+einsum('ij,i->ij',v1,t[:,0])
+#     i_p1=i_p1[dcn].tolist()
+    d=comb_list(n)[dcn]
+    return d
+
+def oset(sec,r):
+    sec0=intersections(offset_segv(sec,r))
+    i_p1=s_int1(seg(sec0))
+    d=int_seg_list(seg(sec0))
+    sec2=array(sec0)
+    for i in range(len(d)):
+        a=arange(d[i][0]+1)
+        b=arange(d[i][0],d[i][1]+1)
+        c=arange(d[i][1],len(sec2))
+        if (len(a)+len(c))<len(b):
+            sec2[a]=array([i_p1[i]]*len(a))
+        else:
+            sec2[b]=array([i_p1[i]]*len(b))
+    sec2=array(sec2).tolist()
+#     if r<0:
+#         clearing_sec=[r_sec(abs(r)-abs(r)/1000,abs(r)-abs(r)/1000,p[0],p[1]) for p in seg(sec) if l_len(p)>abs(r)]
+#         pnts=[pies1(p,sec2) for p in clearing_sec]
+#         pnts=[p for p in pnts if p!=[]]
+#         if pnts!=[]:
+#             sec2=offset(sec,r)
+            
+    return sec2
