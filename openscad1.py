@@ -1601,15 +1601,18 @@ def qmr1(s,r,pl):
     for i in range(len(s)):
         a=[1,0,0] if s[i]=='x' else [0,1,0] if s[i]=='y' else [0,0,1]
         b=r[i]
-        pl=[q(a,p,b) for p in pl]
-    return pl
+#         pl=[q(a,p,b) for p in pl]
+        pl=c2t3(pl)@arot(a,b)
+    return pl.tolist()
 
 def qmr2(s,r,pl):
     for i in range(len(s)):
         a=[1,0,0] if s[i]=='x' else [0,1,0] if s[i]=='y' else [0,0,1]
         b=r[i]
-        pl=[[q(a,p1,b) for p1 in p]for p in pl]
-    return pl
+#         pl=[[q(a,p1,b) for p1 in p]for p in pl]
+        pl=c2t3(pl)@arot(a,b)
+        
+    return pl.tolist()
 
 def q_rot(s,pl):
     '''
