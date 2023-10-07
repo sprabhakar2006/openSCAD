@@ -3860,6 +3860,26 @@ def align_sec(sec1,sec2,ang=10):
     sol2=[sec1]+[sec3]
     return sol2
     
+# def sec2vector(v1=[1,0,0],sec=[]):
+#     '''
+#     function to align a section 'sec' with a vector 'v1'
+#     refer file "example of various function" for application examples
+#     '''
+#     vz=[0,0,-1]
+#     vz,v1=array([vz,v1])
+
+#     nvzv1=cross(vz,v1)
+#     u1=v1/norm(v1)
+#     theta=r2d(arccos(u1@vz))
+#     sec=flip(sec)
+
+#     sec1=axis_rot([1,0,0],sec,theta)
+
+#     theta1=ang(v1[0],v1[1])
+#     sec1=q_rot(['z-90',f'z{theta1}'],sec1)
+#     return sec1
+    
+    
 def sec2vector(v1=[1,0,0],sec=[]):
     '''
     function to align a section 'sec' with a vector 'v1'
@@ -3871,14 +3891,14 @@ def sec2vector(v1=[1,0,0],sec=[]):
     nvzv1=cross(vz,v1)
     u1=v1/norm(v1)
     theta=r2d(arccos(u1@vz))
-    sec=flip(sec)
+    sec=c2t3(flip(sec))
 
-#    sec=flip(q_rot(['x180'],sec))
-    sec1=axis_rot([1,0,0],sec,theta)
+    sec1=sec@arot([1,0,0],theta)
 
     theta1=ang(v1[0],v1[1])
-    sec1=q_rot(['z-90',f'z{theta1}'],sec1)
-    return sec1
+    sec1=sec1@zrot(-90)@zrot(theta1)
+    return sec1.tolist()
+
     
 def sec2vector1(v1,sec):
     '''
@@ -3887,6 +3907,7 @@ def sec2vector1(v1,sec):
     theta_y=ang((v1[0]**2+v1[1]**2)**.5,v1[2])
     theta_z=ang(v1[0],v1[1])
     return q_rot(['x90','z-90',f'y{-theta_y}',f'z{theta_z}'],sec)
+    return (sec@xrot(90)@zrot(-90)@yrot(-theta_y)@zrot(theta_z)).tolist()
 
     
 #def sec2vector(v1=[1,0,0],sec=[]):
@@ -6533,3 +6554,47 @@ def oset(sec,r):
 #             sec2=offset(sec,r)
             
     return sec2
+
+def arot(v,theta):
+    '''
+    rotation matrix for rotating objects around any arbitrary axis defined by vector 'v'
+    follows right hand thumb rule for rotation
+    '''
+    u=v/norm(v)
+    return array([
+    [cos(d2r(theta))+u[0]**2*(1-cos(d2r(theta))),u[1]*u[0]*(1-cos(d2r(theta)))+u[2]*sin(d2r(theta)),u[2]*u[0]*(1-cos(d2r(theta)))-u[1]*sin(d2r(theta))],
+    [u[0]*u[1]*(1-cos(d2r(theta)))-u[2]*sin(d2r(theta)),cos(d2r(theta))+u[1]**2*(1-cos(d2r(theta))),u[2]*u[1]*(1-cos(d2r(theta)))+u[0]*sin(d2r(theta))],
+    [u[0]*u[2]*(1-cos(d2r(theta)))+u[1]*sin(d2r(theta)),u[1]*u[2]*(1-cos(d2r(theta)))-u[0]*sin(d2r(theta)),cos(d2r(theta))+u[2]**2*(1-cos(d2r(theta)))]
+    ])
+
+def xrot(theta):
+    '''
+    rotation matrix to rotate objects around x-axis
+    follows right hand thumb rule for rotation
+    '''
+    return array([
+        [1,0,0],
+        [0,cos(d2r(theta)),sin(d2r(theta))],
+        [0,-sin(d2r(theta)),cos(d2r(theta))]
+    ])
+
+def yrot(theta):
+    '''
+    rotation matrix to rotate objects around y-axis
+    follows right hand thumb rule for rotation
+    '''
+    return array([
+        [cos(d2r(theta)),0,-sin(d2r(theta))],
+        [0,1,0],
+        [sin(d2r(theta)),0,cos(d2r(theta))]
+    ])
+
+def zrot(theta):
+    '''
+    rotation matrix to rotate objects around z-axis
+    follows right hand thumb rule for rotation
+    '''
+    return array([[cos(d2r(theta)),sin(d2r(theta)),0],
+                 [-sin(d2r(theta)),cos(d2r(theta)),0],
+                  [0,0,1]
+                 ])
