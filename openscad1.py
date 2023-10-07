@@ -1039,10 +1039,23 @@ function to make a prism with combination of 2d section and 2d path
 Example:
 sec=circle(10)
 path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5)
-prism=prism(sec,path)
+sol=prism(sec,path)
     '''
     s1=flip(sec) if cw(sec)==1 else sec
     return [array(translate([0,0,y],offset(s1,round(x,3)))).tolist() for (x,y) in path]
+
+def f_prism(sec,path):
+    '''
+function to make a prism with combination of 2d section and 2d path.
+this is much faster version of prism, only issue: maybe it will not work with few shapes
+Example:
+sec=circle(10)
+path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5)
+sol=f_prism(sec,path)
+    '''
+    s1=flip(sec) if cw(sec)==1 else sec
+    return [array(translate([0,0,y],oset(s1,round(x,3)))).tolist() for (x,y) in path]
+
 
 
 
@@ -3726,10 +3739,11 @@ def axis_rot(axis,solid,angle):
     '''
     rotate a solid around an axis
     '''
-    if len(array(solid).shape)==3:
-        return[[q(axis,p1,angle) for p1 in p] for p in solid]
-    else:
-        return [q(axis,p,angle) for p in solid]
+#     if len(array(solid).shape)==3:
+#         return[[q(axis,p1,angle) for p1 in p] for p in solid]
+#     else:
+#         return [q(axis,p,angle) for p in solid]
+    return (c2t3(solid)@arot(axis,angle)).tolist()
     
 def end_cap(sol,r=1,s=10):
     '''
@@ -5534,7 +5548,7 @@ def axis_rot_o(axis,solid,angle):
     '''
     cp1=array(prism_center(solid))
     solid=translate(-cp1,solid)
-    return translate(cp1,[[q(axis,p1,angle) for p1 in p] for p in solid])
+    return translate(cp1,solid@arot(axis,angle))
 
 def edges(l,m):
     return array([[[i+j*m,i+(j+1)*m] for j in range(l-1)] for i in range(m)]).reshape(-1,2)
@@ -5839,7 +5853,8 @@ def axis_rot_1(sol,ax1,loc1,theta):
     c2=c1-loc1
     s1=translate(-c1,sol)
     s1=translate(c2,s1)
-    s2=axis_rot(ax1,s1,theta)
+#     s2=axis_rot(ax1,s1,theta)
+    s2=s1@arot(ax1,theta)
     s2=translate(-c2,s2)
     s2=translate(c1,s2)
     return s2
