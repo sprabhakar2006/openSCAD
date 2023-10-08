@@ -6,7 +6,7 @@ from scipy.spatial import cKDTree,Delaunay, Voronoi, ConvexHull
 import pandas as pd
 import sympy as sym
 import math
-# import igl
+
 
 
 
@@ -3784,7 +3784,7 @@ def r2d(r):
     '''
     return rad2deg(r)
     
-def convert_3lines2fillet(pnt1,pnt2,pnt3,f=1.9,s=10):
+def convert_3lines2fillet(pnt3,pnt2,pnt1,f=1.9,s=10):
     '''
     Develops a fillet with 3 list of points (pnt1,pnt2,pnt3) in 3d space
     f: is a factor which can be reduced to 1.5 in case of self intersection observed
@@ -5451,7 +5451,7 @@ def align_sec_1(sec1,sec2):
     sol2=[sec1]+[sec2[i:]+sec2[:i]]
     return sol2
 
-def convert_3lines2fillet_closed(pnt1,pnt2,pnt3,f=1.9,s=10):
+def convert_3lines2fillet_closed(pnt3,pnt2,pnt1,f=1.9,s=10):
     '''
     Develops a fillet with 3 list of points (pnt1,pnt2,pnt3) in 3d space
     f: is a factor which can be reduced to 1.5 in case of self intersection observed
