@@ -3756,7 +3756,7 @@ def end_cap(sol,r=1,s=10):
     n1=nv(sol[0])
     l1=i_p_p(sol,sol[0],r)
     l2=offset_3d(sol[0],-r)
-    fil1=convert_3lines2fillet_closed(sol[0],l1,l2,s=s)
+    fil1=convert_3lines2fillet_closed(l2,l1,sol[0],s=s)
     fil1=cpo(fil1)[:-1]
     fil2=translate(array(n1)*r*2,scl3dc(fil1,1.5))
     f3=flip(fil1)+fil2+[fil1[-1]]
@@ -3765,7 +3765,7 @@ def end_cap(sol,r=1,s=10):
     n1=nv(sol[-1])
     l1=i_p_p(flip(sol),sol[-1],r)
     l2=offset_3d(sol[-1],-r)
-    fil1=convert_3lines2fillet_closed(sol[-1],l1,l2,s=s)
+    fil1=convert_3lines2fillet_closed(l2,l1,sol[-1],s=s)
     fil1=cpo(fil1)[:-1]
     fil2=translate(array(n1)*r*-2,scl3dc(fil1,1.5))
     f4=flip(fil1)+fil2+[fil1[-1]]
@@ -6205,14 +6205,14 @@ def ip_fillet(sol1,sol2,r1,r2,s=20,o=0):
         p2=o_3d(p1,sol2,r1)
     p3=o_3d(p1,sol1,r2)
     if len(p1)==len(p2)==len(p3):
-        fillet1=convert_3lines2fillet_closed(p1,p2,p3,s=s)
+        fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
     else:
         p2=sort_points(p1,p2)
         p2=path2path1(p1,p2)
         p3=sort_points(p1,p3)
         p3=path2path1(p1,p3)
         p1,p2,p3=align_sol_1([p1,p2,p3])
-        fillet1=convert_3lines2fillet_closed(p1,p2,p3,s=s)
+        fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
     return fillet1
 
 def ip_fillet_surf(surf,sol,r1,r2,s=20):
@@ -6227,14 +6227,14 @@ def ip_fillet_surf(surf,sol,r1,r2,s=20):
         p2=o_3d(p1,sol,r1)
     p3=o_3d_surf(p1,surf,r2)
     if len(p1)==len(p2)==len(p3):
-        fillet1=convert_3lines2fillet_closed(p1,p2,p3,s=s)
+        fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
     else:
         p2=sort_points(p1,p2)
         p2=path2path1(p1,p2)
         p3=sort_points(p1,p3)
         p3=path2path1(p1,p3)
         p1,p2,p3=align_sol_1([p1,p2,p3])
-        fillet1=convert_3lines2fillet_closed(p1,p2,p3,s=s)
+        fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
     return fillet1
 
 
@@ -6248,14 +6248,14 @@ def i_line_fillet(sol1,sol2,ip,r1,r2,s=20,o=0):
     p2=o_3d(p1,sol1,r2)
     p3=o_3d(p1,sol2,r1)
     if len(p1)==len(p2)==len(p3):
-        fillet1=convert_3lines2fillet_closed(p1,p2,p3,s=s)
+        fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
     else:
         p2=sort_points(p1,p2)
         p2=path2path1(p1,p2)
         p3=sort_points(p1,p3)
         p3=path2path1(p1,p3)
         p1,p2,p3=align_sol_1([p1,p2,p3])
-        fillet1=convert_3lines2fillet_closed(p1,p2,p3,s=s)
+        fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
     return fillet1
 
 def i_line_tri_fillet(v,f1,sol2,ip,r1,r2,s=20,o=0):
@@ -6268,14 +6268,14 @@ def i_line_tri_fillet(v,f1,sol2,ip,r1,r2,s=20,o=0):
     p2=o_3d_tri(p1,v,f1,r2)
     p3=o_3d(p1,sol2,r1)
     if len(p1)==len(p2)==len(p3):
-        fillet1=convert_3lines2fillet_closed(p1,p2,p3,s=s)
+        fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
     else:
         p2=sort_points(p1,p2)
         p2=path2path1(p1,p2)
         p3=sort_points(p1,p3)
         p3=path2path1(p1,p3)
         p1,p2,p3=align_sol_1([p1,p2,p3])
-        fillet1=convert_3lines2fillet_closed(p1,p2,p3,s=s)
+        fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
     return fillet1
 
 def o_3d_tri(ip,v,f1,r):
