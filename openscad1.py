@@ -6170,9 +6170,9 @@ def o_3d(i_p,sol,r,o=0,f=1):
     a=i_p_n(i_p,sol)
     b=i_p_t(i_p)
     if o==0:
-        c=array(i_p)+cross(a,b)*r
-    elif o==1:
         c=array(i_p)+cross(b,a)*r
+    elif o==1:
+        c=array(i_p)+cross(a,b)*r
     s=array([c+a*r*f,c-a*r*f])
     i_p1=ip_sol2sol(sol,s)
     i_p1=[p[0] for p in i_p1]
@@ -6185,9 +6185,9 @@ def o_3d_surf(i_p,sol,r,o=0):
     a=i_p_n(i_p,sol)
     b=i_p_t(i_p)
     if o==0:
-        c=array(i_p)+cross(a,b)*r
-    elif o==1:
         c=array(i_p)+cross(b,a)*r
+    elif o==1:
+        c=array(i_p)+cross(a,b)*r
     s=array([c+a*r,c-a*r])
     i_p1=ip_surf(sol,s)
     return i_p1
@@ -6284,7 +6284,7 @@ def o_3d_tri(ip,v,f1,r):
     '''
     n1=i_p_n_tri(ip,v,f1)
     t1=i_p_t(ip)
-    o1=cross(t1,n1)
+    o1=cross(n1,t1)
     p5=array([ip,(array(ip)-n1*r)]).transpose(1,0,2).tolist()
     p6=array([ip,(array(ip)-o1*r)]).transpose(1,0,2).tolist()
     o2=array([(array(ip)-o1*r)+n1*r,(array(ip)-o1*r)-n1*r]).tolist()
