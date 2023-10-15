@@ -1069,7 +1069,15 @@ def translate(p,sec):#translates a prism or section by [x,y,z] distance
     '''
     return (array(c2t3(sec))+c2t3(p)).tolist()
 
-
+def translate_2d(p,sec):#translates a 2d section by [x,y] distance
+    '''
+    function to translate a group of points "sec" by "p" distance defined in [x,y].e.g. try following code:
+    sec=corner_radius([[0,0,.5],[10,0,2],[7,15,1]],5)
+    sec1=translate_2d(p=[2,5],sec=sec)
+    
+    refer to file "example of various functions " for application
+    '''
+    return c3t2((array(c2t3(sec))+c2t3(p)))
 
 def prism1(sec,path,s=100,sp=0):
     '''
@@ -1180,7 +1188,7 @@ def c2t3(p):# converts 2d list to 3d
     list=c2t3([[1,2],[3,4],[6,7]])
     output=> [[1, 2, 0], [3, 4, 0], [6, 7, 0]]
     '''
-    return (array(p)@[[1,0,0],[0,1,0]]).tolist() if array(p).shape[-1]==2 else p
+    return (array(p)@[[1,0,0],[0,1,0]]).tolist() if array(p).shape[-1]==2 else array(p).tolist()
 
 def c3t2(a): # converts 3d list to 2d list 
     '''
@@ -1189,7 +1197,7 @@ def c3t2(a): # converts 3d list to 2d list
     list=c3t2([[1,2,3],[3,4,5],[6,7,8]])
     output=> [[1, 2], [3, 4], [6, 7]]
     '''
-    return (array(a)@[[1,0],[0,1],[0,0]]).tolist() if array(a).shape[-1]==3 else a
+    return (array(a)@[[1,0],[0,1],[0,0]]).tolist() if array(a).shape[-1]==3 else array(a).tolist()
 
 def nv(p):# normal vector to the plane 'p' with atleast 3 known points
     '''
@@ -1639,6 +1647,15 @@ def q_rot(s,pl):
         return qmr1([p[0] for p in s],[0 if len(p)==1 else float(p[1:]) for p in s],pl)
     else:
         return qmr2([p[0] for p in s],[0 if len(p)==1 else float(p[1:]) for p in s],pl)
+    
+    
+def q_rot2d(theta,pl):
+    '''
+    function to rotate a 2d point or 2d points list by an angle theta around z-axis
+    example:
+    q_rot2d(45,[1,0]) => [0.7071067811865476, 0.7071067811865475]
+    '''
+    return c3t2(c2t3(pl)@zrot(theta))
     
 def linear_extrude(sec,h=1,a=0,steps=1):
     '''
