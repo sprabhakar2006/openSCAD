@@ -3615,19 +3615,19 @@ def intersections(segments):
 
 
 
+# def c2ro(sol,s):#circular to rectangulat orientation
+#     '''
+#     change the orientation of points of a cylinder from circular to rectangular orientation
+#     'sol': is a cylindrical type 3d shape
+#     's': number of segments required between each straight line segments
+#     refer to the file 'example of various functions' for application examples 
+#     '''
+#     angle=360/len(sol[0])/2
+#     sol=cpo(sol)
+#     return q_rot([f'z{angle}'],[m_points1(sol[i]+flip(sol[len(sol)-1-i]),s) for i in range(int(len(sol)/2))])
+
+
 def c2ro(sol,s):#circular to rectangulat orientation
-    '''
-    change the orientation of points of a cylinder from circular to rectangular orientation
-    'sol': is a cylindrical type 3d shape
-    's': number of segments required between each straight line segments
-    refer to the file 'example of various functions' for application examples 
-    '''
-    angle=360/len(sol[0])/2
-    sol=cpo(sol)
-    return q_rot([f'z{angle}'],[m_points1(sol[i]+flip(sol[len(sol)-1-i]),s) for i in range(int(len(sol)/2))])
-
-
-def c2ro_(sol,s):#circular to rectangulat orientation
     '''
     change the orientation of points of a cylinder from circular to rectangular orientation
     'sol': is a cylindrical type 3d shape
@@ -4158,6 +4158,7 @@ def offset_3d(sec,d):
     
     '''
     sec=remove_extra_points(sec)
+    sec=q_rot(['z.00001'],sec)
     avg1=array(sec).mean(0)
     sec1=translate(-avg1,sec)
 #     v1=array([array(p)-avg1 for p in sec]).tolist()
@@ -6636,7 +6637,8 @@ def zrot(theta):
 
 def surface_from_2_waves(p0,p1,amplitude=1):
     '''
-    function to draw surface based on 2 waves perpendicular to each other
+    function to draw surface based on 2 waves perpendicular to each other.
+    waves are multiplied
 
     example:
     p0=q_rot(['x90'],[[i,sin(d2r(360/70*i*2))]  for i in arange(0,71)])
@@ -6644,6 +6646,21 @@ def surface_from_2_waves(p0,p1,amplitude=1):
     surf=surface_from_2_waves(p0,p1,2)
     '''
     p2=array([[[i[0],j[1],(i@j)]  for j in array(p1)]  for i in array(p0)])
+    a=p2[:,:,2].max()
+    p2=array([[[j[0],j[1],j[2]/a*amplitude]  for j in i] for i in p2]).tolist()
+    return p2
+
+def surface_from_2_waves_add(p0,p1,amplitude=1):
+    '''
+    function to draw surface based on 2 waves perpendicular to each other.
+    waves are added
+
+    example:
+    p0=q_rot(['x90'],[[i,sin(d2r(360/70*i*2))]  for i in arange(0,71)])
+    p1=q_rot(['x90','z90'],[[i,sin(d2r(360/70*i*2))]  for i in arange(0,71)])
+    surf=surface_from_2_waves_add(p0,p1,2)
+    '''
+    p2=array([[[i[0],j[1],i[2]+j[2]]  for j in array(p1)]  for i in array(p0)])
     a=p2[:,:,2].max()
     p2=array([[[j[0],j[1],j[2]/a*amplitude]  for j in i] for i in p2]).tolist()
     return p2
