@@ -6694,3 +6694,18 @@ def surface_from_2_waves_max(p0,p1,amplitude=1):
     a=p2[:,:,2].max()
     p2=array([[[j[0],j[1],j[2]/a*amplitude]  for j in i] for i in p2]).tolist()
     return p2
+
+def surface_from_2_waves_norm(p0,p1,amplitude=1):
+    '''
+    function to draw surface based on 2 waves perpendicular to each other.
+    norm of the 2 waves will be considered
+
+    example:
+    p0=q_rot(['x90'],[[i,sin(d2r(360/70*i*2))]  for i in arange(0,71)])
+    p1=q_rot(['x90','z90'],[[i,sin(d2r(360/70*i*2))]  for i in arange(0,71)])
+    surf=surface_from_2_waves_max(p0,p1,2)
+    '''
+    p2=array([[[i[0],j[1],norm([i[2],j[2]])]  for j in array(p1)]  for i in array(p0)])
+    a=p2[:,:,2].max()
+    p2=array([[[j[0],j[1],j[2]/a*amplitude]  for j in i] for i in p2]).tolist()
+    return p2
