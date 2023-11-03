@@ -6709,3 +6709,17 @@ def surface_from_2_waves_norm(p0,p1,amplitude=1):
     a=p2[:,:,2].max()
     p2=array([[[j[0],j[1],j[2]/a*amplitude]  for j in i] for i in p2]).tolist()
     return p2
+
+def cir_theta_line(r=1,cp=[0,0],theta=90,l=1):
+    '''
+    function to draw a line tangent to a circle defined by radius 'r'
+    center point 'cp' and line is defined by angle 'theta' and length 'l'
+    angle theta is from x-axis
+    length can be positive or negative
+    In case negative the line is drawn on the opposite side
+    
+    '''
+    p0=[r*cos(d2r(270+theta)),r*sin(d2r(270+theta))]
+    p1=(array(p0)+q_rot2d(theta,[l,0])).tolist()
+    p0,p1= (array([p0,p1])+cp).tolist()
+    return [p0,p1]
