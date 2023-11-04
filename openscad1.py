@@ -6723,3 +6723,24 @@ def cir_theta_line(r=1,cp=[0,0],theta=90,l=1):
     p1=(array(p0)+q_rot2d(theta,[l,0])).tolist()
     p0,p1= (array([p0,p1])+cp).tolist()
     return [p0,p1]
+
+def fillet_intersection_lines(l1,l2,r,s=10):
+    '''
+    function calculates the fillet at intersection between 2 lines
+    'l1' and 'l2'
+    r: radius of fillet
+    s: segments of fillet
+    '''
+    p0=i_p2d(l1,l2)
+    clock=cw([l1[0],p0,l2[0]])
+    a1=ang_2lineccw(p0,l1[0],l2[0]) if clock==1 else \
+    ang_2linecw(p0,l1[0],l2[0])
+    a2=180-a1
+    l_1=r*tan(d2r(a2/2))
+    v1=array(l1[0])-array(p0)
+    v2=array(l2[0])-array(p0)
+    u1,u2=v1/norm(v1),v2/norm(v2)
+    p1=array(p0)+u1*l_1
+    p2=array(p0)+u2*l_1
+    arc_1=arc_2p(p1,p2,r,clock,s)
+    return arc_1
