@@ -6762,3 +6762,21 @@ def cir_line_tangent(c1,l1,side=0):
     p1=(array(p0)+q_rot2d((theta if side==0 else theta-180),[l,0])).tolist()
     p0,p1= (array([p0,p1])+cp).tolist()
     return [p0,p1]
+
+def spiral_poly(r=1,d=.3,n=4,t=100):
+    '''
+    create a spiral polygon
+    r: initial length of the line
+    d: increment length every iteration
+    n: number of sides of the polygon
+    t: number of turns
+    '''
+    theta=360/n
+    sec=[[r,0]]
+    for i in range(1,t):
+        r=r+d
+        a=array([r,0])
+        sec.append(array(sec[-1])+q_rot2d(i*theta,a))
+
+    sec=array(sec).tolist()
+    return sec
