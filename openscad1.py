@@ -6744,3 +6744,21 @@ def fillet_intersection_lines(l1,l2,r,s=10):
     p2=array(p0)+u2*l_1
     arc_1=arc_2p(p1,p2,r,clock,s)
     return arc_1
+    
+def cir_line_tangent(c1,l1,side=0):
+    '''
+    function to draw a line tangent to a circle
+    c1 is circle
+    l1 is line
+    side=0, draws tangent at one side and 1 draws tangent on the other side
+    
+    '''
+    r=r_arc(c1)
+    cp=cp_arc(c1)
+    v1=array(l1[1])-array(l1[0])
+    theta=ang(v1[0],v1[1]) if side==0 else ang(v1[0],v1[1])+180
+    l=l_len(l1)
+    p0=[r*cos(d2r(270+theta)),r*sin(d2r(270+theta))]
+    p1=(array(p0)+q_rot2d((theta if side==0 else theta-180),[l,0])).tolist()
+    p0,p1= (array([p0,p1])+cp).tolist()
+    return [p0,p1]
