@@ -6780,3 +6780,14 @@ def spiral_poly(r=1,d=.3,n=4,t=100):
 
     sec=array(sec).tolist()
     return sec
+
+def equate_points(sec,sec1):
+    '''
+    function to make the points in 2 sections equal without changing the location of points
+    '''
+    c=array(sec1).shape[-1]
+    b=array(sec).shape[-1]
+    a=lcm(len(sec),len(sec1))
+    sec=array([sec]*int(a/len(sec))).transpose(1,0,2).reshape(-1,b).tolist()
+    sec1=array([sec1]*int(a/len(sec1))).transpose(1,0,2).reshape(-1,c).tolist()
+    return [sec,sec1]
