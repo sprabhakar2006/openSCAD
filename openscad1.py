@@ -6791,3 +6791,30 @@ def equate_points(sec,sec1):
     sec=array([sec]*int(a/len(sec))).transpose(1,0,2).reshape(-1,b).tolist()
     sec1=array([sec1]*int(a/len(sec1))).transpose(1,0,2).reshape(-1,c).tolist()
     return [sec,sec1]
+
+def pies2(sec,pnts):
+    '''
+    function to find 3d points 'pnts' which are inside an enclosed 2d section 'sec'
+    refer to the file "example of various functions " for application examples
+    
+    
+    '''
+    pnts=rev_pnts(sec,pnts)
+    if pnts!=[]:
+        s8,s4=[sec,pnts]
+        p0=array(s4)
+        p2=s8
+        p3=s8[1:]+[s8[0]]
+        p2,p3=array([p2,p3])
+        # v1=array([[[1,0]]*len(p2)]*len(p0))
+        v1=array([ones(len(p2)),zeros(len(p2))]).transpose(1,0)
+        v2=(p3-p2)+.000001
+        p=p2-p0[:,:2][:,None]
+        im=pinv(array([v1,-v2]).transpose(1,0,2).transpose(0,2,1))
+        im=array([im]*len(p0))
+        t=einsum('ijkl,ijl->ijk',im,p)
+
+        s10=[p0[i] for i in range(len(p0)) if \
+                t[i][(t[i][:,0]>=0)&(t[i][:,1]>=0)&(t[i][:,1]<=1)].shape[0]%2 \
+             ==1]
+        return array(s10).tolist()
