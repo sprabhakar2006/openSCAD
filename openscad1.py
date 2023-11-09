@@ -6818,3 +6818,21 @@ def pies2(sec,pnts):
                 t[i][(t[i][:,0]>=0)&(t[i][:,1]>=0)&(t[i][:,1]<=1)].shape[0]%2 \
              ==1]
         return array(s10).tolist()
+
+def sinewave(l,n,a,p):
+    '''
+    creates a sinewave with length 'l', number of cycles 'n'
+    amplitude 'a' and number of points 'p'
+    '''
+
+    w1=[[i,a*sin(d2r(n*i*360/l))]  for i in linspace(0,l,p)]
+    return w1
+
+def cosinewave(l,n,a,p):
+    '''
+    creates a cosinewave with length 'l', number of cycles 'n'
+    amplitude 'a' and number of points 'p'
+    '''
+
+    w1=[[i,a*cos(d2r(n*i*360/l))]  for i in linspace(0,l,p)]
+    return w1
