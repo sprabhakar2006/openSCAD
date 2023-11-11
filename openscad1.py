@@ -6836,3 +6836,11 @@ def cosinewave(l,n,a,p):
 
     w1=[[i,a*cos(d2r(n*i*360/l))]  for i in linspace(0,l,p)]
     return w1
+    
+def mod(a,b):
+    '''
+    function to calculate remainder of a divison of numbers
+    example:
+    mod(6,2) => 0
+    '''
+    return round(a-sign(a)/sign(b)*b*floor(round(abs(a/b),10)),10);
