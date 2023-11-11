@@ -3511,3 +3511,8 @@ sec4=[each loop(sec2,i,len(sec2)-1),each loop(sec2,0,i-1)],
 
 sol1=[sec1,sec4]
 ) sol1;
+
+// function to calculate remainder of a divison of numbers
+// example mod(6,2) => 0
+
+function mod(a,b)=rnd(a-sign(a)/sign(b)*b*floor(rnd(abs(a/b),10)),10);
