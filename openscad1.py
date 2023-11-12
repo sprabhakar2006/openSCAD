@@ -7,9 +7,6 @@ import pandas as pd
 import sympy as sym
 import math
 
-
-
-
 def arc(radius=0,start_angle=0,end_angle=0,cp=[0,0],s=20):
     '''
     function for calculating 2d arc
@@ -6844,3 +6841,14 @@ def mod(a,b):
     mod(6,2) => 0
     '''
     return round(a-sign(a)/sign(b)*b*floor(round(abs(a/b),10)),10);
+
+def e_wave(l=50,a=1,w=0.1,t=100):
+    '''
+    create a graph of exponential function a*e^-(wt) where
+    w: omega
+    t: time steps
+    a: amplitude
+    l: length of time
+    
+    '''
+    return [[i,a*exp(-i*w)]  for i in linspace(0,l,t)]
