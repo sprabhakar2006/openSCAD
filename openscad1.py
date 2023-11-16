@@ -6852,3 +6852,48 @@ def e_wave(l=50,a=1,w=0.1,t=100):
     
     '''
     return [[i,a*exp(-i*w)]  for i in linspace(0,l,t)]
+
+def waves_2d_multiply(w1,w2,a=1):
+    '''
+    multiply 2 waves 'w1' and 'w2' and amplitude of the resultant wave is set to 'a'
+    '''
+    w3=[ [w1[i][0],(w1[i][1]*w2[i][1]) ] for i in range(len(w1))]
+    a_max=array(w3)[:,1].max()
+    w3=[ [p[0],p[1]/a_max*a ] for p in w3]
+    return w3
+
+def waves_2d_add(w1,w2,a=1):
+    '''
+    add 2 waves 'w1' and 'w2' and amplitude of the resultant wave is set to 'a'
+    '''
+    w3=[ [w1[i][0],(w1[i][1]+w2[i][1]) ] for i in range(len(w1))]
+    a_max=array(w3)[:,1].max()
+    w3=[ [p[0],p[1]/a_max*a ] for p in w3]
+    return w3
+
+def waves_2d_max(w1,w2,a=1):
+    '''
+    max of 2 waves 'w1' and 'w2' and amplitude of the resultant wave is set to 'a'
+    '''
+    w3=[ [w1[i][0],max(w1[i][1],w2[i][1]) ] for i in range(len(w1))]
+    a_max=array(w3)[:,1].max()
+    w3=[ [p[0],p[1]/a_max*a ] for p in w3]
+    return w3
+
+def waves_2d_min(w1,w2,a=1):
+    '''
+    min of 2 waves 'w1' and 'w2' and amplitude of the resultant wave is set to 'a'
+    '''
+    w3=[ [w1[i][0],min(w1[i][1],w2[i][1]) ] for i in range(len(w1))]
+    a_max=array(w3)[:,1].max()
+    w3=[ [p[0],p[1]/a_max*a ] for p in w3]
+    return w3
+
+def waves_2d_norm(w1,w2,a=1):
+    '''
+    norm 2 waves 'w1' and 'w2' and amplitude of the resultant wave is set to 'a'
+    '''
+    w3=[ [w1[i][0],norm([w1[i][1],w2[i][1]]) ] for i in range(len(w1))]
+    a_max=array(w3)[:,1].max()
+    w3=[ [p[0],p[1]/a_max*a ] for p in w3]
+    return w3
