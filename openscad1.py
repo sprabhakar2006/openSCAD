@@ -6897,3 +6897,19 @@ def waves_2d_norm(w1,w2,a=1):
     a_max=array(w3)[:,1].max()
     w3=[ [p[0],p[1]/a_max*a ] for p in w3]
     return w3
+
+def fit_curve2d(curve,x_2):
+    '''
+    for a 2d curve, find value of 'y' for a given 'x_2' value
+    '''
+    x_1,y_1=array(curve)[:,0],array(curve)[:,1]
+    
+    n2=arange(len(x_1))[x_1>=x_2][0]
+    n1=n2-1
+    
+    d_y=y_1[n2]-y_1[n1]
+    d_x=x_1[n2]-x_1[n1]
+    d_x1=x_2-x_1[n1]
+    
+    e_p=y_1[n1]+d_y/d_x*d_x1
+    return e_p
