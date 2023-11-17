@@ -1025,7 +1025,7 @@ def offset(sec,r):
         if r<0:
             return inner_concave_offset(sec,r)
         elif r>0:
-            return oset(sec,r)
+            return outer_concave_offset(sec,r)
         elif r==0:
             return sec
 
