@@ -6922,7 +6922,7 @@ def extrude_wave2path(w1,c1):
     '''
     function to extrude a wave 'w1' to any defined path 'c1'
     '''
-    w2=[[0,p[1],0] for p in w1]
+    w2=[[0,p[1],p[2]] for p in w1]
     c2=array(c1)
     c3=array(c1[1:]+c1[:1])
     v1=c3-c2
