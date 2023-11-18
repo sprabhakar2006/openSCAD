@@ -6898,18 +6898,40 @@ def waves_2d_norm(w1,w2,a=1):
     w3=[ [p[0],p[1]/a_max*a ] for p in w3]
     return w3
 
-def fit_curve2d(curve,x_2):
+def fit_curve2d(curve,pnt):
     '''
-    for a 2d curve, find value of 'y' for a given 'x_2' value
+    function to transform a 2d shape to a curve
+    an example can make this clear
     '''
     x_1,y_1=array(curve)[:,0],array(curve)[:,1]
-    
-    n2=arange(len(x_1))[x_1>=x_2][0]
+    b=array([l_lenv_o(curve[:i])  for i in range(1,len(curve)+1)])
+    x_2=norm([pnt[0],pnt[1]])
+    n2=arange(len(b))[b>=x_2][0]
     n1=n2-1
-    
+    d_y=b[n2]-b[n1]
+    d1=x_2-b[n1]
+    d_x=x_1[n2]-x_1[n1]
+    x_2=x_1[n1]+d_x/d_y*d1
     d_y=y_1[n2]-y_1[n1]
     d_x=x_1[n2]-x_1[n1]
     d_x1=x_2-x_1[n1]
-    
-    e_p=y_1[n1]+d_y/d_x*d_x1
+    e_p=[x_2/norm([pnt[0],pnt[1]])*pnt[0],x_2/norm([pnt[0],pnt[1]])*pnt[1],y_1[n1]+d_y/d_x*d_x1]
     return e_p
+
+def extrude_wave2path(w1,c1):
+    '''
+    function to extrude a wave 'w1' to any defined path 'c1'
+    '''
+    w2=[[0,p[1],0] for p in w1]
+    c2=array(c1)
+    c3=array(c1[1:]+c1[:1])
+    v1=c3-c2
+    w3=[]
+    for i in range(len(w2)):
+        a1=ang(v1[i][0],v1[i][1])
+        a2=ang(norm(v1[i][:2]),v1[i][2])
+        p3=q_rot([f'y{-a2}' ,f'z{a1}'],w2[i])
+        p3=c2[i]+p3
+        w3.append(p3.tolist())
+    w3=w3[:-1]
+    return w3
