@@ -2384,7 +2384,52 @@ def t_cir_tarc(r1,r2,cp1,cp2,r,side=0,s=50): #two circle tangent arc
             arc1=filleto_2cir(r1,r2,cp1,cp2,r,s=s)[0]
             
     return arc1
+
+def two_cir_tarc(c1,c2,r,side=0,s=50): #two circle tangent arc
+    '''
+    function draws a arc which is tangent to 2 circles 'c1' and 'c2'    's' is the number of segments of the tangent arc
+    'r' is the radius of the tangent arc 
+    'side' there are 2 sides of the circles where the arc could be created defined by '0' and '1'
     
+    '''
+    r1,r2,cp1,cp2=r_arc(c1),r_arc(c2),cp_arc(c1),cp_arc(c2)
+    cp1,cp2=array([cp1,cp2])
+    l1=norm(cp2-cp1)
+    if r>(r1+r2+l1)/2:
+        l2=r-r1
+        l3=r-r2
+        x=(l2**2-l3**2+l1**2)/(2*l1)
+        h=sqrt(l2**2-x**2)
+        v1=cp2-cp1
+        u1=v1/norm(v1)
+        p0=cp1+u1*x
+        if side==1:
+            cp3=p0-(u1@rm(90))*h
+        elif side==0:
+            cp3=p0+(u1@rm(90))*h
+
+        v2=cp2-cp3
+        u2=v2/norm(v2)
+        v3=cp1-cp3
+        u3=v3/norm(v3)
+        p1=cp2+u2*r2
+        p2=cp1+u3*r1
+
+        if side==1:
+            arc1=arc_2p(p1,p2,r,-1,s=s)
+        elif side==0:
+            arc1=arc_2p(p2,p1,r,-1,s=s)
+
+
+
+    else:
+        if side==1:
+            arc1=filleto_2cir(r1,r2,cp1,cp2,r,s=s)[1]
+        elif side==0:
+            arc1=filleto_2cir(r1,r2,cp1,cp2,r,s=s)[0]
+            
+    return arc1
+
     
 def tcct(r1,r2,cp1,cp2,cw=-1): # two circle cross tangent
     '''
