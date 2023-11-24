@@ -6980,3 +6980,32 @@ def extrude_wave2path(w1,c1):
         w3.append(p3.tolist())
     w3=w3[:-1]
     return w3
+
+def x_fit(curve,pnt):
+    '''
+    fit a point's 'z' coordinate as per a curve in the x-z plane
+    '''
+    a=array(curve)[:,0]
+    b=array(curve)[:,2]
+    c=pnt[0]
+    
+    n2=arange(len(a))[a>c][0]
+    n1=n2-1
+    dy=b[n2]-b[n1]
+    dx=a[n2]-a[n1]
+    dybdx=dy/dx
+    dx1=c-a[n1]
+    d=b[n1]+dybdx*dx1
+    pnt1=[c,pnt[1],d]
+    return pnt1
+
+def convert_3lines2surface(l1,l2,l3,s=50):
+    '''
+    convert 3 lines to surface
+    's' is the number of segments on each surface line
+    '''
+    l1=path2path1(l2,l1)
+    l3=path2path1(l2,l3)
+    l1,l2,l3=array([l1,l2,l3])
+    surf_1=[arc_3p_3d([l1[i]+[0,0,.00001],l2[i],l3[i]],s)  for i in range(len(l1))]
+    return surf_1
