@@ -7009,3 +7009,11 @@ def convert_3lines2surface(l1,l2,l3,s=50):
     l1,l2,l3=array([l1,l2,l3])
     surf_1=[arc_3p_3d([l1[i]+[0,0,.00001],l2[i],l3[i]],s)  for i in range(len(l1))]
     return surf_1
+
+def convert_lines2surface_spline(lines,s=50):
+    '''
+    create surface with lines, method used is bspline_cubic
+    '''
+    lines=[lines[0]]+[path2path1(lines[0],lines[i])  for i in range(1,len(lines))]
+    surf_1=[bspline_cubic(p,s) for p in cpo(lines)]
+    return surf_1
