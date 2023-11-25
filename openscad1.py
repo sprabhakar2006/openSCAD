@@ -1423,7 +1423,7 @@ def m_points1_o(sec,s,d=.25):# multiple points with in the straight lines in the
             c.append(ls([sec[i],sec[i_plus]],s))
         else:
             c.append([sec[i],sec[i_plus]])
-    return remove_extra_points(concatenate(c))
+    return remove_extra_points(concatenate(c))+[sec[-1]]
 
 
 def ibsap(sec,pnt):# intersection between section and a point. used to find whether the poin is inside the section or outside the section
