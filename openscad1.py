@@ -7017,3 +7017,27 @@ def convert_lines2surface_spline(lines,s=50):
     lines=[lines[0]]+[path2path1(lines[0],lines[i])  for i in range(1,len(lines))]
     surf_1=[bspline_cubic(p,s) for p in cpo(lines)]
     return surf_1
+
+def SurfaceFrom3LinesInDifferentPlanes(w1,w2,w3,o=0,s=50):
+    '''
+    create surface with 3 lines in different plane.
+    option 'o' needs to be adjusted between '0' and '1' based on the result correctness
+    example:
+    w1=arc_3p_3d([[0,0,0],[20,0,5],[40,0,0]])
+    w2=arc_3p_3d([[0,0,0],[-1,15,3],[-2,30,0]])
+    w3=arc_3p_3d([[-2,30,0],[15,35,4],[30,40,0]])
+    surf_2=SurfaceFrom3LinesInDifferentPlanes(w1,w2,w3,o=0,s=30)
+    '''
+    n1=q_rot(['z90'],c2t3(c3t2(nv(w2))))
+    n2=cross(nv(w2),n1)
+    w2=equidistant_path(w2,s)
+    w2_1=ppplane(w2,n1,w2[0])
+    w2_2=ppplane(w2,n2,w2[0])
+    surf_1=slice_sol([w1,w3],s)
+    if o==0:
+        surf_2=array([array(surf_1[i])+array(w2_1)[i]  for i in range(len(surf_1))]).tolist()
+    else:
+        surf_2=array([array(surf_1[i])+array(w2_2)[i]  for i in range(len(surf_1))]).tolist()
+        
+    return surf_2
+
