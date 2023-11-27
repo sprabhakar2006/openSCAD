@@ -7043,3 +7043,72 @@ def SurfaceFrom3LinesInDifferentPlanes(w1,w2,w3,o=0,s=50):
 
 def mid_point(w1):
     return equidistant_path(w1,2)[1]
+
+def curve_4p(p0,p1,p2,p3):
+    '''
+    create smooth curve with 4 points
+    '''
+    if cwv([p0,p1,p2,p3])[1:-1]==[-1,-1]:
+        return curve_4p_0(p0,p1,p2,p3)
+    elif cwv([p0,p1,p2,p3])[1:-1]==[-1,1]:
+        return curve_4p_01(p0,p1,p2,p3)
+    elif cwv([p0,p1,p2,p3])[1:-1]==[1,-1]:
+        return curve_4p_10(p0,p1,p2,p3)
+    elif cwv([p0,p1,p2,p3])[1:-1]==[1,1]:
+        return curve_4p_1(p0,p1,p2,p3)
+
+def curve_4p_0(p0,p1,p2,p3):
+    p12=((array(p1)+array(p2))/2).tolist()
+    v12=array(p2)-array(p1)
+    v12_90=q_rot2d(90,v12)
+    p12_90=(array(p12)+v12_90).tolist()
+    a1=arc_3p(p0,p1,p2)
+    a2=arc_3p(p1,p2,p3)
+    p4=l_cir_ip([p12_90,p12],a1)[1]
+    p5=l_cir_ip([p12_90,p12],a2)[1]
+    p45=((array(p4)+array(p5))/2).tolist()
+    a3=arc_3p(p0,p1,p45)
+    a4=arc_3p(p45,p2,p3)
+    return a3+a4[1:]
+
+def curve_4p_1(p0,p1,p2,p3):
+    p12=((array(p1)+array(p2))/2).tolist()
+    v12=array(p2)-array(p1)
+    v12_90=q_rot2d(90,v12)
+    p12_90=(array(p12)+v12_90).tolist()
+    a1=arc_3p(p0,p1,p2)
+    a2=arc_3p(p1,p2,p3)
+    p4=l_cir_ip([p12_90,p12],a1)[0]
+    p5=l_cir_ip([p12_90,p12],a2)[0]
+    p45=((array(p4)+array(p5))/2).tolist()
+    a3=arc_3p(p0,p1,p45)
+    a4=arc_3p(p45,p2,p3)
+    return a3+a4[1:]
+
+def curve_4p_01(p0,p1,p2,p3):
+    p12=((array(p1)+array(p2))/2).tolist()
+    v12=array(p2)-array(p1)
+    v12_90=q_rot2d(90,v12)
+    p12_90=(array(p12)+v12_90).tolist()
+    a1=arc_3p(p0,p1,p2)
+    a2=arc_3p(p1,p2,p3)
+    p4=l_cir_ip([p12_90,p12],a1)[1]
+    p5=l_cir_ip([p12_90,p12],a2)[0]
+    p45=((array(p4)+array(p5))/2).tolist()
+    a3=arc_3p(p0,p1,p45)
+    a4=arc_3p(p45,p2,p3)
+    return a3+a4[1:]
+
+def curve_4p_10(p0,p1,p2,p3):
+    p12=((array(p1)+array(p2))/2).tolist()
+    v12=array(p2)-array(p1)
+    v12_90=q_rot2d(90,v12)
+    p12_90=(array(p12)+v12_90).tolist()
+    a1=arc_3p(p0,p1,p2)
+    a2=arc_3p(p1,p2,p3)
+    p4=l_cir_ip([p12_90,p12],a1)[0]
+    p5=l_cir_ip([p12_90,p12],a2)[1]
+    p45=((array(p4)+array(p5))/2).tolist()
+    a3=arc_3p(p0,p1,p45)
+    a4=arc_3p(p45,p2,p3)
+    return a3+a4[1:]
