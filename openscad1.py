@@ -1281,7 +1281,7 @@ def arc_3p_3d(points,s=20):
     draws an arc through the 3 points list
     's' is the number of segments of the circle
     '''
-    n1=array(nv(points))
+    n1=array(nv(points))+[.000001,.000001,0]
     a1=cross(n1,[0,0,-1])
     t1=r2d(arccos(n1@[0,0,-1]))
     sec1=translate(-array(points).mean(0),points)
