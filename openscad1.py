@@ -7041,3 +7041,5 @@ def SurfaceFrom3LinesInDifferentPlanes(w1,w2,w3,o=0,s=50):
         
     return surf_2
 
+def mid_point(w1):
+    return equidistant_path(w1,2)[1]
