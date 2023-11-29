@@ -1292,36 +1292,48 @@ def arc_3p_3d(points,s=20):
     arc1=translate(array(points).mean(0),axis_rot(a1,arc1,-t1))
     return arc1
 
-def r_3p_3d(points):# radius of the circle with 3 known list of 'points' in 3d space
-    '''
-    function to find the radius of a circle created by 3 given points 'p1','p2','p3' in 3d space
-    example:
-    p1,p2,p3=[[3,0,0],[0,0,0],[0,3,2]]
-    r_3p_3d([p1,p2,p3])=>1.8027906380190175
-    '''
-    points=array(points)
-    v1=points[0]-points[1]
-    v2=points[2]-points[1]
-    u1=v1/(norm(v1)+.00001)
-    u2=v2/(norm(v2)+.00001)
-    n=cross(u1,u2)
-    alpha=arccos(u1@u2)*180/pi
-    pa=v1/2
-    pb=v2/2
-    pap=pa+q(n,u1,90)
-    pbp=pb+q(n,u2,-90)
-    l1=[pa,pap]
-    l2=[pb,pbp]
-    cp=i_p3d(l1,l2)
-    v3=points[0]-(points[1]+cp)
-    u3=v3/(norm(v3)+.00001)
-    v4=points[2]-(points[1]+cp)
-    u4=v4/(norm(v4)+.00001)
-    theta= 360-arccos(u3@u4)*180/pi if alpha<90 else arccos(u3@u4)*180/pi
-    radius=norm(pa-cp)
-    return radius
+# def r_3p_3d(points):# radius of the circle with 3 known list of 'points' in 3d space
+#     '''
+#     function to find the radius of a circle created by 3 given points 'p1','p2','p3' in 3d space
+#     example:
+#     p1,p2,p3=[[3,0,0],[0,0,0],[0,3,2]]
+#     r_3p_3d([p1,p2,p3])=>1.8027906380190175
+#     '''
+#     points=array(points)
+#     v1=points[0]-points[1]
+#     v2=points[2]-points[1]
+#     u1=v1/(norm(v1)+.00001)
+#     u2=v2/(norm(v2)+.00001)
+#     n=cross(u1,u2)
+#     alpha=arccos(u1@u2)*180/pi
+#     pa=v1/2
+#     pb=v2/2
+#     pap=pa+q(n,u1,90)
+#     pbp=pb+q(n,u2,-90)
+#     l1=[pa,pap]
+#     l2=[pb,pbp]
+#     cp=i_p3d(l1,l2)
+#     v3=points[0]-(points[1]+cp)
+#     u3=v3/(norm(v3)+.00001)
+#     v4=points[2]-(points[1]+cp)
+#     u4=v4/(norm(v4)+.00001)
+#     theta= 360-arccos(u3@u4)*180/pi if alpha<90 else arccos(u3@u4)*180/pi
+#     radius=norm(pa-cp)
+#     return radius
 
-
+def r_3p_3d(points):
+    '''
+    calculates the radius of circle made by 3 points in 3d space
+    '''
+    n1=array(nv(points))+[.000001,.000001,0]
+    a1=cross(n1,[0,0,-1])
+    t1=r2d(arccos(n1@[0,0,-1]))
+    sec1=translate(-array(points).mean(0),points)
+    sec2=c3t2(axis_rot(a1,sec1,t1))
+    l1=len(sec2)
+    p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
+    
+    return r_3p([p0,p1,p2])
 
 def scl2d(sec,sl):# scale the 2d section 'sec' by a scaling factor 'sl'. this places the scaled section in the bottom center of the original section
     '''
@@ -7112,3 +7124,37 @@ def curve_4p_10(p0,p1,p2,p3):
     a3=arc_3p(p0,p1,p45)
     a4=arc_3p(p45,p2,p3)
     return a3+a4[1:]
+
+def cw_3p_3d(points):
+    '''
+    finds the orientation of 3 points in 3d.
+    1 means clockwise
+    -1 means counter clockwise
+    '''
+    n1=array(nv(points))+[.000001,.000001,0]
+    a1=cross(n1,[0,0,-1])
+    t1=r2d(arccos(n1@[0,0,-1]))
+    sec1=translate(-array(points).mean(0),points)
+    sec2=c3t2(axis_rot(a1,sec1,t1))
+    l1=len(sec2)
+    p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
+    
+    return cw([p0,p1,p2])
+
+def smoothen(p0,s=50):
+    '''
+    draw smooth curves with random points 'p0'
+    '''
+    r0=[r_3p_3d([p0[i],p0[i+1],p0[i+2]])  for i in range(len(p0)-2)]
+    n0=[nv([p0[i],p0[i+1],p0[i+2]])  for i in range(len(p0)-2)]
+    c0=[cw_3p_3d([p0[i],p0[i+1],p0[i+2]])  for i in range(len(p0)-2)]
+    
+    arc_1=arc_2p_3d(n0[0],p0[0],p0[1],r0[0],c0[0],50)
+    arc_2=arc_2p_3d(n0[-1],p0[-2],p0[-1],r0[-1],c0[-1],50)
+    arc_m=[
+        [arc_2p_3d(n0[i],p0[i+1],p0[i+2],r0[i],c0[i],50),
+        arc_2p_3d(n0[i+1],p0[i+1],p0[i+2],r0[i+1],c0[i+1],50)]
+        for i in range(len(p0)-3)]
+    pnts=[equidistant_path(p[0],10)[:4]+equidistant_path(p[1],10)[6:]  for p in arc_m]
+    arc_n=concatenate([bezier(p,50)  for p in pnts]).tolist()
+    return equidistant_path(arc_1+arc_n+arc_2,s)
