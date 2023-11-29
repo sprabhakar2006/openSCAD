@@ -7141,7 +7141,7 @@ def cw_3p_3d(points):
     
     return cw([p0,p1,p2])
 
-def smoothen(p0,s=50):
+def smoothen_3d(p0,s=50):
     '''
     draw smooth curves with random points 'p0'
     '''
@@ -7158,3 +7158,39 @@ def smoothen(p0,s=50):
     pnts=[equidistant_path(p[0],10)[:4]+equidistant_path(p[1],10)[6:]  for p in arc_m]
     arc_n=concatenate([bezier(p,50)  for p in pnts]).tolist()
     return equidistant_path(arc_1+arc_n+arc_2,s)
+
+def smoothen_2d(p0,s=50):
+    '''
+    draw smooth curves with random points 'p0'
+    '''
+    r0=[r_3p([p0[i],p0[i+1],p0[i+2]])  for i in range(len(p0)-2)]
+    c0=[cw([p0[i],p0[i+1],p0[i+2]])  for i in range(len(p0)-2)]
+    
+    arc_1=arc_2p(p0[0],p0[1],r0[0],c0[0],50)
+    arc_2=arc_2p(p0[-2],p0[-1],r0[-1],c0[-1],50)
+    arc_m=[
+        [arc_2p(p0[i+1],p0[i+2],r0[i],c0[i],50),
+        arc_2p(p0[i+1],p0[i+2],r0[i+1],c0[i+1],50)]
+        for i in range(len(p0)-3)]
+    pnts=[equidistant_path(p[0],10)[:4]+equidistant_path(p[1],10)[6:]  for p in arc_m]
+    arc_n=concatenate([bezier(p,50)  for p in pnts]).tolist()
+    return equidistant_path(arc_1+arc_n+arc_2,s)
+
+def curve_2d(p0,s=50):
+    '''
+    draw smooth curves with random points 'p0'
+    '''
+    r0=[r_3p([p0[i],p0[i+1],p0[i+2]])  for i in range(len(p0)-2)]
+    c0=[cw([p0[i],p0[i+1],p0[i+2]])  for i in range(len(p0)-2)]
+    
+    arc_m=[
+        [arc_2p(p0[i+1],p0[i+2],r0[i],c0[i],50),
+        arc_2p(p0[i+1],p0[i+2],r0[i+1],c0[i+1],50)]
+        for i in range(len(p0)-3)]
+    pnts=[[mid_point([mid_point(p[0]),mid_point(p[1])]),
+           mid_point([mid_point(p[0]),mid_point(p[1])]),
+           p[0][-1]]  for p in arc_m]
+    pnts=[p0[0],p0[1]]+concatenate(pnts).tolist()+[p0[-1]]
+    pnts=array(pnts).reshape(-1,3,2).tolist()
+    arc_n=[ arc_3p(p[0],p[1],p[2]) for p in pnts]
+    return concatenate(arc_n).tolist()
