@@ -5786,7 +5786,7 @@ def arc_2p_3d(n1,p0,p1,r,cw=1,s=20):
     's' is the number of segments of the circle
     '''
     n1=array(n1)
-    a1=cross(n1,[0,0,-1])
+    a1=cross(n1,[0,0,-1])+[.000001,.0000001,0]
     t1=r2d(arccos(n1@[0,0,-1]))
     sec1=translate(-array([p0,p1]).mean(0),[p0,p1])
     sec2=c3t2(axis_rot(a1,sec1,t1))
