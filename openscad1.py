@@ -7214,7 +7214,7 @@ def surface_offset(surf_1,d=1):
     offset a given surface by a distance 'd'
     '''
     l,m=len(surf_1),len(surf_1[0])
-    f_1=faces_surface(51,51)
+    f_1=faces_surface(l,m)
     v_1=array(surf_1).reshape(-1,3).tolist()
     f_2=array(surf_1).reshape(-1,3)[f_1]
     n1=array([nv(p)  for p in f_2])
@@ -7224,6 +7224,6 @@ def surface_offset(surf_1,d=1):
 
 def swp_surf(surf_1):
     l,m=len(surf_1),len(surf_1[0])
-    f_1=faces_surface(51,51)
+    f_1=faces_surface(l,m)
     v_1=array(surf_1).reshape(-1,3).tolist()
     return f'polyhedron({v_1},{f_1},convexity=10);'
