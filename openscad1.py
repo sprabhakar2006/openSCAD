@@ -7227,3 +7227,11 @@ def swp_surf(surf_1):
     f_1=faces_surface(l,m)
     v_1=array(surf_1).reshape(-1,3).tolist()
     return f'polyhedron({v_1},{f_1},convexity=10);'
+
+def surface_thicken(surf_1,d=1):
+    '''
+    thicken the surface by amount 'd'
+    '''
+    surf_2=surface_offset(surf_1,d)
+    sol=[surf_1[i]+flip(surf_2[i])  for i in range(len(surf_1))]
+    return sol
