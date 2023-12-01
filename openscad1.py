@@ -7194,3 +7194,36 @@ def curve_2d(p0,s=50):
     pnts=array(pnts).reshape(-1,3,2).tolist()
     arc_n=[ arc_3p(p[0],p[1],p[2]) for p in pnts]
     return concatenate(arc_n).tolist()
+
+def faces_surface(l,m):
+    '''
+    calculate the faces for an open surface
+    '''
+    return array([[
+            [
+            [m*i+j,m*(i+1)+j,m*i+(j+1)],
+            [m*i+(j+1),m*(i+1)+j,m*(i+1)+(j+1)]
+            ] 
+        for j in range(m-1)
+        ] 
+           for i in range(l-1)
+      ]).reshape(-1,3).tolist()
+
+def surface_offset(surf_1,d=1):
+    '''
+    offset a given surface by a distance 'd'
+    '''
+    l,m=len(surf_1),len(surf_1[0])
+    f_1=faces_surface(51,51)
+    v_1=array(surf_1).reshape(-1,3).tolist()
+    f_2=array(surf_1).reshape(-1,3)[f_1]
+    n1=array([nv(p)  for p in f_2])
+    n2=array([n1[(array(f_1)==i).any(1)].mean(0) for i in range(len(v_1))])
+    v_2=array(v_1)+n2*d
+    return v_2.reshape(l,m,3).tolist()
+
+def swp_surf(surf_1):
+    l,m=len(surf_1),len(surf_1[0])
+    f_1=faces_surface(51,51)
+    v_1=array(surf_1).reshape(-1,3).tolist()
+    return f'polyhedron({v_1},{f_1},convexity=10);'
