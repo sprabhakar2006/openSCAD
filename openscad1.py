@@ -7235,3 +7235,56 @@ def surface_thicken(surf_1,d=1):
     surf_2=surface_offset(surf_1,d)
     sol=[surf_1[i]+flip(surf_2[i])  for i in range(len(surf_1))]
     return sol
+
+def boundary_edges_sol(sol):
+    '''
+    finds the boundary edges of the solid
+    '''
+    l,m=len(sol),len(sol[0])
+    f_1=faces(l,m)[1:-1]
+    f_2=array([ seg(p)  for p in f_1]).reshape(-1,2)
+    f_3=[]
+    for p in f_2:
+     if (f_2==flip(p)).all(1).any()==0:
+         f_3.append(p)
+    
+    f_3=array(f_3)
+    f_4=[f_3[0]]
+    f_3=array(exclude_points(f_3,f_4))
+    while ((f_3[:,0]==f_4[-1][1]).any()):
+        f_4.append(f_3[f_3[:,0]==f_4[-1][1]][0])
+        f_3=array(exclude_points(f_3,[f_4[-1]]))
+    
+    if f_3.tolist()==[]:
+        a=f_4.tolist()
+        return flip(array(a)[0][:,1]).tolist()
+    else:
+        f_5=[f_3[0]]
+        f_3=array(exclude_points(f_3,f_5))
+        while (f_3.tolist()!=[]):
+            f_5.append(f_3[f_3[:,0]==f_5[-1][1]][0])
+            f_3=array(exclude_points(f_3,[f_5[-1]]))
+        a=[f_4,f_5]
+        return array([flip(array(a)[0][:,1]),flip(array(a)[1][:,0])]).tolist()
+
+def boundary_edges_surf(surf):
+    '''
+    finds the boundary edges of a surface
+    '''
+    l,m=len(surf),len(surf[0])
+    f_1=faces_surface(l,m)
+    f_2=array([ seg(p)  for p in f_1]).reshape(-1,2)
+    f_3=[]
+    for p in f_2:
+     if (f_2==flip(p)).all(1).any()==0:
+         f_3.append(p)
+    
+    f_3=array(f_3)
+    f_4=[f_3[0]]
+    f_3=array(exclude_points(f_3,f_4))
+    while (f_3.tolist()!=[]):
+        f_4.append(f_3[f_3[:,0]==f_4[-1][1]][0])
+        f_3=array(exclude_points(f_3,[f_4[-1]]))
+    
+    a=array(f_4).tolist()
+    return flip(array(a)[:,1]).tolist()
