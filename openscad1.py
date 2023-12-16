@@ -3855,7 +3855,7 @@ def r2d(r):
     '''
     return rad2deg(r)
     
-def convert_3lines2fillet(pnt3,pnt2,pnt1,f=1.9,s=10):
+def convert_3lines2fillet(pnt3,pnt2,pnt1,f=1.9,s=10,orientation=0):
     '''
     Develops a fillet with 3 list of points (pnt1,pnt2,pnt3) in 3d space
     f: is a factor which can be reduced to 1.5 in case of self intersection observed
@@ -3869,7 +3869,7 @@ def convert_3lines2fillet(pnt3,pnt2,pnt1,f=1.9,s=10):
 #     sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*f,s) for (p1,p2,p3) in sol]
     sol=[array(bezier([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],s)).tolist()[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
     sol=sol
-    return sol
+    return sol if orientation==0 else cpo(sol)[:-1]
     
 def min_d_points(sec,min_d=.1):
     ''' 
@@ -4211,10 +4211,10 @@ def offset_3d(sec,d):
     refer to the file"example of various functions" for application examples
     
     '''
-    sec=remove_extra_points(sec)
-    sec=q_rot(['z.00001'],sec)
-    avg1=array(sec).mean(0)
-    sec1=translate(-avg1,sec)
+    sec0=remove_extra_points(sec)
+    sec0=q_rot(['z.00001'],sec0)
+    avg1=array(sec0).mean(0)
+    sec1=translate(-avg1,sec0)
 #     v1=array([array(p)-avg1 for p in sec]).tolist()
 #     v2=v1[1:]+[v1[0]]
 #     v1,v2=array([v1,v2])
@@ -4236,7 +4236,7 @@ def offset_3d(sec,d):
     sec2=array(c2t3(sec2))
     sec2=axis_rot(nr,sec2,-theta)
     sec2=translate(array(sec).mean(0),sec2)
-    return sec2
+    return sort_points(sec,sec2)
     
     
     
