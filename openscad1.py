@@ -2210,14 +2210,14 @@ def arc_3d(v=[0,0,1],r=1,theta1=0,theta2=360,cw=-1,s=50):
         sec1=[q(v2,p,a1) for p in s1]
         return sec1
 
-def plane(nv,radius):
+def plane(nv,radius,s=50):
     '''
     plane defined by normal 'nv' and 'radius'
     
     refer file "example of various functions" for application example
     '''
-    sec1=arc_3d(nv,.0001,0,360,-1)
-    sec2=arc_3d(nv,radius,0,360,-1)
+    sec1=arc_3d(nv,.0001,0,360,-1,s=s)[:-1]
+    sec2=arc_3d(nv,radius,0,360,-1,s=s)[:-1]
     plane=[sec1,sec2]
     return plane
 
@@ -5013,8 +5013,8 @@ def cp_cir_3d(cir):
     center point of circle with atleast 3 known list of 'points' in 3d space
     '''
     n1=array(nv(cir))
-    a1=cross(n1,[0,0,-1])
-    t1=r2d(arccos(n1@[0,0,-1]))
+    a1=cross(n1,[0.0000001,0.0000001,-1])
+    t1=r2d(arccos(n1@[0.0000001,0.0000001,-1]))
     sec1=translate(-array(cir).mean(0),cir)
     sec2=c3t2(axis_rot(a1,sec1,t1))
     l1=len(sec2)
