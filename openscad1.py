@@ -6,6 +6,7 @@ from scipy.spatial import cKDTree
 import pandas as pd
 import sympy as sym
 import math
+from stl import mesh
 
 def arc(radius=0,start_angle=0,end_angle=0,cp=[0,0],s=20):
     '''
@@ -4455,7 +4456,7 @@ def equidistant_path(path,s=10):
                 p_rev.append(px.tolist())
                 d[j]=c[-1]+1
     p_rev=[path[0]]+p_rev+[path[-1]]
-    return p_rev[:s+1]
+    return p_rev[:int(s)+1]
 
 def equidistant_pathc(path,s=10):
     '''
@@ -7339,3 +7340,37 @@ def extend_arc3d(a,theta=0,s=20):
     arc1=extend_arc2d(arc1,theta,s)
     arc1=translate(array([p0,p1]).mean(0),axis_rot(a1,arc1,-t1))
     return arc1
+
+def vnf_surf(surf_1):
+    l,m=len(surf_1),len(surf_1[0])
+    f_1=faces_surface(l,m)
+    v_1=array(surf_1).reshape(-1,3).tolist()
+    return [v_1,f_1]
+
+def boundary_edges(faces_list):
+    '''
+    finds the boundary edges of a surface
+    '''
+    f_1=faces_list
+    f_2=array([ seg(p)  for p in f_1]).reshape(-1,2)
+    f_3=[]
+    for p in f_2:
+     if (f_2==flip(p)).all(1).any()==0:
+         f_3.append(p)
+    
+    f_3=array(f_3)
+    f_4=[f_3[0]]
+    f_3=array(exclude_points(f_3,f_4))
+    while (f_3.tolist()!=[]):
+        f_4.append(f_3[f_3[:,0]==f_4[-1][1]][0])
+        f_3=array(exclude_points(f_3,[f_4[-1]]))
+    
+    a=array(f_4).tolist()
+    return flip(array(a)[:,1]).tolist()
+
+def create_mesh(v,f):
+    ''' function to create stl_mesh from vertices and faces'''
+    v_1,f_1=array(v),array(f)
+    sol = mesh.Mesh(zeros(f_1.shape[0], dtype=mesh.Mesh.dtype))
+    sol.vectors=v_1[f_1]
+    return sol
