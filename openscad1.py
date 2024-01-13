@@ -2873,7 +2873,7 @@ def swp(bead2):
     '''
     function to render various 3d shapes
     example:
-    swp(cylinde(d=10,h=20)) will render a cylinder with dia 10 and height 20
+    swp(cylinder(d=10,h=20)) will render a cylinder with dia 10 and height 20
     refer to the file "example of various functions " for application examples
     
     '''
@@ -6595,8 +6595,8 @@ def surround(path,r,s=20):
     function to surround a path to create a rounded section
     
     '''
-    a=path_offset(path,r)
-    b=path_offset(path,-r)
+    a=path_offset_n(path,r)
+    b=path_offset_n(path,-r)
     b=flip(b)
     arc1=arc_2p(a[-1],b[0],r,-1,s)
     arc2=arc_2p(b[-1],a[0],r,-1,s)
