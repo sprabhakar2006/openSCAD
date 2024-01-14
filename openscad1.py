@@ -809,15 +809,11 @@ def i_p2d(l1,l2):
     function to calculate the intersection point between 2 lines in 2d space
     e.g. i_p2d(l1=[[0,0],[1,4]],l2=[[10,0],[7,2]]) =>  [1.42857, 5.71429]
     '''
-    p0,p1,p2,p3=l1[0],l1[1],l2[0],l2[1]
-    p0,p1,p2,p3=array([p0,p1,p2,p3])
-    v1=p1-p0
-    v2=p3-p2
-    im=pinv(array([v1,-v2]).T)
-    t1=(im@(p2-p0))[0]
-    ip=p0+v1*t1
-    
-    return ip.tolist()
+    l1,l2=array([l1,l2])
+    v1=l1[1]-l1[0]
+    v2=l2[1]-l2[0]
+    t1,t2=inv(array([v1,-v2]).transpose(1,0))@(l2[0]-l1[0])
+    return (l1[0]+v1*t1).tolist()
 
 def s_int(s):
     '''
@@ -6787,6 +6783,7 @@ def fillet_intersection_lines(l1,l2,r,s=10):
     s: segments of fillet
     '''
     p0=i_p2d(l1,l2)
+    l2=l2 if p0!=l2[0] else flip(l2)
     clock=cw([l1[0],p0,l2[0]])
     a1=ang_2lineccw(p0,l1[0],l2[0]) if clock==1 else \
     ang_2linecw(p0,l1[0],l2[0])
