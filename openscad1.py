@@ -6207,7 +6207,7 @@ def l2l_intersection(l1,l2):
     i_p=(array(l1[0])+v1*f[t1]).tolist()
     return array(i_p).astype(float).tolist()
     
-def p2p_intersection_line(pa,pb):
+def p2p_intersection_line(pa,pb):#plane to plane intersection line
     '''
     function to calculate intersection line between 2 planes
     '''
