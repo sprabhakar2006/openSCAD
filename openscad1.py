@@ -7371,3 +7371,13 @@ def create_mesh(v,f):
     sol = mesh.Mesh(zeros(f_1.shape[0], dtype=mesh.Mesh.dtype))
     sol.vectors=v_1[f_1]
     return sol
+
+def arc_with_start_pt_and_cp(start_point=[],center_point=[],theta=90,segments=30):
+    '''
+    function to draw an arc with known center_point and start_point
+    '''
+    center_point,start_point=array([center_point,start_point])
+    v1=start_point-center_point
+    arc_1=center_point+[q_rot2d(i,v1) for i in linspace(0,theta,segments)]
+    arc_1=arc_1.tolist()
+    return arc_1
