@@ -7381,3 +7381,27 @@ def arc_with_start_pt_and_cp(start_point=[],center_point=[],theta=90,segments=30
     arc_1=center_point+[q_rot2d(i,v1) for i in linspace(0,theta,segments)]
     arc_1=arc_1.tolist()
     return arc_1
+
+def fillet_line_circle(l1,c1,r2,cw=-1,option=0,s=50):
+    '''
+    function to draw a fillet between a line and a circle
+    option can be '0' or '1' to flip the fillet from one side to another
+    's' is the number of segments in the arc
+    '''
+    v1=array(l1[1])-array(l1[0])
+    u1=v1/norm(v1)
+    cp1=cp_arc(c1)
+    v2=array(cp1)-array(l1[0])
+    u2=v2/norm(v2)
+    l_1=norm(cross(v1,v2))/norm(v1)
+    p3=array(l1[0])+u1*(u1@v2)
+    r1=r_arc(c1)
+    d=sqrt((r1+r2)**2-(l_1+r2)**2) if option==0 else sqrt((r1+r2)**2-(l_1-r2)**2)
+    p2=p3-u1*d
+    v3=array(cp1)-p3
+    u3=v3/norm(v3)
+    cp2=p2-u3*r2 if option==0 else p2+u3*r2
+    v4=array(cp1)-cp2
+    u4=v4/norm(v4)
+    p4=cp2+u4*r2
+    return arc_2p(p2,p4,r2,cw=cw,s=s)
