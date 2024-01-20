@@ -7405,3 +7405,90 @@ def fillet_line_circle(l1,c1,r2,cw=-1,option=0,s=50):
     u4=v4/norm(v4)
     p4=cp2+u4*r2
     return arc_2p(p2,p4,r2,cw=cw,s=s)
+
+def fillet_intersection_lines_3d(l1,l2,r,s=10):
+    '''
+    function calculates the fillet at intersection between 2 3d lines in 1 plane
+    'l1' and 'l2'
+    r: radius of fillet
+    s: segments of fillet
+    '''
+    n1=nv(remove_extra_points(array([l1[0],l1[1],l2[0],l2[1]]).round(5))[:3])
+    n1=n1/norm(n1)
+    n2=cross(n1,[0,0,-1])
+    theta=r2d(arccos(n1@[0,0,-1]))
+    l1,l2=c3t2(axis_rot(n2,[l1,l2],theta))
+    p0=i_p2d(l1,l2)
+    l2=l2 if p0!=l2[0] else flip(l2)
+    clock=cw([l1[0],p0,l2[0]])
+    a1=ang_2lineccw(p0,l1[0],l2[0]) if clock==1 else \
+    ang_2linecw(p0,l1[0],l2[0])
+    a2=180-a1
+    l_1=r*tan(d2r(a2/2))
+    v1=array(l1[0])-array(p0)
+    v2=array(l2[0])-array(p0)
+    u1,u2=v1/norm(v1),v2/norm(v2)
+    p1=array(p0)+u1*l_1
+    p2=array(p0)+u2*l_1
+    arc_1=arc_2p(p1,p2,r,clock,s)
+    return axis_rot(n2,arc_1,-theta)
+
+def fillet_line_circle_internal_3d(l1,c1,r2,cw=-1,option=0,s=50):
+    '''
+    function to draw a fillet between a line and a circle in 3d space, where the fillet is drawn inside of the circle
+    circle and line should be in same plane
+    option can be '0' or '1' to flip the fillet from one side to another
+    's' is the number of segments in the arc
+    '''
+    tr=array(l1+c1).mean(0)
+    l1=translate(-tr,l1)
+    c1=translate(-tr,c1)
+    
+    n1=nv(c1)
+    n1=n1/norm(n1)
+    n2=cross(n1,[0,0,-1])
+    theta=r2d(arccos(n1@[0,0,-1]))
+    l1=c3t2(axis_rot(n2,l1,theta))
+    c1=c3t2(axis_rot(n2,c1,theta))
+    
+    v1=array(l1[1])-array(l1[0])
+    u1=v1/norm(v1)
+    cp1=cp_arc(c1)
+    v2=array(cp1)-array(l1[0])
+    u2=v2/norm(v2)
+    l_1=norm(cross(v1,v2))/norm(v1)
+    p3=array(l1[0])+u1*(u1@v2)
+    r1=r_arc(c1)
+    d=sqrt((r1-r2)**2-(l_1+r2)**2) if option==0 else sqrt((r1-r2)**2-(l_1-r2)**2)
+    p2=p3-u1*d
+    v3=array(cp1)-p3
+    u3=v3/norm(v3)
+    cp2=p2-u3*r2 if option==0 else p2+u3*r2
+    v4=array(cp1)-cp2
+    u4=v4/norm(v4)
+    p4=cp2-u4*r2
+    return translate(tr,axis_rot(n2,arc_2p(p2,p4,r2,cw=cw,s=s),-theta))
+
+def fillet_line_circle_internal(l1,c1,r2,cw=-1,option=0,s=50):
+    '''
+    function to draw a fillet between a line and a circle, where the fillet is drawn inside of the circle
+    option can be '0' or '1' to flip the fillet from one side to another
+    's' is the number of segments in the arc
+    '''
+    v1=array(l1[1])-array(l1[0])
+    u1=v1/norm(v1)
+    cp1=cp_arc(c1)
+    v2=array(cp1)-array(l1[0])
+    u2=v2/norm(v2)
+    l_1=norm(cross(v1,v2))/norm(v1)
+    p3=array(l1[0])+u1*(u1@v2)
+    r1=r_arc(c1)
+    d=sqrt((r1-r2)**2-(l_1+r2)**2) if option==0 else sqrt((r1-r2)**2-(l_1-r2)**2)
+    p2=p3-u1*d
+    v3=array(cp1)-p3
+    u3=v3/norm(v3)
+    cp2=p2-u3*r2 if option==0 else p2+u3*r2
+    v4=array(cp1)-cp2
+    u4=v4/norm(v4)
+    p4=cp2-u4*r2
+    return arc_2p(p2,p4,r2,cw=cw,s=s)
