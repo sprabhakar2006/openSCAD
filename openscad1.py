@@ -7538,3 +7538,28 @@ def mirror(p0,n1,loc):
         v1=array(a[i])-p0[i]
         b.append((array(a[i])+v1).tolist())
     return b
+
+def change_orientation(surf):
+    '''
+    change orientation of a surface to make it suitable for creating solid
+    '''
+    b=[surf[0]+[surf[j][-1] for j in range(1,len(surf)-1)]+flip(surf[-1])+ \
+                 flip([surf[j][0] for j in range(1,len(surf)-1)])]
+    for i in range(1,int(len(surf)/2)):
+        
+        b.append(surf[i][i:-i]+[surf[j][-(1+i)] for j in range(i+1,len(surf)-(i+1))]+flip(surf[-(i+1)][i:-i])+ \
+                 flip([surf[j][i] for j in range(i+1,len(surf)-(i+1))]))
+    if mod(len(surf),2)==0:
+        return sort_surface(b)
+    else:
+        a=int(len(surf)/2)
+        return sort_surface(b+[surf[a][a:-a]])
+    
+def sort_surface(l3):
+    '''
+    sort the points of a surface to make them equal
+    '''
+    b=[l3[0]]
+    for i in range(1,len(l3)):
+        b.append(sort_points(b[-1],l3[i]))
+    return b
