@@ -7492,3 +7492,49 @@ def fillet_line_circle_internal(l1,c1,r2,cw=-1,option=0,s=50):
     u4=v4/norm(v4)
     p4=cp2-u4*r2
     return arc_2p(p2,p4,r2,cw=cw,s=s)
+
+def fillet_line_circle_3d(l1,c1,r2,cw=-1,option=0,s=50):
+    '''
+    function to draw a fillet between a line and a circle in 3d space.
+    line and circle should be in the same plane
+    option can be '0' or '1' to flip the fillet from one side to another
+    's' is the number of segments in the arc
+    '''
+    tr=array(l1+c1).mean(0)
+    l1=translate(-tr,l1)
+    c1=translate(-tr,c1)
+    n1=nv(c1)
+    n1=n1/norm(n1)
+    n2=cross(n1,[0,0,-1])
+    theta=r2d(arccos(n1@[0,0,-1]))
+    l1=c3t2(axis_rot(n2,l1,theta))
+    c1=c3t2(axis_rot(n2,c1,theta))
+    
+    v1=array(l1[1])-array(l1[0])
+    u1=v1/norm(v1)
+    cp1=cp_arc(c1)
+    v2=array(cp1)-array(l1[0])
+    u2=v2/norm(v2)
+    l_1=norm(cross(v1,v2))/norm(v1)
+    p3=array(l1[0])+u1*(u1@v2)
+    r1=r_arc(c1)
+    d=sqrt((r1+r2)**2-(l_1+r2)**2) if option==0 else sqrt((r1+r2)**2-(l_1-r2)**2)
+    p2=p3-u1*d
+    v3=array(cp1)-p3
+    u3=v3/norm(v3)
+    cp2=p2-u3*r2 if option==0 else p2+u3*r2
+    v4=array(cp1)-cp2
+    u4=v4/norm(v4)
+    p4=cp2+u4*r2
+    return translate(tr,axis_rot(n2,arc_2p(p2,p4,r2,cw=cw,s=s),-theta))
+
+def mirror(p0,n1,loc):
+    '''
+    function to mirror the points list 'p0' defined by mirroring plane 'n1' with location 'loc'
+    '''
+    a=ppplane(p0,n1,loc)
+    b=[]
+    for i in range(len(a)):
+        v1=array(a[i])-p0[i]
+        b.append((array(a[i])+v1).tolist())
+    return b
