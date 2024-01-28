@@ -7563,3 +7563,28 @@ def sort_surface(l3):
     for i in range(1,len(l3)):
         b.append(sort_points(b[-1],l3[i]))
     return b
+
+def convert_4lines_enclosure2surface(a,c,b,d,s=30):
+    '''
+    function to convert and enclosed area of lines to surface
+    note that a and c are opposite arcs or polylines and b and d are opposite arcs
+    
+    '''
+    a=equidistant_path(a,s)
+    b=equidistant_path(b,s)
+    c=equidistant_path(c,s)
+    d=equidistant_path(d,s)
+    
+    s_1=slice_sol([a,c],s)
+    m_1=[mid_point(p) for p in s_1]
+    s_2=convert_3lines2surface(b,m_1,d)
+    return s_2
+
+def solid_from_fillet(fillet_1,d):
+    '''
+    creates a cutting edge from fillet
+    '''
+    fillet_1=cpo(fillet_1)[:-1]
+    fillet_2=surface_offset(fillet_1,d)
+    sol=fillet_1+flip(fillet_2)
+    return cpo(sol)
