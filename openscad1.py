@@ -7588,3 +7588,14 @@ def solid_from_fillet(fillet_1,d):
     fillet_2=surface_offset(fillet_1,d)
     sol=fillet_1+flip(fillet_2)
     return cpo(sol)
+
+def solid_from_fillet_closed(fillet_1,d):
+    '''
+    creates a cutting edge from fillet with closed section lines
+    '''
+    fillet_1=cpo(fillet_1)[:-1]
+    fillet_2=surface_offset(fillet_1,d)
+    sol=fillet_1+flip(fillet_2)
+    sol=cpo(sol)
+    sol=sol+[sol[0]]
+    return sol
