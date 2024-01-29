@@ -7226,18 +7226,42 @@ def faces_surface(l,m):
            for i in range(l-1)
       ]).reshape(-1,3).tolist()
 
-def surface_offset(surf_1,d=1):
-    '''
-    offset a given surface by a distance 'd'
-    '''
-    l,m=len(surf_1),len(surf_1[0])
-    f_1=faces_surface(l,m)
-    v_1=array(surf_1).reshape(-1,3).tolist()
-    f_2=array(surf_1).reshape(-1,3)[f_1]
-    n1=array([nv(p)  for p in f_2])
-    n2=array([n1[(array(f_1)==i).any(1)].mean(0) for i in range(len(v_1))])
-    v_2=array(v_1)+n2*d
-    return v_2.reshape(l,m,3).tolist()
+# def surface_offset(surf_1,d=1):
+#     '''
+#     offset a given surface by a distance 'd'
+#     '''
+#     l,m=len(surf_1),len(surf_1[0])
+#     f_1=faces_surface(l,m)
+#     v_1=array(surf_1).reshape(-1,3).tolist()
+#     f_2=array(surf_1).reshape(-1,3)[f_1]
+#     n1=array([nv(p)  for p in f_2])
+#     n2=array([n1[(array(f_1)==i).any(1)].mean(0) for i in range(len(v_1))])
+#     v_2=array(v_1)+n2*d
+#     return v_2.reshape(l,m,3).tolist()
+
+def surface_offset(s1,dist=1):
+    a=faces_surface(len(s1),len(s1[0]))
+    b=array(s1).reshape(-1,3)
+    c=b[a]
+    d1,d2,d3=c[:,0],c[:,1],c[:,2]
+    v1,v2=d2-d1,d3-d1
+    n_1=cross(v1,v2)
+    u_1=norm(n_1,axis=1)
+    n_1=einsum('ij,i->ij',n_1,1/u_1)
+    d=n_1*dist
+
+    e=(array(a)[:,0][:,None]==unique(array(a)[:,0])[None,:]).transpose(1,0)
+    f=array([d]*(unique(array(a)[:,0]).max()+1))
+
+    g=(einsum('ijk,ij->ik',f,e)/einsum('j,ij->i',ones(len(d)),e)[:,None])
+
+    h=g.reshape(-1,len(s1[0]),3)
+
+    h=h.tolist()
+    h=h+[h[-1]]
+    h=(array(s1).reshape(-1,3)+array(h).reshape(-1,3)).reshape(-1,len(s1[0]),3).tolist()
+    return h
+
 
 def swp_surf(surf_1):
     l,m=len(surf_1),len(surf_1[0])
