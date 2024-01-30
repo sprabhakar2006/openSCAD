@@ -6307,24 +6307,59 @@ def ip_fillet_surf(surf,sol,r1,r2,s=20):
     return fillet1
 
 
-def i_line_fillet(sol1,sol2,ip,r1,r2,s=20,o=0):
+# def i_line_fillet(sol1,sol2,ip,r1,r2,s=20,o=0):
+#     '''
+#     calculates a fillet at the intersection of 2 solids when the intersection points 'ip' are separately defined.
+#     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
+#     r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on sol1 
+#     '''
+#     p1=ip
+#     p2=o_3d(p1,sol1,r2)
+#     p3=o_3d(p1,sol2,r1)
+    
+#     if len(p1)==len(p2)==len(p3):
+#         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
+#     else:
+#         p2=sort_points(p1,p2)
+#         p2=path2path1(p1,p2)
+#         p3=sort_points(p1,p3)
+#         p3=path2path1(p1,p3)
+#         p1,p2,p3=align_sol_1([p1,p2,p3])
+#         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
+#     return fillet1
+
+def i_line_fillet(sol1,sol2,ip,r1,r2,s=20,o=0,n=''):
     '''
     calculates a fillet at the intersection of 2 solids when the intersection points 'ip' are separately defined.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
     r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on sol1 
+    n is the number of equidistant points required in intersection points "ip"
     '''
+    n=len(ip) if n=='' else n
     p1=ip
     p2=o_3d(p1,sol1,r2)
     p3=o_3d(p1,sol2,r1)
-    if len(p1)==len(p2)==len(p3):
-        fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
-    else:
-        p2=sort_points(p1,p2)
-        p2=path2path1(p1,p2)
-        p3=sort_points(p1,p3)
-        p3=path2path1(p1,p3)
-        p1,p2,p3=align_sol_1([p1,p2,p3])
-        fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
+    p1,p2,p3=[equidistant_path(p,n)  for p in [p1,p2,p3]]
+    # p2=sort_points(p1,p2)
+    # p3=sort_points(p1,p3)
+    fillet1=convert_3lines2fillet(p2,p3,p1,s=s,orientation=o)
+    return fillet1
+
+def i_line_fillet_closed(sol1,sol2,ip,r1,r2,s=20,o=0,n=''):
+    '''
+    calculates a fillet at the intersection of 2 solids when the intersection points 'ip' are separately defined.
+    r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
+    r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on sol1 
+    n is the number of equidistant points required in intersection points "ip"
+    '''
+    n=len(ip) if n=='' else n
+    p1=ip
+    p2=o_3d(p1,sol1,r2)
+    p3=o_3d(p1,sol2,r1)
+    p1,p2,p3=[equidistant_pathc(p,n)  for p in [p1,p2,p3]]
+    # p2=sort_points(p1,p2)
+    # p3=sort_points(p1,p3)
+    fillet1=convert_3lines2fillet_closed(p2,p3,p1,s=s)
     return fillet1
 
 def i_line_tri_fillet(v,f1,sol2,ip,r1,r2,s=20,o=0):
