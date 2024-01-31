@@ -7658,3 +7658,28 @@ def solid_from_fillet_closed(fillet_1,d):
     sol=cpo(sol)
     sol=sol+[sol[0]]
     return sol
+
+def points_projection_on_surface(p_0,surf):
+    '''
+    project a point on to a surface
+    '''
+    a=array(faces_surface(len(surf),len(surf[0])))
+    b=array(surf).reshape(-1,3)
+    c=b[a]
+
+    p0,p1,p2=c[:,0],c[:,1],c[:,2]
+    v1,v2=p1-p0,p2-p0
+    u1,u2=v1/norm(v1,axis=1).reshape(-1,1),v2/norm(v2,axis=1).reshape(-1,1)
+    n1=cross(v1,v2)
+    un1=n1/norm(n1,axis=1).reshape(-1,1)
+    p_0=array(p_0)
+    # p_0+un1*t1=p0+v1*t2+v2*t3
+    iim=array([un1,-v1,-v2]).transpose(1,0,2).transpose(0,2,1)
+    im=inv(iim)
+    p=p0-p_0
+    p.shape,im.shape
+    t=einsum('ijk,ik->ij',im,p)
+    t_1,t_2,t_3=t[:,0],t[:,1],t[:,2]
+    dec=(t_2>=0) & (t_2<=1) & (t_3>=0) & (t_3<=1) & ((t_2+t_3)<=1)
+    px=(p_0+einsum('ij,i->ij',un1,t_1))[dec].tolist()
+    return px
