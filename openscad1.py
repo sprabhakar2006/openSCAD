@@ -7683,3 +7683,17 @@ def points_projection_on_surface(p_0,surf):
     dec=(t_2>=0) & (t_2<=1) & (t_3>=0) & (t_3<=1) & ((t_2+t_3)<=1)
     px=(p_0+einsum('ij,i->ij',un1,t_1))[dec].tolist()
     return px
+
+def surface_normal(s1,length=1):
+    '''
+    calculates the normal of a surface (average)
+    '''
+    a=faces_1(len(s1),len(s1[0]))
+    b=array(s1).reshape(-1,3)
+    c=b[a]
+    pa,pb,pc=c[:,0],c[:,1],c[:,2]
+    v1,v2=pb-pa,pc-pa
+    v3=cross(v1,v2)
+    u3=v3/norm(v3,axis=1).reshape(-1,1)
+    u3=u3.mean(0)*length
+    return u3.tolist()
