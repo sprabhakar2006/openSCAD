@@ -7526,7 +7526,9 @@ def fillet_line_circle_internal_3d(l1,c1,r2,cw=-1,option=0,s=50):
     v4=array(cp1)-cp2
     u4=v4/norm(v4)
     p4=cp2-u4*r2
-    return translate(tr,axis_rot(n2,arc_2p(p2,p4,r2,cw=cw,s=s),-theta))
+    p2,p4=translate(tr,axis_rot(n2,[p2,p4],-theta))
+    return arc_2p_3d(n1,p2,p4,r2,cw=cw,s=s)
+    # return translate(tr,axis_rot(n2,arc_2p(p2,p4,r2,cw=cw,s=s),-theta))
 
 def fillet_line_circle_internal(l1,c1,r2,cw=-1,option=0,s=50):
     '''
@@ -7736,3 +7738,38 @@ def project_line_on_surface(l_2,surf_1,n_1=[]):
     ip_1=p1[:,None,:]+einsum('ijk,ij->ijk',v1,t[:,:,0])
     ip_1=ip_1[dec].tolist()
     return ip_1
+
+def path_offset_3d(sec,d):
+    '''
+    path_offsets an enclosed section in 3d space, in case the section is in 1 plane
+    sec: section in 3d space
+    d: offset distance -ve sign means inner offset and +ve sign is outer offset
+    refer to the file"example of various functions" for application examples
+    
+    '''
+    sec0=remove_extra_points(sec)
+    sec0=q_rot(['z.00001'],sec0)
+    avg1=array(sec0).mean(0)
+    sec1=translate(-avg1,sec0)
+#     v1=array([array(p)-avg1 for p in sec]).tolist()
+#     v2=v1[1:]+[v1[0]]
+#     v1,v2=array([v1,v2])
+#     n1=cross(v1,v2)
+#     nv1=n1.mean(0)
+    nv1=-array(nv(sec1))
+    nz=[0,0,1]
+    nr=cross(nv1,nz) if abs(nv1).tolist()!=[0,0,1] else nv1
+    theta=r2d(arccos(nv1@array(nz)))
+    sec1=axis_rot(nr,sec1,theta)
+    z_values=array(sec1)[:,2]-avg1[2]
+    sec1=ppplane(sec1,[0,0,1],[0,0,0])
+    sec1=c3t2(sec1)
+    x_values=array([l_len([[0,0],p])  for p in sec1])
+    sec2=path_offset_n(sec1,d)
+    x1_values=array([l_len([[0,0],p])  for p in sec2])
+    z1_values=z_values/x_values*x1_values
+    z1_values=array([[0,0,p] for p in z1_values])
+    sec2=array(c2t3(sec2))
+    sec2=axis_rot(nr,sec2,-theta)
+    sec2=translate(array(sec).mean(0),sec2)
+    return sort_points(sec,sec2)
