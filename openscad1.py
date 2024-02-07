@@ -7701,19 +7701,13 @@ def surface_normal(s1,length=1):
     u3=u3/norm(u3)*length
     return u3.tolist()
 
-def projecting_a_surface_on_to_other(s_2,s_1):
+def projecting_a_surface_on_to_another(s_1,s_2):
     '''
     projecting surface s_2 on surface s_1
-    number of points and orientation should be same for both the surfaces e.g 
-    number of lines in a surface and number of points in each line should be same for both the surfaces
-    
+    surfaces should ideally cross each other completely
     '''
-    n_1=surface_normal(s_1)
-    s_1_1=[ppplane(p,n_1,s_1[0][0]) for p in s_1]
-    s_2_1=[ppplane(p,n_1,s_1[0][0]) for p in s_2]
-    a=array(s_2_1)+array(s_1)-array(s_1_1)
-    a=a.tolist()
-    return a
+    s_3=[project_line_on_surface(p,s_1,[0,0,1]) for p in s_2]
+    return s_3
   
     
 def project_line_on_surface(l_2,surf_1,n_1=[]):
@@ -7729,7 +7723,7 @@ def project_line_on_surface(l_2,surf_1,n_1=[]):
     v1=array([[v1]*len(p2)]*len(p1))
     v2=array([v2]*len(p1))
     v3=array([v3]*len(p1))
-    iim=array([v1,-v2,-v3]).transpose(1,2,0,3).transpose(0,1,3,2)
+    iim=array([v1,-v2,-v3+.000001]).transpose(1,2,0,3).transpose(0,1,3,2)
     im=inv(iim)
     p=p2[None,:,:]-p1[:,None,:]
     t=einsum('ijkl,ijl->ijk',im,p)
