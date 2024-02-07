@@ -7701,16 +7701,22 @@ def surface_normal(s1,length=1):
     u3=u3/norm(u3)*length
     return u3.tolist()
 
-def projecting_a_surface_on_to_another(s_1,s_2):
+def projecting_a_surface_on_to_another(s_1,s_2,n_1=[]):
     '''
     projecting surface s_2 on surface s_1
     surfaces should ideally cross each other completely
     '''
-    s_3=[project_line_on_surface(p,s_1,[0,0,1]) for p in s_2]
+    n_1=surface_normal(s_2,1) if n_1==[] else n_1
+    s_3=[project_line_on_surface(p,s_1,n_1) for p in s_2]
     return s_3
   
     
 def project_line_on_surface(l_2,surf_1,n_1=[]):
+    '''
+    function for projecting a line on to a surface.
+    n_1 is a direction vector for projecting the line
+    an example video can be refered for clarity
+    '''
     n_1=surface_normal(surf_1,1) if n_1==[] else n_1
     # p1+v1*t1=p2+v2*t2+v3*t3
     f_1=faces_surface(len(surf_1),len(surf_1[0]))
