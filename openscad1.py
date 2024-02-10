@@ -7789,3 +7789,11 @@ def slice_surfaces(surf_1,surf_1_1,n=10):
     '''
     surf_x=cpo([slice_sol([surf_1[i],surf_1_1[i]],n)  for i in range(len(surf_1))])
     return surf_x
+
+def mirror_surface(surf_1,n1,loc=[0,0,0]):
+    '''
+    function to mirror a solid or surface base on a mirroring plane given by vector 'n1'
+    passing through a point 'loc'
+    '''
+    surf_1_1=[mirror(surf_1[i],n1,loc) for i in range(len(surf_1))]
+    return surf_1_1
