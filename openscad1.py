@@ -7782,3 +7782,10 @@ def surface_line_vector(line=[[0,0,0],[10,0,0]],vector=[0,0,1],both_sides=0):
     l_1=translate(array(vector),line)
     l_2=translate(-array(vector),line) if both_sides==1 else line
     return [l_1,l_2]
+
+def slice_surfaces(surf_1,surf_1_1,n=10):
+    '''
+    function creates multiple surfaces between 2 surfaces
+    '''
+    surf_x=cpo([slice_sol([surf_1[i],surf_1_1[i]],n)  for i in range(len(surf_1))])
+    return surf_x
