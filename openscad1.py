@@ -4668,7 +4668,7 @@ def offset_sol(sol,d,o=0):
    
 #    return a
 
-def ip_sol2sol(sol1,sol2):
+def ip_sol2sol(sol1,sol2,n=0):
     line=array([ seg(p)[:-1] for p in cpo(sol2)])
     v,f1=vnf2(sol1)
     tri=array(v)[array(f1)]
@@ -4689,7 +4689,7 @@ def ip_sol2sol(sol1,sol2):
     for i in range(len(a)):
         c.append(a[i][b[i]].tolist())
 
-    return [p for p in c if p!=[]]
+    return [p[n] for p in c if p!=[]]
 
 def ip_tri2sol(v,f1,sol2):
     line=array([ seg(p)[:-1] for p in cpo(sol2)])
@@ -6244,7 +6244,7 @@ def o_3d(i_p,sol,r,o=0,f=1):
         c=array(i_p)+cross(a,b)*r
     s=array([c+a*r*f,c-a*r*f])
     i_p1=ip_sol2sol(sol,s)
-    i_p1=[p[0] for p in i_p1]
+    # i_p1=[p[0] for p in i_p1]
     return i_p1
 
 def o_3d_surf(i_p,sol,r,o=0):
@@ -6267,8 +6267,8 @@ def ip_fillet(sol1,sol2,r1,r2,s=20,o=0):
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
     r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on sol1 
     '''
-    p1=ip_sol2sol(sol1,sol2)
-    p1=[p[o] for p in p1]
+    p1=ip_sol2sol(sol1,sol2,o)
+    # p1=[p[o] for p in p1]
     p2=i_p_p(sol2,p1,r1)
     if len(p1)!=len(p2):
         p2=o_3d(p1,sol2,r1)
@@ -7773,3 +7773,12 @@ def path_offset_3d(sec,d):
     sec2=axis_rot(nr,sec2,-theta)
     sec2=translate(array(sec).mean(0),sec2)
     return sort_points(sec,sec2)
+
+def surface_line_vector(line=[[0,0,0],[10,0,0]],vector=[0,0,1],both_sides=0):
+    '''
+    draw a surface base on a line and a vector.
+    if surface is required both sides of the line, both_sides option should be marked as '1' else default for only one side is '0'
+    '''
+    l_1=translate(array(vector),line)
+    l_2=translate(-array(vector),line) if both_sides==1 else line
+    return [l_1,l_2]
