@@ -7797,3 +7797,11 @@ def mirror_surface(surf_1,n1,loc=[0,0,0]):
     '''
     surf_1_1=[mirror(surf_1[i],n1,loc) for i in range(len(surf_1))]
     return surf_1_1
+
+def solid_from_2surfaces(surf_1,surf_2):
+    '''
+    function to make a solid from 2 surfaces 
+    '''
+    sol=surf_1+flip(surf_2)
+    sol=cpo(sol)
+    return sol
