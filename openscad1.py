@@ -7805,3 +7805,39 @@ def solid_from_2surfaces(surf_1,surf_2):
     sol=surf_1+flip(surf_2)
     sol=cpo(sol)
     return sol
+
+def sec2surface(surf_1,s=1):
+    '''
+    function to convert a closed polygon to lines
+    e.g.
+    a=c2t3(circle(10))
+    b=sec2surface(a)
+    
+    a and b can be visualised by following commands
+    color("blue")p_line3d({a},.2,1);
+    color("magenta")for(p={b})p_line3d(p,.2,1);
+    {swp_surf(b)}
+    '''
+    return [equidistant_path([surf_1[i],surf_1[-i-1]] ,s)
+            for i in range(int(len(surf_1)/2))]
+
+def sec2lines(sec,n=20):
+    '''
+    function to convert a polygon to lines (horizontal lines)
+    '''
+    a=array(sec)[:,1].min()
+    b=array(sec)[:,1].max()
+    delta=(b-a)/1000
+    p0=array([[0,i] for i in linspace(a+delta,b-delta,n)])
+    # p0+v1*t1=p1+v2*t2
+    pa=array(sec)
+    pb=array(sec[1:]+[sec[0]])
+    v1=array([[[1,0]]*len(pa)]*len(p0))
+    v2=array([pb-pa]*len(p0))
+    iim=array([v1,-v2+.000001]).transpose(1,2,0,3).transpose(0,1,3,2)
+    im=inv(iim)
+    p=pa[None,:,:]-p0[:,None,:]
+    t=einsum('ijkl,ijl->ijk',im,p)
+    dec=(t[:,:,1]>=0) & (t[:,:,1]<=1)
+
+    return (pa[None,:,:]+einsum('ijk,ij->ijk',v2,t[:,:,1]))[dec].reshape(-1,2,2).tolist()
