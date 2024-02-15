@@ -7821,7 +7821,7 @@ def sec2surface(surf_1,s=1):
     return [equidistant_path([surf_1[i],surf_1[-i-1]] ,s)
             for i in range(int(len(surf_1)/2))]
 
-def sec2lines(sec,n=20):
+def sec2lines(sec,n=20,s=10):
     '''
     function to convert a polygon to lines (horizontal lines)
     '''
@@ -7840,4 +7840,8 @@ def sec2lines(sec,n=20):
     t=einsum('ijkl,ijl->ijk',im,p)
     dec=(t[:,:,1]>=0) & (t[:,:,1]<=1)
 
-    return (pa[None,:,:]+einsum('ijk,ij->ijk',v2,t[:,:,1]))[dec].reshape(-1,2,2).tolist()
+    pa.shape,v2.shape,t[:,:,1].shape
+    c=array(lexicographic_sort_yx((pa[None,:,:]+einsum('ijk,ij->ijk',v2,t[:,:,1]))[dec])).reshape(-1,2,2).tolist()
+    c=[lexicographic_sort_xy(equidistant_path(p,s))  for p in c]
+    
+    return c
