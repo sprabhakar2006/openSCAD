@@ -7845,3 +7845,19 @@ def sec2lines(sec,n=20,s=10):
     c=[lexicographic_sort_xy(equidistant_path(p,s))  for p in c]
     
     return c
+
+def rot_sec2xy_plane(sec):
+    '''
+    function to rotate any section open or closed parallel to x-y plane
+    
+    '''
+    n1=nv(sec)
+    if (array(n1).round(5).tolist()==[0,0,1]) | (array(n1).round(5).tolist()==[0,0,-1]) :
+        return sec
+    else:
+        v1=cross(n1,[0,0,-1])
+        t1=r2d(arccos(array(n1)@[0,0,-1]))
+        l_1=[[0,0,0],(array(n1)*5).tolist()]
+        l_2=[[0,0,0],(array(v1)*5).tolist()]
+        l_3=axis_rot_1([sec],v1,sec[0],t1)[0]
+        return l_3
