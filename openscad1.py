@@ -7861,3 +7861,32 @@ def rot_sec2xy_plane(sec):
         l_2=[[0,0,0],(array(v1)*5).tolist()]
         l_3=axis_rot_1([sec],v1,sec[0],t1)[0]
         return l_3
+    
+def surround_3d(path,r,s=20):
+    '''
+    function to surround a path to create a rounded section on a 3d path
+    
+    '''
+    n1=nv(path)
+    if (array(n1).round(5).tolist()==[0,0,1]) | (array(n1).round(5).tolist()==[0,0,-1]) :
+        path1= c3t2(path)
+    else:
+        v1=cross(n1,[0,0,-1])
+        t1=r2d(arccos(array(n1)@[0,0,-1]))
+        l_1=[[0,0,0],(array(n1)*5).tolist()]
+        l_2=[[0,0,0],(array(v1)*5).tolist()]
+        l_3=axis_rot_1([path],v1,path[0],t1)[0]
+        path1=c3t2(l_3)
+    path1=remove_extra_points(array(path1).round(5))
+    a=path_offset_n(path1,r)
+    b=path_offset_n(path1,-r)
+    b=flip(b)
+    arc1=arc_2p(a[-1],b[0],r,-1,s)
+    arc2=arc_2p(b[-1],a[0],r,-1,s)
+    sec=a[1:-1]+arc1+b[1:-1]+arc2
+    sec=translate([0,0,path[0][2]],sec)
+    if (array(n1).round(5).tolist()==[0,0,1]) | (array(n1).round(5).tolist()==[0,0,-1]) :
+        sec=sec
+    else:
+        sec=axis_rot_1([sec],v1,path[0],-t1)[0]
+    return equidistant_pathc(sec,s)
