@@ -2207,16 +2207,16 @@ def arc_3d(v=[0,0,1],r=1,theta1=0,theta2=360,cw=-1,s=50):
         sec1=[q(v2,p,a1) for p in s1]
         return sec1
 
-def plane(nv,radius,s=50):
-    '''
-    plane defined by normal 'nv' and 'radius'
+# def plane(nv,radius,s=50):
+#     '''
+#     plane defined by normal 'nv' and 'radius'
     
-    refer file "example of various functions" for application example
-    '''
-    sec1=arc_3d(nv,.0001,0,360,-1,s=s)[:-1]
-    sec2=arc_3d(nv,radius,0,360,-1,s=s)[:-1]
-    plane=[sec1,sec2]
-    return plane
+#     refer file "example of various functions" for application example
+#     '''
+#     sec1=arc_3d(nv,.0001,0,360,-1,s=s)[:-1]
+#     sec2=arc_3d(nv,radius,0,360,-1,s=s)[:-1]
+#     plane=[sec1,sec2]
+#     return plane
 
 def l_cir_ip(line,cir):
     '''
@@ -7890,3 +7890,20 @@ def surround_3d(path,r,s=20):
     else:
         sec=axis_rot_1([sec],v1,path[0],-t1)[0]
     return equidistant_pathc(sec,s)
+
+def plane(n1,size=[100,100]):
+    '''
+    plane defined by normal vector 'n1' with size as defined
+    '''
+    d1,d2=(size/2,size/2) if array(size).shape==() else (size[0]/2,size[1]/2)
+    n1=array(n1)/norm(n1)
+    if array(n1).round(5).tolist()==[0,0,1]:
+        v1=[1,0,0]
+    else:
+        v1=c2t3(q_rot2d(90,c3t2(n1)))
+    v1=array(v1)/norm(v1)
+    v2=axis_rot(v1,[n1],90)[0]
+    v1=array([array(v1)*-d1,array(v1)*d1])
+    v2=array(v2)*d2
+    s1=surface_line_vector(v1,v2,1)
+    return s1
