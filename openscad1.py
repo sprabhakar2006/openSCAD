@@ -7891,12 +7891,12 @@ def surround_3d(path,r,s=20):
         sec=axis_rot_1([sec],v1,path[0],-t1)[0]
     return equidistant_pathc(sec,s)
 
-def plane(n1,size=[100,100]):
+def plane(nv,size=[100,100]):
     '''
-    plane defined by normal vector 'n1' with size as defined
+    plane defined by normal vector 'nv' with size as defined
     '''
     d1,d2=(size/2,size/2) if array(size).shape==() else (size[0]/2,size[1]/2)
-    n1=array(n1)/norm(n1)
+    n1=array(nv)/norm(nv)
     if array(n1).round(5).tolist()==[0,0,1]:
         v1=[1,0,0]
     else:
