@@ -3852,7 +3852,7 @@ def r2d(r):
     '''
     return rad2deg(r)
     
-def convert_3lines2fillet(pnt3,pnt2,pnt1,f=1.9,s=10,orientation=0):
+def convert_3lines2fillet(pnt3,pnt2,pnt1,f=1.9,s=10,orientation=0,style=0):
     '''
     Develops a fillet with 3 list of points (pnt1,pnt2,pnt3) in 3d space
     f: is a factor which can be reduced to 1.5 in case of self intersection observed
@@ -3864,8 +3864,11 @@ def convert_3lines2fillet(pnt3,pnt2,pnt1,f=1.9,s=10,orientation=0):
     
     sol=array([pnt3,pnt1,pnt2]).transpose(1,0,2)
 #     sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*f,s) for (p1,p2,p3) in sol]
-    sol=[array(bezier([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],s)).tolist()[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
-    sol=sol
+    if style==0:
+        sol=[array(bezier([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],s)).tolist()[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
+    else:
+        sol=[bezier([p1,p2,p3],s)[:s+1]+[p2.tolist()] for (p1,p2,p3) in sol]
+    # sol=sol
     return sol if orientation==0 else cpo(sol)[:-1]
     
 def min_d_points(sec,min_d=.1):
@@ -5520,7 +5523,7 @@ def align_sec_1(sec1,sec2):
     sol2=[sec1]+[sec2[i:]+sec2[:i]]
     return sol2
 
-def convert_3lines2fillet_closed(pnt3,pnt2,pnt1,f=1.9,s=10):
+def convert_3lines2fillet_closed(pnt3,pnt2,pnt1,f=1.9,s=10,style=0):
     '''
     Develops a fillet with 3 list of points (pnt1,pnt2,pnt3) in 3d space
     f: is a factor which can be reduced to 1.5 in case of self intersection observed
@@ -5533,8 +5536,10 @@ def convert_3lines2fillet_closed(pnt3,pnt2,pnt1,f=1.9,s=10):
     sol=array([pnt3,pnt1,pnt2]).transpose(1,0,2)
     
 #     sol=[equidistant_path(array(spline_curve([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],10,2)).tolist(),s)[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
-    sol=[array(bezier([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],s)).tolist()[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
-    
+    if style==0:
+        sol=[array(bezier([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],s)).tolist()[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
+    else:
+        sol=[bezier([p1,p2,p3],s)[:s+1]+[p2.tolist()] for (p1,p2,p3) in sol]    
     sol=sol+[sol[0]]
     return sol
 
@@ -7261,18 +7266,18 @@ def faces_surface(l,m):
            for i in range(l-1)
       ]).reshape(-1,3).tolist()
 
-# def surface_offset(surf_1,d=1):
-#     '''
-#     offset a given surface by a distance 'd'
-#     '''
-#     l,m=len(surf_1),len(surf_1[0])
-#     f_1=faces_surface(l,m)
-#     v_1=array(surf_1).reshape(-1,3).tolist()
-#     f_2=array(surf_1).reshape(-1,3)[f_1]
-#     n1=array([nv(p)  for p in f_2])
-#     n2=array([n1[(array(f_1)==i).any(1)].mean(0) for i in range(len(v_1))])
-#     v_2=array(v_1)+n2*d
-#     return v_2.reshape(l,m,3).tolist()
+def surface_offset_fine(surf_1,d=1):
+    '''
+    offset a given surface by a distance 'd'
+    '''
+    l,m=len(surf_1),len(surf_1[0])
+    f_1=faces_surface(l,m)
+    v_1=array(surf_1).reshape(-1,3).tolist()
+    f_2=array(surf_1).reshape(-1,3)[f_1]
+    n1=array([nv(p)  for p in f_2])
+    n2=array([n1[(array(f_1)==i).any(1)].mean(0) for i in range(len(v_1))])
+    v_2=array(v_1)+n2*d
+    return v_2.reshape(l,m,3).tolist()
 
 def surface_offset(s1,dist=1):
     a=faces_surface(len(s1),len(s1[0]))
