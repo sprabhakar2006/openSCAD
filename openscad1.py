@@ -7912,3 +7912,14 @@ def plane(nv,size=[100,100]):
     v2=array(v2)*d2
     s1=surface_line_vector(v1,v2,1)
     return s1
+
+def align_sec_2(sec1):
+    '''
+    function to align points of a section to obtain the non twisted optimised surface after using
+    function sec2surface(sec1)
+    '''
+    
+    area1=[array([l_lenv_o(p) for p in sec2surface(sec1[i:]+sec1[:i])]).sum() for i in range(len(sec1)) ]
+    i=array(area1).argmin()
+    sol2=sec1[i:]+sec1[:i]
+    return sol2
