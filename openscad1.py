@@ -6659,28 +6659,28 @@ def int_seg_list(sec1):
     d=comb_list(n)[dcn]
     return d
 
-def oset(sec,r):
-    sec0=intersections(offset_segv(sec,r))
-    i_p1=s_int1(seg(sec0))
-    d=int_seg_list(seg(sec0))
-    sec2=array(sec0)
-    for i in range(len(d)):
-        a=arange(d[i][0]+1)
-        b=arange(d[i][0],d[i][1]+1)
-        c=arange(d[i][1],len(sec2))
-        if (len(a)+len(c))<len(b):
-            sec2[a]=array([i_p1[i]]*len(a))
-        else:
-            sec2[b]=array([i_p1[i]]*len(b))
-    sec2=array(sec2).tolist()
-#     if r<0:
-#         clearing_sec=[r_sec(abs(r)-abs(r)/1000,abs(r)-abs(r)/1000,p[0],p[1]) for p in seg(sec) if l_len(p)>abs(r)]
-#         pnts=[pies1(p,sec2) for p in clearing_sec]
-#         pnts=[p for p in pnts if p!=[]]
-#         if pnts!=[]:
-#             sec2=offset(sec,r)
+# def oset(sec,r):
+#     sec0=intersections(offset_segv(sec,r))
+#     i_p1=s_int1(seg(sec0))
+#     d=int_seg_list(seg(sec0))
+#     sec2=array(sec0)
+#     for i in range(len(d)):
+#         a=arange(d[i][0]+1)
+#         b=arange(d[i][0],d[i][1]+1)
+#         c=arange(d[i][1],len(sec2))
+#         if (len(a)+len(c))<len(b):
+#             sec2[a]=array([i_p1[i]]*len(a))
+#         else:
+#             sec2[b]=array([i_p1[i]]*len(b))
+#     sec2=array(sec2).tolist()
+# #     if r<0:
+# #         clearing_sec=[r_sec(abs(r)-abs(r)/1000,abs(r)-abs(r)/1000,p[0],p[1]) for p in seg(sec) if l_len(p)>abs(r)]
+# #         pnts=[pies1(p,sec2) for p in clearing_sec]
+# #         pnts=[p for p in pnts if p!=[]]
+# #         if pnts!=[]:
+# #             sec2=offset(sec,r)
             
-    return sec2
+#     return sec2
 
 def arot(v,theta):
     '''
@@ -7923,3 +7923,101 @@ def align_sec_2(sec1):
     i=array(area1).argmin()
     sol2=sec1[i:]+sec1[:i]
     return sol2
+
+def s_int1_list(sec1):
+    '''
+    calulates the self intersection list numbers of segment lists 'sec1'
+    it picks the intersection points only if the 2 lines are crossing each other
+
+    '''
+    n=len(sec1)
+    a=array(sec1)[comb_list(n)]
+    p0=a[:,0][:,0]
+    p1=a[:,0][:,1]
+    p2=a[:,1][:,0]
+    p3=a[:,1][:,1]
+    v1=p1-p0
+    v2=p3-p2
+    iim=array([v1,-v2+.00001]).transpose(1,0,2).transpose(0,2,1)
+    im=inv(iim)
+    p=p2-p0
+
+    t=einsum('ijk,ik->ij',im,p)
+    dcn=(t[:,0].round(4)>0)&(t[:,0].round(4)<1)&(t[:,1].round(4)>0)&(t[:,1].round(4)<1)
+
+    return comb_list(n)[dcn]
+
+def oset(sec,r):
+    '''
+    function returns offset of a enclosed section 'sec' by a distance 'r'
+    '''
+    sec1=sec
+    sec=sec1 if cw(sec1)==-1 else flip(sec1)
+    a=offset_segv(sec,r)
+    b=intersections(a)
+    c=s_int1(seg(b))
+    if c!=[]:
+        c_1=s_int1_list(seg(b))
+        a=arange(len(sec)).tolist()
+        a_1=[a[p[1]:]+a[:p[0]]  for p in c_1]
+        a_2=[a[p[0]:p[1]]  for p in c_1]
+        n_1=[len(p) for p in a_1]
+        n_2=[len(p) for p in a_2]
+
+        x_1=array([[cw([b[i] for i in p]) for p in a_1], 
+        [cw([b[i] for i in p]) for p in a_2]]).transpose(1,0)
+        x_2=array([n_1,n_2]).transpose(1,0)
+        x_1,x_2,c_1
+        l=[]
+        for i in range(len(x_1)):
+            if x_2[i][0]<x_2[i][1]:
+                l.append(a_1[i])
+            elif x_2[i][1]<x_2[i][0]:
+                l.append(a_2[i])
+
+        x_1,x_2#,[a_2[0],a_1[1],a_1[2],a_2[3],a_1[4],a_2[5],a_2[6,a_2[7],a_2[8]]]
+
+        l_1=[array(l[0])]
+        for i in range(1,len(l)):
+            x_3=(array(l[i])[:,None]==concatenate(l_1)[None,:]).any(1)
+            l_1.append(array(l[i])[~x_3])
+        l_2=concatenate([[c[i]]*len(l_1[i]) for i in range(len(l_1)) if l_1[i].tolist()!=[]])
+        l_3=sort(concatenate(l_1))
+        d_1=~(arange(len(sec))[:,None]==l_3[None,:]).any(1)
+        l_4=concatenate(l_1).argsort()
+        sec2=[]
+        count=0
+        for i in range(len(d_1)):
+            if d_1[i]==0:
+                count=count+1
+                sec2.append(l_2[l_4[count-1]])
+            else:
+                sec2.append(array(b[i]))
+
+        sec2=array(sec2)
+        clean=cs1(sec,abs(r)-.01)
+        clean1=[p[1:]+[p[0]] for p in clean]
+        m,n,_=array(clean).shape
+        o,_=sec2.shape
+        v1=array([[[1,0]]*n]*m)
+        v2=array(clean1)-array(clean)
+        iim=array([v1,-v2]).transpose(1,2,0,3).transpose(0,1,3,2)+[0,.00001]
+        im=array([pinv(iim)]*o)
+        p=(array(clean)[:,:,None]-sec2).transpose(2,0,1,3)
+        t=einsum('ijklm,ijkm->ijkl',im,p)
+        decision1=((t[:,:,:,0]>=0)&(t[:,:,:,1]>=0)&(t[:,:,:,1]<=1))
+        sec3=sec2[(decision1.sum(2)==1).any(1)].tolist()
+        if sec3!=[]:
+            j=~(array(sec2)[:,None]==array(sec3)[None,:]).any(1).all(1)
+            sec4=[] if j[0]==1 else [sec2[j][-1]]
+            for i in range(len(j)):
+                if j[i]==0:
+                    sec4.append(sec4[-1])
+                else:
+                    sec4.append(sec2[i])
+        else:
+            sec4=sec2
+        sec4=array(sec4).tolist()
+    else:
+        sec4=b
+    return sec4 if cw(sec1)==-1 else flip(sec4)
