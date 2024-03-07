@@ -7947,6 +7947,100 @@ def s_int1_list(sec1):
 
     return comb_list(n)[dcn]
 
+# def oset(sec,r):
+#     '''
+#     function returns offset of a enclosed section 'sec' by a distance 'r'
+#     '''
+#     sec1=sec
+#     sec=sec1 if cw(sec1)==-1 else flip(sec1)
+#     a=offset_segv(sec,r)
+#     b=intersections(a)
+#     c=s_int1(seg(b))
+#     if c!=[]:
+#         c_1=s_int1_list(seg(b))
+#         a=arange(len(sec)).tolist()
+#         a_1=[a[p[1]:]+a[:p[0]]  for p in c_1]
+#         a_2=[a[p[0]:p[1]]  for p in c_1]
+#         n_1=[len(p) for p in a_1]
+#         n_2=[len(p) for p in a_2]
+
+#         x_1=array([[cw([b[i] for i in p]) for p in a_1], 
+#         [cw([b[i] for i in p]) for p in a_2]]).transpose(1,0)
+#         x_2=array([n_1,n_2]).transpose(1,0)
+#         x_1,x_2,c_1
+#         l=[]
+#         for i in range(len(x_1)):
+#             if x_2[i][0]<x_2[i][1]:
+#                 l.append(a_1[i])
+#             elif x_2[i][1]<x_2[i][0]:
+#                 l.append(a_2[i])
+
+#         x_1,x_2#,[a_2[0],a_1[1],a_1[2],a_2[3],a_1[4],a_2[5],a_2[6,a_2[7],a_2[8]]]
+
+#         l_1=[array(l[0])]
+#         for i in range(1,len(l)):
+#             x_3=(array(l[i])[:,None]==concatenate(l_1)[None,:]).any(1)
+#             l_1.append(array(l[i])[~x_3])
+#         l_2=concatenate([[c[i]]*len(l_1[i]) for i in range(len(l_1)) if l_1[i].tolist()!=[]])
+#         l_3=sort(concatenate(l_1))
+#         d_1=~(arange(len(sec))[:,None]==l_3[None,:]).any(1)
+#         l_4=concatenate(l_1).argsort()
+#         sec2=[]
+#         count=0
+#         for i in range(len(d_1)):
+#             if d_1[i]==0:
+#                 count=count+1
+#                 sec2.append(l_2[l_4[count-1]])
+#             else:
+#                 sec2.append(array(b[i]))
+
+#         sec2=array(sec2)
+#         clean=cs1(sec,abs(r)-.01)
+#         clean1=[p[1:]+[p[0]] for p in clean]
+#         m,n,_=array(clean).shape
+#         o,_=sec2.shape
+#         v1=array([[[1,0]]*n]*m)
+#         v2=array(clean1)-array(clean)
+#         iim=array([v1,-v2]).transpose(1,2,0,3).transpose(0,1,3,2)+[0,.00001]
+#         im=array([pinv(iim)]*o)
+#         p=(array(clean)[:,:,None]-sec2).transpose(2,0,1,3)
+#         t=einsum('ijklm,ijkm->ijkl',im,p)
+#         decision1=((t[:,:,:,0]>=0)&(t[:,:,:,1]>=0)&(t[:,:,:,1]<=1))
+#         sec3=sec2[(decision1.sum(2)==1).any(1)].tolist()
+#         if sec3!=[]:
+#             j=~(array(sec2)[:,None]==array(sec3)[None,:]).any(1).all(1)
+#             sec4=[] if j[0]==1 else [sec2[j][-1]]
+#             for i in range(len(j)):
+#                 if j[i]==0:
+#                     sec4.append(sec4[-1])
+#                 else:
+#                     sec4.append(sec2[i])
+#         else:
+#             sec4=sec2
+#         sec4=array(sec4).tolist()
+#     else:
+#         sec4=b
+#     return sec4 if cw(sec1)==-1 else flip(sec4)
+
+def points_inside_offset_surround(sec,sec2,r):
+    '''
+    finds all the points, in a list of points 'sec2' which are inside the offset surround of an enclosed section 'sec'
+    '''
+    sec2=array(sec2)
+    clean=cs1(sec,abs(r))
+    clean1=[p[1:]+[p[0]] for p in clean]
+    m,n,_=array(clean).shape
+    o,_=sec2.shape
+    v1=array([[[1,0]]*n]*m)
+    v2=array(clean1)-array(clean)
+    iim=array([v1,-v2]).transpose(1,2,0,3).transpose(0,1,3,2)+[0,.00001]
+    im=array([pinv(iim)]*o)
+    p=(array(clean)[:,:,None]-sec2).transpose(2,0,1,3)
+    t=einsum('ijklm,ijkm->ijkl',im,p)
+    decision1=((t[:,:,:,0]>=0)&(t[:,:,:,1]>=0)&(t[:,:,:,1]<=1))
+    sec3=sec2[(decision1.sum(2)==1).any(1)].tolist()
+    return sec3
+
 def oset(sec,r):
     '''
     function returns offset of a enclosed section 'sec' by a distance 'r'
@@ -7956,6 +8050,7 @@ def oset(sec,r):
     a=offset_segv(sec,r)
     b=intersections(a)
     c=s_int1(seg(b))
+
     if c!=[]:
         c_1=s_int1_list(seg(b))
         a=arange(len(sec)).tolist()
@@ -7964,23 +8059,23 @@ def oset(sec,r):
         n_1=[len(p) for p in a_1]
         n_2=[len(p) for p in a_2]
 
-        x_1=array([[cw([b[i] for i in p]) for p in a_1], 
-        [cw([b[i] for i in p]) for p in a_2]]).transpose(1,0)
+        # x_1=array([[cw([b[i] for i in p]) for p in a_1], 
+        # [cw([b[i] for i in p]) for p in a_2]]).transpose(1,0)
         x_2=array([n_1,n_2]).transpose(1,0)
-        x_1,x_2,c_1
+        # x_1,x_2,c_1
         l=[]
-        for i in range(len(x_1)):
+        for i in range(len(x_2)):
             if x_2[i][0]<x_2[i][1]:
                 l.append(a_1[i])
             elif x_2[i][1]<x_2[i][0]:
                 l.append(a_2[i])
 
-        x_1,x_2#,[a_2[0],a_1[1],a_1[2],a_2[3],a_1[4],a_2[5],a_2[6,a_2[7],a_2[8]]]
-
-        l_1=[array(l[0])]
-        for i in range(1,len(l)):
-            x_3=(array(l[i])[:,None]==concatenate(l_1)[None,:]).any(1)
-            l_1.append(array(l[i])[~x_3])
+        x_4=[ array(p) for p in l]
+        n_3=[len(p) for p in x_4]
+        n_4=array(n_3).argsort()
+        for i in comb_list(len(c_1)):
+            x_4[n_4[i[1]]]=x_4[n_4[i[1]]][~(x_4[n_4[i[1]]][:,None]==x_4[n_4[i[0]]][None,:]).any(1)]
+        l_1=x_4
         l_2=concatenate([[c[i]]*len(l_1[i]) for i in range(len(l_1)) if l_1[i].tolist()!=[]])
         l_3=sort(concatenate(l_1))
         d_1=~(arange(len(sec))[:,None]==l_3[None,:]).any(1)
@@ -7994,19 +8089,7 @@ def oset(sec,r):
             else:
                 sec2.append(array(b[i]))
 
-        sec2=array(sec2)
-        clean=cs1(sec,abs(r)-.01)
-        clean1=[p[1:]+[p[0]] for p in clean]
-        m,n,_=array(clean).shape
-        o,_=sec2.shape
-        v1=array([[[1,0]]*n]*m)
-        v2=array(clean1)-array(clean)
-        iim=array([v1,-v2]).transpose(1,2,0,3).transpose(0,1,3,2)+[0,.00001]
-        im=array([pinv(iim)]*o)
-        p=(array(clean)[:,:,None]-sec2).transpose(2,0,1,3)
-        t=einsum('ijklm,ijkm->ijkl',im,p)
-        decision1=((t[:,:,:,0]>=0)&(t[:,:,:,1]>=0)&(t[:,:,:,1]<=1))
-        sec3=sec2[(decision1.sum(2)==1).any(1)].tolist()
+        sec3=points_inside_offset_surround(sec,sec2,abs(r)-.01)
         if sec3!=[]:
             j=~(array(sec2)[:,None]==array(sec3)[None,:]).any(1).all(1)
             sec4=[] if j[0]==1 else [sec2[j][-1]]
