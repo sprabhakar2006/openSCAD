@@ -847,6 +847,28 @@ def s_int(s):
             c=c+d
     return c
 
+# def s_int(sec1):
+#     '''
+#     calulates the self intersection points of a list of line segments 'sec1'
+#     it also picks the points in case the 2 lines are just connected at 1 point and are not crossing
+#     '''
+#     n=len(sec1)
+#     a=array(sec1)[comb_list(n)]
+#     p0=a[:,0][:,0]
+#     p1=a[:,0][:,1]
+#     p2=a[:,1][:,0]
+#     p3=a[:,1][:,1]
+#     v1=p1-p0
+#     v2=p3-p2
+#     iim=array([v1,-v2+.00001]).transpose(1,0,2).transpose(0,2,1)
+#     im=inv(iim)
+#     p=p2-p0
+
+#     t=einsum('ijk,ik->ij',im,p)
+#     dcn=(t[:,0].round(4)>=0)&(t[:,0].round(4)<=1)&(t[:,1].round(4)>=0)&(t[:,1].round(4)<=1)
+#     i_p1=p0+einsum('ij,i->ij',v1,t[:,0])
+#     i_p1=i_p1[dcn].tolist()
+#     return i_p1
 
 def r_3pv(p1,p2,p3):
     p4=p1+(p2-p1)/2
@@ -4229,7 +4251,7 @@ def offset_3d(sec,d):
     sec1=ppplane(sec1,[0,0,1],[0,0,0])
     sec1=c3t2(sec1)
     x_values=array([l_len([[0,0],p])  for p in sec1])
-    sec2=offset(sec1,d)
+    sec2=oset(sec1,d)
     x1_values=array([l_len([[0,0],p])  for p in sec2])
     z1_values=z_values/x_values*x1_values
     z1_values=array([[0,0,p] for p in z1_values])
@@ -8059,10 +8081,7 @@ def oset(sec,r):
         n_1=[len(p) for p in a_1]
         n_2=[len(p) for p in a_2]
 
-        # x_1=array([[cw([b[i] for i in p]) for p in a_1], 
-        # [cw([b[i] for i in p]) for p in a_2]]).transpose(1,0)
         x_2=array([n_1,n_2]).transpose(1,0)
-        # x_1,x_2,c_1
         l=[]
         for i in range(len(x_2)):
             if x_2[i][0]<x_2[i][1]:
@@ -8104,3 +8123,25 @@ def oset(sec,r):
     else:
         sec4=b
     return sec4 if cw(sec1)==-1 else flip(sec4)
+
+def list_r1(sec):
+    '''
+    function to list the radius at each point of a section
+    '''
+    x_6=list_r(sec)
+    x_6[0]=x_6[1] if x_6[1]>0 else x_6[0]
+    x_6[-1]=x_6[-2] if x_6[-2]>0 else x_6[-1]
+    for i in range(1,len(x_6)-1):
+        x_6[i]= x_6[i+1] if x_6[i+1]>0 else x_6[i-1] if x_6[i-1]>0 else x_6[i]
+    return x_6
+
+def exclude_numbers(a,b):
+    '''
+    exclude list of numbers 'b' from 'a'
+    example:
+    a=[1,2,3,4,5]
+    b=[4,5,6,7]
+    exclude_numbers(a,b) => array([1, 2, 3])
+    '''
+    a,b=array(a),array(b)
+    return a[~(a[:,None]==b[None,:]).any(1)]
