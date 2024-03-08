@@ -4251,7 +4251,7 @@ def offset_3d(sec,d):
     sec1=ppplane(sec1,[0,0,1],[0,0,0])
     sec1=c3t2(sec1)
     x_values=array([l_len([[0,0],p])  for p in sec1])
-    sec2=oset(sec1,d)
+    sec2=offset(sec1,d)
     x1_values=array([l_len([[0,0],p])  for p in sec2])
     z1_values=z_values/x_values*x1_values
     z1_values=array([[0,0,p] for p in z1_values])
