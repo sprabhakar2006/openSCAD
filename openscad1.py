@@ -8063,66 +8063,66 @@ def points_inside_offset_surround(sec,sec2,r):
     sec3=sec2[(decision1.sum(2)==1).any(1)].tolist()
     return sec3
 
-def oset(sec,r):
-    '''
-    function returns offset of a enclosed section 'sec' by a distance 'r'
-    '''
-    sec1=sec
-    sec=sec1 if cw(sec1)==-1 else flip(sec1)
-    a=offset_segv(sec,r)
-    b=intersections(a)
-    c=s_int1(seg(b))
+# def oset(sec,r):
+#     '''
+#     function returns offset of a enclosed section 'sec' by a distance 'r'
+#     '''
+#     sec1=sec
+#     sec=sec1 if cw(sec1)==-1 else flip(sec1)
+#     a=offset_segv(sec,r)
+#     b=intersections(a)
+#     c=s_int1(seg(b))
 
-    if c!=[]:
-        c_1=s_int1_list(seg(b))
-        a=arange(len(sec)).tolist()
-        a_1=[a[p[1]:]+a[:p[0]]  for p in c_1]
-        a_2=[a[p[0]:p[1]]  for p in c_1]
-        n_1=[len(p) for p in a_1]
-        n_2=[len(p) for p in a_2]
+#     if c!=[]:
+#         c_1=s_int1_list(seg(b))
+#         a=arange(len(sec)).tolist()
+#         a_1=[a[p[1]:]+a[:p[0]]  for p in c_1]
+#         a_2=[a[p[0]:p[1]]  for p in c_1]
+#         n_1=[len(p) for p in a_1]
+#         n_2=[len(p) for p in a_2]
 
-        x_2=array([n_1,n_2]).transpose(1,0)
-        l=[]
-        for i in range(len(x_2)):
-            if x_2[i][0]<x_2[i][1]:
-                l.append(a_1[i])
-            elif x_2[i][1]<x_2[i][0]:
-                l.append(a_2[i])
+#         x_2=array([n_1,n_2]).transpose(1,0)
+#         l=[]
+#         for i in range(len(x_2)):
+#             if x_2[i][0]<x_2[i][1]:
+#                 l.append(a_1[i])
+#             elif x_2[i][1]<x_2[i][0]:
+#                 l.append(a_2[i])
 
-        x_4=[ array(p) for p in l]
-        n_3=[len(p) for p in x_4]
-        n_4=array(n_3).argsort()
-        for i in comb_list(len(c_1)):
-            x_4[n_4[i[1]]]=x_4[n_4[i[1]]][~(x_4[n_4[i[1]]][:,None]==x_4[n_4[i[0]]][None,:]).any(1)]
-        l_1=x_4
-        l_2=concatenate([[c[i]]*len(l_1[i]) for i in range(len(l_1)) if l_1[i].tolist()!=[]])
-        l_3=sort(concatenate(l_1))
-        d_1=~(arange(len(sec))[:,None]==l_3[None,:]).any(1)
-        l_4=concatenate(l_1).argsort()
-        sec2=[]
-        count=0
-        for i in range(len(d_1)):
-            if d_1[i]==0:
-                count=count+1
-                sec2.append(l_2[l_4[count-1]])
-            else:
-                sec2.append(array(b[i]))
+#         x_4=[ array(p) for p in l]
+#         n_3=[len(p) for p in x_4]
+#         n_4=array(n_3).argsort()
+#         for i in comb_list(len(c_1)):
+#             x_4[n_4[i[1]]]=x_4[n_4[i[1]]][~(x_4[n_4[i[1]]][:,None]==x_4[n_4[i[0]]][None,:]).any(1)]
+#         l_1=x_4
+#         l_2=concatenate([[c[i]]*len(l_1[i]) for i in range(len(l_1)) if l_1[i].tolist()!=[]])
+#         l_3=sort(concatenate(l_1))
+#         d_1=~(arange(len(sec))[:,None]==l_3[None,:]).any(1)
+#         l_4=concatenate(l_1).argsort()
+#         sec2=[]
+#         count=0
+#         for i in range(len(d_1)):
+#             if d_1[i]==0:
+#                 count=count+1
+#                 sec2.append(l_2[l_4[count-1]])
+#             else:
+#                 sec2.append(array(b[i]))
 
-        sec3=points_inside_offset_surround(sec,sec2,abs(r)-.01)
-        if sec3!=[]:
-            j=~(array(sec2)[:,None]==array(sec3)[None,:]).any(1).all(1)
-            sec4=[] if j[0]==1 else [sec2[j][-1]]
-            for i in range(len(j)):
-                if j[i]==0:
-                    sec4.append(sec4[-1])
-                else:
-                    sec4.append(sec2[i])
-        else:
-            sec4=sec2
-        sec4=array(sec4).tolist()
-    else:
-        sec4=b
-    return sec4 if cw(sec1)==-1 else flip(sec4)
+#         sec3=points_inside_offset_surround(sec,sec2,abs(r)-.01)
+#         if sec3!=[]:
+#             j=~(array(sec2)[:,None]==array(sec3)[None,:]).any(1).all(1)
+#             sec4=[] if j[0]==1 else [sec2[j][-1]]
+#             for i in range(len(j)):
+#                 if j[i]==0:
+#                     sec4.append(sec4[-1])
+#                 else:
+#                     sec4.append(sec2[i])
+#         else:
+#             sec4=sec2
+#         sec4=array(sec4).tolist()
+#     else:
+#         sec4=b
+#     return sec4 if cw(sec1)==-1 else flip(sec4)
 
 def list_r1(sec):
     '''
@@ -8145,3 +8145,52 @@ def exclude_numbers(a,b):
     '''
     a,b=array(a),array(b)
     return a[~(a[:,None]==b[None,:]).any(1)]
+
+def subset(b,a):
+    return (array(b)[:,None]==array(a)[None,:]).any(1).all()
+
+def oset(sec,r):
+    '''
+    function returns offset of a enclosed section 'sec' by a distance 'r'
+    '''
+    sec1=sec
+    sec=sec1 if cw(sec1)==-1 else flip(sec1)
+    a=offset_segv(sec,r)
+    b=intersections(a)
+    c=s_int1(seg(b))
+    if c!=[]:
+        c_1=s_int1_list(seg(b))
+        n_1=[len(arange(len(b))[p[0]:p[1]]) for p in c_1]
+        n_2=[len(concatenate((arange(len(b))[p[1]:],arange(len(b))[:p[0]]))) for p in c_1]
+        n_3=array([n_1,n_2]).transpose(1,0)
+        x_1=[arange(len(b))[p[0]:p[1]] for p in c_1]
+        x_2=[concatenate((arange(len(b))[p[1]:],arange(len(b))[:p[0]])) for p in c_1]
+        c_2=[ x_2[i] if n_3[i][0]>n_3[i][1] else x_1[i] for i in range(len(n_3))]
+        n_4=comb_list(len(c_2))
+        for i in n_4:
+            if subset(c_2[i[1]],c_2[i[0]]):
+                c_2[i[0]]=exclude_numbers(c_2[i[0]],c_2[i[1]])
+            elif subset(c_2[i[0]],c_2[i[1]]):
+                c_2[i[1]]=exclude_numbers(c_2[i[1]] ,c_2[i[0]])
+
+        c_3=[[c[i]] if c_2[i].tolist()==[] else [c[i]]*len(c_2[i]) for i in range(len(c_2))]
+        for i in range(len(c_2)):
+            for j in range(len(c_2[i])):
+                b[c_2[i][j]]=c_3[i][j]
+        x_1=arange(len(sec))[list_r(sec)==0]
+        x_2=intersections(a)
+        for i in x_1:
+            b[i]=x_2[i]
+        c_4=points_inside_offset_surround(sec,b,abs(r)-.01)
+
+        n_5=~(array(b)[:,None].round(4)==array(c_4)[None,:].round(4)).any(1).all(1)
+        c_5=[array(b)[0]] if n_5[0]==1 else [array(b)[n_5][-1]]
+        for i in range(1,len(n_5),1):
+            if n_5[i]==0:
+                c_5.append(c_5[-1])
+            else:
+                c_5.append(array(b)[i])
+        c_5=array(c_5).tolist()
+    else:
+        c_5=b
+    return c_5 if cw(sec1)==-1 else flip(c_5)
