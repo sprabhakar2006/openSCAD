@@ -1070,7 +1070,7 @@ path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5)
 sol=f_prism(sec,path)
     '''
     s1=flip(sec) if cw(sec)==1 else sec
-    return [array(translate([0,0,y],oset(s1,round(x,3)))).tolist() for (x,y) in path]
+    return [translate([0,0,y],oset(s1,x)) for (x,y) in path]
 
 
 
@@ -8181,16 +8181,18 @@ def oset(sec,r):
         x_2=intersections(a)
         for i in x_1:
             b[i]=x_2[i]
-        c_4=points_inside_offset_surround(sec,b,abs(r)-.01)
-
-        n_5=~(array(b)[:,None].round(4)==array(c_4)[None,:].round(4)).any(1).all(1)
-        c_5=[array(b)[0]] if n_5[0]==1 else [array(b)[n_5][-1]]
-        for i in range(1,len(n_5),1):
-            if n_5[i]==0:
-                c_5.append(c_5[-1])
-            else:
-                c_5.append(array(b)[i])
-        c_5=array(c_5).tolist()
+        c_4=points_inside_offset_surround(sec,b,abs(r)-abs(r)/60)
+        if c_4 !=[]:
+            n_5=~(array(b)[:,None].round(3)==array(c_4)[None,:].round(3)).any(1).all(1)
+            c_5=[array(b)[0]] if n_5[0]==1 else [array(b)[n_5][-1]]
+            for i in range(1,len(n_5),1):
+                if n_5[i]==0:
+                    c_5.append(c_5[-1])
+                else:
+                    c_5.append(array(b)[i])
+            c_5=array(c_5).tolist()
+        else:
+            c_5=b
     else:
         c_5=b
     return c_5 if cw(sec1)==-1 else flip(c_5)
