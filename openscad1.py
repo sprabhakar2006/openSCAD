@@ -8183,7 +8183,7 @@ def oset(sec,r):
             b[i]=x_2[i]
         c_4=points_inside_offset_surround(sec,b,abs(r)-abs(r)/60)
         if c_4 !=[]:
-            n_5=~(array(b)[:,None].round(3)==array(c_4)[None,:].round(3)).any(1).all(1)
+            n_5=~(array(b)[:,None]==array(c_4)[None,:]).any(1).all(1)
             c_5=[array(b)[0]] if n_5[0]==1 else [array(b)[n_5][-1]]
             for i in range(1,len(n_5),1):
                 if n_5[i]==0:
