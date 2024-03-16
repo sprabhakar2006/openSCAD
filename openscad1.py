@@ -8149,50 +8149,103 @@ def exclude_numbers(a,b):
 def subset(b,a):
     return (array(b)[:,None]==array(a)[None,:]).any(1).all()
 
+# def oset(sec,r):
+#     '''
+#     function returns offset of a enclosed section 'sec' by a distance 'r'
+#     '''
+#     sec1=sec
+#     sec=sec1 if cw(sec1)==-1 else flip(sec1)
+#     a=offset_segv(sec,r)
+#     b=intersections(a)
+#     c=s_int1(seg(b))
+#     if c!=[]:
+#         c_1=s_int1_list(seg(b))
+#         n_1=[len(arange(len(b))[p[0]:p[1]]) for p in c_1]
+#         n_2=[len(concatenate((arange(len(b))[p[1]:],arange(len(b))[:p[0]]))) for p in c_1]
+#         n_3=array([n_1,n_2]).transpose(1,0)
+#         x_1=[arange(len(b))[p[0]:p[1]] for p in c_1]
+#         x_2=[concatenate((arange(len(b))[p[1]:],arange(len(b))[:p[0]])) for p in c_1]
+#         c_2=[ x_2[i] if n_3[i][0]>n_3[i][1] else x_1[i] for i in range(len(n_3))]
+#         n_4=comb_list(len(c_2))
+#         for i in n_4:
+#             if subset(c_2[i[1]],c_2[i[0]]):
+#                 c_2[i[0]]=exclude_numbers(c_2[i[0]],c_2[i[1]])
+#             elif subset(c_2[i[0]],c_2[i[1]]):
+#                 c_2[i[1]]=exclude_numbers(c_2[i[1]] ,c_2[i[0]])
+
+#         c_3=[[c[i]] if c_2[i].tolist()==[] else [c[i]]*len(c_2[i]) for i in range(len(c_2))]
+#         for i in range(len(c_2)):
+#             for j in range(len(c_2[i])):
+#                 b[c_2[i][j]]=c_3[i][j]
+#         x_1=arange(len(sec))[list_r(sec)==0]
+#         x_2=intersections(a)
+#         for i in x_1:
+#             b[i]=x_2[i]
+#         c_4=points_inside_offset_surround(sec,b,abs(r)-abs(r)/60)
+#         if c_4 !=[]:
+#             n_5=~(array(b)[:,None]==array(c_4)[None,:]).any(1).all(1)
+#             c_5=[array(b)[0]] if n_5[0]==1 else [array(b)[n_5][-1]]
+#             for i in range(1,len(n_5),1):
+#                 if n_5[i]==0:
+#                     c_5.append(c_5[-1])
+#                 else:
+#                     c_5.append(array(b)[i])
+#             c_5=array(c_5).tolist()
+#         else:
+#             c_5=b
+#     else:
+#         c_5=b
+#     return c_5 if cw(sec1)==-1 else flip(c_5)
+
+def points_inside_offset_surround_list(sec,sec2,r):
+    '''
+    finds all the points list, in a list of points 'sec2' which are inside the offset surround of an enclosed section 'sec'
+    '''
+    sec2=array(sec2)
+    clean=cs1(sec,abs(r))
+    clean1=[p[1:]+[p[0]] for p in clean]
+    m,n,_=array(clean).shape
+    o,_=sec2.shape
+    v1=array([[[1,0]]*n]*m)
+    v2=array(clean1)-array(clean)
+    iim=array([v1,-v2]).transpose(1,2,0,3).transpose(0,1,3,2)+[0,.00001]
+    im=array([pinv(iim)]*o)
+    p=(array(clean)[:,:,None]-sec2).transpose(2,0,1,3)
+    t=einsum('ijklm,ijkm->ijkl',im,p)
+    decision1=((t[:,:,:,0]>=0)&(t[:,:,:,1]>=0)&(t[:,:,:,1]<=1))
+    return arange(len(sec2))[(decision1.sum(2)==1).any(1)]
+
 def oset(sec,r):
     '''
     function returns offset of a enclosed section 'sec' by a distance 'r'
     '''
-    sec1=sec
-    sec=sec1 if cw(sec1)==-1 else flip(sec1)
-    a=offset_segv(sec,r)
-    b=intersections(a)
-    c=s_int1(seg(b))
-    if c!=[]:
-        c_1=s_int1_list(seg(b))
-        n_1=[len(arange(len(b))[p[0]:p[1]]) for p in c_1]
-        n_2=[len(concatenate((arange(len(b))[p[1]:],arange(len(b))[:p[0]]))) for p in c_1]
-        n_3=array([n_1,n_2]).transpose(1,0)
-        x_1=[arange(len(b))[p[0]:p[1]] for p in c_1]
-        x_2=[concatenate((arange(len(b))[p[1]:],arange(len(b))[:p[0]])) for p in c_1]
-        c_2=[ x_2[i] if n_3[i][0]>n_3[i][1] else x_1[i] for i in range(len(n_3))]
-        n_4=comb_list(len(c_2))
-        for i in n_4:
-            if subset(c_2[i[1]],c_2[i[0]]):
-                c_2[i[0]]=exclude_numbers(c_2[i[0]],c_2[i[1]])
-            elif subset(c_2[i[0]],c_2[i[1]]):
-                c_2[i[1]]=exclude_numbers(c_2[i[1]] ,c_2[i[0]])
-
-        c_3=[[c[i]] if c_2[i].tolist()==[] else [c[i]]*len(c_2[i]) for i in range(len(c_2))]
-        for i in range(len(c_2)):
-            for j in range(len(c_2[i])):
-                b[c_2[i][j]]=c_3[i][j]
-        x_1=arange(len(sec))[list_r(sec)==0]
-        x_2=intersections(a)
-        for i in x_1:
-            b[i]=x_2[i]
-        c_4=points_inside_offset_surround(sec,b,abs(r)-abs(r)/60)
-        if c_4 !=[]:
-            n_5=~(array(b)[:,None]==array(c_4)[None,:]).any(1).all(1)
-            c_5=[array(b)[0]] if n_5[0]==1 else [array(b)[n_5][-1]]
-            for i in range(1,len(n_5),1):
-                if n_5[i]==0:
-                    c_5.append(c_5[-1])
-                else:
-                    c_5.append(array(b)[i])
-            c_5=array(c_5).tolist()
-        else:
-            c_5=b
+    if r==0:
+        return sec
     else:
-        c_5=b
-    return c_5 if cw(sec1)==-1 else flip(c_5)
+        sec1=sec
+        sec=sec1 if cw(sec1)==-1 else flip(sec1)
+        s1=offset_segv(sec,r)
+        s2=intersections(s1)
+        s3=s_int1(seg(s2))
+        if s3!=[]:
+            n1=s_int1_list(seg(s2))
+            s4=seg(s2)
+            for i in range(len(n1)):
+                s4[n1[i][0]]=[s4[n1[i][0]][0],s3[i] ,s4[n1[i][0]][1]]
+                s4[n1[i][1]]=[s4[n1[i][1]][0],s3[i] ,s4[n1[i][1]][1]]
+
+            s5=remove_extra_points(concatenate(s4))
+            s6=points_inside_offset_surround(sec,s5,abs(r)-.01)
+            s7=points_inside_offset_surround_list(sec,s5,abs(r)-.01)
+            s8=arange(len(s5))[(array(s5)[:,None]==array(s3)[None,:]).any(1).all(1)]
+            a=~(arange(len(s5))[:,None]==s7[None,:]).any(1)
+            s9=[array(s5)[a][0]] if a[0]==0 else [array(s5)[0]]
+            for i in range(1,len(a)):
+                if a[i]==0:
+                    s9.append(s9[-1])
+                else:
+                    s9.append(array(s5)[i])
+            s10=array(s9)[~(arange(len(s9))[:,None]==s8[None,:]).any(1)].tolist()   
+        else:
+            s10=s2
+        return s10 if cw(sec1)==-1 else flip(s10)
