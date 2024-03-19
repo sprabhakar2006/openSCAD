@@ -1058,7 +1058,8 @@ path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5)
 sol=prism(sec,path)
     '''
     s1=flip(sec) if cw(sec)==1 else sec
-    return [array(translate([0,0,y],offset(s1,round(x,3)))).tolist() for (x,y) in path]
+    # path=array(path).round(4)
+    return [array(translate([0,0,y],offset(s1,x))).tolist() for (x,y) in path]
 
 def f_prism(sec,path):
     '''
