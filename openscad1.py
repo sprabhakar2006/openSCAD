@@ -4069,7 +4069,8 @@ def cut_plane(nv=[0,0,1],size=[5,5],thickness=10,trns1=0,trns2=0,trns3=0,theta=[
     
 def slice_sol(sol,n=10):
     '''
-    function to slice a solid with 'n' intermediate steps
+    function to slice a solid with 'n' intermediate steps.
+    this creats n steps for each turn in sol
     '''
     a=cpo(sol)
     sol1=[[ls(p,n)+[p[1]] for p in seg(a[i])[:-1]] for i in range(len(a))]
@@ -4077,6 +4078,13 @@ def slice_sol(sol,n=10):
     b,c,d,e=sol2.shape
     sol2=sol2.reshape(b*c,d,e).tolist()
     return sol2
+
+def slice_sol_1(sol_1,n=10):
+    '''
+    function to slice a solid with 'n' intermediate steps
+    '''
+    return cpo([equidistant_path(p,n) for p in cpo(sol_1)])
+
     
 def cp_arc(arc1):
     '''
