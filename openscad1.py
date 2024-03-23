@@ -3,10 +3,10 @@ from numpy.linalg import *
 import matplotlib.pyplot as plt
 import time
 from scipy.spatial import cKDTree
-import pandas as pd
-import sympy as sym
-import math
-from stl import mesh
+# import pandas as pd
+# import sympy as sym
+# import math
+# from stl import mesh
 
 def arc(radius=0,start_angle=0,end_angle=0,cp=[0,0],s=20):
     '''
