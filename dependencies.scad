@@ -3516,3 +3516,30 @@ sol1=[sec1,sec4]
 // example mod(6,2) => 0
 
 function mod(a,b)=rnd(a-sign(a)/sign(b)*b*floor(rnd(abs(a/b),10)),10);
+
+function faces_surf(sol)=
+
+//    calculate the faces for the vertices with shape l x m with first and the last end open and considering the ends are not closed. like 2 straight lines surface
+    let(
+    l=len(sol),
+    m=len(sol[0]),
+    n2=[for(i=[0:l-2])each [for(j=[0:m-2]) each
+[[m*i+j,m*(i+1)+j,m*i+(j+1)],
+ [m*i+(j+1),m*(i+1)+j,m*(i+1)+(j+1)]] ]]
+    
+    )n2;
+    
+// module for rendering polyhedron with ends open (mainly for open surfaces like 2 straight lines)
+module swp_surf(sol){
+let(
+v1=vertices(sol),
+f1=faces_surf(sol)
+)
+polyhedron(v1,f1,convexity=10);
+
+}
+
+// function to create slices in solid
+
+function slice_sol(sol_1,n=10)=
+cpo([for(p=cpo(sol_1)) m_points_so(p,n)]);
