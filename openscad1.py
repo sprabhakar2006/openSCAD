@@ -8058,3 +8058,9 @@ def offset(sec,r):
         else:
             s10=s2
         return s10 if cw(sec1)==-1 else flip(s10)
+
+def vertices(sol_1):
+    '''
+    returns the vertices of a solid 'sol_1'
+    '''
+    return array(sol_1).reshape(-1,3)
