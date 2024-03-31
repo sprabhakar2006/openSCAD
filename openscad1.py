@@ -8080,9 +8080,10 @@ def corner_n_radius_list(p0,r_l,n=10):
     'n' is the number of segments in each filleted corner
     
     '''
+    # r_l=[.01 if i==0 else i for i in r_l]
     p1=seg(p0)
     p2=[p1[-1]]+p1[:-1]
     p3=p1
-    s1=[fillet_intersection_lines(p2[i],p3[i],r_l[i],s=n) for i in range(len(p1))]
+    s1=[fillet_intersection_lines(p2[i],p3[i],r_l[i],s=n) if r_l[i]!=0 else [p0[i]] for i in range(len(p1))]
     s2=concatenate(s1).tolist()
     return remove_extra_points(array(s2).round(5))
