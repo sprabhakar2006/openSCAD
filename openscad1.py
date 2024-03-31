@@ -8073,3 +8073,16 @@ def coil(r1,r2,n1=1):
     theta_1=[i for i in linspace(0,360*n1,360*n1)]
     c1=[[r_l[i]*cos(d2r(theta_1[i])),r_l[i]*sin(d2r(theta_1[i]))] for i in range(len(r_l))]
     return c1
+
+def corner_n_radius_list(p0,r_l,n=10):
+    '''
+    corner list 'p0' and radius list 'r_l' will create a smothened section
+    'n' is the number of segments in each filleted corner
+    
+    '''
+    p1=seg(p0)
+    p2=[p1[-1]]+p1[:-1]
+    p3=p1
+    s1=[fillet_intersection_lines(p2[i],p3[i],r_l[i],s=n) for i in range(len(p1))]
+    s2=concatenate(s1).tolist()
+    return remove_extra_points(array(s2).round(5))
