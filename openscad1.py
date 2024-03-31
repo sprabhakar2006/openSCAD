@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import time
 from scipy.spatial import cKDTree
 # import pandas as pd
-# import sympy as sym
+import sympy as sym
 # import math
 # from stl import mesh
 
@@ -8058,9 +8058,18 @@ def offset(sec,r):
         else:
             s10=s2
         return s10 if cw(sec1)==-1 else flip(s10)
-
+    
 def vertices(sol_1):
     '''
     returns the vertices of a solid 'sol_1'
     '''
     return array(sol_1).reshape(-1,3)
+
+def coil(r1,r2,n1=1):
+    '''
+    function to draw a coil with initial radius 'r1', final_radius 'r2' and numbe of coils 'n1'
+    '''
+    r_l=[i for i in linspace(r1,r2,360*n1)]
+    theta_1=[i for i in linspace(0,360*n1,360*n1)]
+    c1=[[r_l[i]*cos(d2r(theta_1[i])),r_l[i]*sin(d2r(theta_1[i]))] for i in range(len(r_l))]
+    return c1
