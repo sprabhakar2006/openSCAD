@@ -7488,6 +7488,9 @@ def fillet_intersection_lines_3d(l1,l2,r,s=10):
     r: radius of fillet
     s: segments of fillet
     '''
+    l1=array(l1)
+    l2=array(l2)
+    
     n1=nv(remove_extra_points(array([l1[0],l1[1],l2[0],l2[1]]).round(5))[:3])
     n1=n1/norm(n1)
     n2=cross(n1,[0,0,-1])
@@ -8087,3 +8090,26 @@ def corner_n_radius_list(p0,r_l,n=10):
     s1=[fillet_intersection_lines(p2[i],p3[i],r_l[i],s=n) if r_l[i]!=0 else [p0[i]] for i in range(len(p1))]
     s2=concatenate(s1).tolist()
     return remove_extra_points(array(s2).round(5))
+
+def corner_n_radius_list_3d(p0,r_l,n=10):
+    '''
+    corner list 'p0' and radius list 'r_l' will create a smothened 3d path or closed section
+    'n' is the number of segments in each filleted corner
+    
+    '''
+    # r_l=[.01 if i==0 else i for i in r_l]
+    p1=[p0[-1]]+p0[:-1]
+    s1=[]
+    for i in range(len(p0)):
+        if i<len(p0)-1 and r_l[i]>0:
+            a=fillet_3p_3d(p1[i],p0[i],p0[i+1],r_l[i],n)[1:]
+        elif i<len(p0)-1 and r_l[i]==0:
+            a=[p0[i]]
+        elif i==len(p0)-1 and r_l[i]==0:
+            a=[p0[i]]
+        elif i==len(p0)-1 and r_l[i]>0:
+            a=fillet_3p_3d(p1[i],p0[i],p0[0],r_l[i],n)[1:]
+        s1.append(a)
+    
+    s1=remove_extra_points(concatenate(s1).round(5))
+    return s1
