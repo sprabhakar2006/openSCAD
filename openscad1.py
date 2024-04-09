@@ -3074,7 +3074,7 @@ def cr_3d(p,s=5): # Corner radius 3d where 'p' are the list of points (turtle mo
             p2=pnts[0]
         c.append(fillet_3p_3d(p0,p1,p2,rds[i],s)[1:])
     c=array(c).reshape(-1,3).tolist()
-    return remove_extra_points(c) 
+    return remove_extra_points(array(c).round(5)) 
 
 def cr_3d_abs(p,s=5): # Corner radius 3d where 'p' are the list of points and 's' is number of segments for each arc
     pnts=array(p)[:,0:3]
@@ -3097,7 +3097,7 @@ def cr_3d_abs(p,s=5): # Corner radius 3d where 'p' are the list of points and 's
             p2=pnts[0]
         c.append(fillet_3p_3d(p0,p1,p2,rds[i],s)[1:])
     c=array(c).reshape(-1,3).tolist()
-    return remove_extra_points(c)
+    return remove_extra_points(array(c).round(5))
 
 
 
@@ -4904,114 +4904,114 @@ def equivalent_rot_axis(r1=[]):
     theta=r2d(arccos(vz@v1/norm(v1)))
     return [v2.tolist(),theta]
     
-def path_extrude_open(sec,path,twist=0):
-    '''
-    function to extrude a closed section to an open path
-    twist can be set either to '0' or '1' depending on the shape produced
-    '''
-    if twist==0:
-        p1=path[:-1]
-        p2=path[1:]
-        p1,p2=array([p1,p2])
-        v1=p2-p1
-        u1=v1/norm(v1,axis=1).reshape(-1,1)
-        v2=concatenate([[u1[0]],(u1[1:]+u1[:-1])/2,[u1[-1]]])
-        sec2=[]
-        for i in range(len(path)):
-            sec1=translate(path[i],sec2vector(v2[i],sec))
-            sec2.append(sec1)
-        return sec2
+# def path_extrude_open(sec,path,twist=0):
+#     '''
+#     function to extrude a closed section to an open path
+#     twist can be set either to '0' or '1' depending on the shape produced
+#     '''
+#     if twist==0:
+        # p1=path[:-1]
+        # p2=path[1:]
+        # p1,p2=array([p1,p2])
+        # v1=p2-p1
+        # u1=v1/norm(v1,axis=1).reshape(-1,1)
+        # v2=concatenate([[u1[0]],(u1[1:]+u1[:-1])/2,[u1[-1]]])
+        # sec2=[]
+        # for i in range(len(path)):
+        #     sec1=translate(path[i],sec2vector(v2[i],sec))
+        #     sec2.append(sec1)
+        # return sec2
 
-    if twist==1:
-        sec=flip(sec) if cw(sec)==-1 else sec
-        p1=array(seg(path))[:-1]
-        p2=array(path)
-        v1=array([(p[1]-p[0])/norm(p[1]-p[0]) for p in p1])
-        t_v=array([ v1[i] if i==0 else
-                   (v1[i-1]+v1[i])/2 if i<len(p2)-1 else
-                   v1[-1]
-            for i in range(len(p2))])
+#     if twist==1:
+#         sec=flip(sec) if cw(sec)==-1 else sec
+#         p1=array(seg(path))[:-1]
+#         p2=array(path)
+#         v1=array([(p[1]-p[0])/norm(p[1]-p[0]) for p in p1])
+#         t_v=array([ v1[i] if i==0 else
+#                    (v1[i-1]+v1[i])/2 if i<len(p2)-1 else
+#                    v1[-1]
+#             for i in range(len(p2))])
 
-        n_v=array([ cross(p2[i+1]-p2[i],p2[i+2]-p2[i+1]) if i==0 else
-             cross(p2[i]-p2[i-1],p2[i+1]-p2[i]) if i<len(p2)-1 else
-             cross(p2[i-1]-p2[i-2],p2[i]-p2[i-1])
-            for i in range(len(p2))])
-        o_v=array([cross(n_v[i],t_v[i]) for i in range(len(t_v))])
+#         n_v=array([ cross(p2[i+1]-p2[i],p2[i+2]-p2[i+1]) if i==0 else
+#              cross(p2[i]-p2[i-1],p2[i+1]-p2[i]) if i<len(p2)-1 else
+#              cross(p2[i-1]-p2[i-2],p2[i]-p2[i-1])
+#             for i in range(len(p2))])
+#         o_v=array([cross(n_v[i],t_v[i]) for i in range(len(t_v))])
 
-        t_v=t_v/norm(t_v,axis=1).reshape(-1,1)
-        n_v=n_v/norm(n_v,axis=1).reshape(-1,1)
-        o_v=o_v/norm(o_v,axis=1).reshape(-1,1)
+#         t_v=t_v/norm(t_v,axis=1).reshape(-1,1)
+#         n_v=n_v/norm(n_v,axis=1).reshape(-1,1)
+#         o_v=o_v/norm(o_v,axis=1).reshape(-1,1)
 
-        map_v=array([t_v,n_v,o_v]).transpose(1,0,2)
-        sec2=[]
-        for p in map_v:
-            v2=[[0,0,0],[0,0,-1],[0,1,0]]
-            a1=cross(v2[1],p[0])
-            t1=r2d(arccos(array(v2[1])@p[0]))
-            sec1=axis_rot(a1,sec,t1)
-            v3=axis_rot(a1,v2,t1)
-            a2=cross(v3[2],p[1])
-            t2=r2d(arccos(array(v3[2])@p[1]))
-            sec1=axis_rot(a2,sec1,t2)
-            sec2.append(sec1)
-        sol=[ translate(path[i],sec2[i]) for i in range(len(path))]
+#         map_v=array([t_v,n_v,o_v]).transpose(1,0,2)
+#         sec2=[]
+#         for p in map_v:
+#             v2=[[0,0,0],[0,0,-1],[0,1,0]]
+#             a1=cross(v2[1],p[0])
+#             t1=r2d(arccos(array(v2[1])@p[0]))
+#             sec1=axis_rot(a1,sec,t1)
+#             v3=axis_rot(a1,v2,t1)
+#             a2=cross(v3[2],p[1])
+#             t2=r2d(arccos(array(v3[2])@p[1]))
+#             sec1=axis_rot(a2,sec1,t2)
+#             sec2.append(sec1)
+#         sol=[ translate(path[i],sec2[i]) for i in range(len(path))]
 
-        return sol
+#         return sol
     
-def path_extrude_closed(sec,path,twist=0):
-    '''
-    function to extrude a closed section to a closed path
-    closed path means the path provided has it's first and the last point same example a circle
-    '''
-    if twist==0:
-        p1=path
-        p2=path[1:]+[path[0]]
-        p1,p2=array([p1,p2])
-        v1=p2-p1
-        u1=v1/norm(v1,axis=1).reshape(-1,1)
-        v2=concatenate([[(u1[-1]+u1[0])/2], (u1[1:]+u1[:-1])/2])
-        sec2=[]
-        for i in range(len(path)):
-            sec1=translate(path[i],sec2vector(v2[i],sec))
-            sec2.append(sec1)
-        sec2=sec2+[sec2[0]]
-        # sec3=concatenate([align_sec(sec2[i-1],sec2[i]) for i in range(1,len(sec2))]).tolist()
-        return sec2
+# def path_extrude_closed(sec,path,twist=0):
+#     '''
+#     function to extrude a closed section to a closed path
+#     closed path means the path provided has it's first and the last point same example a circle
+#     '''
+#     if twist==0:
+        # p1=path
+        # p2=path[1:]+[path[0]]
+        # p1,p2=array([p1,p2])
+        # v1=p2-p1
+        # u1=v1/norm(v1,axis=1).reshape(-1,1)
+        # v2=concatenate([[(u1[-1]+u1[0])/2], (u1[1:]+u1[:-1])/2])
+        # sec2=[]
+        # for i in range(len(path)):
+        #     sec1=translate(path[i],sec2vector(v2[i],sec))
+        #     sec2.append(sec1)
+        # sec2=sec2+[sec2[0]]
+        # # sec3=concatenate([align_sec(sec2[i-1],sec2[i]) for i in range(1,len(sec2))]).tolist()
+        # return sec2
         
-    if twist==1:
-        sec=flip(sec) if cw(sec)==-1 else sec
-        p1=array(seg(path))
-        p2=array(path)
-        v1=array([(p[1]-p[0])/norm(p[1]-p[0]) for p in p1])
-        t_v=array([ (v1[-1]+v1[i])/2 if i==0 else
-             (v1[i-1]+v1[i])/2
-            for i in range(len(p1))])
+    # if twist==1:
+    #     sec=flip(sec) if cw(sec)==-1 else sec
+    #     p1=array(seg(path))
+    #     p2=array(path)
+    #     v1=array([(p[1]-p[0])/norm(p[1]-p[0]) for p in p1])
+    #     t_v=array([ (v1[-1]+v1[i])/2 if i==0 else
+    #          (v1[i-1]+v1[i])/2
+    #         for i in range(len(p1))])
 
-        n_v=array([ cross(p2[i]-p2[-1],p2[i+1]-p2[i]) if i==0 else
-             cross(p2[i]-p2[i-1],p2[i+1]-p2[i]) if i<len(p2)-1 else
-             cross(p2[i]-p2[i-1],p2[0]-p2[i])
-            for i in range(len(p2))])
-        o_v=array([cross(n_v[i],t_v[i]) for i in range(len(t_v))])
+    #     n_v=array([ cross(p2[i]-p2[-1],p2[i+1]-p2[i]) if i==0 else
+    #          cross(p2[i]-p2[i-1],p2[i+1]-p2[i]) if i<len(p2)-1 else
+    #          cross(p2[i]-p2[i-1],p2[0]-p2[i])
+    #         for i in range(len(p2))])
+    #     o_v=array([cross(n_v[i],t_v[i]) for i in range(len(t_v))])
 
-        t_v=t_v/norm(t_v,axis=1).reshape(-1,1)
-        n_v=n_v/norm(n_v,axis=1).reshape(-1,1)
-        o_v=o_v/norm(o_v,axis=1).reshape(-1,1)
+    #     t_v=t_v/norm(t_v,axis=1).reshape(-1,1)
+    #     n_v=n_v/norm(n_v,axis=1).reshape(-1,1)
+    #     o_v=o_v/norm(o_v,axis=1).reshape(-1,1)
 
-        map_v=array([t_v,n_v,o_v]).transpose(1,0,2)
-        sec2=[]
-        for p in map_v:
-            v2=[[0,0,0],[0,0,-1],[0,1,0]]
-            a1=cross(v2[1],p[0])
-            t1=r2d(arccos(array(v2[1])@p[0]))
-            sec1=axis_rot(a1,sec,t1)
-            v3=axis_rot(a1,v2,t1)
-            a2=cross(v3[2],p[1])
-            t2=r2d(arccos(array(v3[2])@p[1]))
-            sec1=axis_rot(a2,sec1,t2)
-            sec2.append(sec1)
-        sol=[ translate(path[i],sec2[i]) for i in range(len(path))]
-        sol=sol+[sol[0]]
-        return sol
+    #     map_v=array([t_v,n_v,o_v]).transpose(1,0,2)
+    #     sec2=[]
+    #     for p in map_v:
+    #         v2=[[0,0,0],[0,0,-1],[0,1,0]]
+    #         a1=cross(v2[1],p[0])
+    #         t1=r2d(arccos(array(v2[1])@p[0]))
+    #         sec1=axis_rot(a1,sec,t1)
+    #         v3=axis_rot(a1,v2,t1)
+    #         a2=cross(v3[2],p[1])
+    #         t2=r2d(arccos(array(v3[2])@p[1]))
+    #         sec1=axis_rot(a2,sec1,t2)
+    #         sec2.append(sec1)
+    #     sol=[ translate(path[i],sec2[i]) for i in range(len(path))]
+    #     sol=sol+[sol[0]]
+    #     return sol
         
 def rationalise_path(path,eps=.01):
     p2=array(path)
@@ -8113,3 +8113,76 @@ def corner_n_radius_list_3d(p0,r_l,n=10):
     
     s1=remove_extra_points(concatenate(s1).round(5))
     return s1
+
+def path_extrude_closed(sec_1,path,twist=0):
+    '''
+    function to extrude a closed section to a closed path
+    twist=0 for simple path extrudes
+    set twist=1 for complex path extrudes
+    '''
+    if twist==0:
+        p1=path
+        p2=path[1:]+[path[0]]
+        p1,p2=array([p1,p2])
+        v1=p2-p1
+        u1=v1/norm(v1,axis=1).reshape(-1,1)
+        v2=concatenate([[(u1[-1]+u1[0])/2], (u1[1:]+u1[:-1])/2])
+        sec2=[]
+        for i in range(len(path)):
+            sec1=translate(path[i],sec2vector(v2[i],sec_1))
+            sec2.append(sec1)
+        sec2=sec2+[sec2[0]]
+        return sec2
+    elif twist==1:
+        sec=[[1,0],[0,1],[-1,0],[0,-1]]
+        t_l=tangents_along_path(path)
+        v1=array([array(p[1])-array(p[0]) for p in t_l]).tolist()
+        sol_1=[translate(path[i],sec2vector(v1[i],sec))  for i in range(len(path))]
+        sol_2=align_sol(sol_1,360/len(t_l)/2)
+        cp_1=array(sec_1).mean(0)
+        sec_2=translate_2d(-cp_1,sec_1)
+        sol_3=[translate(path[i],sec2vector(v1[i],sec_2))  for i in range(len(path))]
+        sol_4=align_sol(sol_3,360/len(sol_3)/2)
+        sol_5=[]
+        for i in range(len(path)):
+            a=mid_point([sol_1[i][0],sol_1[i][2]])
+            v2=array(sol_2[i][0])-array(a)
+            v3=array(sol_2[i][1])-array(a)
+            sol_5.append(translate(-v3*cp_1[0],translate(-v2*cp_1[1],sol_4[i])))
+        return sol_5+[sol_5[0]]
+
+def path_extrude_open(sec_1,path,twist=0):
+    '''
+    function to extrude a closed section to an open path
+    '''
+    if twist==0:
+        p1=path[:-1]
+        p2=path[1:]
+        p1,p2=array([p1,p2])
+        v1=p2-p1
+        u1=v1/norm(v1,axis=1).reshape(-1,1)
+        v2=concatenate([[u1[0]],(u1[1:]+u1[:-1])/2,[u1[-1]]])
+        sec2=[]
+        for i in range(len(path)):
+            sec1=translate(path[i],sec2vector(v2[i],sec_1))
+            sec2.append(sec1)
+        return sec2
+    elif twist==1:
+        sec=[[1,0],[0,1],[-1,0],[0,-1]]
+        t_l=tangents_along_path(path)[1:-1]
+        v1=array([array(path)[1]-array(path)[0]]).tolist()+ \
+        array([array(p[1])-array(p[0]) for p in t_l]).tolist()+ \
+        array([array(path)[-1]-array(path)[-2]]).tolist()
+        sol_1=[translate(path[i],sec2vector(v1[i],sec))  for i in range(len(path))]
+        sol_2=align_sol(sol_1,360/len(t_l)/2)
+        cp_1=array(sec_1).mean(0)
+        sec_2=translate_2d(-cp_1,sec_1)
+        sol_3=[translate(path[i],sec2vector(v1[i],sec_2))  for i in range(len(path))]
+        sol_4=align_sol(sol_3,360/len(sol_3)/2)
+        sol_5=[]
+        for i in range(len(path)):
+            a=mid_point([sol_1[i][0],sol_1[i][2]])
+            v2=array(sol_2[i][0])-array(a)
+            v3=array(sol_2[i][1])-array(a)
+            sol_5.append(translate(-v3*cp_1[0],translate(-v2*cp_1[1],sol_4[i])))
+        return sol_5
