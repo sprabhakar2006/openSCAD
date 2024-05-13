@@ -8193,7 +8193,7 @@ def offset(sec,r,type=1):
     elif type==2:
         return offset_2(sec,r)
 
-def sort_random_points(l_1,n_1,k=2):
+def sort_random_points(l_1,n_1,k=3):
     '''
     function to arrange random points in order
     l_1: list of random points in space
@@ -8204,6 +8204,6 @@ def sort_random_points(l_1,n_1,k=2):
     avg_1=array(l_1).mean(0).tolist()
     l_3=rot_sec2xy_plane(ppplane(l_1,n_1,avg_1))
     l_4=c3t2(l_3)
-    l_5=concave_hull(l_4,2)
+    l_5=ch1(l_4,k)
     l_6=array(l_1)[cKDTree(l_4).query(l_5)[1]].tolist()
     return l_6
