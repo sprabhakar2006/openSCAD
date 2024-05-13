@@ -1027,26 +1027,26 @@ def arc_2p_cp(p1,p2,r,cw=-1):
     cp=p3+(u*l)@rm(-90 if cw==-1 else 90)
     return cp.tolist()
 
-# def offset(sec,r):
-#     '''
-#     calculates offset for a section 'sec' by amount 'r'
-#     refer file "example of various functions" for application example
-#     '''
-# #     return io(sec,r) if r<0 else sec if r==0 else oo_convex(sec,r) if convex(sec)==True else outer_offset(sec,r)
-#     if convex(sec):
-#         if r <0:
-#             return inner_concave_offset(sec,r)
-#         elif r >0:
-#             return outer_convex_offset(sec,r)
-#         elif r==0:
-#             return sec
-#     else:
-#         if r<0:
-#             return inner_concave_offset(sec,r)
-#         elif r>0:
-#             return outer_concave_offset(sec,r)
-#         elif r==0:
-#             return sec
+def offset_2(sec,r):
+    '''
+    calculates offset for a section 'sec' by amount 'r'
+    refer file "example of various functions" for application example
+    '''
+#     return io(sec,r) if r<0 else sec if r==0 else oo_convex(sec,r) if convex(sec)==True else outer_offset(sec,r)
+    if convex(sec):
+        if r <0:
+            return inner_concave_offset(sec,r)
+        elif r >0:
+            return outer_convex_offset(sec,r)
+        elif r==0:
+            return sec
+    else:
+        if r<0:
+            return inner_concave_offset(sec,r)
+        elif r>0:
+            return outer_concave_offset(sec,r)
+        elif r==0:
+            return sec
 
 
 def prism(sec,path):
@@ -8027,7 +8027,7 @@ def points_inside_offset_surround_list(sec,sec2,r):
     decision1=((t[:,:,:,0]>=0)&(t[:,:,:,1]>=0)&(t[:,:,:,1]<=1))
     return arange(len(sec2))[(decision1.sum(2)==1).any(1)]
 
-def offset(sec,r):
+def offset_1(sec,r):
     '''
     function returns offset of a enclosed section 'sec' by a distance 'r'
     '''
@@ -8186,3 +8186,24 @@ def path_extrude_open(sec_1,path,twist=0):
             v3=array(sol_2[i][1])-array(a)
             sol_5.append(translate(-v3*cp_1[0],translate(-v2*cp_1[1],sol_4[i])))
         return sol_5
+
+def offset(sec,r,type=1):
+    if type==1:
+        return offset_1(sec,r)
+    elif type==2:
+        return offset_2(sec,r)
+
+def sort_random_points(l_1,n_1,k=2):
+    '''
+    function to arrange random points in order
+    l_1: list of random points in space
+    n_1: is the normal vector to a plane from which all the points can be distinctly seen
+    k: is a factor which can have values 1,2,3 , default is 2, if the result is not satisfactory the values can be changed to see if the result is better
+    
+    '''
+    avg_1=array(l_1).mean(0).tolist()
+    l_3=rot_sec2xy_plane(ppplane(l_1,n_1,avg_1))
+    l_4=c3t2(l_3)
+    l_5=concave_hull(l_4,2)
+    l_6=array(l_1)[cKDTree(l_4).query(l_5)[1]].tolist()
+    return l_6
