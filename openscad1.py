@@ -5898,55 +5898,7 @@ def aligned_cut_lines_prism(sec,path,s=100):
     sol3=[translate([0,0,path[i][1]],sec_list_r[i]) for i in range(len(path))]
     return sol3
 
-def ch1(p_l,k=3):
-    p_l=array(p_l)
-    s_p=p_l[p_l[:,1].argmin()]
-    p_l=array(exclude_points(p_l,[s_p]))
-    p_l1=p_l[norm(p_l-s_p,axis=1).argsort()[:k]]
 
-    n_p=p_l1[array([ang_2linecw(s_p,s_p-[0,1],p) for p in p_l1]).argmax()]
-
-    p_l=array(exclude_points(p_l,[n_p])+[s_p])
-    s1=[s_p,n_p]
-
-    while((array(s1[-1]).tolist()!=s_p.tolist())&(len(p_l)>3)):
-        p_l1=p_l[norm(p_l-s1[-1],axis=1).argsort()[:k]]
-        n_p=p_l1[array([-ang_2linecw(s1[-1],s1[-2],p) for p in p_l1]).argsort()]
-        for p in n_p:
-            if s_int1(seg(array(s1).tolist()+[p.tolist()])[:-1])==[]:
-                s1.append(p)
-                p_l=array(exclude_points(p_l,[p]))
-                break
-            else:
-                continue
-            break
-        else:
-            return array(s1).tolist()
-        
-        if len(p_l)==3:
-            n_p=p_l[array([ang_2linecw(s1[-1],s1[-2],p) for p in p_l]).argsort()]
-            s1=array(s1).tolist()+array(n_p).tolist()
-    return array(s1).tolist()
-
-
-def concave_hull(p_l,k=3):
-    '''
-    calculate the concave hull of a random list of points
-    larger number for 'k' will give smoother shape
-    '''
-    s1=ch1(p_l,k)
-    py=exclude_points(p_l,s1)
-    x=pies1(s1,py)
-    pz=exclude_points(py,x) if x!=[] else py
-
-    while (pz!=[]):
-        k=k+1
-        s1=ch1(p_l,k)
-        py=exclude_points(p_l,s1)
-        x=pies1(s1,py)
-        pz=exclude_points(py,x) if x!=[] else py
-
-    return s1
     
 def axis_rot_1(sol,ax1,loc1,theta):
     '''
@@ -8207,3 +8159,75 @@ def sort_random_points(l_1,n_1,k=3):
     l_5=ch1(l_4,k)
     l_6=array(l_1)[cKDTree(l_4).query(l_5)[1]].tolist()
     return l_6
+
+def concave_hull(p_l,k):
+    '''
+    finds the concave hull for a points list "p_l"
+    value of factor "k" can be defined >=2
+    for very big value of "k", the function will work like a convex hull
+    '''
+
+    def s_p(p_l): # starting point
+        '''
+        find the starting point for a convex hull
+        bottom left point
+        '''
+        l_1=array(p_l).round(5)
+        a=l_1[l_1[:,1].argsort()]
+        if len(a[a[:,1]==a[:,1].min()])>1:
+            b=a[a[:,1]==a[:,1].min()]
+            s_pnt=b[b[:,0].argsort()][0]
+        else:
+            s_pnt=a[0]
+        return s_pnt.tolist()
+
+    def n_p(p_l,k): # next point
+        l_2=p_l
+        p0=s_p(l_2)
+        a=n_n(p0,l_2,k)
+        p1=(array(p0)-[1,0]).tolist()
+        n_pnt=array(a)[array([ang_2linecw(p0,p1,p) for p in a]).argmax()].tolist()
+        return n_pnt
+    
+    def n_n(p1,p_l,k=3):# nearest neighnours
+        l_2=array(p_l)
+        a=l_2[cKDTree(l_2).query(p1,k+1)[1]][cKDTree(l_2).query(p1,k+1)[0]>0.001].tolist()
+        return a
+    
+    def s_g_a_p(p0,p1,n_n_p):# select greatest angle point
+        return array(n_n_p)[array([ang_2linecw(p1,p0,p) for p in n_n_p]).argmax()].tolist()
+    
+    def s_o_a(p0,p1,n_n_p): # sort on angle
+       return flip(array(n_n_p)[array([ang_2linecw(p1,p0,p) for p in n_n_p]).argsort()].tolist())
+    
+    p_l=remove_extra_points(array(p_l).round(5))
+    p0=s_p(p_l)
+    p1=n_p(p_l,k)
+    o_p_l=[p0,p1]
+    b_p_l=exclude_points(p_l,o_p_l[0])
+    
+    while (len(b_p_l)>(k+1)):
+        a=n_n(o_p_l[-1],b_p_l,k)
+        a=s_o_a(o_p_l[-2],o_p_l[-1],a)
+        b=[]
+        while (b==[]):
+            for p in a:
+                if s_int1(seg(o_p_l+[p])[:-1])==[]:
+                    b.append(p)
+                    break
+            if b!=[]:
+                o_p_l.append(s_g_a_p(o_p_l[-2],o_p_l[-1],b))
+            else:
+                k=k+1
+                a=n_n(o_p_l[-1],b_p_l,k)
+        b_p_l=exclude_points(p_l,o_p_l)
+        b_p_l.append(p0)
+        if o_p_l[-1]==p0:
+            o_p_l=o_p_l[:-1]
+            b_p_l=exclude_points(b_p_l,[p0])
+            break
+    if len(b_p_l)<=k+1:
+        a=s_o_a(o_p_l[-2],o_p_l[-1],b_p_l)[:-1]
+        o_p_l=o_p_l+a
+
+    return o_p_l
