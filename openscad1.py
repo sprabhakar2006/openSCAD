@@ -8150,13 +8150,13 @@ def sort_random_points(l_1,n_1,k=3):
     function to arrange random points in order
     l_1: list of random points in space
     n_1: is the normal vector to a plane from which all the points can be distinctly seen
-    k: is a factor which can have values 1,2,3 , default is 2, if the result is not satisfactory the values can be changed to see if the result is better
+    k: is a factor which can have values >2 , default is 2, if the result is not satisfactory the values can be changed to see if the result is better. It has to be an integer
     
     '''
     avg_1=array(l_1).mean(0).tolist()
     l_3=rot_sec2xy_plane(ppplane(l_1,n_1,avg_1))
     l_4=c3t2(l_3)
-    l_5=ch1(l_4,k)
+    l_5=concave_hull(l_4,k)
     l_6=array(l_1)[cKDTree(l_4).query(l_5)[1]].tolist()
     return l_6
 
@@ -8231,3 +8231,26 @@ def concave_hull(p_l,k):
         o_p_l=o_p_l+a
 
     return o_p_l
+
+def t_vec(path):
+    '''
+    find the array of tangent vectors to a given path
+    '''
+    p1=array(seg(path))
+    p2=array(path)
+    v1=array([(p[1]-p[0])/norm(p[1]-p[0]) for p in p1])
+    t_v=array([ (v1[-1]+v1[i])/2 if i==0 else
+         (v1[i-1]+v1[i])/2
+        for i in range(len(p1))])
+    t_v=t_v/norm(t_v,axis=1).reshape(-1,1)
+    return t_v
+
+def o_vec(path,n_v):
+    '''
+    finds the array of orthogal vectors to a given path.
+    normal vector at each point needs to be defined for this calculation
+    '''
+    t_v=t_vec(path)
+    o_v=array([cross(n_v[i],t_v[i]) for i in range(len(t_v))])
+    o_v=o_v/norm(o_v,axis=1).reshape(-1,1)
+    return o_v
