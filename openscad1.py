@@ -8191,6 +8191,7 @@ def concave_hull(p_l,k):
     
     def n_n(p1,p_l,k=3):# nearest neighnours
         l_2=array(p_l)
+        k=len(l_2)-1 if len(l_2)<=k else k
         a=l_2[cKDTree(l_2).query(p1,k+1)[1]][cKDTree(l_2).query(p1,k+1)[0]>0.001].tolist()
         return a
     
@@ -8206,8 +8207,8 @@ def concave_hull(p_l,k):
     o_p_l=[p0,p1]
     b_p_l=exclude_points(p_l,o_p_l[0])
     
-    while (len(b_p_l)>(k+1)):
-        a=n_n(o_p_l[-1],b_p_l,k)
+    while (len(b_p_l)>2):
+        a=n_n(o_p_l[-1],b_p_l,k if len(b_p_l)>3 else 2)
         a=s_o_a(o_p_l[-2],o_p_l[-1],a)
         b=[]
         while (b==[]):
@@ -8219,16 +8220,13 @@ def concave_hull(p_l,k):
                 o_p_l.append(s_g_a_p(o_p_l[-2],o_p_l[-1],b))
             else:
                 k=k+1
-                a=n_n(o_p_l[-1],b_p_l,k)
+                a=n_n(o_p_l[-1],b_p_l,k if len(b_p_l)>3 else 2)
         b_p_l=exclude_points(p_l,o_p_l)
         b_p_l.append(p0)
         if o_p_l[-1]==p0:
             o_p_l=o_p_l[:-1]
             b_p_l=exclude_points(b_p_l,[p0])
             break
-    if len(b_p_l)<=k+1:
-        a=s_o_a(o_p_l[-2],o_p_l[-1],b_p_l)[:-1]
-        o_p_l=o_p_l+a
 
     return o_p_l
 
