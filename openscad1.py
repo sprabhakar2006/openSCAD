@@ -1049,9 +1049,10 @@ def offset_2(sec,r):
             return sec
 
 
-def prism(sec,path):
+def prism(sec,path,type=1):
     '''
 function to make a prism with combination of 2d section and 2d path
+type: can be set to either "1" or "2" which means prism calculation is done by offset method "1" or offset method "2", by defualt it is "1"
 Example:
 sec=circle(10)
 path=cr(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5)
@@ -1059,7 +1060,7 @@ sol=prism(sec,path)
     '''
     s1=flip(sec) if cw(sec)==1 else sec
     # path=array(path).round(4)
-    return [array(translate([0,0,y],offset(s1,x))).tolist() for (x,y) in path]
+    return [array(translate([0,0,y],offset(s1,x,type))).tolist() for (x,y) in path]
 
 def f_prism(sec,path):
     '''
@@ -8252,3 +8253,11 @@ def o_vec(path,n_v):
     o_v=array([cross(n_v[i],t_v[i]) for i in range(len(t_v))])
     o_v=o_v/norm(o_v,axis=1).reshape(-1,1)
     return o_v
+
+def swp_sec(sec):
+    '''
+    function to render a sec
+    '''
+    n1=arange(len(sec)).tolist()
+    
+    return f'polyhedron({sec},{[n1]},convexity=10);'
