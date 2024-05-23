@@ -8261,3 +8261,20 @@ def swp_sec(sec):
     n1=arange(len(sec)).tolist()
     
     return f'polyhedron({sec},{[n1]},convexity=10);'
+
+surface_4_lines_enclosed(l_1,l_2,l_3,l_4,n1,n2,s=20):
+    '''
+    create a surface with 4 line
+    l_1 and l_2 are 2 opposite lines
+    l_3 and l_4 are other 2 opposite lines
+    n1 is length of the surface for lines l_1 and l_2 in the direction required
+    e.g. it can be [0,30,0] meaning line l_1 is extended 30 mm in y-direction to create a surface
+    n2 is the normal for projection of lines cpo([l_3,l_4]) on to surfaces earlier created
+    s is the number of slices in the cpo([l_3,l_4])
+    '''
+    s_1=surface_line_vector(l_1,array(n1)*100,1)
+    s_2=surface_line_vector(l_2,array(n1)*100,1)
+    s_3=slice_sol([l_3,l_4],s)
+    s_4=slice_surfaces(s_1,s_2,len(l_3)-1)
+    s_5=[project_line_on_surface(cpo(s_3)[i],s_4[i],n2)  for i in range(len(cpo(s_3)))]
+    return s_5
