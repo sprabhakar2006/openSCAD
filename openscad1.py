@@ -8281,3 +8281,14 @@ def surface_4_lines_enclosed(l_1,l_2,l_3,l_4,n1,n2,s=20):
     s_4=slice_surfaces(s_1,s_2,len(l_3)-1)
     s_5=[project_line_on_surface(cpo(s_3)[i],s_4[i],n2)  for i in range(len(cpo(s_3)))]
     return s_5
+
+def arc_with_start_pt_and_cp_3d(n1,start_point=[],center_point=[],theta=90,segments=30):
+    '''
+    function to draw an arc with known center_point and start_point in 3d space
+    n1 is the normal which defines the plane
+    '''
+    center_point,start_point=array([center_point,start_point])
+    v1=start_point-center_point
+    arc_1=center_point+[axis_rot(n1,v1,i) for i in linspace(0,theta,segments)]
+    arc_1=arc_1.tolist()
+    return arc_1
