@@ -8262,7 +8262,7 @@ def swp_sec(sec):
     
     return f'polyhedron({sec},{[n1]},convexity=10);'
 
-surface_4_lines_enclosed(l_1,l_2,l_3,l_4,n1,n2,s=20):
+def surface_4_lines_enclosed(l_1,l_2,l_3,l_4,n1,n2,s=20):
     '''
     create a surface with 4 line
     l_1 and l_2 are 2 opposite lines
