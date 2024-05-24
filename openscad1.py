@@ -7334,7 +7334,7 @@ def boundary_edges_surf(surf):
     a=array(f_4).tolist()
     return flip(array(a)[:,1]).tolist()
 
-def extend_arc2d(a,theta=0,s=20):
+def extend_arc2d(a,theta=0,s=20,both=0):
     '''
     extend a 2d arc by theta degrees
     '''
@@ -7344,9 +7344,12 @@ def extend_arc2d(a,theta=0,s=20):
     v1,v2=p1-cp,p2-cp
     a1,a2=ang(v1[0],v1[1]),ang(v2[0],v2[1])
     a3= (a2+360 if a2<a1 else a2) if cw(a)==-1 else (a2 if a2<a1 else a2-360)
-    return arc(r,a1,a3+theta,cp,s) if cw(a)==-1 else arc(r,a1,a3-theta,cp,s)
+    if both==0:
+        return arc(r,a1,a3+theta,cp,s) if cw(a)==-1 else arc(r,a1,a3-theta,cp,s)
+    elif both==1:
+        return arc(r,a1-theta,a3+theta,cp,s) if cw(a)==-1 else arc(r,a1+theta,a3-theta,cp,s)
 
-def extend_arc3d(a,theta=0,s=20):
+def extend_arc3d(a,theta=0,s=20,both=0):
     '''
     extend a 3d arc by theta degrees
     '''
@@ -7362,7 +7365,7 @@ def extend_arc3d(a,theta=0,s=20):
     
     pa,pb=sec2
     arc1=arc_2p(pa,pb,r,cw(sec3),s=s)
-    arc1=extend_arc2d(arc1,theta,s)
+    arc1=extend_arc2d(arc1,theta,s,both)
     arc1=translate(array([p0,p1]).mean(0),axis_rot(a1,arc1,-t1))
     return arc1
 
