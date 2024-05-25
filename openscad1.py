@@ -4235,40 +4235,35 @@ def honeycomb(r,n1,n2):
     sec4=c3t2(sec3.reshape(a*b,c,d))
     return sec4
 
-def offset_3d(sec,d):
-    '''
-    offsets an enclosed section in 3d space, in case the section is in 1 plane
-    sec: section in 3d space
-    d: offset distance -ve sign means inner offset and +ve sign is outer offset
-    refer to the file"example of various functions" for application examples
+# def offset_3d(sec,d):
+#     '''
+#     offsets an enclosed section in 3d space, in case the section is in 1 plane
+#     sec: section in 3d space
+#     d: offset distance -ve sign means inner offset and +ve sign is outer offset
+#     refer to the file"example of various functions" for application examples
     
-    '''
-    sec0=remove_extra_points(sec)
-    sec0=q_rot(['z.00001'],sec0)
-    avg1=array(sec0).mean(0)
-    sec1=translate(-avg1,sec0)
-#     v1=array([array(p)-avg1 for p in sec]).tolist()
-#     v2=v1[1:]+[v1[0]]
-#     v1,v2=array([v1,v2])
-#     n1=cross(v1,v2)
-#     nv1=n1.mean(0)
-    nv1=-array(nv(sec1))
-    nz=[0,0,1]
-    nr=cross(nv1,nz) if abs(nv1).tolist()!=[0,0,1] else nv1
-    theta=r2d(arccos(nv1@array(nz)))
-    sec1=axis_rot(nr,sec1,theta)
-    z_values=array(sec1)[:,2]-avg1[2]
-    sec1=ppplane(sec1,[0,0,1],[0,0,0])
-    sec1=c3t2(sec1)
-    x_values=array([l_len([[0,0],p])  for p in sec1])
-    sec2=offset(sec1,d)
-    x1_values=array([l_len([[0,0],p])  for p in sec2])
-    z1_values=z_values/x_values*x1_values
-    z1_values=array([[0,0,p] for p in z1_values])
-    sec2=array(c2t3(sec2))
-    sec2=axis_rot(nr,sec2,-theta)
-    sec2=translate(array(sec).mean(0),sec2)
-    return sort_points(sec,sec2)
+#     '''
+#     sec0=remove_extra_points(sec)
+#     sec0=q_rot(['z.00001'],sec0)
+#     avg1=array(sec0).mean(0)
+#     sec1=translate(-avg1,sec0)
+#     nv1=-array(nv(sec1))
+#     nz=[0,0,1]
+#     nr=cross(nv1,nz) if abs(nv1).tolist()!=[0,0,1] else nv1
+#     theta=r2d(arccos(nv1@array(nz)))
+#     sec1=axis_rot(nr,sec1,theta)
+#     z_values=array(sec1)[:,2]-avg1[2]
+#     sec1=ppplane(sec1,[0,0,1],[0,0,0])
+#     sec1=c3t2(sec1)
+#     x_values=array([l_len([[0,0],p])  for p in sec1])
+#     sec2=offset(sec1,d)
+#     x1_values=array([l_len([[0,0],p])  for p in sec2])
+#     z1_values=z_values/x_values*x1_values
+#     z1_values=array([[0,0,p] for p in z1_values])
+#     sec2=array(c2t3(sec2))
+#     sec2=axis_rot(nr,sec2,-theta)
+#     sec2=translate(array(sec).mean(0),sec2)
+#     return sort_points(sec,sec2)
     
     
     
@@ -5652,7 +5647,8 @@ def axis_rot_o(axis,solid,angle):
     '''
     rotate a solid around an axis considering the solid is centered at origin
     '''
-    cp1=array(prism_center(solid))
+    s_1=len(array(solid).shape)
+    cp1=array(solid).mean(0) if s_1==2 else array(prism_center(solid))
     solid=translate(-cp1,solid)
     return translate(cp1,solid@arot(axis,angle))
 
@@ -5906,7 +5902,8 @@ def axis_rot_1(sol,ax1,loc1,theta):
     rotate a solid on any pivot point 'loc1' with axis of rotation 'ax1' by an angle 'theta'
     
     '''
-    c1=array(prism_center(sol))
+    s_1=len(array(sol).shape)
+    c1=array(sol).mean(0) if s_1==2 else array(prism_center(sol))
     loc1=array(loc1)
     c2=c1-loc1
     s1=translate(-c1,sol)
@@ -7832,9 +7829,10 @@ def rot_sec2xy_plane(sec):
     else:
         v1=cross(n1,[0,0,-1])
         t1=r2d(arccos(array(n1)@[0,0,-1]))
-        l_1=[[0,0,0],(array(n1)*5).tolist()]
-        l_2=[[0,0,0],(array(v1)*5).tolist()]
+        # l_1=[[0,0,0],(array(n1)*5).tolist()]
+        # l_2=[[0,0,0],(array(v1)*5).tolist()]
         l_3=axis_rot_1([sec],v1,sec[0],t1)[0]
+        # l_3=axis_rot_o(v1,[sec],t1)[0]
         return l_3
     
 def surround_3d(path,r,s=20):
@@ -8292,3 +8290,28 @@ def arc_with_start_pt_and_cp_3d(n1,start_point=[],center_point=[],theta=90,segme
     arc_1=center_point+[axis_rot(n1,v1,i) for i in linspace(0,theta,segments)]
     arc_1=arc_1.tolist()
     return arc_1
+
+def offset_3d(sec,d,type=1):
+    '''
+    offsets an enclosed section in 3d space, in case the section is in 1 plane
+    sec: section in 3d space
+    d: offset distance -ve sign means inner offset and +ve sign is outer offset
+    refer to the file"example of various functions" for application examples
+    type: offset type default is '1' in case of any issue in offset, try with '2'
+    '''
+    l_2=rot_sec2xy_plane(sec)
+    l_3=c3t2(l_2)
+    l_4=offset(l_3,d,type)
+    avg_1=array(l_2).mean(0)
+    avg_2=array(c2t3(l_3)).mean(0)
+    l_5=translate(avg_1-avg_2,l_4)
+    n_1=array(nv(sec))
+    n_2=array([0,0,-1])
+    ax_1=cross(n_1,n_2)
+    theta=r2d(arccos(n_1@n_2))
+    l_6=axis_rot_o(ax_1,[l_5],-theta)[0]
+    l_6_1=axis_rot_o(ax_1,[l_2],-theta)[0]
+    avg_1=array(sec).mean(0)
+    avg_2=array(l_6_1).mean(0)
+    l_7=translate(avg_1-avg_2,l_6)
+    return l_7
