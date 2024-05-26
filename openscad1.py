@@ -8315,3 +8315,13 @@ def offset_3d(sec,d,type=1):
     avg_2=array(l_6_1).mean(0)
     l_7=translate(avg_1-avg_2,l_6)
     return l_7
+
+def intersection_between_2_sketches(s1,s2):
+    '''
+    finds the intersection between 2 2d sketches
+    '''
+    a=seg(s1)
+    b=seg(s2)
+    c=a+b
+    ip_1=s_int1(c)
+    return ip_1
