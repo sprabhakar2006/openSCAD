@@ -5711,27 +5711,27 @@ def i_p_n_tri(px,v,f1):
     return v3
 
 
-def i_p_p(sol,i_p,r):
-    '''
-    function to project the intersection point on the cutting lines based on the distance 'r'
-    '''
-    sol=array(sol)
-    i_p=array(i_p)
-    s1=[]
-    for j in range(len(sol[0])):
-        for i in range(len(sol)-1):
-            v1=sol[i+1][j]-sol[i][j]
-            u1=v1/norm(v1)
-            l1=norm(v1)
-            v2=i_p[j]-sol[i][j]
-            v2cost=u1@v2
-            if v2cost>=0 and v2cost<=l1:
-                l2=[i_p[j].tolist()]+array(cpo(sol)[j])[arange(i+1,len(sol))].tolist()
-                len_l2=path_length(l2)
-                s=len_l2/r
-                p1=equidistant_path(l2,s)[1]
-                s1.append(p1)
-    return s1
+# def i_p_p(sol,i_p,r):
+#     '''
+#     function to project the intersection point on the cutting lines based on the distance 'r'
+#     '''
+#     sol=array(sol)
+#     i_p=array(i_p)
+#     s1=[]
+#     for j in range(len(sol[0])):
+#         for i in range(len(sol)-1):
+#             v1=sol[i+1][j]-sol[i][j]
+#             u1=v1/norm(v1)
+#             l1=norm(v1)
+#             v2=i_p[j]-sol[i][j]
+#             v2cost=u1@v2
+#             if v2cost>=0 and v2cost<=l1:
+#                 l2=[i_p[j].tolist()]+array(cpo(sol)[j])[arange(i+1,len(sol))].tolist()
+#                 len_l2=path_length(l2)
+#                 s=len_l2/r
+#                 p1=equidistant_path(l2,s)[1]
+#                 s1.append(p1)
+#     return s1
 
 def path_length(path):
     '''
@@ -8325,3 +8325,32 @@ def intersection_between_2_sketches(s1,s2):
     c=a+b
     ip_1=s_int1(c)
     return ip_1
+
+def pol(p1,l1):
+    '''
+    point on line
+    finds whether a point is on a line or not
+    returns True or False
+    '''
+    v1=l1[:-1]
+    v2=l1[1:]
+    v3=array(v2)-array(v1)
+    v4=array(p1)-array(v1)
+    u3=(v3/norm(v3,axis=1).reshape(-1,1)).round(4)
+    u4=(v4/norm(v4,axis=1).reshape(-1,1)).round(4)
+    dec=(array(p1).round(4)==array(l1[0]).round(4)).all()
+    return True if dec==True else (u3==u4).any()
+
+def i_p_p(surf_1,i_p_l,d=1):
+    '''
+    function to project the intersection point on the cutting lines based on the distance 'r'
+    '''
+    surf_1=cpo(surf_1)
+    r_ipl=[]
+    for i in range(len(i_p_l)):
+        if pol(i_p_l[i],surf_1[i])==1:
+            l0=[i_p_l[i]]+surf_1[i][cKDTree(surf_1[i]).query(i_p_l[i],2)[1].max():]
+            s=l_lenv_o(l0)/d
+            p1=equidistant_path(l0,s)[1]
+            r_ipl.append(p1)
+    return r_ipl
