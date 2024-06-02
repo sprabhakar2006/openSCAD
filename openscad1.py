@@ -8354,3 +8354,15 @@ def i_p_p(surf_1,i_p_l,d=1):
             p1=equidistant_path(l0,s)[1]
             r_ipl.append(p1)
     return r_ipl
+
+def bezier_c(sec,sp=10,ep=-10,s=20):
+    '''
+    create a smooth closed section
+    sp: starting point in the section
+    ep: end point in the section
+    s: number of segments
+    '''
+    a=bezier(equidistant_path(sec[sp:ep],s),s)
+    b=bezier(equidistant_path(sec[ep-1:]+sec[:sp+1],s),s)
+    c=a+b[1:-1]
+    return c
