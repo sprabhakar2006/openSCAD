@@ -8278,7 +8278,7 @@ def surface_4_lines_enclosed(l_1,l_2,l_3,l_4,n1,n2,s=20):
     s_3=slice_sol([l_3,l_4],s)
     s_4=slice_surfaces(s_1,s_2,len(l_3)-1)
     s_5=[project_line_on_surface(cpo(s_3)[i],s_4[i],n2)  for i in range(len(cpo(s_3)))]
-    return s_5
+    return [l_3]+cpo(s_5)[1:-1]+[l_4]
 
 def arc_with_start_pt_and_cp_3d(n1,start_point=[],center_point=[],theta=90,segments=30):
     '''
