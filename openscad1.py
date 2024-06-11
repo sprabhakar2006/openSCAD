@@ -8366,3 +8366,71 @@ def bezier_c(sec,sp=10,ep=-10,s=20):
     b=bezier(equidistant_path(sec[ep-1:]+sec[:sp+1],s),s)
     c=a+b[1:-1]
     return c
+
+def project_points_on_surface(l_2,surf_1,n_1=[],both=0,n='all'):
+    '''
+    function for projecting points on to a surface.
+    n_1 is a direction vector for projecting the line
+    an example video can be refered for clarity
+    '''
+    n_1=surface_normal(surf_1,1) if n_1==[] else n_1
+    # p1+v1*t1=p2+v2*t2+v3*t3
+    f_1=faces_surface(len(surf_1),len(surf_1[0]))
+    v_1=array(surf_1).reshape(-1,3)
+    tri=v_1[f_1]
+    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
+    v2,v3=p3-p2,p4-p2
+    v1=array(n_1)
+    p1=array(l_2)
+    v1=array([[v1]*len(p2)]*len(p1))
+    v2=array([v2]*len(p1))
+    v3=array([v3]*len(p1))
+    iim=array([v1,-v2,-v3+.000001]).transpose(1,2,0,3).transpose(0,1,3,2)
+    im=inv(iim)
+    p=p2[None,:,:]-p1[:,None,:]
+    t=einsum('ijkl,ijl->ijk',im,p)
+    t1,t2,t3=t[:,:,0],t[:,:,1],t[:,:,2]
+    if both==0:
+        dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+    elif both==1:
+        dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+    ip_1=p1[:,None,:]+einsum('ijk,ij->ijk',v1,t[:,:,0])
+    if n=='all':
+        ip_1=ip_1[dec].tolist()
+    else:
+        ip_1=array([ip_1[i][dec[i]][n] for i in range(len(l_2))]).tolist()
+    return ip_1
+
+def project_points_on_sol(l_2,surf_1,n_1=[],both=0,n='all'):
+    '''
+    function for projecting points on to a sol.
+    n_1 is a direction vector for projecting the line
+    an example video can be refered for clarity
+    '''
+    n_1=surface_normal(surf_1,1) if n_1==[] else n_1
+    # p1+v1*t1=p2+v2*t2+v3*t3
+    f_1=faces_1(len(surf_1),len(surf_1[0]))
+    v_1=array(surf_1).reshape(-1,3)
+    tri=v_1[f_1]
+    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
+    v2,v3=p3-p2,p4-p2
+    v1=array(n_1)
+    p1=array(l_2)
+    v1=array([[v1]*len(p2)]*len(p1))
+    v2=array([v2]*len(p1))
+    v3=array([v3]*len(p1))
+    iim=array([v1,-v2,-v3+.000001]).transpose(1,2,0,3).transpose(0,1,3,2)
+    im=inv(iim)
+    p=p2[None,:,:]-p1[:,None,:]
+    t=einsum('ijkl,ijl->ijk',im,p)
+    t1,t2,t3=t[:,:,0],t[:,:,1],t[:,:,2]
+    if both==0:
+        dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+    elif both==1:
+        dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+    ip_1=p1[:,None,:]+einsum('ijk,ij->ijk',v1,t[:,:,0])
+    if n=='all':
+        ip_1=ip_1[dec].tolist()
+    else:
+        ip_1=array([ip_1[i][dec[i]][n] for i in range(len(l_2))]).tolist()
+    return ip_1
