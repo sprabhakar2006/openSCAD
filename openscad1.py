@@ -8443,3 +8443,30 @@ def points_inside_sol(p0,sol):
     p1=project_points_on_sol(p0,sol,[1,0,0],1)
     p2=array([ p for p in p0 if len(project_points_on_sol([p],sol,[1,0,0],1))%2!=0]).tolist()
     return p2
+
+def plane_min_d_zrot(l1,l_a=[0,120,240]):
+    '''
+    out of the list of angles 'l_a' rotated through z-axis which plane fits the best for a 3d section 'l1'. here the plane with normal vector [1,0,0] is considered for calculation
+    '''
+    n1=[q_rot([f'z{i}'],[1,0,0]) for i in l_a] 
+    a=[ppplane(l1,i,array(l1).mean(0)) for i in n1]
+    b=[array([l_len(p1) for p1 in cpo([l1,p])]).sum() for p in a]
+    return l_a[array(b).argmin()]
+
+def plane_min_d_yrot(l1,l_a=[0,120,240]):
+    '''
+    out of the list of angles 'l_a' rotated through y-axis which plane fits the best for a 3d section 'l1'. here the plane with normal vector [1,0,0] is considered for calculation
+    '''
+    n1=[q_rot([f'y{i}'],[1,0,0]) for i in l_a] 
+    a=[ppplane(l1,i,array(l1).mean(0)) for i in n1]
+    b=[array([l_len(p1) for p1 in cpo([l1,p])]).sum() for p in a]
+    return l_a[array(b).argmin()]
+
+def plane_min_d_xrot(l1,l_a=[0,120,240]):
+    '''
+    out of the list of angles 'l_a' rotated through x-axis which plane fits the best for a 3d section 'l1'. here the plane with normal vector [0,1,0] is considered for calculation
+    '''
+    n1=[q_rot([f'z{i}'],[0,1,0]) for i in l_a] 
+    a=[ppplane(l1,i,array(l1).mean(0)) for i in n1]
+    b=[array([l_len(p1) for p1 in cpo([l1,p])]).sum() for p in a]
+    return l_a[array(b).argmin()]
