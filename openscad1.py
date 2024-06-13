@@ -8481,9 +8481,9 @@ def plane_min_d_axis_rot(l1,axis=[1,0,1],l_a=[0,120,240]):
     b=[array([l_len(p1) for p1 in cpo([l1,p])]).sum() for p in a]
     return l_a[array(b).argmin()]
 
-def best_fit_plane(l1):
+def best_fit_plane_1(l1):
     '''
-    gives the best fit axis for a 3d section
+    input function to best_fit_plane function
     '''
     a=[120]
     for i in range(11):
@@ -8495,7 +8495,38 @@ def best_fit_plane(l1):
     axis=q_rot([f'z{b}'],[1,0,0])
     c=0
     for i in a:
-        c=plane_min_d_axis_rot(l1,axis,l_a=[c-i,c,c+1])
+        c=plane_min_d_axis_rot(l1,axis,l_a=[c-i,c,c+i])
     
     f_a=axis_rot(cross([0,0,-1],axis),q_rot([f'z{b}'],[1,0,0]),c)
     return f_a
+
+def best_fit_plane_2(l1):
+    '''
+    input function to best_fit_plane function
+    '''
+    a=[120]
+    for i in range(11):
+        a.append(a[-1]/2)
+    b=0
+    for i in a:
+        b=plane_min_d_yrot(l1,l_a=[b-i,b,b+i])
+    
+    axis=q_rot([f'y{b}'],[1,0,0])
+    c=0
+    for i in a:
+        c=plane_min_d_axis_rot(l1,axis,l_a=[c-i,c,c+i])
+    
+    f_a=axis_rot(cross([0,-1,0],axis),axis,c)
+    return f_a
+
+def best_fit_plane(l1):
+    '''
+    calculates the best fit plane for a 3d section 'l1'
+    '''
+    a=best_fit_plane_1(l1)
+    b=best_fit_plane_2(l1)
+    c=ppplane(l1,a,array(l1).mean(0).tolist())
+    d=ppplane(l1,b,array(l1).mean(0).tolist())
+    l2=array([ l_len(p) for p in cpo([l1,c])]).sum()
+    l3=array([ l_len(p) for p in cpo([l1,d])]).sum()
+    return a if l2<l3 else b
