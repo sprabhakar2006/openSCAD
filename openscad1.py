@@ -8470,3 +8470,32 @@ def plane_min_d_xrot(l1,l_a=[0,120,240]):
     a=[ppplane(l1,i,array(l1).mean(0)) for i in n1]
     b=[array([l_len(p1) for p1 in cpo([l1,p])]).sum() for p in a]
     return l_a[array(b).argmin()]
+
+def plane_min_d_axis_rot(l1,axis=[1,0,1],l_a=[0,120,240]):
+    '''
+    out of the list of angles 'l_a' rotated through axis perpendicular to 'axis' defined on which plane fits the best for a 3d section 'l1'.
+    '''
+    rotation_axis=cross([0,0,-1],axis)
+    n1=[axis_rot(rotation_axis,axis,i) for i in l_a] 
+    a=[ppplane(l1,i,array(l1).mean(0)) for i in n1]
+    b=[array([l_len(p1) for p1 in cpo([l1,p])]).sum() for p in a]
+    return l_a[array(b).argmin()]
+
+def best_fit_plane(l1):
+    '''
+    gives the best fit axis for a 3d section
+    '''
+    a=[120]
+    for i in range(11):
+        a.append(a[-1]/2)
+    b=0
+    for i in a:
+        b=plane_min_d_zrot(l1,l_a=[b-i,b,b+i])
+    
+    axis=q_rot([f'z{b}'],[1,0,0])
+    c=0
+    for i in a:
+        c=plane_min_d_axis_rot(l1,axis,l_a=[c-i,c,c+1])
+    
+    f_a=axis_rot(cross([0,0,-1],axis),q_rot([f'z{b}'],[1,0,0]),c)
+    return f_a
