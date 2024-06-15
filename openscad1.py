@@ -8471,11 +8471,11 @@ def plane_min_d_xrot(l1,l_a=[0,120,240]):
     b=[array([l_len(p1) for p1 in cpo([l1,p])]).sum() for p in a]
     return l_a[array(b).argmin()]
 
-def plane_min_d_axis_rot(l1,axis=[1,0,1],l_a=[0,120,240]):
+def plane_min_d_axis_rot(l1,axis=[1,0,1],l_a=[0,120,240],rotation_axis=[]):
     '''
     out of the list of angles 'l_a' rotated through axis perpendicular to 'axis' defined on which plane fits the best for a 3d section 'l1'.
     '''
-    rotation_axis=cross([0,0,-1],axis)
+    rotation_axis=cross([0,0,-1],axis) if array(rotation_axis).tolist()==[] else rotation_axis
     n1=[axis_rot(rotation_axis,axis,i) for i in l_a] 
     a=[ppplane(l1,i,array(l1).mean(0)) for i in n1]
     b=[array([l_len(p1) for p1 in cpo([l1,p])]).sum() for p in a]
@@ -8519,14 +8519,49 @@ def best_fit_plane_2(l1):
     f_a=axis_rot(cross([0,-1,0],axis),axis,c)
     return f_a
 
+def best_fit_plane_3(l1):
+    '''
+    input function to best_fit_plane function
+    '''
+    a=[120]
+    for i in range(11):
+        a.append(a[-1]/2)
+    b=0
+    for i in a:
+        b=plane_min_d_xrot(l1,l_a=[b-i,b,b+i])
+    
+    axis=q_rot([f'x{b}'],[0,-1,0])
+    c=0
+    for i in a:
+        c=plane_min_d_axis_rot(l1,axis,l_a=[c-i,c,c+i])
+    
+    f_a=axis_rot(cross([0,1,0],axis),axis,c)
+    return f_a
+
 def best_fit_plane(l1):
     '''
     calculates the best fit plane for a 3d section 'l1'
     '''
     a=best_fit_plane_1(l1)
     b=best_fit_plane_2(l1)
-    c=ppplane(l1,a,array(l1).mean(0).tolist())
-    d=ppplane(l1,b,array(l1).mean(0).tolist())
-    l2=array([ l_len(p) for p in cpo([l1,c])]).sum()
-    l3=array([ l_len(p) for p in cpo([l1,d])]).sum()
-    return a if l2<l3 else b
+    c=best_fit_plane_3(l1)
+    d=ppplane(l1,a,array(l1).mean(0).tolist())
+    e=ppplane(l1,b,array(l1).mean(0).tolist())
+    f=ppplane(l1,c,array(l1).mean(0).tolist())
+    
+    l2=array([ l_len(p) for p in cpo([l1,d])]).sum()
+    l3=array([ l_len(p) for p in cpo([l1,e])]).sum()
+    l4=array([ l_len(p) for p in cpo([l1,f])]).sum()
+    x=array([a,b,c])[array([l2,l3,l4]).argmin()].tolist()
+    a1=cross(a,b)
+    a1=a1/norm(a1)
+
+    y=[120]
+    for i in range(11):
+        y.append(y[-1]/2)
+    g=0
+    for i in y:
+        g=plane_min_d_axis_rot(l1,x,[g-i,g,g+i],a1)
+    
+    a2=axis_rot(a1,x,g)
+    return a2
