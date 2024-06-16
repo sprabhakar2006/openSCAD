@@ -8565,3 +8565,42 @@ def best_fit_plane(l1):
     
     a2=axis_rot(a1,x,g)
     return a2
+
+def path_extrude_over_multiple_sec_open(sec_1,path,twist=0):
+    '''
+    function to extrude multiple closed sections to an open path
+    '''
+    if twist==0:
+        p1=path[:-1]
+        p2=path[1:]
+        p1,p2=array([p1,p2])
+        v1=p2-p1
+        u1=v1/norm(v1,axis=1).reshape(-1,1)
+        v2=concatenate([[u1[0]],(u1[1:]+u1[:-1])/2,[u1[-1]]])
+        sec2=[]
+        for i in range(len(path)):
+            sec1=translate(path[i],sec2vector(v2[i],sec_1[i]))
+            sec2.append(sec1)
+        return sec2
+    elif twist==1:
+        sec=[[1,0],[0,1],[-1,0],[0,-1]]
+        t_l=tangents_along_path(path)[1:-1]
+        v1=array([array(path)[1]-array(path)[0]]).tolist()+ \
+        array([array(p[1])-array(p[0]) for p in t_l]).tolist()+ \
+        array([array(path)[-1]-array(path)[-2]]).tolist()
+        sol_1=[translate(path[i],sec2vector(v1[i],sec))  for i in range(len(path))]
+        sol_2=align_sol(sol_1,360/len(t_l)/2)
+        sol_3=[]
+        for i in range(len(path)):
+            cp_1=array(sec_1[i]).mean(0)
+            sec_2=translate_2d(-cp_1,sec_1[i])
+            sol_3.append(translate(path[i],sec2vector(v1[i],sec_2)))
+            
+        sol_4=align_sol(sol_3,360/len(sol_3)/2)
+        sol_5=[]
+        for i in range(len(path)):
+            a=mid_point([sol_1[i][0],sol_1[i][2]])
+            v2=array(sol_2[i][0])-array(a)
+            v3=array(sol_2[i][1])-array(a)
+            sol_5.append(translate(-v3*cp_1[0],translate(-v2*cp_1[1],sol_4[i])))
+        return sol_5
