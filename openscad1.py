@@ -8620,7 +8620,7 @@ def nv2v_xy(v1):
 
 def nv2v_z(v1):
     '''
-    returns a normal vector to any vector in +z direction
+    returns a normal vector to any vector in z direction
     '''
     u1=v1/norm(v1)
     ua=array([0,0,-1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([-1,0,0]) if (u1==[0,0,-1]).all() else array([u1[0],u1[1],0])
