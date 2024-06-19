@@ -8604,3 +8604,29 @@ def path_extrude_over_multiple_sec_open(sec_1,path,twist=0):
             v3=array(sol_2[i][1])-array(a)
             sol_5.append(translate(-v3*cp_1[0],translate(-v2*cp_1[1],sol_4[i])))
         return sol_5
+
+def nv2v_xy(v1):
+    '''
+    returns a normal vector to any vector in x-y plane
+    '''
+    u1=v1/norm(v1)
+    ua=array([0,0,-1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([-1,0,0]) if (u1==[0,0,-1]).all() else array([u1[0],u1[1],0])
+    v2=cross(u1,ua)
+    u2=v2/norm(v2)
+    # u3=array(q(u2,u1,-90))
+    u3=axis_rot(u2,u1,-90)
+    u1,u2,u3=array([u1,u2,u3]).tolist()
+    return u2
+
+def nv2v_z(v1):
+    '''
+    returns a normal vector to any vector in +z direction
+    '''
+    u1=v1/norm(v1)
+    ua=array([0,0,-1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([-1,0,0]) if (u1==[0,0,-1]).all() else array([u1[0],u1[1],0])
+    v2=cross(u1,ua)
+    u2=v2/norm(v2)
+    # u3=array(q(u2,u1,-90))
+    u3=axis_rot(u2,u1,-90)
+    u1,u2,u3=array([u1,u2,u3]).tolist()
+    return u3
