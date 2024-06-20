@@ -8620,13 +8620,71 @@ def nv2v_xy(v1):
 
 def nv2v_z(v1):
     '''
-    returns a normal vector to any vector in z direction
+    returns a normal vector to any vector in +/- z direction
     '''
     u1=v1/norm(v1)
     ua=array([0,0,-1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([-1,0,0]) if (u1==[0,0,-1]).all() else array([u1[0],u1[1],0])
     v2=cross(u1,ua)
     u2=v2/norm(v2)
     # u3=array(q(u2,u1,-90))
-    u3=axis_rot(u2,u1,-90)
+    u3=cross(u2,u1)
     u1,u2,u3=array([u1,u2,u3]).tolist()
     return u3
+
+def s_p(p_l): # starting point
+        '''
+        find the starting point for a convex hull
+        bottom left point
+        '''
+        l_1=array(p_l).round(5)
+        a=l_1[l_1[:,1].argsort()]
+        if len(a[a[:,1]==a[:,1].min()])>1:
+            b=a[a[:,1]==a[:,1].min()]
+            s_pnt=b[b[:,0].argsort()][0]
+        else:
+            s_pnt=a[0]
+        return s_pnt.tolist()
+
+def bend_sec2path(s1,p1,f=0):
+    '''
+    bend any section to an arbitrary path
+    sometimes the sections are flipped, 
+    so to change the direction of sections set 'f' to '1' 
+    '''
+    l1=[l_lenv_o(p1[:i+1]) for i in range(len(p1))]
+    n1=nv(p1)
+    n2=q_rot([f'z{180 if f==0 else 0}'],nv2v_xy(n1))
+    s2=ppplane(s1,n1,p1[0])
+    s3=rot_sec2xy_plane(s2)
+    a1=ang(n2[0],n2[1])
+    s4=c3t2(axis_rot_o([0,0,1],s3,-a1+90+180))
+    n3=cKDTree(s4).query(s_p(s4))[1]
+    s5=axis_rot_o([0,0,1],s4,180)
+    n4=cKDTree(s5).query(s_p(s5))[1]
+    l2=l_len([s1[n3],s1[n4]])
+    s6=scl3dc(surface_line_vector([s2[n3],s2[n4]],n1,1),1.1)
+    n5=nv2v_z(n1)
+    # s7=project_line_on_surface(s2,s6,n5)
+    s7=ppplane(s2,nv(array(s6).reshape(-1,3)),s2[n3])
+    # s7=min_d_points(s7,.000001) if len(s7)!=len(s1) else s7
+    l3=[l_len([s7[n3],s7[i]]) for i in range(len(s7))]
+    s8=[]
+    for i in range(len(l3)):
+        a=arange(len(l1))[(array(l1)>l3[i])][0]
+        v1=array(p1[a])-array(p1[a-1])
+        u1=v1/norm(v1)
+        s8.append(array(p1[a-1])+u1*(l3[i]-l1[a-1]))
+        
+    s8=array(s8).tolist()
+    s9=seg(s8)[:-1]
+    n6=(array(s9[25][1])-array(s9[25][0])).tolist()
+    n7=(array(s8[25])+array(axis_rot(n1,n5,-90))*10).tolist()
+    l4=ppplane(s1,n1,s1[n3])
+    l5=scl3dc(surface_line_vector([l4[n3],l4[n4]],n1,1),1.1)
+    # l6=project_line_on_surface(l4,l5,n5)
+    l6=ppplane(l4,nv(array(l5).reshape(-1,3)),l4[n3])
+    # l6=min_d_points(l6,.000001) if len(l6)!=len(s1) else l6
+    d1=[[l6[i],s1[i]] for i in range(len(l6))]
+    d2=[array(s1[i])-array(l6[i]) for i in range(len(l6))]
+    s11=[translate(d2[i],s8[i]) for i in range(len(s8))]
+    return s11
