@@ -8651,9 +8651,10 @@ def bend_sec2path(s1,p1,f=0):
     sometimes the sections are flipped, 
     so to change the direction of sections set 'f' to '1' 
     '''
+    s1=s1 if f==0 else axis_rot_o([0,0,1],s1,180)
     l1=[l_lenv_o(p1[:i+1]) for i in range(len(p1))]
     n1=nv(p1)
-    n2=q_rot([f'z{180 if f==0 else 0}'],nv2v_xy(n1))
+    n2=q_rot([f'z{180}'],nv2v_xy(n1))
     s2=ppplane(s1,n1,p1[0])
     s3=rot_sec2xy_plane(s2)
     a1=ang(n2[0],n2[1])
