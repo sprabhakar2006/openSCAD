@@ -8683,11 +8683,37 @@ def bend_sec2path(s1,p1,f=0):
     l5=scl3dc(surface_line_vector([l4[n3],l4[n4]],n1,1),1.1)
     # l6=project_line_on_surface(l4,l5,n5)
     l6=ppplane(l4,nv(array(l5).reshape(-1,3)),l4[n3])
-    # l6=min_d_points(l6,.000001) if len(l6)!=len(s1) else l6
-    d1=[[l6[i],s1[i]] for i in range(len(l6))]
-    d2=[array(s1[i])-array(l6[i]) for i in range(len(l6))]
-    s11=[translate(d2[i],s8[i]) for i in range(len(s8))]
-    return s11
+    l7=ppplane(s1,n5,s1[n3])
+
+    d1=[[l6[i],l7[i]] for i in range(len(l6))]
+    d2=[array(l7[i])-array(l6[i]) for i in range(len(l6))]
+    
+    d3=[array(s1[i])-array(l7[i]) for i in range(len(l7))]
+    d4=[l_len([s1[i],l7[i]])  for i in range(len(l7))]
+    s12=[]
+    for i in range(len(s8)):
+        if i<len(s8)-1:
+            p0=translate(d3[i],s8[i])
+            v1=array(p0)-array(s8[i])
+            a=seg(s8)[:-1]
+            v2=array(a[i][1])-array(a[i][0])
+            u2=v2/norm(v2)
+            a1=cross(v2,v1)
+            p1=array(s8[i])+array(axis_rot(a1,u2*d4[i],90))
+            s12.append(p1.tolist())
+        else:
+            p0=translate(d3[i],s8[i])
+            v1=array(p0)-array(s8[i])
+            a=seg(s8)[:-1]
+            v2=array(a[i-1][1])-array(a[i-1][0])
+            u2=v2/norm(v2)
+            a1=cross(v2,v1)
+            p1=array(s8[i])+array(axis_rot(a1,u2*d4[i],90))
+            s12.append(p1.tolist())
+    
+    s13=[translate(d2[i],s12[i]) for i in range(len(s12))]
+    s13=array(s13)[arange(len(s13))[~isnan(array(s13)).any(1)]].tolist()
+    return s13
 
 def sec2surface_1(sec1,s=1):
     '''
