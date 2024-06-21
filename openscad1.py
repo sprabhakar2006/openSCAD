@@ -8688,3 +8688,13 @@ def bend_sec2path(s1,p1,f=0):
     d2=[array(s1[i])-array(l6[i]) for i in range(len(l6))]
     s11=[translate(d2[i],s8[i]) for i in range(len(s8))]
     return s11
+
+def sec2surface_1(sec1,s=1):
+    '''
+    create an aligned surface from a section 'sec1'
+    '''
+    sec2=[sec2surface(sec1[i:]+sec1[:i],s) for i in range(len(sec1))]
+    sec2=[sum([l_len(p1) for p1 in p]) for p in sec2]
+    n2=array(sec2).argmin()
+    sec3=sec2surface(sec1[n2:]+sec1[:n2],s)
+    return sec3
