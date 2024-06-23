@@ -8725,3 +8725,26 @@ def sec2surface_1(sec1,s=1):
     n2=array(sec2).argmin()
     sec3=sec2surface(sec1[n2:]+sec1[:n2],s)
     return sec3
+
+def vector2length(v,l=10):
+    '''
+    draw a defined vector to length 'l'
+    '''
+    u=array(v)/norm(v)
+    v1=(u*l).tolist()
+    return v1
+
+def tangent_on_cir_from_pnt(c,p,l=1,side=0):
+    '''
+    function to draw a tangent on a circle 'c' from any given
+    point 'p' on the circle. length of the tangent 'l'
+    side can be set to either '0' or '1' to draw tangents in
+    2 different directions
+    '''
+    v1=array(p)-array(cp_arc(c))
+    theta1=r2d(arctan(l/norm(v1)))
+    theta2=ang(v1[0],v1[1])
+    l2=norm(v1)/cos(d2r(theta1))
+    pa=translate(cp_arc(c),q_rot2d(theta1+theta2,[l2,0])) if side==0 \
+    else translate(cp_arc(c),q_rot2d(-theta1+theta2,[l2,0]))
+    return [p,pa]
