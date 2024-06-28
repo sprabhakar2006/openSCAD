@@ -8748,3 +8748,15 @@ def tangent_on_cir_from_pnt(c,p,l=1,side=0):
     pa=translate(cp_arc(c),q_rot2d(theta1+theta2,[l2,0])) if side==0 \
     else translate(cp_arc(c),q_rot2d(-theta1+theta2,[l2,0]))
     return [p,pa]
+
+def l_(a):
+    '''
+    convert an array to list
+    '''
+    return array(a).tolist()
+
+def a_(l):
+    '''
+    convert a list to array
+    '''
+    return array(l)
