@@ -2655,6 +2655,32 @@ def perp_points(line,points):
     
     return pnts.tolist()
 
+def perp_points_within_line(line,pnts):
+    '''
+    finds the points whose perpendicular projecton lies within the line
+    '''
+    if array(line).shape[-1]==3:
+        l1=array([line[0],line[1]])
+        v1=l1[1]-l1[0]
+        v2=array(pnts)-l1[0]
+        v2sint=norm(cross(v1,v2),axis=1)/norm(v1)
+        v2cost=einsum('j,ij->i',v1,v2)/norm(v1)
+        tx=v2cost/norm(v1)
+        d1=(tx>=0) & (tx<=1)
+        # v2sint=array(v2sint)[d1].tolist()
+        p=l_(a_(pnts)[d1])
+    elif array(line).shape[-1]==2:
+        l1=array([line[0],line[1]])
+        v1=l1[1]-l1[0]
+        v2=array(pnts)-l1[0]
+        v2sint=cross(v1,v2)/norm(v1)
+        v2cost=einsum('j,ij->i',v1,v2)/norm(v1)
+        tx=v2cost/norm(v1)
+        d1=(tx>=0) & (tx<=1)
+        # v2sint=array(v2sint)[d1].tolist()
+        p=l_(a_(pnts)[d1])
+    return p
+
 def perp_points_with_dist(line,points,f=1):
     '''
     function returns all the points which are projected on the line and has a perpendicular distance of line_length/f.
@@ -2737,7 +2763,7 @@ def next_point(points,s_p):
 #     return [p for p in points if p not in pnts]
 
 def exclude_points(list1,list_to_exclude):
-    list1,list_to_exclude=array(list1),array(list_to_exclude)
+    list1,list_to_exclude=array(list1).round(5),array(list_to_exclude).round(5)
     return list1[~(list_to_exclude==list1[:,None]).all(2).any(1)].tolist()
     
 def exclude_seg(list,list_to_exclude):
@@ -8760,3 +8786,27 @@ def a_(l):
     convert a list to array
     '''
     return array(l)
+
+def convert_to_triangles(sol):
+    '''
+    convert a solid to a triangular mesh
+    '''
+    f1=faces_1(len(sol),len(sol[0]))
+    v1=vertices(sol)
+    return l_(v1[f1])
+
+def match_2_points_list(s0,s1):
+    '''
+    match 2 sets of list of points or sections in space without loosing any point from both the lists
+    
+    '''
+    i=cKDTree(s1).query(s0)[1]
+    j=cKDTree(s0).query(s1)[1]
+    l_i=a_([arange(len(i)),i]).transpose(1,0)
+    l_j=a_([j,arange(len(j))]).transpose(1,0)
+    l_j,l_i
+    s2=a_(exclude_points(l_j,l_i)+l_(l_i))
+    
+    s3=a_(sorted(s2,key=lambda x:(x[0],x[1]))).transpose(1,0)
+    s4=l_(a_([a_(s0)[s3[0]],a_(s1)[s3[1]]]))
+    return s4
