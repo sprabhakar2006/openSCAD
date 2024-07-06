@@ -8810,3 +8810,11 @@ def match_2_points_list(s0,s1):
     s3=a_(sorted(s2,key=lambda x:(x[0],x[1]))).transpose(1,0)
     s4=l_(a_([a_(s0)[s3[0]],a_(s1)[s3[1]]]))
     return s4
+
+def convert_to_triangles_surface(surf):
+    '''
+    convert a surface to a triangular mesh
+    '''
+    f1=faces_surface(len(surf),len(surf[0]))
+    v1=vertices(surf)
+    return l_(v1[f1])
