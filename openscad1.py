@@ -2,7 +2,7 @@ from numpy import *
 from numpy.linalg import *
 import matplotlib.pyplot as plt
 import time
-from scipy.spatial import cKDTree
+from scipy.spatial import cKDTree, Delaunay
 # import pandas as pd
 import sympy as sym
 import math
@@ -8289,18 +8289,19 @@ def swp_sec(sec):
     
     return f'polyhedron({sec},{[n1]},convexity=10);'
 
-def surface_4_lines_enclosed(l_1,l_2,l_3,l_4,n1,n2,s=20):
+def surface_4_lines_enclosed(l_1,l_2,l_3,l_4,n1,n2,s=20,ext=20):
     '''
     create a surface with 4 line
     l_1 and l_2 are 2 opposite lines
     l_3 and l_4 are other 2 opposite lines
-    n1 is length of the surface for lines l_1 and l_2 in the direction required
+    n1 is length of the surface for lines l_1 and l_2 in the direction normal to the arc l1 / l2required
     e.g. it can be [0,30,0] meaning line l_1 is extended 30 mm in y-direction to create a surface
     n2 is the normal for projection of lines cpo([l_3,l_4]) on to surfaces earlier created
     s is the number of slices in the cpo([l_3,l_4])
+    ext is the extension required for the lines l1/ l2, in most of the cases it is not required to be changed
     '''
-    s_1=surface_line_vector(l_1,array(n1)*100,1)
-    s_2=surface_line_vector(l_2,array(n1)*100,1)
+    s_1=surface_line_vector(extend_arc3d(l_1,ext,both=1),array(n1)*100,1)
+    s_2=surface_line_vector(extend_arc3d(l_2,ext,both=1),array(n1)*100,1)
     s_3=slice_sol([l_3,l_4],s)
     s_4=slice_surfaces(s_1,s_2,len(l_3)-1)
     s_5=[project_line_on_surface(cpo(s_3)[i],s_4[i],n2)  for i in range(len(cpo(s_3)))]
@@ -8818,3 +8819,27 @@ def convert_to_triangles_surface(surf):
     f1=faces_surface(len(surf),len(surf[0]))
     v1=vertices(surf)
     return l_(v1[f1])
+
+def lb2p(p0,p1):
+    '''
+    line between 2 points,
+    it is a perpendicular bisector of the line between 2 points
+    '''
+    l1=l_len([p0,p1])
+    c1=circle(l1,p0)
+    c2=circle(l1,p1)
+    l2=s_int1(seg(c1)+seg(c2))
+    return l2
+
+lexico(pnts=[],seq=[0,1,2],ord=[1,1,1]):
+    '''
+    lexicographic ordering of a points list
+    seq: defines the seduence in which the points needs to be ordered
+    e.g. [0,1,2] means first on x then on y and lastly on z coordinates
+    order: means asceding or descending order '1' means ascending and '-1' means descending order
+    e.g. [1,1,1] means all the coordinates should be in ascending order
+    '''
+    if len(pnts[0])==2:        
+        return sorted(pnts,key=lambda x:(ord[0]*x[seq[0]],ord[1]*x[seq[1]]))
+    elif len(pnts[0])==3:
+        return sorted(pnts,key=lambda x:(ord[0]*x[seq[0]],ord[1]*x[seq[1]],ord[2]*x[seq[2]]))
