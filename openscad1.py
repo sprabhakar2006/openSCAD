@@ -8831,7 +8831,7 @@ def lb2p(p0,p1):
     l2=s_int1(seg(c1)+seg(c2))
     return l2
 
-lexico(pnts=[],seq=[0,1,2],ord=[1,1,1]):
+def lexico(pnts=[],seq=[0,1,2],ord=[1,1,1]):
     '''
     lexicographic ordering of a points list
     seq: defines the seduence in which the points needs to be ordered
