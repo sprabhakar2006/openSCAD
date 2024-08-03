@@ -8843,3 +8843,11 @@ def lexico(pnts=[],seq=[0,1,2],ord=[1,1,1]):
         return sorted(pnts,key=lambda x:(ord[0]*x[seq[0]],ord[1]*x[seq[1]]))
     elif len(pnts[0])==3:
         return sorted(pnts,key=lambda x:(ord[0]*x[seq[0]],ord[1]*x[seq[1]],ord[2]*x[seq[2]]))
+
+def fillet_3points(p1,p2,p3,s=10):
+    '''
+    creates a fillet with 3 defined points
+    '''
+    l2=[p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3]
+    arc1=bezier(l2,s)
+    return arc1
