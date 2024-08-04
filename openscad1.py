@@ -8860,3 +8860,37 @@ def surface2sec(surf):
     d=l_(array(surf).transpose(1,0,2))
     e=[d[i]+flip(d[-i-1]) for i in range(int(a/2))]
     return e
+
+def join_arcs_closed(pl,rl,ol,ls,s):
+    '''
+    join various arcs
+    pl: points list for the arcs
+    rl: radius list for the arcs
+    ol: orientation list i.e. clockwise (1) or counter clockwise(-1)
+    ls: long(1) or small(0) arcs list
+    s: number of segments of the list
+    '''
+    a=seg(pl)
+    a_l=[]
+    for i in range(len(a)):
+        a_l.append(arc_2p(a[i][0],a[i][1],rl[i],ol[i],s) if ls[i]==0 else
+                  arc_long_2p(a[i][0],a[i][1],rl[i],ol[i],s))
+    a_l=equidistant_path(l_(concatenate(a_l)),s)
+    return a_l
+
+def join_arcs_open(pl,rl,ol,ls,s):
+    '''
+    join various arcs
+    pl: points list for the arcs
+    rl: radius list for the arcs
+    ol: orientation list i.e. clockwise (1) or counter clockwise(-1)
+    ls: long(1) or small(0) arcs list
+    s: number of segments of the list
+    '''
+    a=seg(pl)[:-1]
+    a_l=[]
+    for i in range(len(a)):
+        a_l.append(arc_2p(a[i][0],a[i][1],rl[i],ol[i],s) if ls[i]==0 else
+                  arc_long_2p(a[i][0],a[i][1],rl[i],ol[i],s))
+    a_l=equidistant_path(l_(concatenate(a_l)),s)
+    return a_l
