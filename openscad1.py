@@ -8851,3 +8851,12 @@ def fillet_3points(p1,p2,p3,s=10):
     l2=[p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3]
     arc1=bezier(l2,s)
     return arc1
+
+def surface2sec(surf):
+    '''
+    reverse of sec2surface_1 function
+    '''
+    a,b,c=array(surf).transpose(1,0,2).shape
+    d=l_(array(surf).transpose(1,0,2))
+    e=[d[i]+flip(d[-i-1]) for i in range(int(a/2))]
+    return e
