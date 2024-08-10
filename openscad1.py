@@ -2195,12 +2195,25 @@ def comb(n,i):
     '''
     return int(math.factorial(n)/(math.factorial(i)*math.factorial(n-i)))
 
+# def bezier(p,s=10):
+#     '''
+#     bezier curve defined by points 'p' and number of segments 's'
+#     refer file "example of various functions" for application
+#     '''
+#     return array([array([ comb((len(p)-1),i)*(1-t)**((len(p)-1)-i)*t**i*array(p[i])  for i in range(len(p))]).sum(0) for t in linspace(0,1,s)]).tolist()
+
 def bezier(p,s=10):
     '''
     bezier curve defined by points 'p' and number of segments 's'
     refer file "example of various functions" for application
     '''
-    return array([array([ comb((len(p)-1),i)*(1-t)**((len(p)-1)-i)*t**i*array(p[i])  for i in range(len(p))]).sum(0) for t in linspace(0,1,s)]).tolist()
+    p=a_(p)
+    n=len(p)
+    k=n-1
+    f=[[p[i]*comb(k,i)*u**i*(1-u)**(k-i) for i in range(n)] 
+       for u in linspace(0,1,s)]    
+    p1=l_(a_([p.sum(0) for p in a_(f)]))
+    return p1
 
 def arc_3d(v=[0,0,1],r=1,theta1=0,theta2=360,cw=-1,s=50):
     '''
@@ -6005,19 +6018,19 @@ def path2path1_closed(path1,path):
     return p_rev[:len(path1)]
 
 
-def bspline_cubic(px,s=10):
-    '''
-    draws a cubic bspline curve for the given control points.
-    's' defines the number of points in a bspline curve as (len(px)-2)*s
-    '''
-    k=3
-    py=array(px[k-2:-(k-2)])
-    pn=px[:(k-2)]+array([array([py[i],(py[i]+py[i+1])/2]) for i in range(len(py)-1)]).reshape(-1,3).tolist()+px[-(k-1):]
+# def bspline_cubic(px,s=10):
+#     '''
+#     draws a cubic bspline curve for the given control points.
+#     's' defines the number of points in a bspline curve as (len(px)-2)*s
+#     '''
+#     k=3
+#     py=array(px[k-2:-(k-2)])
+#     pn=px[:(k-2)]+array([array([py[i],(py[i]+py[i+1])/2]) for i in range(len(py)-1)]).reshape(-1,3).tolist()+px[-(k-1):]
 
 
-    a=seg([i for i in range(len(pn)) if i%(k-1)==0])[:-1]
-    b=[bezier(pn[i[0]:i[1]+1],s) for i in a]
-    return array(b).reshape(-1,3).tolist()
+#     a=seg([i for i in range(len(pn)) if i%(k-1)==0])[:-1]
+#     b=[bezier(pn[i[0]:i[1]+1],s) for i in a]
+#     return array(b).reshape(-1,3).tolist()
 
     
 # def ip_triangle(sol1,p0):
@@ -8894,3 +8907,32 @@ def join_arcs_open(pl,rl,ol,ls,s):
                   arc_long_2p(a[i][0],a[i][1],rl[i],ol[i],s))
     a_l=equidistant_path(l_(concatenate(a_l)),s)
     return a_l
+
+def bspline(pl,deg=3,s=100):
+    '''
+    draws bspline curve for control points list 'pl'
+    degree of curve 'deg' which should lie 0<=deg<len(p0)
+    s: number of points in the resultant curve
+    '''
+    def t(i,k,n):
+        return 0 if i<=k else i-k if (i>k and i<=n) else n-k+1
+
+    def N(i,k,u,n,ak):
+
+        if k>0:
+            a1=(u-t(i,ak,n))
+            b1=(t(i+k,ak,n)-t(i,ak,n))
+            a2=(t(i+k+1,ak,n)-u)
+            b2=(t(i+k+1,ak,n)-t(i+1,ak,n))
+            a=(a1/b1 if b1!=0 else 0)*N(i,k-1,u,n,ak)+  \
+               (a2/b2 if b2!=0 else 0)*N(i+1,k-1,u,n,ak)     
+            return a
+        elif k==0 and u>t(i,ak,n) and u<=t(i+1,ak,n):
+            return 1
+        else:
+            return 0
+    p0=a_(pl)
+    n=len(p0)-1
+    k=deg
+    p1=l_(a_([a_([p0[i]*N(i,k,u,n,ak=deg) for i in range(len(p0))]).sum(0) for u in linspace(0,n-k+1,s)]))
+    return p1
