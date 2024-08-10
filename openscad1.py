@@ -7062,10 +7062,10 @@ def convert_3lines2surface(l1,l2,l3,s=50):
 
 def convert_lines2surface_spline(lines,s=50):
     '''
-    create surface with lines, method used is bspline_cubic
+    create surface with lines, method used is bspline
     '''
     lines=[lines[0]]+[path2path1(lines[0],lines[i])  for i in range(1,len(lines))]
-    surf_1=[bspline_cubic(p,s) for p in cpo(lines)]
+    surf_1=[bspline(p,2,s) for p in cpo(lines)]
     return surf_1
 
 # def SurfaceFrom3LinesInDifferentPlanes(w1,w2,w3,o=0,s=50):
@@ -8908,7 +8908,7 @@ def join_arcs_open(pl,rl,ol,ls,s):
     a_l=equidistant_path(l_(concatenate(a_l)),s)
     return a_l
 
-def bspline(pl,deg=3,s=100):
+def bspline_open(pl,deg=3,s=100):
     '''
     draws bspline curve for control points list 'pl'
     degree of curve 'deg' which should lie 0<=deg<len(p0)
@@ -8931,6 +8931,37 @@ def bspline(pl,deg=3,s=100):
             return 1
         else:
             return 0
+    tr=a_(pl[0])
+    p0=a_(translate(-tr,pl))
+    n=len(p0)-1
+    k=deg
+    p1=l_(a_([a_([p0[i]*N(i,k,u,n,ak=deg) for i in range(len(p0))]).sum(0) for u in linspace(0,n-k+1,s)]))
+    return translate(tr,p1)
+
+def bspline_closed(pl,deg=3,s=100):
+    '''
+    draws bspline closed loop curve for control points list 'pl'
+    degree of curve 'deg' which should lie 0<=deg<len(p0)
+    s: number of points in the resultant curve
+    '''
+    def t(i,k,n):
+        return i-k if i<=k else i-k if (i>k and i<=n) else i-k
+
+    def N(i,k,u,n,ak):
+
+        if k>0:
+            a1=(u-t(i,ak,n))
+            b1=(t(i+k,ak,n)-t(i,ak,n))
+            a2=(t(i+k+1,ak,n)-u)
+            b2=(t(i+k+1,ak,n)-t(i+1,ak,n))
+            a=(a1/b1 if b1!=0 else 0)*N(i,k-1,u,n,ak)+  \
+               (a2/b2 if b2!=0 else 0)*N(i+1,k-1,u,n,ak)     
+            return a
+        elif k==0 and u>t(i,ak,n) and u<=t(i+1,ak,n):
+            return 1
+        else:
+            return 0
+    pl=pl+pl[:deg]
     tr=a_(pl[0])
     p0=a_(translate(-tr,pl))
     n=len(p0)-1
