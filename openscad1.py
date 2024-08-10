@@ -8931,8 +8931,9 @@ def bspline(pl,deg=3,s=100):
             return 1
         else:
             return 0
-    p0=a_(pl)
+    tr=a_(pl[0])
+    p0=a_(translate(-tr,pl))
     n=len(p0)-1
     k=deg
     p1=l_(a_([a_([p0[i]*N(i,k,u,n,ak=deg) for i in range(len(p0))]).sum(0) for u in linspace(0,n-k+1,s)]))
-    return p1
+    return translate(tr,p1)
