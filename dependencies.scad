@@ -503,12 +503,14 @@ function c3t2(sec)=is_undef(sec.x.x)?[sec.x,sec.y]:[for(p=sec)[p.x,p.y]];
 // sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5);
 // echo(sum_v(sec)); //[95.9558, 82.3332]
 
-function sum_v(prism)=let(
-decision=is_num(prism.x.x)?0:1,
-sum=decision==0?
-[sum(sec*[1,0]),sum(sec*[0,1])]:
-let(cg=[for(p=prism)[sum(p*[1,0,0]),sum(p*[0,1,0]),sum(p*[0,0,1])]])[sum(cg*[1,0,0]),sum(cg*[0,1,0]),sum(cg*[0,0,1])]
-)sum;
+//function sum_v(prism)=let(
+//decision=is_num(prism.x.x)?0:1,
+//sum=decision==0?
+//[sum(sec*[1,0]),sum(sec*[0,1])]:
+//let(cg=[for(p=prism)[sum(p*[1,0,0]),sum(p*[0,1,0]),sum(p*[0,0,1])]])[sum(cg*[1,0,0]),sum(cg*[0,1,0]),sum(cg*[0,0,1])]
+//)sum;
+
+
 
 //function to draw tangent line joining 2 circles with radiuses "r1" and "r2" with center points "cp1" and "cp2" respectively. This function draws tangent line only one side
 // e.g. try this code below:
@@ -2020,7 +2022,21 @@ function lim(t,s=0,e=1)=t>=s&&t<=e;
 // v3=[10,11,12];
 // echo(t([v1,v2,v3])); // => ECHO: [[2, 7, 10], [3, 8, 11], [5, 9, 12]]
  
-function t(m)=[[m.x.x,m.y.x,m.z.x],[m.x.y,m.y.y,m.z.y],[m.x.z,m.y.z,m.z.z]];
+//function t(m)=[[m.x.x,m.y.x,m.z.x],[m.x.y,m.y.y,m.z.y],[m.x.z,m.y.z,m.z.z]];
+
+function t(l1)=
+len(l1[0])==2?
+let(
+a=[for(p=l1)p.x],
+b=[for(p=l1)p.y]
+)
+[a,b]:
+let(
+a=[for(p=l1)p.x],
+b=[for(p=l1)p.y],
+c=[for(p=l1)p.z]
+)
+[a,b,c];
 
 // function to select in between points of a section
 // example:
@@ -2085,7 +2101,7 @@ function add_p3(p,p1=[0,0,0,0,list],n,i=0)= n==0?p1:add_p3(p,[p[i][0]+p1[0],p[i]
 
 // experimental
 
-function pts3(p)=[for(n=[1:len(p)])add_p3(p=p,p1=[0,0,0,0],n=n,i=0)];
+//function pts3(p)=[for(n=[1:len(p)])add_p3(p=p,p1=[0,0,0,0],n=n,i=0)];
 
     
 // function to calculate the bounding box dimensions of a prism
@@ -3543,3 +3559,108 @@ polyhedron(v1,f1,convexity=10);
 
 function slice_sol(sol_1,n=10)=
 cpo([for(p=cpo(sol_1)) m_points_so(p,n)]);
+
+//input to basis function for bspline_open
+function ti(i,k,n)=
+
+i<=k?0:i>k && i<=n?i-k:n-k+1;
+
+
+//input to basis function for bspline_close
+function tic(i,k,n)=
+
+i<=k?i-k:i>k && i<=n?i-k:i-k;
+
+
+
+//bspline basis function for open curve
+function N(i,k,u,n,ak)=
+
+ let(
+a1=(u-ti(i,ak,n)),
+b1=(ti(i+k,ak,n)-ti(i,ak,n)),
+a2=(ti(i+k+1,ak,n)-u),
+b2=(ti(i+k+1,ak,n)-ti(i+1,ak,n)),
+a=k>0&&b1==0?0:a1/b1,
+b=k>0&&b2==0?0:a2/b2
+)
+k>0?a*N(i,k-1,u,n,ak)+b*N(i+1,k-1,u,n,ak):k==0&&u>ti(i,ak,n)&&u<=ti(i+1,ak,n)?1:0;
+
+
+//bspline basis function for closed curve
+function Nc(i,k,u,n,ak)=
+
+ let(
+a1=(u-tic(i,ak,n)),
+b1=(tic(i+k,ak,n)-tic(i,ak,n)),
+a2=(tic(i+k+1,ak,n)-u),
+b2=(tic(i+k+1,ak,n)-tic(i+1,ak,n)),
+a=k>0&&b1==0?0:a1/b1,
+b=k>0&&b2==0?0:a2/b2
+)
+k>0?a*Nc(i,k-1,u,n,ak)+b*Nc(i+1,k-1,u,n,ak):k==0&&u>tic(i,ak,n)&&u<=tic(i+1,ak,n)?1:0;
+
+
+
+//function to create bspline curve open
+function bspline_open(pl,deg,s)=
+let(
+p0=trns(pl[0]*-1,pl),
+n=len(p0)-1,
+k=deg,
+p1=[for(u=[0:(n-k+2)/s:n-k+1]) [for(i=[0:len(p0)-1]) p0[i]*N(i,k,u,n,deg)]],
+p2=[for(p=p1) sum_v(p)]
+)trns(pl[0],p2);
+
+//function to create bspline curve closed
+function bspline_closed(pl,deg,s)=
+let(
+
+px=trns(pl[0]*-1,pl),
+p0=concat(px,loop(px,0,deg-1)),
+n=len(p0)-1,
+k=deg,
+p1=[for(u=[0:(n-k+2)/s:n-k+1]) [for(i=[0:len(p0)-1]) p0[i]*Nc(i,k,u,n,deg)]],
+p2=[for(p=p1) sum_v(p)]
+)trns(pl[0],p2);
+
+
+//function to sum list of vectors
+//example:
+//echo(sum_v([[1,2,3],[10,20,30],[100,200,300]])); => [111,222,333]
+function sum_v(list)=
+let(
+n=len(list),
+v1=[for(i=[0:n-1])1]
+
+)t(list)*v1;
+
+
+
+
+//function to transpose any list of vectors
+//example:
+//echo(t([[1,2],[10,20],[100,200],[1000,2000]])); =>[[1,10,100,1000],[2,20,200,2000]]
+
+function t(l1)=
+len(l1[0])==2?
+let(
+a=[for(p=l1)p.x],
+b=[for(p=l1)p.y]
+)
+[a,b]:
+let(
+a=[for(p=l1)p.x],
+b=[for(p=l1)p.y],
+c=[for(p=l1)p.z]
+)
+[a,b,c];
+
+
+
+//function to create turtle like movement
+//example:
+//echo(pts3([[0,0,0],[10,0,1],[0,10,-1]]));=> [[0,0,0],[10,0,1],[10,10,0]]
+function pts3(pl)=
+[for(i=[0:len(pl)-1]) sum_v(loop(pl,0,i))];
+
