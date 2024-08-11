@@ -8927,16 +8927,17 @@ def bspline_open(pl,deg=3,s=100):
             a=(a1/b1 if b1!=0 else 0)*N(i,k-1,u,n,ak)+  \
                (a2/b2 if b2!=0 else 0)*N(i+1,k-1,u,n,ak)     
             return a
-        elif k==0 and u>t(i,ak,n) and u<=t(i+1,ak,n):
+        elif k==0 and u>=t(i,ak,n) and u<=t(i+1,ak,n):
             return 1
         else:
             return 0
-    tr=a_(pl[0])
-    p0=a_(translate(-tr,pl))
+    # tr=a_(pl[0])
+    # p0=a_(translate(-tr,pl))
+    p0=a_(pl)
     n=len(p0)-1
     k=deg
     p1=l_(a_([a_([p0[i]*N(i,k,u,n,ak=deg) for i in range(len(p0))]).sum(0) for u in linspace(0,n-k+1,s)]))
-    return translate(tr,p1)
+    return p1
 
 def bspline_closed(pl,deg=3,s=100):
     '''
@@ -8962,9 +8963,49 @@ def bspline_closed(pl,deg=3,s=100):
         else:
             return 0
     pl=pl+pl[:deg]
-    tr=a_(pl[0])
-    p0=a_(translate(-tr,pl))
+    # tr=a_(pl[0])
+    # p0=a_(translate(-tr,pl))
+    p0=a_(pl)
     n=len(p0)-1
     k=deg
     p1=l_(a_([a_([p0[i]*N(i,k,u,n,ak=deg) for i in range(len(p0))]).sum(0) for u in linspace(0,n-k+1,s)]))
-    return translate(tr,p1)
+    return p1
+
+def bspline_surface(pl1,pl2,deg=3,s=100):
+    '''
+    draws bspline surface from 2 control points list 'pl1' and 'pl2'
+    degree of curve 'deg' which should lie 0<=deg<len(p0)
+    s: number of points in the resultant curve
+    '''
+    def t(i,k,n):
+        return 0 if i<=k else i-k if (i>k and i<=n) else n-k+1
+
+    def N(i,k,u,n,ak):
+
+        if k>0:
+            a1=(u-t(i,ak,n))
+            b1=(t(i+k,ak,n)-t(i,ak,n))
+            a2=(t(i+k+1,ak,n)-u)
+            b2=(t(i+k+1,ak,n)-t(i+1,ak,n))
+            a=(a1/b1 if b1!=0 else 0)*N(i,k-1,u,n,ak)+  \
+               (a2/b2 if b2!=0 else 0)*N(i+1,k-1,u,n,ak)     
+            return a
+        elif k==0 and u>=t(i,ak,n) and u<=t(i+1,ak,n):
+            return 1
+        else:
+            return 0
+    # tr0=a_(pl1[0])
+    # tr1=a_(pl2[0])
+    # p0=a_(translate(-tr0,pl1))
+    # p1=a_(translate(-tr1,pl2))
+    p0=a_(pl1)
+    p1=a_(pl2)
+    n=len(p0)-1
+    m=len(p1)-1
+    k=deg
+    ij=a_([[[i,j] for j in range(len(p1))] for i in range(len(p0))]).reshape(-1,2)
+    
+    p2=l_(a_([[a_([(p0[i]+p1[j])*N(i,k,u1,n,ak=deg)*N(j,k,u2,m,ak=deg) for (i,j) in ij]).sum(0) 
+              for u1 in linspace(0,n-k+1,s)] 
+              for u2 in linspace(0,m-k+1,s)]))
+    return p2
