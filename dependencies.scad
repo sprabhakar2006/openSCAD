@@ -3616,13 +3616,13 @@ p2=[for(p=p1) sum_v(p)]
 function bspline_closed(pl,deg,s)=
 let(
 
-px=trns(pl[0]*-1,pl),
-p0=concat(px,loop(px,0,deg-1)),
+//px=trns(pl[0]*-1,pl),
+p0=concat(pl,loop(pl,0,deg-1)),
 n=len(p0)-1,
 k=deg,
 p1=[for(u=[0:(n-k+1)/s:n-k+1]) [for(i=[0:len(p0)-1]) p0[i]*Nc(i,k,u,n,deg)]],
 p2=[for(p=p1) sum_v(p)]
-)trns(pl[0],p2);
+)p2;
 
 
 //function to sum list of vectors
