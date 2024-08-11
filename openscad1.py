@@ -8971,7 +8971,7 @@ def bspline_closed(pl,deg=3,s=100):
     p1=l_(a_([a_([p0[i]*N(i,k,u,n,ak=deg) for i in range(len(p0))]).sum(0) for u in linspace(0,n-k+1,s)]))
     return p1
 
-def bspline_surface(pl1,pl2,deg=3,s=100):
+def bspline_surface_open(pl,deg=3,s1=100,s2=100):
     '''
     draws bspline surface from 2 control points list 'pl1' and 'pl2'
     degree of curve 'deg' which should lie 0<=deg<len(p0)
@@ -8994,18 +8994,13 @@ def bspline_surface(pl1,pl2,deg=3,s=100):
             return 1
         else:
             return 0
-    # tr0=a_(pl1[0])
-    # tr1=a_(pl2[0])
-    # p0=a_(translate(-tr0,pl1))
-    # p1=a_(translate(-tr1,pl2))
-    p0=a_(pl1)
-    p1=a_(pl2)
-    n=len(p0)-1
-    m=len(p1)-1
+    pl=a_(pl)
+    n=len(pl[0])-1
+    m=len(pl)-1
     k=deg
-    ij=a_([[[i,j] for j in range(len(p1))] for i in range(len(p0))]).reshape(-1,2)
+    ij=a_([[[i,j] for j in range(n+1)] for i in range(m+1)]).reshape(-1,2)
     
-    p2=l_(a_([[a_([(p0[i]+p1[j])*N(i,k,u1,n,ak=deg)*N(j,k,u2,m,ak=deg) for (i,j) in ij]).sum(0) 
-              for u1 in linspace(0,n-k+1,s)] 
-              for u2 in linspace(0,m-k+1,s)]))
+    p2=l_(a_([[a_([pl[i][j]*N(i,k,u2,m,ak=deg)*N(j,k,u1,n,ak=deg) for (i,j) in ij]).sum(0) 
+              for u1 in linspace(0,n-k+1,s1)] 
+              for u2 in linspace(0,m-k+1,s2)]))
     return p2
