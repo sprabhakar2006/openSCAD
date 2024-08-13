@@ -8977,30 +8977,27 @@ def bspline_surface_open(pl,deg=3,s1=100,s2=100):
     degree of curve 'deg' which should lie 0<=deg<len(p0)
     s: number of points in the resultant curve
     '''
-    def t(i,k,n):
-        return 0 if i<=k else i-k if (i>k and i<=n) else n-k+1
-
-    def N(i,k,u,n,ak):
-
-        if k>0:
-            a1=(u-t(i,ak,n))
-            b1=(t(i+k,ak,n)-t(i,ak,n))
-            a2=(t(i+k+1,ak,n)-u)
-            b2=(t(i+k+1,ak,n)-t(i+1,ak,n))
-            a=(a1/b1 if b1!=0 else 0)*N(i,k-1,u,n,ak)+  \
-               (a2/b2 if b2!=0 else 0)*N(i+1,k-1,u,n,ak)     
-            return a
-        elif k==0 and u>=t(i,ak,n) and u<=t(i+1,ak,n):
-            return 1
-        else:
-            return 0
-    pl=a_(pl)
-    n=len(pl[0])-1
-    m=len(pl)-1
-    k=deg
-    ij=a_([[[i,j] for j in range(n+1)] for i in range(m+1)]).reshape(-1,2)
-    
-    p2=l_(a_([[a_([pl[i][j]*N(i,k,u2,m,ak=deg)*N(j,k,u1,n,ak=deg) for (i,j) in ij]).sum(0) 
-              for u1 in linspace(0,n-k+1,s1)] 
-              for u2 in linspace(0,m-k+1,s2)]))
+    p1=[bspline_open(p,deg,s1) for p in pl]
+    p2=cpo([bspline_open(p,deg,s2) for p in cpo(p1)])
     return p2
+
+def pol(l,t):# point on line
+    '''
+    find a point on line 'l' at parameter 't' where 0<=t<=1
+    '''
+    def pol1(l,t):
+        return l_(a_(l[0])*(1-t)+a_(l[1])*t)
+    a=l_lenv_o(l)*t
+    b=a_([ l_lenv_o(l[:i]) for i in range(1,len(l))])
+    if a<b[-1]:
+        n=arange(len(b))[b<=a][-1]
+        d1=a-b[n]
+        d2=l_len(b[n:n+2])
+        t1=d1/d2
+        return pol1(l[n:n+2],t1)
+    elif round(a,5)==round(l_lenv_o(l),5):
+        return l[-1]
+    elif len(l)==2:
+        return pol1(l,t)
+    else:
+        raise ValueError('value of parameter 't' should be between 0 - 1')
