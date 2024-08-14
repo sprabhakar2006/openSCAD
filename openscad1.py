@@ -8971,14 +8971,16 @@ def bspline_closed(pl,deg=3,s=100):
     p1=l_(a_([a_([p0[i]*N(i,k,u,n,ak=deg) for i in range(len(p0))]).sum(0) for u in linspace(0,n-k+1,s)]))
     return p1
 
-def bspline_surface_open(pl,deg=3,s1=100,s2=100):
+def bspline_surface_open(pl,deg1=3,deg2=3,s1=100,s2=100):
     '''
     draws bspline surface from 2 control points list 'pl1' and 'pl2'
-    degree of curve 'deg' which should lie 0<=deg<len(p0)
+    degree of curves are 'deg1' and 'deg2' in 2 directions 
+    which should lie 0<=deg1<len(pl[0]) for 'deg1' and
+    0<=deg2<=len(pl) for 'deg2'
     s: number of points in the resultant curve
     '''
-    p1=[bspline_open(p,deg,s1) for p in pl]
-    p2=cpo([bspline_open(p,deg,s2) for p in cpo(p1)])
+    p1=[bspline_open(p,deg1,s1) for p in pl]
+    p2=cpo([bspline_open(p,deg2,s2) for p in cpo(p1)])
     return p2
 
 def pol(l,t):# point on line
@@ -8988,16 +8990,16 @@ def pol(l,t):# point on line
     def pol1(l,t):
         return l_(a_(l[0])*(1-t)+a_(l[1])*t)
     a=l_lenv_o(l)*t
-    b=a_([ l_lenv_o(l[:i]) for i in range(1,len(l))])
+    b=a_([l_len(p) for p in seg(l)[:-1]]).cumsum()
     if a<b[-1]:
         n=arange(len(b))[b<=a][-1]
         d1=a-b[n]
         d2=l_len(b[n:n+2])
         t1=d1/d2
-        return pol1(l[n:n+2],t1)
-    elif round(a,5)==round(l_lenv_o(l),5):
+        return pol1(l[n+1:n+3],t1)
+    elif a==l_lenv_o(l):
         return l[-1]
     elif len(l)==2:
         return pol1(l,t)
     else:
-        raise ValueError('value of parameter 't' should be between 0 - 1')
+        raise ValueError('value of t should be between 0 - 1')
