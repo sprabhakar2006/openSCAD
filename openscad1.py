@@ -9003,3 +9003,18 @@ def pol(l,t):# point on line
         return pol1(l,t)
     else:
         raise ValueError('value of t should be between 0 - 1')
+
+def interpolate(p0,s=100):
+    '''
+    create a smooth line joining all the points in the list p0
+    '''
+    def l_basis(i,n,u):
+        t=[j/(n-1) for j in range(n)]
+        a=[]
+        for j in range(n):
+            a.append((u-t[j])/(t[i]-t[j]) if (t[i]-t[j])!=0 else 1)
+        return prod(a).round(5)
+    n=len(p0)
+    p1=l_(a_([a_([a_(p0[i])*l_basis(i,n,u)  for i in range(n)]).sum(0) 
+           for u in linspace(0,1,s)]))
+    return p1
