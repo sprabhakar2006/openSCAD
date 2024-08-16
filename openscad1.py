@@ -3928,7 +3928,7 @@ def convert_3lines2fillet(pnt3,pnt2,pnt1,f=1.9,s=10,orientation=0,style=0):
     sol=array([pnt3,pnt1,pnt2]).transpose(1,0,2)
 #     sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*f,s) for (p1,p2,p3) in sol]
     if style==0:
-        sol=[array(bezier([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],s)).tolist()[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
+        sol=[array(bspline_open([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],3,s)).tolist()[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
     else:
         sol=[bezier([p1,p2,p3],s)[:s+1]+[p2.tolist()] for (p1,p2,p3) in sol]
     # sol=sol
@@ -5603,7 +5603,7 @@ def convert_3lines2fillet_closed(pnt3,pnt2,pnt1,f=1.9,s=10,style=0):
     
 #     sol=[equidistant_path(array(spline_curve([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],10,2)).tolist(),s)[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
     if style==0:
-        sol=[array(bezier([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],s)).tolist()[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
+        sol=[array(bspline_open([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],3,s)).tolist()[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
     else:
         sol=[bezier([p1,p2,p3],s)[:s+1]+[p2.tolist()] for (p1,p2,p3) in sol]    
     sol=sol+[sol[0]]
@@ -8339,6 +8339,7 @@ def offset_3d(sec,d,type=1):
     refer to the file"example of various functions" for application examples
     type: offset type default is '1' in case of any issue in offset, try with '2'
     '''
+    sec=axis_rot_o([1,0,0],sec,.0001)
     l_2=rot_sec2xy_plane(sec)
     l_3=c3t2(l_2)
     l_4=offset(l_3,d,type)
@@ -8983,7 +8984,7 @@ def bspline_surface_open(pl,deg1=3,deg2=3,s1=100,s2=100):
     p2=cpo([bspline_open(p,deg2,s2) for p in cpo(p1)])
     return p2
 
-def pol(l,t):# point on line
+def polp(l,t):# point on line parameteric
     '''
     find a point on line 'l' at parameter 't' where 0<=t<=1
     '''
