@@ -8993,7 +8993,7 @@ def polp(l,t):# point on line parameteric
     a=l_lenv_o(l)*t
     b=a_([l_len(p) for p in seg(l)[:-1]]).cumsum()
     if a<b[-1]:
-        n=arange(len(b))[b<=a][-1]
+        n=arange(len(b))[b<=a][-1] if ~(a<=b[0]) else 0
         d1=a-b[n]
         d2=l_len(b[n:n+2])
         t1=d1/d2
