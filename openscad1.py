@@ -9030,6 +9030,7 @@ def surface_4lines_enclosed(l1,l2,l3,l4,n=5):
     end point of l4 and end point of l2 should match
     counterclockwise points should match as following
     l1[0]l3[0]->l1[-1]l4[0]->l4[-1]l2[-1]->l2[0]l3[-1]
+    (l1[-1] means end point of l1)
     'n' is the number of segment lines between l1 and l2
     '''
     l5=slice_sol([l1,l2],n)
