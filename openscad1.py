@@ -9019,3 +9019,23 @@ def interpolate(p0,s=100):
     p1=l_(a_([a_([a_(p0[i])*l_basis(i,n,u)  for i in range(n)]).sum(0) 
            for u in linspace(0,1,s)]))
     return p1
+
+def surface_4lines_enclosed(l1,l2,l3,l4,n=5):
+    '''
+    create surface with 4 lines enclosed area
+    l1 and l2 are opposite lines and l3 and l4 are opposite lines
+    starting point of l1 and l3 should match
+    end point of l3 and starting point of l2 should match
+    end point of l1 and starting point of l4 should match
+    end point of l4 and end point of l2 should match
+    counterclockwise points should match as following
+    l1[0]l3[0]->l1[-1]l4[0]->l4[-1]l2[-1]->l2[0]l3[-1]
+    'n' is the number of segment lines between l1 and l2
+    '''
+    l5=slice_sol([l1,l2],n)
+    l3=path2path1(cpo(l5)[0],l3)
+    l4=path2path1(cpo(l5)[-1],l4)
+    l5=cpo([l3]+cpo(l5)+[l4])
+    s1=cpo(slice_sol([l3,l4],len(l5[0])))
+    s1=[path2path1(s1[i],l5[i]) for i in range(len(l5))]
+    return [equidistant_path(p,len(l1)-1) for p in s1]
