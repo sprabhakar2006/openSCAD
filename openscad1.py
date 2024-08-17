@@ -8991,13 +8991,13 @@ def polp(l,t):# point on line parameteric
     def pol1(l,t):
         return l_(a_(l[0])*(1-t)+a_(l[1])*t)
     a=l_lenv_o(l)*t
-    b=a_([l_len(p) for p in seg(l)[:-1]]).cumsum()
+    b=a_([0]+[l_len(p) for p in seg(l)[:-1]]).cumsum()
     if a<b[-1]:
-        n=arange(len(b))[b<=a][-1] if ~(a<=b[0]) else 0
+        n=arange(len(b))[b<=a][-1]
         d1=a-b[n]
         d2=l_len(b[n:n+2])
         t1=d1/d2
-        return pol1(l[n+1:n+3],t1)
+        return pol1(l[n:n+2],t1)
     elif a==l_lenv_o(l):
         return l[-1]
     elif len(l)==2:
@@ -9040,3 +9040,35 @@ def surface_4lines_enclosed(l1,l2,l3,l4,n=5):
     s1=cpo(slice_sol([l3,l4],len(l5[0])))
     s1=[path2path1(s1[i],l5[i]) for i in range(len(l5))]
     return [equidistant_path(p,len(l1)-1) for p in s1]
+
+def lineFromPointTillEnd(l1,t):
+    '''
+    removes the line till parameter t where 0<=t<=1
+    keeps the rest of the line
+    '''
+    p0=polp(l1,t)
+    a=l_lenv_o(l1)*t
+    b=a_([0]+[l_len(p) for p in seg(l1)[:-1]]).cumsum()
+    if a<b[-1]:
+        n=arange(len(b))[b<=a][-1]
+    if n==len(l1)-2:
+        l2=[p0,l1[n+1]]
+    else:
+        l2=[p0]+l1[n+1:]
+    return l2
+
+def lineFromStartTillPoint(l1,t):
+    '''
+    draws line from start till point at parameter t where 0<=t<=1
+    deletes the rest of the line
+    '''
+    p0=polp(l1,t)
+    a=l_lenv_o(l1)*t
+    b=a_([0]+[l_len(p) for p in seg(l1)[:-1]]).cumsum()
+    if a<b[-1]:
+        n=arange(len(b))[b<=a][-1]
+    if n==0:
+        l2=[l1[0],p0]
+    else:
+        l2=l1[:n+1]+[p0]
+    return l2
