@@ -4714,7 +4714,7 @@ def offset_sol(sol,d,o=0):
     in few cases this function may not work 
     
     '''
-    sol=q_rot(['x.001'],sol)
+    # sol=q_rot(['x.001'],sol)
     n=array([len(remove_extra_points(p)) for p in sol]).argmax()
     if o==0:
         sol=[sort_points(sol[n],offset_3d(p,d)) for p in sol]
