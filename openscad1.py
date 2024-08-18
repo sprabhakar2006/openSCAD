@@ -6266,21 +6266,19 @@ def o_3d(i_p,sol,r,o=0,f=1):
 #     i_p1=ip_surf(sol,s)
 #     return i_p1
 
-def o_3d_surf(i_p,sol,r,o=0):
+def o_3d_surf(i_p,sol,r,o=0,f=1):
     '''
     function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset
     '''
     a=i_p_n_surf(i_p,sol)
     b=i_p_t(i_p)
     if o==0:
-        c=l_(array(i_p)+cross(b,a)*r)
-        a=l_(a)
-        i_p1=[project_points_on_surface([c[i]],sol,a[i])[0] for i in range(len(c))]
+        c=array(i_p)+cross(b,a)*r
     elif o==1:
-        c=l_(array(i_p)+cross(a,b)*r)
-        a=l_(a)
-        i_p1=[project_points_on_surface([c[i]],sol,a[i])[0] for i in range(len(c))]
-    
+        c=array(i_p)+cross(a,b)*r
+    s=array([c+a*r*f,c-a*r*f])
+    i_p1=ip_sol2sol(sol,s)
+    # i_p1=[p[0] for p in i_p1]
     return i_p1
 
 def ip_fillet(sol1,sol2,r1,r2,s=20,o=0):
