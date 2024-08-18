@@ -6300,7 +6300,7 @@ def o_3d_surf(i_p,sol,r,o=0,f=1):
     elif o==1:
         c=array(i_p)+cross(a,b)*r
     s=array([c+a*r*f,c-a*r*f])
-    i_p1=ip_sol2sol(sol,s)
+    i_p1=ip_surf2sol(sol,s)
     # i_p1=[p[0] for p in i_p1]
     return i_p1
 
