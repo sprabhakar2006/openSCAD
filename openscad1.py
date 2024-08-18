@@ -6252,18 +6252,35 @@ def o_3d(i_p,sol,r,o=0,f=1):
     # i_p1=[p[0] for p in i_p1]
     return i_p1
 
+# def o_3d_surf(i_p,sol,r,o=0):
+#     '''
+#     function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset
+#     '''
+#     a=i_p_n(i_p,sol)
+#     b=i_p_t(i_p)
+#     if o==0:
+#         c=array(i_p)+cross(b,a)*r
+#     elif o==1:
+#         c=array(i_p)+cross(a,b)*r
+#     s=array([c+a*r,c-a*r])
+#     i_p1=ip_surf(sol,s)
+#     return i_p1
+
 def o_3d_surf(i_p,sol,r,o=0):
     '''
     function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset
     '''
-    a=i_p_n(i_p,sol)
+    a=i_p_n_surf(i_p,sol)
     b=i_p_t(i_p)
     if o==0:
-        c=array(i_p)+cross(b,a)*r
+        c=l_(array(i_p)+cross(b,a)*r)
+        a=l_(a)
+        i_p1=[project_points_on_surface([c[i]],sol,a[i])[0] for i in range(len(c))]
     elif o==1:
-        c=array(i_p)+cross(a,b)*r
-    s=array([c+a*r,c-a*r])
-    i_p1=ip_surf(sol,s)
+        c=l_(array(i_p)+cross(a,b)*r)
+        a=l_(a)
+        i_p1=[project_points_on_surface([c[i]],sol,a[i])[0] for i in range(len(c))]
+    
     return i_p1
 
 def ip_fillet(sol1,sol2,r1,r2,s=20,o=0):
@@ -6289,6 +6306,28 @@ def ip_fillet(sol1,sol2,r1,r2,s=20,o=0):
         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
     return fillet1
 
+# def ip_fillet_surf(surf,sol,r1,r2,s=20):
+#     '''
+#     calculates a fillet at the intersection of surface with solid.
+#     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
+#     r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on surf 
+#     '''
+#     p1=ip_surf(surf,sol)
+#     p2=i_p_p(sol,p1,r1)
+#     if len(p1)!=len(p2):
+#         p2=o_3d(p1,sol,r1)
+#     p3=o_3d_surf(p1,surf,r2)
+#     if len(p1)==len(p2)==len(p3):
+#         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
+#     else:
+#         p2=sort_points(p1,p2)
+#         p2=path2path1(p1,p2)
+#         p3=sort_points(p1,p3)
+#         p3=path2path1(p1,p3)
+#         p1,p2,p3=align_sol_1([p1,p2,p3])
+#         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
+#     return fillet1
+
 def ip_fillet_surf(surf,sol,r1,r2,s=20):
     '''
     calculates a fillet at the intersection of surface with solid.
@@ -6310,7 +6349,6 @@ def ip_fillet_surf(surf,sol,r1,r2,s=20):
         p1,p2,p3=align_sol_1([p1,p2,p3])
         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
     return fillet1
-
 
 # def i_line_fillet(sol1,sol2,ip,r1,r2,s=20,o=0):
 #     '''
@@ -9125,3 +9163,40 @@ def movePointOnLine(l1,p0,d):
     t3=t1+t2
     p1=polp(l1,t3)
     return p1
+
+def ip_triangle_surf(ip,sol1):
+    '''
+    function to find the triangles on the solid 'sol1' where the intersection points list 'ip' lies
+    '''
+    v,f1=vnf1(sol1)
+    tri=array(v)[array(f1)]
+    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+    p01,p02=p1-p0,p2-p0
+    n1=cross(p01,p02)
+    n1=n1/(norm(n1,axis=1).reshape(-1,1)+0)
+    tri=tri[~((n1==[0,0,0]).all(1))]
+    n1=n1[~((n1==[0,0,0]).all(1))]
+    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+    p01,p02=p1-p0,p2-p0
+    la=array(ip)
+    lab=n1
+
+    iim=array([lab,-p01,-p02]).transpose(1,0,2).transpose(0,2,1)
+    im=inv(iim)
+
+    x=einsum('jkl,ijl->ijk',im,(p0-la[:,None]))
+    t=x[:,:,0].round(3)
+    u=x[:,:,1].round(3)
+    v=x[:,:,2].round(3)
+    decision=(t>=0)&(t<=1)&(u>=0)&(u<=1)&(v>=0)&(v<=1)&((u+v)<=1)
+    tri_1=array([tri[decision[i]][0] for i in range(len(ip))]).tolist()
+
+    return tri_1
+
+def i_p_n_surf(px,sol1):
+    tri=array(ip_triangle_surf(px,sol1))
+    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+    p01,p02=p1-p0,p2-p0
+    v3=cross(p01,p02)
+    v3=v3/norm(v3,axis=1).reshape(-1,1)
+    return v3
