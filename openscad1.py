@@ -4760,6 +4760,29 @@ def ip_sol2sol(sol1,sol2,n=0):
 
     return [p[n] for p in c if p!=[]]
 
+def ip_surf2sol(sol1,sol2,n=0):
+    line=array([ seg(p)[:-1] for p in cpo(sol2)])
+    v,f1=vnf1(sol1)
+    tri=array(v)[array(f1)]
+    line=array([ seg(p)[:-1] for p in cpo(sol2)])
+    tri.shape,line.shape
+    la,lb=line[:,:,0],line[:,:,1]
+    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+    lab=lb-la
+    p01,p02=p1-p0,p2-p0
+    t=einsum('kl,ijkl->ijk',cross(p01,p02),la[:,:,None]-p0)/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00000)
+    u=einsum('ijkl,ijkl->ijk',cross(p02[None,None,:,:],(-lab)[:,:,None,:]),(la[:,:,None,:]-p0[None,None,:,:]))/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00000)
+    v=einsum('ijkl,ijkl->ijk',cross((-lab)[:,:,None,:],p01[None,None,:,:]),(la[:,:,None,:]-p0[None,None,:,:]))/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00000)
+    condition=(t>=0)&(t<=1)&(u>=0)&(u<=1)&(v>=0)&(v<=1)&(u+v<1)
+
+    a=(la[:,None,:,None,:]+lab[:,None,:,None,:]*t[:,None,:,:,None])
+    b=condition[:,None,:,:]
+    c=[]
+    for i in range(len(a)):
+        c.append(a[i][b[i]].tolist())
+
+    return [p[n] for p in c if p!=[]]
+
 def ip_tri2sol(v,f1,sol2):
     line=array([ seg(p)[:-1] for p in cpo(sol2)])
     
@@ -6332,7 +6355,7 @@ def ip_fillet_surf(surf,sol,r1,r2,s=20):
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
     r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on surf 
     '''
-    p1=ip_surf(surf,sol)
+    p1=ip_surf2sol(surf,sol)
     p2=i_p_p(sol,p1,r1)
     if len(p1)!=len(p2):
         p2=o_3d(p1,sol,r1)
@@ -9198,3 +9221,4 @@ def i_p_n_surf(px,sol1):
     v3=cross(p01,p02)
     v3=v3/norm(v3,axis=1).reshape(-1,1)
     return v3
+
