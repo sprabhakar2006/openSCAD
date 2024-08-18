@@ -8367,34 +8367,59 @@ def intersection_between_2_sketches(s1,s2):
     ip_1=s_int1(c)
     return ip_1
 
-def pol(p1,l1):
+# def pol(p1,l1):
+#     '''
+#     point on line
+#     finds whether a point is on a line or not
+#     returns True or False
+#     '''
+#     v1=l1[:-1]
+#     v2=l1[1:]
+#     v3=array(v2)-array(v1)
+#     v4=array(p1)-array(v1)
+#     u3=(v3/norm(v3,axis=1).reshape(-1,1)).round(4)
+#     u4=(v4/norm(v4,axis=1).reshape(-1,1)).round(4)
+#     dec=(array(p1).round(4)==array(l1[0]).round(4)).all()
+#     return True if dec==True else (u3==u4).any()
+
+def pol(p0,l1):
     '''
     point on line
     finds whether a point is on a line or not
     returns True or False
     '''
-    v1=l1[:-1]
-    v2=l1[1:]
-    v3=array(v2)-array(v1)
-    v4=array(p1)-array(v1)
-    u3=(v3/norm(v3,axis=1).reshape(-1,1)).round(4)
-    u4=(v4/norm(v4,axis=1).reshape(-1,1)).round(4)
-    dec=(array(p1).round(4)==array(l1[0]).round(4)).all()
-    return True if dec==True else (u3==u4).any()
+    try:
+        timeToReachPoint(p0,l1)
+    except:
+        return False
+    else:
+        return True
 
-def i_p_p(surf_1,i_p_l,d=1):
+# def i_p_p(surf_1,i_p_l,d=1):
+#     '''
+#     function to project the intersection point on the cutting lines based on the distance 'r'
+#     '''
+#     surf_1=cpo(surf_1)
+#     r_ipl=[]
+#     for i in range(len(i_p_l)):
+#         if pol(i_p_l[i],surf_1[i])==1:
+#             l0=[i_p_l[i]]+surf_1[i][cKDTree(surf_1[i]).query(i_p_l[i],2)[1].max():]
+#             s=l_lenv_o(l0)/d
+#             p1=equidistant_path(l0,s)[1]
+#             r_ipl.append(p1)
+#     return r_ipl
+
+def i_p_p(sol,ip1,d=1):
     '''
-    function to project the intersection point on the cutting lines based on the distance 'r'
+    function to project the intersection point on the cutting lines based on the distance 'd'
     '''
-    surf_1=cpo(surf_1)
-    r_ipl=[]
-    for i in range(len(i_p_l)):
-        if pol(i_p_l[i],surf_1[i])==1:
-            l0=[i_p_l[i]]+surf_1[i][cKDTree(surf_1[i]).query(i_p_l[i],2)[1].max():]
-            s=l_lenv_o(l0)/d
-            p1=equidistant_path(l0,s)[1]
-            r_ipl.append(p1)
-    return r_ipl
+    if len(ip1)==len(cpo(sol)):
+        ip2=[movePointOnLine(cpo(sol)[i],ip1[i],d) for i in range(len(ip1))]
+    else:
+        ip2=[[ movePointOnLine(cpo(sol)[i],ip1[j],d) for j in range(len(ip1)) if pol(ip1[j],cpo(sol)[i])==1] for i in range(len(cpo(sol)))]
+        ip2=[p[0] for p in ip2 if p!=[]]
+    return ip2
+
 
 def bezier_c(sec,sp=10,ep=-10,s=20):
     '''
