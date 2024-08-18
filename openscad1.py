@@ -9072,3 +9072,31 @@ def lineFromStartTillPoint(l1,t):
     else:
         l2=l1[:n+1]+[p0]
     return l2
+
+def timeToReachPoint(p0,l1):
+    '''
+    p0: point
+    l1: line
+    if the point is on the line, it gives back time
+    where 0<=time<=1
+    '''
+    a=a_(seg(l1)[:-1])
+    b,c=a[:,0],a[:,1]
+    d=p0-b
+    d=d/norm(d,axis=1).reshape(-1,1)
+    e=c-b
+    e=e/norm(e,axis=1).reshape(-1,1)
+    n=arange(len(a))[(d.round(5)==e.round(5)).all(1)][0]
+    d1=l_len([p0,l1[n]])+l_lenv_o(l1[:n+1])
+    t1=d1/l_lenv_o(l1)
+    return t1
+
+def movePointOnLine(l1,p0,d):
+    '''
+    move a point 'p0' on line 'l1' by a distance 'd'
+    '''
+    t1=d/l_lenv_o(l1)
+    t2=timeToReachPoint(p0,l1)
+    t3=t1+t2
+    p1=polp(l1,t3)
+    return p1
