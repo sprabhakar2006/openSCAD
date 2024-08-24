@@ -9222,3 +9222,14 @@ def i_p_n_surf(px,sol1):
     v3=v3/norm(v3,axis=1).reshape(-1,1)
     return v3
 
+def c23(pl):
+    '''
+    convert a points list from 2d to 3d coordinate system
+    '''
+    return c2t3(pl)
+
+def c32(pl):
+    '''
+    convert a points list from 3d to 2d coordinate system
+    '''
+    return c3t2(pl)
