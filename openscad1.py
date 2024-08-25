@@ -9179,11 +9179,15 @@ def movePointOnLine(l1,p0,d):
     '''
     move a point 'p0' on line 'l1' by a distance 'd'
     '''
-    t1=d/l_lenv_o(l1)
-    t2=timeToReachPoint(p0,l1)
-    t3=t1+t2
-    p1=polp(l1,t3)
-    return p1
+    if p0!=l1[0]:
+        t1=d/l_lenv_o(l1)
+        t2=timeToReachPoint(p0,l1)
+        t3=t1+t2
+        p1=polp(l1,t3)
+        return p1
+    elif p0==l1[0]:
+        t1=d/l_lenv_o(l1)
+        return polp(l1,t1)
 
 def ip_triangle_surf(ip,sol1):
     '''
