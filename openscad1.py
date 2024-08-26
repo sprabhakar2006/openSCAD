@@ -3748,9 +3748,9 @@ def c2ro(sol,s):#circular to rectangulat orientation
     's': number of segments required between each straight line segments
     refer to the file 'example of various functions' for application examples 
     '''
-    angle=360/len(sol[0])/2
+    # angle=360/len(sol[0])/2
     sol=cpo(sol)
-    return q_rot([f'z{0}'],[m_points1(sol[i]+flip(sol[len(sol)-1-i]),s) for i in range(int(len(sol)/2))])
+    return [m_points1(sol[i]+flip(sol[len(sol)-1-i]),s) for i in range(int(len(sol)/2))]
     
     
 def vsp_extrude(sec,extrude_path, shape_path):
@@ -9237,3 +9237,16 @@ def c32(pl):
     convert a points list from 3d to 2d coordinate system
     '''
     return c3t2(pl)
+
+def prism2cpo(s1):
+    '''
+    change the orientation of the surface to rectangular
+    '''
+    s2=[cpo(s1)[i]+flip(cpo(s1)[-(i+1)]) for i in range(int(len(s1[0])/2))]
+    a=[mid_point([s2[0][i],s2[0][-(i+1)]]) for i in range(int(len(s2[0])/2))]
+    b=[mid_point([s2[-1][i],s2[-1][-(i+1)]]) for i in range(int(len(s2[-1])/2))]
+    
+    a=a+flip(a)
+    b=b+flip(b)
+    s2=[a]+s2+[b]
+    return s2
