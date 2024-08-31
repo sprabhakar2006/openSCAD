@@ -9252,71 +9252,34 @@ def prism2cpo(s1):
     s2=[a]+s2+[b]
     return s2
 
-def project_p_on_surface(p0,s2,v1,both=0):
+
+def psos(s2,s3,v1):
     '''
-    project a point on to a surface
-    v1 is projection vector
-    both parameter should be set to 1, in case projection should only be in the direction of vector v1 and not in opposite side 
+    project a surface on to another without loosing the original points
+    surface 's3' will be projected on surface 's2'
+    'v1' is vector for projection
     '''
-    s2=q_rot(['y.00001'],s2)
-    f1=faces_surface(len(s2),len(s2[0]))
-    tri=a_(s2).reshape(-1,3)[f1]
+    p0=a_(s3).reshape(-1,3)
+    f=faces_surface(len(s2),len(s2[0]))
+    v=a_(s2).reshape(-1,3)
+    tri=v[f]
+    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
+    n1=a_([v1]*len(p2))
+    v2,v3=p3-p2,p4-p2
     
-    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
-    v2,v3=p3-p2,p4-p2
-    v1=a_([v1]*len(v2))
-    iim=a_([v1,-v2,-v3+[.00001]]).transpose(1,0,2).transpose(0,2,1)
+    iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)
     im=inv(iim)
-    p=p2-p0
-    im.shape,p.shape
-    t=einsum('ijk,ik->ij',im,p)
-    im[10]@p[10],t[10]
-    t1,t2,t3=t[:,0],t[:,1],t[:,2]
-    if both==0:
-        dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-    elif both==1:
+    px=[]
+    for i in range(len(p0)):
+        # im.shape,p0[198].shape
+        t=(im@(p2-p0[i][None,:])[:,:,None]).reshape(-1,3)
+        t1,t2,t3=t[:,0],t[:,1],t[:,2]
         dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-    v1.shape,t1.shape
-    ip1=l_(p0+einsum('ij,i->ij',v1,t1)[dec])
-    return ip1
-
-def plos(l_2,surf_1,n_1=[],both=0):
-    '''
-    function for projecting a line on to a surface without losing the original points where there are no projection possible
-    n_1 is a direction vector for projecting the line
-    an example video can be refered for clarity
-    '''
-    n_1=surface_normal(surf_1,1) if n_1==[] else n_1
-    # p1+v1*t1=p2+v2*t2+v3*t3
-    f_1=faces_surface(len(surf_1),len(surf_1[0]))
-    v_1=array(surf_1).reshape(-1,3)
-    tri=v_1[f_1]
-    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
-    v2,v3=p3-p2,p4-p2
-    v1=array(n_1)
-    p1=array(l_2)
-    v1=array([[v1]*len(p2)]*len(p1))
-    v2=array([v2]*len(p1))
-    v3=array([v3]*len(p1))
-    iim=array([v1,-v2,-v3+.000001]).transpose(1,2,0,3).transpose(0,1,3,2)
-    im=inv(iim)
-    p=p2[None,:,:]-p1[:,None,:]
-    t=einsum('ijkl,ijl->ijk',im,p)
-    t2,t3=t[:,:,1],t[:,:,2]
-    if both==0:
-        dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-    elif both==1:
-        dec=(t[:,:,0]>=1)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-    tx=a_([0 if dec[i].any()==0 else t[:,:,0][i][dec[i]][0] for i in range(len(dec))])
-    ip_1=p1+a_([v1[0][0]])*tx[:,None]
-    # ip_1=ip_1[dec].tolist()
-    return l_(ip_1)
-
-def psos(s_1,s_2,n_1=[],both=0):
-    '''
-    projecting surface s_2 on surface s_1
-    surfaces should ideally cross each other completely
-    '''
-    n_1=surface_normal(s_2,1) if n_1==[] else n_1
-    s_3=[plos(p,s_1,n_1,both) for p in s_2]
-    return s_3
+        # im[517],inv(a_([a_([0,0,1]),-p3[517]+p2[517],-p4[517]+p2[517]]).transpose(1,0))
+        if dec.any()==1:
+            px.append(p0[i]+a_(v1)*t1[arange(len(p2))[dec]])
+        elif dec.any()==0:
+            px.append(p0[i])
+    
+    px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
+    return px
