@@ -9267,7 +9267,7 @@ def psos(s2,s3,v1):
     n1=a_([v1]*len(p2))
     v2,v3=p3-p2,p4-p2
     
-    iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)
+    iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
     im=inv(iim)
     px=[]
     for i in range(len(p0)):
@@ -9283,3 +9283,11 @@ def psos(s2,s3,v1):
     
     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
     return px
+
+def reorient_sec(sec):
+    '''
+    re-orient section to create a better surface through 'prism' function
+    '''
+    sec1=sec2surface_1(sec)
+    sec2=[p[0] for p in sec1]+flip([p[-1] for p in sec1])
+    return sec2
