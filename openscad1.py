@@ -9013,7 +9013,7 @@ def bspline_open(pl,deg=3,s=100):
             a=(a1/b1 if b1!=0 else 0)*N(i,k-1,u,n,ak)+  \
                (a2/b2 if b2!=0 else 0)*N(i+1,k-1,u,n,ak)     
             return a
-        elif k==0 and u>=t(i,ak,n) and u<=t(i+1,ak,n):
+        elif k==0 and u>t(i,ak,n) and u<=t(i+1,ak,n):
             return 1
         else:
             return 0
