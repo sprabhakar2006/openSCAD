@@ -9023,7 +9023,7 @@ def bspline_open(pl,deg=3,s=100):
     n=len(p0)-1
     k=deg
     p1=l_(a_([a_([p0[i]*N(i,k,u,n,ak=deg) for i in range(len(p0))]).sum(0) for u in linspace(0,n-k+1,s)]))
-    return p1
+    return [pl[0]]+p1[1:]
 
 def bspline_closed(pl,deg=3,s=100):
     '''
