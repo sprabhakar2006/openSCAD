@@ -9291,3 +9291,35 @@ def reorient_sec(sec):
     sec1=sec2surface_1(sec)
     sec2=[p[0] for p in sec1]+flip([p[-1] for p in sec1])
     return sec2
+
+def psos_v(s2,s3,v1):
+    '''
+    project a surface on to another without loosing the original points
+    surface 's3' will be projected on surface 's2'
+    'v1' is vector for projection. this is a focal vector 
+    from where the rays are emitted for projection
+    '''
+    p0=a_(s3).reshape(-1,3)
+    f=faces_surface(len(s2),len(s2[0]))
+    v=a_(s2).reshape(-1,3)
+    tri=v[f]
+    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
+    
+    px=[]
+    for i in range(len(p0)):
+        n1=a_([uv(p0[i]-v1)]*len(p2))
+        v2,v3=p3-p2,p4-p2
+        iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
+        im=inv(iim)
+        # im.shape,p0[198].shape
+        t=(im@(p2-p0[i][None,:])[:,:,None]).reshape(-1,3)
+        t1,t2,t3=t[:,0],t[:,1],t[:,2]
+        dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+        # im[517],inv(a_([a_([0,0,1]),-p3[517]+p2[517],-p4[517]+p2[517]]).transpose(1,0))
+        if dec.any()==1:
+            px.append(p0[i]+a_(n1[0])*t1[arange(len(p2))[dec]])
+        elif dec.any()==0:
+            px.append(p0[i])
+    
+    px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
+    return px
