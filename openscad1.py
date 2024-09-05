@@ -9312,12 +9312,12 @@ def psos_v(s2,s3,v1):
         iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
         im=inv(iim)
         # im.shape,p0[198].shape
-        t=(im@(p2-p0[i][None,:])[:,:,None]).reshape(-1,3)
+        t=(im@(p2-a_(v1)[None,:])[:,:,None]).reshape(-1,3)
         t1,t2,t3=t[:,0],t[:,1],t[:,2]
         dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
         # im[517],inv(a_([a_([0,0,1]),-p3[517]+p2[517],-p4[517]+p2[517]]).transpose(1,0))
         if dec.any()==1:
-            px.append(p0[i]+a_(n1[0])*t1[arange(len(p2))[dec]])
+            px.append(a_(v1)+a_(n1[0])*t1[arange(len(p2))[dec]])
         elif dec.any()==0:
             px.append(p0[i])
     
