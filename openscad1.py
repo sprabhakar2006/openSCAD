@@ -7338,29 +7338,44 @@ def surface_offset_fine(surf_1,d=1):
     v_2=array(v_1)+n2*d
     return v_2.reshape(l,m,3).tolist()
 
-def surface_offset(s1,dist=1):
-    a=faces_surface(len(s1),len(s1[0]))
-    b=array(s1).reshape(-1,3)
-    c=b[a]
-    d1,d2,d3=c[:,0],c[:,1],c[:,2]
-    v1,v2=d2-d1,d3-d1
-    n_1=cross(v1,v2)
-    u_1=norm(n_1,axis=1)
-    n_1=einsum('ij,i->ij',n_1,1/u_1)
-    d=n_1*dist
+# def surface_offset(s1,dist=1):
+#     a=faces_surface(len(s1),len(s1[0]))
+#     b=array(s1).reshape(-1,3)
+#     c=b[a]
+#     d1,d2,d3=c[:,0],c[:,1],c[:,2]
+#     v1,v2=d2-d1,d3-d1
+#     n_1=cross(v1,v2)
+#     u_1=norm(n_1,axis=1)
+#     n_1=einsum('ij,i->ij',n_1,1/u_1)
+#     d=n_1*dist
 
-    e=(array(a)[:,0][:,None]==unique(array(a)[:,0])[None,:]).transpose(1,0)
-    f=array([d]*(unique(array(a)[:,0]).max()+1))
+#     e=(array(a)[:,0][:,None]==unique(array(a)[:,0])[None,:]).transpose(1,0)
+#     f=array([d]*(unique(array(a)[:,0]).max()+1))
 
-    g=(einsum('ijk,ij->ik',f,e)/einsum('j,ij->i',ones(len(d)),e)[:,None])
+#     g=(einsum('ijk,ij->ik',f,e)/einsum('j,ij->i',ones(len(d)),e)[:,None])
 
-    h=g.reshape(-1,len(s1[0]),3)
+#     h=g.reshape(-1,len(s1[0]),3)
 
-    h=h.tolist()
-    h=h+[h[-1]]
-    h=(array(s1).reshape(-1,3)+array(h).reshape(-1,3)).reshape(-1,len(s1[0]),3).tolist()
-    return h
+#     h=h.tolist()
+#     h=h+[h[-1]]
+#     h=(array(s1).reshape(-1,3)+array(h).reshape(-1,3)).reshape(-1,len(s1[0]),3).tolist()
+#     return h
 
+def surface_offset(surf,d=1):
+    f=faces_surface(len(surf),len(surf[0]))
+    v=a_(surf).reshape(-1,3)
+    tri=v[f]
+    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+    v1,v2=p1-p0,p2-p0
+    n1=cross(v1,v2)
+    n1=a_([n1,n1,n1]).transpose(1,0,2).reshape(-1,3)
+    g=concatenate(f)
+    n1.shape,p0.shape,g.shape
+    n2=a_([n1[arange(len(g))[(g==i)]].mean(0) for i in range(len(v))])+.00001
+    n2=n2/norm(n2,axis=1).reshape(-1,1)
+    v3=v+n2*d
+    v3=l_(v3.reshape(len(surf),len(surf[0]),3))
+    return v3
 
 def swp_surf(surf_1):
     l,m=len(surf_1),len(surf_1[0])
