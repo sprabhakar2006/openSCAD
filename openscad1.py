@@ -9286,11 +9286,9 @@ def psos(s2,s3,v1):
     im=inv(iim)
     px=[]
     for i in range(len(p0)):
-        # im.shape,p0[198].shape
         t=(im@(p2-p0[i][None,:])[:,:,None]).reshape(-1,3)
         t1,t2,t3=t[:,0],t[:,1],t[:,2]
         dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-        # im[517],inv(a_([a_([0,0,1]),-p3[517]+p2[517],-p4[517]+p2[517]]).transpose(1,0))
         if dec.any()==1:
             px.append(p0[i]+a_(v1)*t1[arange(len(p2))[dec]])
         elif dec.any()==0:
@@ -9338,3 +9336,61 @@ def psos_v(s2,s3,v1):
     
     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
     return px
+
+def psos_v_1(s2,s3,v1,vx):
+    '''
+    project a surface on to another without loosing the original points
+    surface 's3' will be projected on surface 's2'
+    'v1' is vector for projection. this is a focal vector
+    'vx' is a vector to define plane through which each vector works for projecting
+    from where the rays are emitted for projection
+    '''
+    p0=a_(s3).reshape(-1,3)
+    f=faces_surface(len(s2),len(s2[0]))
+    v=a_(s2).reshape(-1,3)
+    tri=v[f]
+    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
+    
+    px=[]
+    for i in range(len(p0)):
+        v4=ppplane([v1],vx,p0[i])[0]
+        n1=a_([uv(p0[i]-v4)]*len(p2))
+        v2,v3=p3-p2,p4-p2
+        iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
+        im=inv(iim)
+        # im.shape,p0[198].shape
+        t=(im@(p2-a_(v4)[None,:])[:,:,None]).reshape(-1,3)
+        t1,t2,t3=t[:,0],t[:,1],t[:,2]
+        dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+        # im[517],inv(a_([a_([0,0,1]),-p3[517]+p2[517],-p4[517]+p2[517]]).transpose(1,0))
+        if dec.any()==1:
+            px.append(a_(v4)+a_(n1[0])*t1[arange(len(p2))[dec][0]])
+        elif dec.any()==0:
+            px.append(p0[i])
+    
+    px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
+    return px
+
+
+def hyd_cyl(bore_dia,stroke_length,piston_thk,plunger_length,plunger_dia,top_bottom_thk,side_thk,int_position):
+    a,b,c,d,e,f,g,h=bore_dia,stroke_length,piston_thk,plunger_length,plunger_dia,int_position,top_bottom_thk,side_thk
+    
+    sec2=corner_radius(pts1([[-(a+2*h)/2,-(a+2*h)/2,2*h],[a+2*h,0,2*h],[0,a+2*h,2*h],[-(a+2*h),0,2*h]]),9)
+    sec1=circle(a/2,s=len(sec2)+1)
+    path1=pts([[0,g],[0,b+c],[-a/2+e/2,0],[0,g]])
+    sol1=prism(sec1,path1)
+    sol2=linear_extrude(sec2,c+b+2*g)
+    cyl=sol2+flip(sol1)
+    cyl=align_sol_1(cyl)
+    path2=pts([[0,g],[0,c],[(-a+e)/2,0],[0,d]])
+    piston=prism(sec1,path2)
+    l1=polp([[0,0,0],[0,0,b]],f)
+    piston=translate(l1,piston)
+    return [cyl,piston]
+    
+def sleeve(sleeve_dia,flange_dia,sleeve_length,thickness,flange_thickness):
+    a,b,c,d,e=sleeve_dia,flange_dia,sleeve_length,thickness,flange_thickness
+    sec=circle(a/2)
+    path=corner_radius(pts1([[0,0,e/2],[(b-a)/2,0],[0,e],[-(b-a)/2+d,0,d/2],[0,c-e],[-d,0,d/2]]),10)
+    sleeve=prism(sec,path)
+    return sleeve+[sleeve[0]]
