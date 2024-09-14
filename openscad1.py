@@ -9268,11 +9268,12 @@ def prism2cpo(s1):
     return s2
 
 
-def psos(s2,s3,v1):
+def psos(s2,s3,v1,dist=100000):
     '''
     project a surface on to another without loosing the original points
     surface 's3' will be projected on surface 's2'
     'v1' is vector for projection
+    'dist' is the maximum distance through which projection can happen
     '''
     p0=a_(s3).reshape(-1,3)
     f=faces_surface(len(s2),len(s2[0]))
@@ -9289,11 +9290,11 @@ def psos(s2,s3,v1):
         t=(im@(p2-p0[i][None,:])[:,:,None]).reshape(-1,3)
         t1,t2,t3=t[:,0],t[:,1],t[:,2]
         dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-        if dec.any()==1:
+        if dec.any()==1 and norm(a_(v1)*t1[arange(len(p2))[dec]])<=dist:
             px.append(p0[i]+a_(v1)*t1[arange(len(p2))[dec]])
-        elif dec.any()==0:
+        elif dec.any()==0 or norm(a_(v1)*t1[arange(len(p2))[dec]])>dist:
             px.append(p0[i])
-    
+
     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
     return px
 
