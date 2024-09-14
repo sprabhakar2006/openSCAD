@@ -9394,3 +9394,56 @@ def sleeve(sleeve_dia,flange_dia,sleeve_length,thickness,flange_thickness):
     path=corner_radius(pts1([[0,0,e/2],[(b-a)/2,0],[0,e],[-(b-a)/2+d,0,d/2],[0,c-e],[-d,0,d/2]]),10)
     sleeve=prism(sec,path)
     return sleeve+[sleeve[0]]
+
+def normal_vector(sec):
+    '''
+    calculates the normal vector of a given sec
+    '''
+    sec=c23(sec)
+    if len(sec)<3:
+        raise ValueError("To calculate Normal number of points should be atleast 3 ")
+    elif len(sec)==3:
+        d=a_(sec)
+        n3=l_(cross(d[1]-d[0],d[2]-d[0]))
+    else:
+        e=sec2surface_1(sec,1)
+        v=a_(e).reshape(-1,3)
+        f=faces_surface(len(e),len(e[0]))
+        tri=v[f]
+        
+        p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+        v1,v2=p1-p0,p2-p0
+        n1=cross(v1,v2)
+        n1=a_([n1,n1,n1]).transpose(1,0,2).reshape(-1,3)
+        g=concatenate(f)
+        n1.shape,p0.shape,g.shape
+        n2=a_([n1[arange(len(g))[(g==i)]].mean(0) for i in range(len(v))])
+        n2=n2/norm(n2,axis=1).reshape(-1,1)
+        n3=n2.mean(0)
+        n3=l_(n3/norm(n3))
+    return n3
+
+def extrude_sec2path_3d(sec,path):
+    '''
+    extrude a 3d section to a 3d path
+    '''
+    s1=sec
+    p2=path
+    n1=a_(normal_vector(s1))
+    p3=tangents_along_path(p2)[1:-1]
+    pa,pb=[p2[0],l_(a_(p2[0])+(a_(p2[1])-a_(p2[0])))], \
+    [p2[-1],l_(a_(p2[-1])+(a_(p2[-1])-a_(p2[-2])))]
+    p3=a_([pa]+p3+[pb])
+    s2=[]
+    for i in range(len(p3)):
+        n2=p3[i][1]-p3[i][0]
+        n2=n2/norm(n2)
+        if (n1.round(4)==n2.round(4)).all():
+            s2.append(translate(a_(p2[i])-a_(p2[0]),s1))
+        else:
+            a1=cross(n2,n1)
+            theta=180-r2d(arccos(n1@n2))
+            s2.append(translate(a_(p2[i])-a_(p2[0]),axis_rot_1(s1,a1,p2[0],theta)))
+    
+    # s2=s2+[translate(a_(p3[-1][1])-a_(p3[-1][0]),s2[-1])]
+    return s2
