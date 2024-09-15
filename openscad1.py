@@ -5820,6 +5820,21 @@ def i_p_t(path):
 
     return t_v
 
+def i_p_t_o(path):
+    '''
+    function to calculate tangent vectors to a given open path
+    '''
+    p1=array(seg(path)[:-1])
+    p2=array(path)
+    v1=array([(p[1]-p[0])/norm(p[1]-p[0]) for p in p1])
+    t_v=[(v1[i-1]+v1[i])/2
+        for i in range(1,len(p1))]
+    t_v=a_([t_v[0]]+t_v+[t_v[-1]])
+
+    t_v=t_v/norm(t_v,axis=1).reshape(-1,1)
+
+    return t_v
+
 def o_p_p(sol,i_p,d):
     '''
     calculates projected points on the surface of a solid 
@@ -6260,12 +6275,16 @@ def p2p_intersection_line(pa,pb):#plane to plane intersection line
     line=array([p7,p8]).tolist()
     return array(line).astype(float).tolist()
     
-def o_3d(i_p,sol,r,o=0,f=1):
+def o_3d(i_p,sol,r,o=0,f=1,closed=0):
     '''
-    function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset
+    function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset.
+    for closed loop path set closed=1
     '''
     a=i_p_n(i_p,sol)
-    b=i_p_t(i_p)
+    if closed==0:
+        b=i_p_t_o(i_p)
+    elif closed==1:
+        b=i_p_t(ip)
     if o==0:
         c=array(i_p)+cross(b,a)*r
     elif o==1:
@@ -6289,12 +6308,16 @@ def o_3d(i_p,sol,r,o=0,f=1):
 #     i_p1=ip_surf(sol,s)
 #     return i_p1
 
-def o_3d_surf(i_p,sol,r,o=0,f=1):
+def o_3d_surf(i_p,sol,r,o=0,f=1,closed=0):
     '''
     function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset
+    for closed loop path, set closed=1
     '''
     a=i_p_n_surf(i_p,sol)
-    b=i_p_t(i_p)
+    if closed==0:
+        b=i_p_t_o(i_p)
+    elif closed==1:
+        b=i_p_t(ip)
     if o==0:
         c=array(i_p)+cross(b,a)*r
     elif o==1:
@@ -6446,12 +6469,16 @@ def i_line_tri_fillet(v,f1,sol2,ip,r1,r2,s=20,o=0):
         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
     return fillet1
 
-def o_3d_tri(ip,v,f1,r):
+def o_3d_tri(ip,v,f1,r,closed=0):
     '''
     function to offset the intersection points 'i_p' on a triangular mesh with vertices 'v' and faces 'f1' by distance 'r'.
     '''
     n1=i_p_n_tri(ip,v,f1)
-    t1=i_p_t(ip)
+    # t1=i_p_t(ip)
+    if closed==0:
+        t1=i_p_t_o(i_p)
+    elif closed==1:
+        t1=i_p_t(ip)
     o1=cross(n1,t1)
     p5=array([ip,(array(ip)-n1*r)]).transpose(1,0,2).tolist()
     p6=array([ip,(array(ip)-o1*r)]).transpose(1,0,2).tolist()
@@ -9290,9 +9317,9 @@ def psos(s2,s3,v1,dist=100000):
         t=(im@(p2-p0[i][None,:])[:,:,None]).reshape(-1,3)
         t1,t2,t3=t[:,0],t[:,1],t[:,2]
         dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-        if dec.any()==1 and norm(a_(v1)*t1[arange(len(p2))[dec]])<=dist:
-            px.append(p0[i]+a_(v1)*t1[arange(len(p2))[dec]])
-        elif dec.any()==0 or norm(a_(v1)*t1[arange(len(p2))[dec]])>dist:
+        if dec.any()==1 and norm(a_(v1)*t1[arange(len(p2))[dec]][0])<=dist:
+            px.append(p0[i]+a_(v1)*t1[arange(len(p2))[dec]][0])
+        elif dec.any()==0 or norm(a_(v1)*t1[arange(len(p2))[dec]][0])>dist:
             px.append(p0[i])
 
     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
