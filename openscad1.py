@@ -6335,9 +6335,9 @@ def ip_fillet(sol1,sol2,r1,r2,s=20,o=0):
     '''
     p1=ip_sol2sol(sol1,sol2,o)
     # p1=[p[o] for p in p1]
-    p2=i_p_p(sol2,p1,r1)
-    if len(p1)!=len(p2):
-        p2=o_3d(p1,sol2,r1)
+    # p2=i_p_p(sol2,p1,r1)
+    # if len(p1)!=len(p2):
+    p2=o_3d(p1,sol2,r1)
     p3=o_3d(p1,sol1,r2)
     if len(p1)==len(p2)==len(p3):
         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
@@ -6379,9 +6379,9 @@ def ip_fillet_surf(surf,sol,r1,r2,s=20):
     r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on surf 
     '''
     p1=ip_surf2sol(surf,sol)
-    p2=i_p_p(sol,p1,r1)
-    if len(p1)!=len(p2):
-        p2=o_3d(p1,sol,r1)
+    # p2=i_p_p(sol,p1,r1)
+    # if len(p1)!=len(p2):
+    p2=o_3d(p1,sol,r1)
     p3=o_3d_surf(p1,surf,r2)
     if len(p1)==len(p2)==len(p3):
         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
