@@ -6909,7 +6909,9 @@ def fillet_intersection_lines(l1,l2,r,s=10):
     s: segments of fillet
     '''
     p0=i_p2d(l1,l2)
-    l2=l2 if l_(a_(p0).round(5))!=l2[0] else flip(l2)
+    l2=l2 if l_(a_(p0).round(4))!=l_(a_(l2[0]).round(4)) else flip(l2)
+    # l2=l2 if p0!=l2[0] else flip(l2)
+    
     clock=cw([l1[0],p0,l2[0]])
     a1=ang_2lineccw(p0,l1[0],l2[0]) if clock==1 else \
     ang_2linecw(p0,l1[0],l2[0])
