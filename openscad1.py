@@ -6909,7 +6909,7 @@ def fillet_intersection_lines(l1,l2,r,s=10):
     s: segments of fillet
     '''
     p0=i_p2d(l1,l2)
-    l2=l2 if p0!=l2[0] else flip(l2)
+    l2=l2 if l_(a_(p0).round(5))!=l2[0] else flip(l2)
     clock=cw([l1[0],p0,l2[0]])
     a1=ang_2lineccw(p0,l1[0],l2[0]) if clock==1 else \
     ang_2linecw(p0,l1[0],l2[0])
@@ -9475,54 +9475,3 @@ def extrude_sec2path_3d(sec,path):
     
     # s2=s2+[translate(a_(p3[-1][1])-a_(p3[-1][0]),s2[-1])]
     return s2
-
-def surface_normals(surf,direction=1):
-    '''
-    calculates normals from each point on the surface
-    normals may need to be reshaped to the shape of the 'surf'
-    '''
-    f=faces_surface(len(surf),len(surf[0]))
-    v=a_(surf).reshape(-1,3)
-    tri=v[f]
-    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
-    v1,v2=p1-p0,p2-p0
-    n1=cross(v1,v2)
-    n1=a_([n1,n1,n1]).transpose(1,0,2).reshape(-1,3)
-    g=concatenate(f)
-    n1.shape,p0.shape,g.shape
-    n2=a_([n1[arange(len(g))[(g==i)]].mean(0) for i in range(len(v))])+.00001
-    n2=n2/norm(n2,axis=1).reshape(-1,1)*direction
-    # v3=v+n2*d
-    # v3=l_(v3.reshape(len(surf),len(surf[0]),3))
-    return n2
-
-def psos_n(s2,s3,direction=1):
-    '''
-    project a surface on to another without loosing the original points
-    surface 's3' will be projected on surface 's2'
-    the projection is based on the normal to the surface s3 and the direction of normals can be changed from '1' to '-1'
-    '''
-    p0=a_(s3).reshape(-1,3)
-    f=faces_surface(len(s2),len(s2[0]))
-    v=a_(s2).reshape(-1,3)
-    tri=v[f]
-    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
-    v1=l_(surface_normals(s3,direction))
-    px=[]
-    for i in range(len(p0)):
-        n1=a_([v1[i]]*len(p2))
-        v2,v3=p3-p2,p4-p2
-        iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
-        im=inv(iim)
-        # im.shape,p0[198].shape
-        t=(im@(p2-a_(p0[i])[None,:])[:,:,None]).reshape(-1,3)
-        t1,t2,t3=t[:,0],t[:,1],t[:,2]
-        dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-        # im[517],inv(a_([a_([0,0,1]),-p3[517]+p2[517],-p4[517]+p2[517]]).transpose(1,0))
-        if dec.any()==1:
-            px.append(a_(p0[i])+a_(n1[0])*t1[arange(len(p2))[dec]])
-        elif dec.any()==0:
-            px.append(p0[i])
-    
-    px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
-    return px
