@@ -6275,10 +6275,11 @@ def p2p_intersection_line(pa,pb):#plane to plane intersection line
     line=array([p7,p8]).tolist()
     return array(line).astype(float).tolist()
     
-def o_3d(i_p,sol,r,o=0,f=1,closed=0):
+def o_3d(i_p,sol,r,o=0,closed=0,dir=1,dist=10):
     '''
     function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset.
     for closed loop path set closed=1
+    dir can be '1' or '-1' and dist can be in most of the cases 'r' but may need to be increased to get the right result
     '''
     a=i_p_n(i_p,sol)
     if closed==0:
@@ -6289,8 +6290,8 @@ def o_3d(i_p,sol,r,o=0,f=1,closed=0):
         c=array(i_p)+cross(b,a)*r
     elif o==1:
         c=array(i_p)+cross(a,b)*r
-    s=array([c+a*r*f,c-a*r*f])
-    i_p1=ip_sol2sol(sol,s)
+    s=[i_p,l_(c)]
+    i_p1=psos_n(sol,s,direction=dir,dist=dist)[-1]
     # i_p1=[p[0] for p in i_p1]
     return i_p1
 
@@ -6335,9 +6336,9 @@ def ip_fillet(sol1,sol2,r1,r2,s=20,o=0):
     '''
     p1=ip_sol2sol(sol1,sol2,o)
     # p1=[p[o] for p in p1]
-    # p2=i_p_p(sol2,p1,r1)
-    # if len(p1)!=len(p2):
-    p2=o_3d(p1,sol2,r1)
+    p2=i_p_p(sol2,p1,r1)
+    if len(p1)!=len(p2):
+        p2=o_3d(p1,sol2,r1)
     p3=o_3d(p1,sol1,r2)
     if len(p1)==len(p2)==len(p3):
         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
@@ -6379,9 +6380,9 @@ def ip_fillet_surf(surf,sol,r1,r2,s=20):
     r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on surf 
     '''
     p1=ip_surf2sol(surf,sol)
-    # p2=i_p_p(sol,p1,r1)
-    # if len(p1)!=len(p2):
-    p2=o_3d(p1,sol,r1)
+    p2=i_p_p(sol,p1,r1)
+    if len(p1)!=len(p2):
+        p2=o_3d(p1,sol,r1)
     p3=o_3d_surf(p1,surf,r2)
     if len(p1)==len(p2)==len(p3):
         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
@@ -9479,6 +9480,26 @@ def extrude_sec2path_3d(sec,path):
     # s2=s2+[translate(a_(p3[-1][1])-a_(p3[-1][0]),s2[-1])]
     return s2
 
+def surface_normals(surf,direction=1):
+    '''
+    calculates normals from each point on the surface
+    normals may need to be reshaped to the shape of the 'surf'
+    '''
+    f=faces_surface(len(surf),len(surf[0]))
+    v=a_(surf).reshape(-1,3)
+    tri=v[f]
+    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+    v1,v2=p1-p0,p2-p0
+    n1=cross(v1,v2)
+    n1=a_([n1,n1,n1]).transpose(1,0,2).reshape(-1,3)
+    g=concatenate(f)
+    n1.shape,p0.shape,g.shape
+    n2=a_([n1[arange(len(g))[(g==i)]].mean(0) for i in range(len(v))])+.00001
+    n2=n2/norm(n2,axis=1).reshape(-1,1)*direction
+    # v3=v+n2*d
+    # v3=l_(v3.reshape(len(surf),len(surf[0]),3))
+    return n2
+
 def psos_n(s2,s3,direction=1,dist=100000):
     '''
     project a surface on to another without loosing the original points
@@ -9509,23 +9530,3 @@ def psos_n(s2,s3,direction=1,dist=100000):
     
     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
     return px
-
-def surface_normals(surf,direction=1):
-    '''
-    calculates normals from each point on the surface
-    normals may need to be reshaped to the shape of the 'surf'
-    '''
-    f=faces_surface(len(surf),len(surf[0]))
-    v=a_(surf).reshape(-1,3)
-    tri=v[f]
-    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
-    v1,v2=p1-p0,p2-p0
-    n1=cross(v1,v2)
-    n1=a_([n1,n1,n1]).transpose(1,0,2).reshape(-1,3)
-    g=concatenate(f)
-    n1.shape,p0.shape,g.shape
-    n2=a_([n1[arange(len(g))[(g==i)]].mean(0) for i in range(len(v))])+.00001
-    n2=n2/norm(n2,axis=1).reshape(-1,1)*direction
-    # v3=v+n2*d
-    # v3=l_(v3.reshape(len(surf),len(surf[0]),3))
-    return n2
