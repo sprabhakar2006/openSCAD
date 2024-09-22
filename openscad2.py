@@ -6275,11 +6275,10 @@ def p2p_intersection_line(pa,pb):#plane to plane intersection line
     line=array([p7,p8]).tolist()
     return array(line).astype(float).tolist()
     
-def o_3d(i_p,sol,r,o=0,closed=0,dir=1,dist=10):
+def o_3d(i_p,sol,r,o=0,closed=0,dist=0):
     '''
     function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset.
     for closed loop path set closed=1
-    dir can be '1' or '-1' and dist can be in most of the cases 'r' but may need to be increased to get the right result
     '''
     a=i_p_n(i_p,sol)
     if closed==0:
@@ -6291,7 +6290,7 @@ def o_3d(i_p,sol,r,o=0,closed=0,dir=1,dist=10):
     elif o==1:
         c=array(i_p)+cross(a,b)*r
     s=[i_p,l_(c)]
-    i_p1=psos_n(sol,s,direction=dir,dist=dist)[-1]
+    i_p1=psos_n_b(sol,s,dist=r if dist==0 else dist)[-1]
     # i_p1=[p[0] for p in i_p1]
     return i_p1
 
@@ -9321,9 +9320,9 @@ def psos(s2,s3,v1,dist=100000):
         t=(im@(p2-p0[i][None,:])[:,:,None]).reshape(-1,3)
         t1,t2,t3=t[:,0],t[:,1],t[:,2]
         dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-        if dec.any()==1 and norm(a_(v1)*t1[arange(len(p2))[dec]][0])<=dist:
-            px.append(p0[i]+a_(v1)*t1[arange(len(p2))[dec]][0])
-        elif dec.any()==0 or norm(a_(v1)*t1[arange(len(p2))[dec]][0])>dist:
+        if dec.any()==1 and norm(a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
+            px.append(p0[i]+a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
+        elif dec.any()==0 or norm(a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])>dist:
             px.append(p0[i])
 
     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
@@ -9337,7 +9336,7 @@ def reorient_sec(sec):
     sec2=[p[0] for p in sec1]+flip([p[-1] for p in sec1])
     return sec2
 
-def psos_v(s2,s3,v1):
+def psos_v(s2,s3,v1,dist=100000):
     '''
     project a surface on to another without loosing the original points
     surface 's3' will be projected on surface 's2'
@@ -9361,9 +9360,9 @@ def psos_v(s2,s3,v1):
         t1,t2,t3=t[:,0],t[:,1],t[:,2]
         dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
         # im[517],inv(a_([a_([0,0,1]),-p3[517]+p2[517],-p4[517]+p2[517]]).transpose(1,0))
-        if dec.any()==1:
-            px.append(a_(v1)+a_(n1[0])*t1[arange(len(p2))[dec]])
-        elif dec.any()==0:
+        if dec.any()==1 and norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
+            px.append(a_(v1)+a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs))
+        elif dec.any()==0 or norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])>dist:
             px.append(p0[i])
     
     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
@@ -9395,9 +9394,9 @@ def psos_v_1(s2,s3,v1,vx,dist=100000):
         t1,t2,t3=t[:,0],t[:,1],t[:,2]
         dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
         # im[517],inv(a_([a_([0,0,1]),-p3[517]+p2[517],-p4[517]+p2[517]]).transpose(1,0))
-        if dec.any()==1 and norm(a_(n1[0])*t1[arange(len(p2))[dec]][0])<=dist:
-            px.append(a_(v4)+a_(n1[0])*t1[arange(len(p2))[dec][0]])
-        elif dec.any()==0 or norm(a_(n1[0])*t1[arange(len(p2))[dec]][0])>dist:
+        if dec.any()==1 and norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
+            px.append(a_(v4)+a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
+        elif dec.any()==0 or norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])>dist:
             px.append(p0[i])
     
     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
@@ -9523,9 +9522,40 @@ def psos_n(s2,s3,direction=1,dist=100000):
         t1,t2,t3=t[:,0],t[:,1],t[:,2]
         dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
         # im[517],inv(a_([a_([0,0,1]),-p3[517]+p2[517],-p4[517]+p2[517]]).transpose(1,0))
-        if dec.any()==1 and norm(a_(n1[0])*t1[arange(len(p2))[dec]][0])<=dist:
-            px.append(a_(p0[i])+a_(n1[0])*t1[arange(len(p2))[dec][0]])
-        elif dec.any()==0 or norm(a_(n1[0])*t1[arange(len(p2))[dec]][0])>dist:
+        if dec.any()==1 and norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
+            px.append(a_(p0[i])+a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
+        elif dec.any()==0 or norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])>dist:
+            px.append(p0[i])
+    
+    px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
+    return px
+
+def psos_n_b(s2,s3,dist=100000):
+    '''
+    project a surface on to another without loosing the original points
+    surface 's3' will be projected on surface 's2'
+    the projection is based on the normal to the surface s3 and the direction of normals can be changed from '1' to '-1'
+    '''
+    p0=a_(s3).reshape(-1,3)
+    f=faces_surface(len(s2),len(s2[0]))
+    v=a_(s2).reshape(-1,3)
+    tri=v[f]
+    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
+    v1=l_(surface_normals(s3,1))
+    px=[]
+    for i in range(len(p0)):
+        n1=a_([v1[i]]*len(p2))
+        v2,v3=p3-p2,p4-p2
+        iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
+        im=inv(iim)
+        # im.shape,p0[198].shape
+        t=(im@(p2-a_(p0[i])[None,:])[:,:,None]).reshape(-1,3)
+        t1,t2,t3=t[:,0],t[:,1],t[:,2]
+        dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+        # im[517],inv(a_([a_([0,0,1]),-p3[517]+p2[517],-p4[517]+p2[517]]).transpose(1,0))
+        if dec.any()==1 and norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
+            px.append(a_(p0[i])+a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
+        elif dec.any()==0 or norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])>dist:
             px.append(p0[i])
     
     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
