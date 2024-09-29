@@ -6294,7 +6294,7 @@ def o_3d(i_p,sol,r,o=0,f=1,closed=0):
     # i_p1=[p[0] for p in i_p1]
     return i_p1
 
-def o_3d_rev(i_p,sol,r,o=0,closed=0,type=0,dist=0):
+def o_3d_rev(i_p,sol,r,o=0,closed=0,type=0,dist=0,vx=[]):
     '''
     function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset.
     for closed loop path set closed=1
@@ -6320,7 +6320,7 @@ def o_3d_rev(i_p,sol,r,o=0,closed=0,type=0,dist=0):
         s=[i_p,l_(c)]
         i_p1=psos_n_b(sol,s,dist=(r if dist==0 else dist))[-1]
     elif type==2:
-        i_p1=psos_v(sol,[l_(c)],l_(c.mean(0)),dist=(r if dist==0 else dist))[0]
+        i_p1=psos_v_1(sol,[l_(c)],prism_center(sol),vx,dist=(r if dist==0 else dist))[0]
     return i_p1
 
 # def o_3d_surf(i_p,sol,r,o=0):
@@ -9346,17 +9346,17 @@ def psos_v_1(s2,s3,v1,vx,dist=100000):
     px=[]
     for i in range(len(p0)):
         v4=ppplane([v1],vx,p0[i])[0]
-        n1=a_([uv(p0[i]-v4)]*len(p2))
+        n1=a_([uv(v4-p0[i])]*len(p2))
         v2,v3=p3-p2,p4-p2
         iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
         im=inv(iim)
         # im.shape,p0[198].shape
-        t=(im@(p2-a_(v4)[None,:])[:,:,None]).reshape(-1,3)
+        t=(im@(p2-a_(p0[i])[None,:])[:,:,None]).reshape(-1,3)
         t1,t2,t3=t[:,0],t[:,1],t[:,2]
-        dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+        dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
         # im[517],inv(a_([a_([0,0,1]),-p3[517]+p2[517],-p4[517]+p2[517]]).transpose(1,0))
         if dec.any()==1 and norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
-            px.append(a_(v4)+a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
+            px.append(a_(p0[i])+a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
         elif dec.any()==0 or norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])>dist:
             px.append(p0[i])
     
