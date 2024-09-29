@@ -6366,14 +6366,14 @@ def ip_fillet(sol1,sol2,r1,r2,s=20,o=0):
     p1=ip_sol2sol(sol1,sol2,o)
     # p1=[p[o] for p in p1]
     p2=i_p_p(sol2,p1,r1)
-    if len(p1)!=len(p2):
-        p2=o_3d(p1,sol2,r1)
+    # if len(p1)!=len(p2):
+    #     p2=o_3d(p1,sol2,r1)
     p3=o_3d(p1,sol1,r2)
     if len(p1)==len(p2)==len(p3):
         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
     else:
-        p2=sort_points(p1,p2)
-        p2=path2path1(p1,p2)
+        # p2=sort_points(p1,p2)
+        # p2=path2path1(p1,p2)
         p3=sort_points(p1,p3)
         p3=path2path1(p1,p3)
         p1,p2,p3=align_sol_1([p1,p2,p3])
@@ -6411,14 +6411,14 @@ def ip_fillet_surf(surf,sol,r1,r2,s=20):
         
     p1=ip_surf2sol(surf,sol)
     p2=i_p_p(sol,p1,r1)
-    if len(p1)!=len(p2):
-        p2=o_3d(p1,sol,r1)
+    # if len(p1)!=len(p2):
+    #     p2=o_3d(p1,sol,r1)
     p3=o_3d_surf(p1,surf,r2)
     if len(p1)==len(p2)==len(p3):
         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
     else:
-        p2=sort_points(p1,p2)
-        p2=path2path1(p1,p2)
+        # p2=sort_points(p1,p2)
+        # p2=path2path1(p1,p2)
         p3=sort_points(p1,p3)
         p3=path2path1(p1,p3)
         p1,p2,p3=align_sol_1([p1,p2,p3])
@@ -8502,6 +8502,21 @@ def intersection_between_2_sketches(s1,s2):
     ip_1=s_int1(c)
     return ip_1
 
+def pol(p1,l1):
+    '''
+    point on line
+    finds whether a point is on a line or not
+    returns True or False
+    '''
+    v1=l1[:-1]
+    v2=l1[1:]
+    v3=array(v2)-array(v1)
+    v4=array(p1)-array(v1)
+    u3=(v3/norm(v3,axis=1).reshape(-1,1)).round(4)
+    u4=(v4/norm(v4,axis=1).reshape(-1,1)).round(4)
+    dec=(array(p1).round(4)==array(l1[0]).round(4)).all()
+    return True if dec==True else (u3[:,None,:]==u4[None,:]).all(2).any()
+
 # def pol(p1,l1):
 #     '''
 #     point on line
@@ -8517,18 +8532,18 @@ def intersection_between_2_sketches(s1,s2):
 #     dec=(array(p1).round(4)==array(l1[0]).round(4)).all()
 #     return True if dec==True else (u3==u4).any()
 
-def pol(p0,l1):
-    '''
-    point on line
-    finds whether a point is on a line or not
-    returns True or False
-    '''
-    try:
-        timeToReachPoint(p0,l1)
-    except:
-        return False
-    else:
-        return True
+# def pol(p0,l1):
+#     '''
+#     point on line
+#     finds whether a point is on a line or not
+#     returns True or False
+#     '''
+#     try:
+#         timeToReachPoint(p0,l1)
+#     except:
+#         return False
+#     else:
+#         return True
 
 def i_p_p(surf_1,i_p_l,d=1):
     '''
@@ -8536,13 +8551,28 @@ def i_p_p(surf_1,i_p_l,d=1):
     '''
     surf_1=cpo(surf_1)
     r_ipl=[]
-    for i in range(len(i_p_l)):
-        if pol(i_p_l[i],surf_1[i])==1:
-            l0=[i_p_l[i]]+surf_1[i][cKDTree(surf_1[i]).query(i_p_l[i],2)[1].max():]
-            s=l_lenv_o(l0)/d
-            p1=equidistant_path(l0,s)[1]
-            r_ipl.append(p1)
+    for j in range(len(surf_1)):
+        for i in range(len(i_p_l)):
+            if pol(i_p_l[i],surf_1[j])==1:
+                l0=[i_p_l[i]]+surf_1[j][cKDTree(surf_1[j]).query(i_p_l[i],2)[1].max():]
+                s=l_lenv_o(l0)/d
+                p1=equidistant_path(l0,s)[1]
+                r_ipl.append(p1)
     return r_ipl
+
+# def i_p_p(surf_1,i_p_l,d=1):
+#     '''
+#     function to project the intersection point on the cutting lines based on the distance 'r'
+#     '''
+#     surf_1=cpo(surf_1)
+#     r_ipl=[]
+#     for i in range(len(i_p_l)):
+#         if pol(i_p_l[i],surf_1[i])==1:
+#             l0=[i_p_l[i]]+surf_1[i][cKDTree(surf_1[i]).query(i_p_l[i],2)[1].max():]
+#             s=l_lenv_o(l0)/d
+#             p1=equidistant_path(l0,s)[1]
+#             r_ipl.append(p1)
+#     return r_ipl
 
 
 
@@ -9179,7 +9209,7 @@ def timeToReachPoint(p0,l1):
     d=d/norm(d,axis=1).reshape(-1,1)
     e=c-b
     e=e/norm(e,axis=1).reshape(-1,1)
-    n=arange(len(a))[(d.round(5)==e.round(5)).all(1)][0]
+    n=arange(len(a))[(d.round(4)==e.round(4)).all(1)][0]
     d1=l_len([p0,l1[n]])+l_lenv_o(l1[:n+1])
     t1=d1/l_lenv_o(l1)
     return t1
