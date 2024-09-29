@@ -6274,8 +6274,8 @@ def p2p_intersection_line(pa,pb):#plane to plane intersection line
     p8=array(p6)-v4*10
     line=array([p7,p8]).tolist()
     return array(line).astype(float).tolist()
-    
-def o_3d(i_p,sol,r,o=0,closed=0,dist=0):
+
+def o_3d(i_p,sol,r,o=0,f=1,closed=0):
     '''
     function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset.
     for closed loop path set closed=1
@@ -6289,9 +6289,38 @@ def o_3d(i_p,sol,r,o=0,closed=0,dist=0):
         c=array(i_p)+cross(b,a)*r
     elif o==1:
         c=array(i_p)+cross(a,b)*r
-    s=[i_p,l_(c)]
-    i_p1=psos_n_b(sol,s,dist=r if dist==0 else dist)[-1]
+    s=array([c+a*r*f,c-a*r*f])
+    i_p1=ip_sol2sol(sol,s)
     # i_p1=[p[0] for p in i_p1]
+    return i_p1
+
+def o_3d_rev(i_p,sol,r,o=0,closed=0,type=0,dist=0):
+    '''
+    function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset.
+    for closed loop path set closed=1
+    o: set '1' to shift the line on other side
+    type: set '1' if prism_center lies outside the solid.
+    prism_center is the center of the bounding box of the solid
+    '''
+    a=i_p_n(i_p,sol)
+    if closed==0:
+        b=i_p_t_o(i_p)
+    elif closed==1:
+        b=i_p_t(ip)
+    if o==0:
+        c=array(i_p)+cross(b,a)*r
+    elif o==1:
+        c=array(i_p)+cross(a,b)*r
+    # s=[i_p,l_(c)]
+    # i_p1=psos_n_b(sol,s,dist=(r if dist==0 else dist))[-1]
+    # i_p1=[p[0] for p in i_p1]
+    if type==0:
+        i_p1=psos_v(sol,[l_(c)],prism_center(sol),dist=(r if dist==0 else dist))[0]
+    elif type==1:
+        s=[i_p,l_(c)]
+        i_p1=psos_n_b(sol,s,dist=(r if dist==0 else dist))[-1]
+    elif type==2:
+        i_p1=psos_v(sol,[l_(c)],l_(c.mean(0)),dist=(r if dist==0 else dist))[0]
     return i_p1
 
 # def o_3d_surf(i_p,sol,r,o=0):
@@ -6333,6 +6362,7 @@ def ip_fillet(sol1,sol2,r1,r2,s=20,o=0):
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
     r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on sol1 
     '''
+    
     p1=ip_sol2sol(sol1,sol2,o)
     # p1=[p[o] for p in p1]
     p2=i_p_p(sol2,p1,r1)
@@ -6378,6 +6408,7 @@ def ip_fillet_surf(surf,sol,r1,r2,s=20):
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
     r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on surf 
     '''
+        
     p1=ip_surf2sol(surf,sol)
     p2=i_p_p(sol,p1,r1)
     if len(p1)!=len(p2):
@@ -8816,76 +8847,6 @@ def s_p(p_l): # starting point
             s_pnt=a[0]
         return s_pnt.tolist()
 
-def bend_sec2path(s1,p1,f=0):
-    '''
-    bend any section to an arbitrary path
-    sometimes the sections are flipped, 
-    so to change the direction of sections set 'f' to '1' 
-    '''
-    s1=s1 if f==0 else axis_rot_o([0,0,1],s1,180)
-    l1=[l_lenv_o(p1[:i+1]) for i in range(len(p1))]
-    n1=nv(p1)
-    n2=q_rot([f'z{180}'],nv2v_xy(n1))
-    s2=ppplane(s1,n1,p1[0])
-    s3=rot_sec2xy_plane(s2)
-    a1=ang(n2[0],n2[1])
-    s4=c3t2(axis_rot_o([0,0,1],s3,-a1+90+180))
-    n4=cKDTree(s4).query(s_p(s4))[1]
-    s5=axis_rot_o([0,0,1],s4,180)
-    n3=cKDTree(s5).query(s_p(s5))[1]
-    l2=l_len([s1[n3],s1[n4]])
-    s6=scl3dc(surface_line_vector([s2[n3],s2[n4]],n1,1),1.1)
-    n5=nv2v_z(n1)
-    # s7=project_line_on_surface(s2,s6,n5)
-    s7=ppplane(s2,nv(array(s6).reshape(-1,3)),s2[n3])
-    # s7=min_d_points(s7,.000001) if len(s7)!=len(s1) else s7
-    l3=[l_len([s7[n3],s7[i]]) for i in range(len(s7))]
-    s8=[]
-    for i in range(len(l3)):
-        a=arange(len(l1))[(array(l1)>l3[i])][0]
-        v1=array(p1[a])-array(p1[a-1])
-        u1=v1/norm(v1)
-        s8.append(array(p1[a-1])+u1*(l3[i]-l1[a-1]))
-        
-    s8=array(s8).tolist()
-    s9=seg(s8)[:-1]
-    n6=(array(s9[25][1])-array(s9[25][0])).tolist()
-    n7=(array(s8[25])+array(axis_rot(n1,n5,-90))*10).tolist()
-    l4=ppplane(s1,n1,s1[n3])
-    l5=scl3dc(surface_line_vector([l4[n3],l4[n4]],n1,1),1.1)
-    # l6=project_line_on_surface(l4,l5,n5)
-    l6=ppplane(l4,nv(array(l5).reshape(-1,3)),l4[n3])
-    l7=ppplane(s1,n5,s1[n3])
-
-    d1=[[l6[i],l7[i]] for i in range(len(l6))]
-    d2=[array(l7[i])-array(l6[i]) for i in range(len(l6))]
-    
-    d3=[array(s1[i])-array(l7[i]) for i in range(len(l7))]
-    d4=[l_len([s1[i],l7[i]])  for i in range(len(l7))]
-    s12=[]
-    for i in range(len(s8)):
-        if i<len(s8)-1:
-            p0=translate(d3[i],s8[i])
-            v1=array(p0)-array(s8[i])
-            a=seg(s8)[:-1]
-            v2=array(a[i][1])-array(a[i][0])
-            u2=v2/norm(v2)
-            a1=cross(v2,v1)
-            p1=array(s8[i])+array(axis_rot(a1,u2*d4[i],90))
-            s12.append(p1.tolist())
-        else:
-            p0=translate(d3[i],s8[i])
-            v1=array(p0)-array(s8[i])
-            a=seg(s8)[:-1]
-            v2=array(a[i-1][1])-array(a[i-1][0])
-            u2=v2/norm(v2)
-            a1=cross(v2,v1)
-            p1=array(s8[i])+array(axis_rot(a1,u2*d4[i],90))
-            s12.append(p1.tolist())
-    
-    s13=[translate(d2[i],s12[i]) for i in range(len(s12))]
-    s13=array(s13)[arange(len(s13))[~isnan(array(s13)).any(1)]].tolist()
-    return s13
 
 def sec2surface_1(sec1,s=1):
     '''
@@ -9361,7 +9322,7 @@ def psos_v(s2,s3,v1,dist=100000):
         dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
         # im[517],inv(a_([a_([0,0,1]),-p3[517]+p2[517],-p4[517]+p2[517]]).transpose(1,0))
         if dec.any()==1 and norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
-            px.append(a_(p0[i])+a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs))
+            px.append(a_(p0[i])+a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
         elif dec.any()==0 or norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])>dist:
             px.append(p0[i])
     
@@ -9560,3 +9521,9 @@ def psos_n_b(s2,s3,dist=100000):
     
     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
     return px
+
+def cog(sol):
+    '''
+    calculate the center of gravity
+    '''
+    return l_(a_(sol).reshape(-1,3).mean(0))
