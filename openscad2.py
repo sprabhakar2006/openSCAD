@@ -6299,7 +6299,8 @@ def o_3d_rev(i_p,sol,r,o=0,closed=0,type=0,dist=0,vx=[]):
     function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset.
     for closed loop path set closed=1
     o: set '1' to shift the line on other side
-    type: set '1' if prism_center lies outside the solid.
+    type: set '1' if prism_center lies outside the solid. type can also be set to '2'.
+    for using type=2, refer function definition psos_v_1 and also checkout the video explanation
     prism_center is the center of the bounding box of the solid
     '''
     a=i_p_n(i_p,sol)
@@ -6315,12 +6316,12 @@ def o_3d_rev(i_p,sol,r,o=0,closed=0,type=0,dist=0,vx=[]):
     # i_p1=psos_n_b(sol,s,dist=(r if dist==0 else dist))[-1]
     # i_p1=[p[0] for p in i_p1]
     if type==0:
-        i_p1=psos_v(sol,[l_(c)],prism_center(sol),dist=(r if dist==0 else dist))[0]
+        i_p1=psos_v(sol,[l_(c)],prism_center(sol),dist=(abs(r) if dist==0 else dist))[0]
     elif type==1:
         s=[i_p,l_(c)]
-        i_p1=psos_n_b(sol,s,dist=(r if dist==0 else dist))[-1]
+        i_p1=psos_n_b(sol,s,dist=(abs(r) if dist==0 else dist))[-1]
     elif type==2:
-        i_p1=psos_v_1(sol,[l_(c)],prism_center(sol),vx,dist=(r if dist==0 else dist))[0]
+        i_p1=psos_v_1(sol,[l_(c)],prism_center(sol),vx,dist=(abs(r) if dist==0 else dist))[0]
     return i_p1
 
 # def o_3d_surf(i_p,sol,r,o=0):
@@ -6356,29 +6357,44 @@ def o_3d_surf(i_p,sol,r,o=0,f=1,closed=0):
     # i_p1=[p[0] for p in i_p1]
     return i_p1
 
-def ip_fillet(sol1,sol2,r1,r2,s=20,o=0):
+def ip_fillet(sol1,sol2,r1,r2,s=20,o=0,type=0,dist=0,vx=[]):
     '''
     calculates a fillet at the intersection of 2 solids.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
     r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on sol1 
+    for type, dist and vx parameters refer function o_3d_rev
     '''
     
     p1=ip_sol2sol(sol1,sol2,o)
-    # p1=[p[o] for p in p1]
     p2=i_p_p(sol2,p1,r1)
-    # if len(p1)!=len(p2):
-    #     p2=o_3d(p1,sol2,r1)
-    p3=o_3d(p1,sol1,r2)
-    if len(p1)==len(p2)==len(p3):
-        fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
-    else:
-        # p2=sort_points(p1,p2)
-        # p2=path2path1(p1,p2)
-        p3=sort_points(p1,p3)
-        p3=path2path1(p1,p3)
-        p1,p2,p3=align_sol_1([p1,p2,p3])
-        fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
+    p3=o_3d_rev(p1,sol1,r2,type=type,dist=dist,vx=vx)
+    fillet1=convert_3lines2fillet(p3,p2,p1,s=s)
+    
     return fillet1
+
+# def ip_fillet(sol1,sol2,r1,r2,s=20,o=0):
+#     '''
+#     calculates a fillet at the intersection of 2 solids.
+#     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
+#     r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on sol1 
+#     '''
+    
+#     p1=ip_sol2sol(sol1,sol2,o)
+#     # p1=[p[o] for p in p1]
+#     p2=i_p_p(sol2,p1,r1)
+#     # if len(p1)!=len(p2):
+#     #     p2=o_3d(p1,sol2,r1)
+#     p3=o_3d(p1,sol1,r2)
+#     if len(p1)==len(p2)==len(p3):
+#         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
+#     else:
+#         # p2=sort_points(p1,p2)
+#         # p2=path2path1(p1,p2)
+#         p3=sort_points(p1,p3)
+#         p3=path2path1(p1,p3)
+#         p1,p2,p3=align_sol_1([p1,p2,p3])
+#         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
+#     return fillet1
 
 # def ip_fillet_surf(surf,sol,r1,r2,s=20):
 #     '''
@@ -6402,28 +6418,28 @@ def ip_fillet(sol1,sol2,r1,r2,s=20,o=0):
 #         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
 #     return fillet1
 
-def ip_fillet_surf(surf,sol,r1,r2,s=20):
-    '''
-    calculates a fillet at the intersection of surface with solid.
-    r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
-    r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on surf 
-    '''
+# def ip_fillet_surf(surf,sol,r1,r2,s=20):
+#     '''
+#     calculates a fillet at the intersection of surface with solid.
+#     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
+#     r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on surf 
+#     '''
         
-    p1=ip_surf2sol(surf,sol)
-    p2=i_p_p(sol,p1,r1)
-    # if len(p1)!=len(p2):
-    #     p2=o_3d(p1,sol,r1)
-    p3=o_3d_surf(p1,surf,r2)
-    if len(p1)==len(p2)==len(p3):
-        fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
-    else:
-        # p2=sort_points(p1,p2)
-        # p2=path2path1(p1,p2)
-        p3=sort_points(p1,p3)
-        p3=path2path1(p1,p3)
-        p1,p2,p3=align_sol_1([p1,p2,p3])
-        fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
-    return fillet1
+#     p1=ip_surf2sol(surf,sol)
+#     p2=i_p_p(sol,p1,r1)
+#     # if len(p1)!=len(p2):
+#     #     p2=o_3d(p1,sol,r1)
+#     p3=o_3d_surf(p1,surf,r2)
+#     if len(p1)==len(p2)==len(p3):
+#         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
+#     else:
+#         # p2=sort_points(p1,p2)
+#         # p2=path2path1(p1,p2)
+#         p3=sort_points(p1,p3)
+#         p3=path2path1(p1,p3)
+#         p1,p2,p3=align_sol_1([p1,p2,p3])
+#         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
+#     return fillet1
 
 # def i_line_fillet(sol1,sol2,ip,r1,r2,s=20,o=0):
 #     '''
