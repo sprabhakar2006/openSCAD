@@ -3915,24 +3915,48 @@ def r2d(r):
     '''
     return rad2deg(r)
     
-def convert_3lines2fillet(pnt3,pnt2,pnt1,f=1.9,s=10,orientation=0,style=0):
+# def convert_3lines2fillet(pnt3,pnt2,pnt1,f=1.9,s=10,orientation=0,style=0):
+#     '''
+#     Develops a fillet with 3 list of points (pnt1,pnt2,pnt3) in 3d space
+#     f: is a factor which can be reduced to 1.5 in case of self intersection observed
+#     s: number of segments in the fillet, increase the segments in case finer model is required
+#     refer to the file "example of various functions" for application examples
+    
+#     '''
+    
+    
+#     sol=array([pnt3,pnt1,pnt2]).transpose(1,0,2)
+# #     sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*f,s) for (p1,p2,p3) in sol]
+#     if style==0:
+#         sol=[array(bspline_open([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],3,s)).tolist()[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
+#     else:
+#         sol=[bezier([p1,p2,p3],s)[:s+1]+[p2.tolist()] for (p1,p2,p3) in sol]
+#     # sol=sol
+#     return sol if orientation==0 else cpo(sol)[:-1]
+
+def convert_3lines2fillet(pnt3,pnt2,pnt1,s=10,f=1,orientation=0,style=0):
     '''
-    Develops a fillet with 3 list of points (pnt1,pnt2,pnt3) in 3d space
-    f: is a factor which can be reduced to 1.5 in case of self intersection observed
+    Develops a fillet with 3 list of points in 3d space
     s: number of segments in the fillet, increase the segments in case finer model is required
+    f: higher number of factor 'f' reduces the concavity, very high number like >10 will be like chamfer
     refer to the file "example of various functions" for application examples
     
     '''
-    
-    
-    sol=array([pnt3,pnt1,pnt2]).transpose(1,0,2)
-#     sol=[fillet_3p_3d(p3,p2,p1,r_3p_3d([p1,p2,p3])*f,s) for (p1,p2,p3) in sol]
-    if style==0:
-        sol=[array(bspline_open([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],3,s)).tolist()[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
-    else:
-        sol=[bezier([p1,p2,p3],s)[:s+1]+[p2.tolist()] for (p1,p2,p3) in sol]
-    # sol=sol
-    return sol if orientation==0 else cpo(sol)[:-1]
+    sol=l_(array([pnt3,pnt1,pnt2]).transpose(1,0,2))
+    sol1=[]
+    for i in range(len(sol)):
+        p0,p1,p2=sol[i]
+        p3=mid_point([p0,p2])
+        d=l_len([p0,p3])
+        d1=l_len([p3,p1])
+        p4=movePointOnLine([p3,p1],p3,d/f) if (d1>d or d1>.5) else p1
+        if style==0:
+            sol1.append(bspline_open([p0,mid_point([p0,p4]),mid_point([p4,p2]),p2],3,s)+[p1])
+        elif style==1:
+            sol1.append(bezier([p0,mid_point([p0,p4]),mid_point([p4,p2]),p2],s)+[p1])
+            
+
+    return sol1 if orientation==0 else cpo(sol1)[:-1]
     
 def min_d_points(sec,min_d=.1):
     ''' 
@@ -5612,25 +5636,48 @@ def align_sec_1(sec1,sec2):
     sol2=[sec1]+[sec2[i:]+sec2[:i]]
     return sol2
 
-def convert_3lines2fillet_closed(pnt3,pnt2,pnt1,f=1.9,s=10,style=0):
+# def convert_3lines2fillet_closed(pnt3,pnt2,pnt1,f=1.9,s=10,style=0):
+#     '''
+#     Develops a fillet with 3 list of points (pnt1,pnt2,pnt3) in 3d space
+#     f: is a factor which can be reduced to 1.5 in case of self intersection observed
+#     s: number of segments in the fillet, increase the segments in case finer model is required
+#     refer to the file "example of various functions" for application examples
+    
+#     '''
+# #     m1=min(len(pnt1),len(pnt2),len(pnt3))
+# #     sol=array([pnt3[:m1],pnt1[:m1],pnt2[:m1]]).transpose(1,0,2)
+#     sol=array([pnt3,pnt1,pnt2]).transpose(1,0,2)
+    
+# #     sol=[equidistant_path(array(spline_curve([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],10,2)).tolist(),s)[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
+#     if style==0:
+#         sol=[array(bspline_open([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],3,s)).tolist()[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
+#     else:
+#         sol=[bezier([p1,p2,p3],s)[:s+1]+[p2.tolist()] for (p1,p2,p3) in sol]    
+#     sol=sol+[sol[0]]
+#     return sol
+
+def convert_3lines2fillet_closed(pnt3,pnt2,pnt1,s=10,f=1, orientation=0,style=0):
     '''
-    Develops a fillet with 3 list of points (pnt1,pnt2,pnt3) in 3d space
-    f: is a factor which can be reduced to 1.5 in case of self intersection observed
+    Develops a fillet with 3 list of points in 3d space
     s: number of segments in the fillet, increase the segments in case finer model is required
     refer to the file "example of various functions" for application examples
     
     '''
-#     m1=min(len(pnt1),len(pnt2),len(pnt3))
-#     sol=array([pnt3[:m1],pnt1[:m1],pnt2[:m1]]).transpose(1,0,2)
-    sol=array([pnt3,pnt1,pnt2]).transpose(1,0,2)
-    
-#     sol=[equidistant_path(array(spline_curve([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],10,2)).tolist(),s)[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
-    if style==0:
-        sol=[array(bspline_open([p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3],3,s)).tolist()[:s+1]+[p2.tolist()] for (p1,p2,p3) in array(sol)]
-    else:
-        sol=[bezier([p1,p2,p3],s)[:s+1]+[p2.tolist()] for (p1,p2,p3) in sol]    
-    sol=sol+[sol[0]]
-    return sol
+    sol=l_(array([pnt3,pnt1,pnt2]).transpose(1,0,2))
+    sol1=[]
+    for i in range(len(sol)):
+        p0,p1,p2=sol[i]
+        p3=mid_point([p0,p2])
+        d=l_len([p0,p3])
+        d1=l_len([p3,p1])
+        p4=movePointOnLine([p3,p1],p3,d/f) if (d1>d or d1>.5) else p1
+        if style==0:
+            sol1.append(bspline_open([p0,mid_point([p0,p4]),mid_point([p4,p2]),p2],3,s)+[p1])
+        elif style==1:
+            sol1.append(bezier([p0,mid_point([p0,p4]),mid_point([p4,p2]),p2],s)+[p1])
+            
+    sol1=sol1+[sol1[0]]
+    return sol1 if orientation==0 else cpo(sol1)[:-1]
 
 def ip_s2l(sol,line,side=-1):
     '''
@@ -6299,7 +6346,8 @@ def o_3d_rev(i_p,sol,r,o=0,closed=0,type=0,dist=0,vx=[]):
     function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset.
     for closed loop path set closed=1
     o: set '1' to shift the line on other side
-    type: set '1' if prism_center lies outside the solid.
+    type: set '1' if prism_center lies outside the solid. type can also be set to '2'.
+    for using type=2, refer function definition psos_v_1 and also checkout the video explanation
     prism_center is the center of the bounding box of the solid
     '''
     a=i_p_n(i_p,sol)
@@ -6315,12 +6363,12 @@ def o_3d_rev(i_p,sol,r,o=0,closed=0,type=0,dist=0,vx=[]):
     # i_p1=psos_n_b(sol,s,dist=(r if dist==0 else dist))[-1]
     # i_p1=[p[0] for p in i_p1]
     if type==0:
-        i_p1=psos_v(sol,[l_(c)],prism_center(sol),dist=(r if dist==0 else dist))[0]
+        i_p1=psos_v(sol,[l_(c)],prism_center(sol),dist=(abs(r) if dist==0 else dist))[0]
     elif type==1:
         s=[i_p,l_(c)]
-        i_p1=psos_n_b(sol,s,dist=(r if dist==0 else dist))[-1]
+        i_p1=psos_n_b(sol,s,dist=(abs(r) if dist==0 else dist))[-1]
     elif type==2:
-        i_p1=psos_v_1(sol,[l_(c)],prism_center(sol),vx,dist=(r if dist==0 else dist))[0]
+        i_p1=psos_v_1(sol,[l_(c)],prism_center(sol),vx,dist=(abs(r) if dist==0 else dist))[0]
     return i_p1
 
 # def o_3d_surf(i_p,sol,r,o=0):
@@ -6356,29 +6404,44 @@ def o_3d_surf(i_p,sol,r,o=0,f=1,closed=0):
     # i_p1=[p[0] for p in i_p1]
     return i_p1
 
-def ip_fillet(sol1,sol2,r1,r2,s=20,o=0):
+def ip_fillet(sol1,sol2,r1,r2,s=20,o=0,type=0,dist=0,vx=[]):
     '''
     calculates a fillet at the intersection of 2 solids.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
     r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on sol1 
+    for type, dist and vx parameters refer function o_3d_rev
     '''
     
     p1=ip_sol2sol(sol1,sol2,o)
-    # p1=[p[o] for p in p1]
     p2=i_p_p(sol2,p1,r1)
-    # if len(p1)!=len(p2):
-    #     p2=o_3d(p1,sol2,r1)
-    p3=o_3d(p1,sol1,r2)
-    if len(p1)==len(p2)==len(p3):
-        fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
-    else:
-        # p2=sort_points(p1,p2)
-        # p2=path2path1(p1,p2)
-        p3=sort_points(p1,p3)
-        p3=path2path1(p1,p3)
-        p1,p2,p3=align_sol_1([p1,p2,p3])
-        fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
+    p3=o_3d_rev(p1,sol1,r2,type=type,dist=dist,vx=vx)
+    fillet1=convert_3lines2fillet(p3,p2,p1,s=s)
+    
     return fillet1
+
+# def ip_fillet(sol1,sol2,r1,r2,s=20,o=0):
+#     '''
+#     calculates a fillet at the intersection of 2 solids.
+#     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
+#     r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on sol1 
+#     '''
+    
+#     p1=ip_sol2sol(sol1,sol2,o)
+#     # p1=[p[o] for p in p1]
+#     p2=i_p_p(sol2,p1,r1)
+#     # if len(p1)!=len(p2):
+#     #     p2=o_3d(p1,sol2,r1)
+#     p3=o_3d(p1,sol1,r2)
+#     if len(p1)==len(p2)==len(p3):
+#         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
+#     else:
+#         # p2=sort_points(p1,p2)
+#         # p2=path2path1(p1,p2)
+#         p3=sort_points(p1,p3)
+#         p3=path2path1(p1,p3)
+#         p1,p2,p3=align_sol_1([p1,p2,p3])
+#         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
+#     return fillet1
 
 # def ip_fillet_surf(surf,sol,r1,r2,s=20):
 #     '''
@@ -6402,7 +6465,7 @@ def ip_fillet(sol1,sol2,r1,r2,s=20,o=0):
 #         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
 #     return fillet1
 
-def ip_fillet_surf(surf,sol,r1,r2,s=20):
+def ip_fillet_surf(surf,sol,r1,r2,s=20,type=0,dist=0,vx=[]):
     '''
     calculates a fillet at the intersection of surface with solid.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -6413,16 +6476,9 @@ def ip_fillet_surf(surf,sol,r1,r2,s=20):
     p2=i_p_p(sol,p1,r1)
     # if len(p1)!=len(p2):
     #     p2=o_3d(p1,sol,r1)
-    p3=o_3d_surf(p1,surf,r2)
-    if len(p1)==len(p2)==len(p3):
-        fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
-    else:
-        # p2=sort_points(p1,p2)
-        # p2=path2path1(p1,p2)
-        p3=sort_points(p1,p3)
-        p3=path2path1(p1,p3)
-        p1,p2,p3=align_sol_1([p1,p2,p3])
-        fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
+    p3=o_3d_rev(p1,surf,r2,type=type,dist=dist,vx=vx)
+    fillet1=convert_3lines2fillet(p3,p2,p1,s=s)
+
     return fillet1
 
 # def i_line_fillet(sol1,sol2,ip,r1,r2,s=20,o=0):
