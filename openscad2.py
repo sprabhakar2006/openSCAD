@@ -3949,7 +3949,7 @@ def convert_3lines2fillet(pnt3,pnt2,pnt1,s=10,f=1,orientation=0,style=0):
         p3=mid_point([p0,p2])
         d=l_len([p0,p3])
         d1=l_len([p3,p1])
-        p4=movePointOnLine([p3,p1],p3,d/f) if d<d1 else p1
+        p4=movePointOnLine([p3,p1],p3,d/f) if (d1>d or d1>.5) else p1
         if style==0:
             sol1.append(bspline_open([p0,mid_point([p0,p4]),mid_point([p4,p2]),p2],3,s)+[p1])
         elif style==1:
@@ -5670,7 +5670,7 @@ def convert_3lines2fillet_closed(pnt3,pnt2,pnt1,s=10,f=1,orientation=0,style=0):
         p3=mid_point([p0,p2])
         d=l_len([p0,p3])
         d1=l_len([p3,p1])
-        p4=movePointOnLine([p3,p1],p3,d/f) if d<d1 else p1
+        p4=movePointOnLine([p3,p1],p3,d/f) if (d1>d or d1>.5) else p1
         if style==0:
             sol1.append(bspline_open([p0,mid_point([p0,p4]),mid_point([p4,p2]),p2],3,s)+[p1])
         elif style==1:
