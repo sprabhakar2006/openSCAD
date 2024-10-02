@@ -3942,7 +3942,7 @@ def convert_3lines2fillet(pnt3,pnt2,pnt1,s=10,f=1,orientation=0,style=0):
     refer to the file "example of various functions" for application examples
     
     '''
-    sol=array([pnt3,pnt1,pnt2]).transpose(1,0,2)
+    sol=l_(array([pnt3,pnt1,pnt2]).transpose(1,0,2))
     sol1=[]
     for i in range(len(sol)):
         p0,p1,p2=sol[i]
@@ -5656,14 +5656,14 @@ def align_sec_1(sec1,sec2):
 #     sol=sol+[sol[0]]
 #     return sol
 
-def convert_3lines2fillet_closed(pnt3,pnt2,pnt1,s=10,f=1,orientation=0,style=0):
+def convert_3lines2fillet_closed(pnt3,pnt2,pnt1,s=10,f=1, orientation=0,style=0):
     '''
     Develops a fillet with 3 list of points in 3d space
     s: number of segments in the fillet, increase the segments in case finer model is required
     refer to the file "example of various functions" for application examples
     
     '''
-    sol=array([pnt3,pnt1,pnt2]).transpose(1,0,2)
+    sol=l_(array([pnt3,pnt1,pnt2]).transpose(1,0,2))
     sol1=[]
     for i in range(len(sol)):
         p0,p1,p2=sol[i]
@@ -9615,3 +9615,62 @@ def cog(sol):
     calculate the center of gravity
     '''
     return l_(a_(sol).reshape(-1,3).mean(0))
+
+def plos(s2,l1,v1,dist=100000):
+    '''
+    project a line 'l1' on to a surface
+    'v1' is vector for projection
+    'dist' is the maximum distance through which projection can happen
+    '''
+    p0=a_(l1)
+    f=faces_surface(len(s2),len(s2[0]))
+    v=a_(s2).reshape(-1,3)
+    tri=v[f]
+    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
+    n1=a_([v1]*len(p2))
+    v2,v3=p3-p2,p4-p2
+    
+    iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
+    im=inv(iim)
+    px=[]
+    for i in range(len(p0)):
+        t=(im@(p2-p0[i][None,:])[:,:,None]).reshape(-1,3)
+        t1,t2,t3=t[:,0],t[:,1],t[:,2]
+        dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+        if dec.any()==1 and norm(a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
+            px.append(p0[i]+a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
+        # elif dec.any()==0 or norm(a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])>dist:
+        #     px.append(p0[i])
+
+    px=l_(a_(px))
+    return px
+
+def plos_b(s2,l1,v1,dist=100000):
+    '''
+    project a line 'l1' on to a surface
+    'v1' is vector for projection, any side of the surface is picked
+    nearest point will be picked
+    'dist' is the maximum distance through which projection can happen
+    '''
+    p0=a_(l1)
+    f=faces_surface(len(s2),len(s2[0]))
+    v=a_(s2).reshape(-1,3)
+    tri=v[f]
+    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
+    n1=a_([v1]*len(p2))
+    v2,v3=p3-p2,p4-p2
+    
+    iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
+    im=inv(iim)
+    px=[]
+    for i in range(len(p0)):
+        t=(im@(p2-p0[i][None,:])[:,:,None]).reshape(-1,3)
+        t1,t2,t3=t[:,0],t[:,1],t[:,2]
+        dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+        if dec.any()==1 and norm(a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
+            px.append(p0[i]+a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
+        # elif dec.any()==0 or norm(a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])>dist:
+        #     px.append(p0[i])
+
+    px=l_(a_(px))
+    return px
