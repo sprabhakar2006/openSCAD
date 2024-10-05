@@ -9674,3 +9674,46 @@ def plos_b(s2,l1,v1,dist=100000):
 
     px=l_(a_(px))
     return px
+
+def interpolation_bspline_closed(p0,s=50,f=6):
+    '''
+    Interpolates through points
+    p0: original points
+    s: number of points in the resultant curve
+    f: factor of smoothness, lower values may result in too wavyness and larger values
+    are as good as connecting points in straight line
+    
+    '''
+    p2=[ mid_point(p) for p in seg(p0)]
+    l1=[ l_len(p)/f for p in seg(p0)]
+    l2=[a_(p).mean() for p in seg(l1)]
+    p3=p0+[p0[0]]
+    pa=a_(p3[:-1])
+    pb=a_(p3[1:])
+    v1=pb-pa
+    v2=[ a_(uv(a_(p).mean(0))) for p in seg(v1)]
+    p3=a_([ [a_(p3[i+1])-v2[i]*l2[i],a_(p3[i+1])+v2[i]*l2[i]] for i in range(len(v2))])
+    p4=l_(concatenate(p3))
+    p5=bspline_closed(p4,2,s)
+    return p5
+
+def interpolation_bspline_open(p0,s=50,f=6):
+    '''
+    Interpolates through points
+    p0: original points
+    s: number of points in the resultant curve
+    f: factor of smoothness, lower values may result in too wavyness and larger values
+    are as good as connecting points in straight line
+    
+    '''
+    p2=[ mid_point(p) for p in seg(p0)[:-1]]
+    l1=[ l_len(p)/f for p in seg(p0)[:-1]]
+    l2=[a_(p).mean() for p in seg(l1)[:-1]]
+    pa=a_(p0[:-1])
+    pb=a_(p0[1:])
+    v1=pb-pa
+    v2=[ a_(uv(a_(p).mean(0))) for p in seg(v1)[:-1]]
+    p3=a_([ [a_(p0[i+1])-v2[i]*l2[i],a_(p0[i+1])+v2[i]*l2[i]] for i in range(len(v2))])
+    p4=[p0[0]]+l_(concatenate(p3))+[p0[-1]]
+    p5=bspline_open(p4,2,s)
+    return p5
