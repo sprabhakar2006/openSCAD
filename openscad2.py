@@ -4526,11 +4526,12 @@ def resurface(v,f1):
         f2=f2[~isin(f2,a).any(1)]
     return v3
     
-def equidistant_path(path,s=10):
+def equidistant_path(path,s=10,pitch=[]):
     '''
     divides a path in to equally spaced points
     refer file 'example of various functions.ipynb' for application examples
     '''
+    s= l_lenv_o(path)/pitch if pitch!=[] else s
     v=[p[1]-p[0] for p in array(seg(path)[:-1])]
     l=[l_len(p) for p in seg(path)[:-1]]
     c=array(l).cumsum().tolist()
@@ -4545,13 +4546,14 @@ def equidistant_path(path,s=10):
                 p_rev.append(px.tolist())
                 d[j]=c[-1]+1
     p_rev=[path[0]]+p_rev+[path[-1]]
-    return p_rev[:int(s)+1]
+    return p_rev[:int(s)+1] if s%1==0 else p_rev[:int(s)+1]+[path[-1]]
 
-def equidistant_pathc(path,s=10):
+def equidistant_pathc(path,s=10,pitch=[]):
     '''
     divides a closed path in to equally spaced points
     refer file 'example of various functions.ipynb' for application examples
     '''
+    s= l_lenv(path)/pitch if pitch!=[] else s
     v=[p[1]-p[0] for p in array(seg(path))]
     l=[l_len(p) for p in seg(path)]
     c=array(l).cumsum().tolist()
@@ -4566,7 +4568,7 @@ def equidistant_pathc(path,s=10):
                 p_rev.append(px.tolist())
                 d[j]=c[-1]+1
     p_rev=[path[0]]+p_rev
-    return p_rev[:s]
+    return p_rev[:int(s)+1]
 
 
 
@@ -6404,14 +6406,17 @@ def o_3d_surf(i_p,sol,r,o=0,f=1,closed=0):
     # i_p1=[p[0] for p in i_p1]
     return i_p1
 
-def ip_fillet(sol1,sol2,r1,r2,s=20,o=0,type=0,dist=0,vx=[]):
+def ip_fillet(sol1,sol2,r1,r2,s=20,o=0,type=0,dist=0,vx=[],solid=0):
     '''
     calculates a fillet at the intersection of 2 solids.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
     r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on sol1 
     for type, dist and vx parameters refer function o_3d_rev
     '''
-    
+    if solid==0:
+        sol1=sol1
+    elif solid==1:
+        sol1=cpo(cpo(sol1)+[cpo(sol1)[0]])
     p1=ip_sol2sol(sol1,sol2,o)
     p2=i_p_p(sol2,p1,r1)
     p3=o_3d_rev(p1,sol1,r2,type=type,dist=dist,vx=vx)
@@ -9149,7 +9154,7 @@ def bspline_closed(pl,deg=3,s=100):
     n=len(p0)-1
     k=deg
     p1=l_(a_([a_([p0[i]*N(i,k,u,n,ak=deg) for i in range(len(p0))]).sum(0) for u in linspace(0,n-k+1,s)]))
-    return p1
+    return p1[:-1]
 
 def bspline_surface_open(pl,deg1=3,deg2=3,s1=100,s2=100):
     '''
@@ -9675,7 +9680,7 @@ def plos_b(s2,l1,v1,dist=100000):
     px=l_(a_(px))
     return px
 
-def interpolation_bspline_closed(p0,s=50,f=6):
+def interpolation_bspline_closed(p0,s=50,f=3.425):
     '''
     Interpolates through points
     p0: original points
@@ -9695,9 +9700,9 @@ def interpolation_bspline_closed(p0,s=50,f=6):
     p3=a_([ [a_(p3[i+1])-v2[i]*l2[i],a_(p3[i+1])+v2[i]*l2[i]] for i in range(len(v2))])
     p4=l_(concatenate(p3))
     p5=bspline_closed(p4,2,s)
-    return p5
+    return p5[:-1]
 
-def interpolation_bspline_open(p0,s=50,f=6):
+def interpolation_bspline_open(p0,s=50,f=3.425):
     '''
     Interpolates through points
     p0: original points
@@ -9717,3 +9722,13 @@ def interpolation_bspline_open(p0,s=50,f=6):
     p4=[p0[0]]+l_(concatenate(p3))+[p0[-1]]
     p5=bspline_open(p4,2,s)
     return p5
+
+def interpolation_surface_open(pl,f1=3.425,f2=3.425,s1=100,s2=100):
+    '''
+    draws bspline interpolation surface from 2 control points list 'pl1' and 'pl2'
+    'f1' and 'f2' are factors of smoothness in 2 directions 
+    s1 and s2: number of points in 2 direction in the resultant curve
+    '''
+    p1=[interpolation_bspline_open(p,s1,f1) for p in pl]
+    p2=cpo([interpolation_bspline_open(p,s2,f2) for p in cpo(p1)])
+    return p2
