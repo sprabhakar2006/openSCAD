@@ -9390,7 +9390,7 @@ def reorient_sec(sec):
     sec2=[p[0] for p in sec1]+flip([p[-1] for p in sec1])
     return sec2
 
-def psos_v(s2,s3,v1,dist=100000):
+def psos_v(s2,s3,v1,dist=100000,unidirection=0):
     '''
     project a surface on to another without loosing the original points
     surface 's3' will be projected on surface 's2'
@@ -9412,7 +9412,10 @@ def psos_v(s2,s3,v1,dist=100000):
         # im.shape,p0[198].shape
         t=(im@(p2-a_(p0[i])[None,:])[:,:,None]).reshape(-1,3)
         t1,t2,t3=t[:,0],t[:,1],t[:,2]
-        dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+        if unidirection==0:
+            dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+        elif unidirection==1:
+            dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
         # im[517],inv(a_([a_([0,0,1]),-p3[517]+p2[517],-p4[517]+p2[517]]).transpose(1,0))
         if dec.any()==1 and norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
             px.append(a_(p0[i])+a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
@@ -9422,7 +9425,7 @@ def psos_v(s2,s3,v1,dist=100000):
     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
     return px
 
-def psos_v_1(s2,s3,v1,vx,dist=100000):
+def psos_v_1(s2,s3,v1,vx,dist=100000,unidirection=0):
     '''
     project a surface on to another without loosing the original points
     surface 's3' will be projected on surface 's2'
@@ -9446,7 +9449,10 @@ def psos_v_1(s2,s3,v1,vx,dist=100000):
         # im.shape,p0[198].shape
         t=(im@(p2-a_(p0[i])[None,:])[:,:,None]).reshape(-1,3)
         t1,t2,t3=t[:,0],t[:,1],t[:,2]
-        dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+        if unidirection==0:
+            dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+        elif unidirection==1:
+            dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
         # im[517],inv(a_([a_([0,0,1]),-p3[517]+p2[517],-p4[517]+p2[517]]).transpose(1,0))
         if dec.any()==1 and norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
             px.append(a_(p0[i])+a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
