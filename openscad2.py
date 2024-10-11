@@ -5097,15 +5097,27 @@ def equivalent_rot_axis(r1=[]):
     #     sol=sol+[sol[0]]
     #     return sol
         
-def rationalise_path(path,eps=.01):
-    p2=array(path)
-    p_v=array([ p2[i+1]-p2[i] if i<len(p2)-1 else
-               p2[i]-p2[i-1]
-        for i in range(len(p2))])
-    p_v=p_v/norm(p_v,axis=1).reshape(-1,1)
-    p3=p2[1:][(abs(p_v[1:]-p_v[:-1])>eps).any(1)].tolist()
-    p3=[p2[0].tolist()]+p3
-    return p3
+# def rationalise_path(path,eps=.01):
+#     p2=array(path)
+#     p_v=array([ p2[i+1]-p2[i] if i<len(p2)-1 else
+#                p2[i]-p2[i-1]
+#         for i in range(len(p2))])
+#     p_v=p_v/norm(p_v,axis=1).reshape(-1,1)
+#     p3=p2[1:][(abs(p_v[1:]-p_v[:-1])>eps).any(1)].tolist()
+#     p3=[p2[0].tolist()]+p3
+#     return p3
+
+def rationalise_path(p1):
+    '''
+    removes all the points which are in straight line
+    '''
+    p1=l_(p1)
+    p2=a_(p1[:-1])
+    p3=a_(p1[1:])
+    v1=p3-p2
+    u1=l_((v1/norm(v1,axis=1).reshape(-1,1)).round(4))
+    p4=[p1[0]]+[ p1[i] for i in range(1,len(u1)-1) if u1[i]!=u1[i-1]]+[p1[-1]]
+    return p4
 
 def cir_3p_3d(points,s=20):
     '''
