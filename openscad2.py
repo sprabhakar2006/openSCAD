@@ -9750,3 +9750,31 @@ def interpolation_surface_open(pl,f1=3.425,f2=3.425,s1=100,s2=100):
     p1=[interpolation_bspline_open(p,s1,f1) for p in pl]
     p2=cpo([interpolation_bspline_open(p,s2,f2) for p in cpo(p1)])
     return p2
+
+def bezier_surface(pl,s1=100,s2=100):
+    '''
+    draws bezier surface from control points list 'pl'
+    s1 and s2: number of points in the resultant curve in 2 direction
+    '''
+    p1=[bezier(p,s1) for p in pl]
+    p2=cpo([bezier(p,s2) for p in cpo(p1)])
+    return p2
+
+def surfaceFrom4linesEnclosure(l1,l2,l3,l4,s=50):
+    '''
+    surface with 4 lines in an enclosed section
+    l1 and l2 are opposite sides
+    l3 and l4 are opposite sides
+    l1[0] and l3[0] are same points or nearly same
+    l3[-1] and l2[0] are same points or nearly same
+    l1[-1] and l4[0] are same points or nearly same
+    l4[-1] and l2[-1] are same points or nearly same
+    '''
+    l1,l2,l3,l4=[ equidistant_path(p,s-1) for p in [l1,l2,l3,l4]]
+    s1=slice_sol([l1,l2],s-1)
+    s2=slice_sol([l3,l4],s-1)
+    s3=[ [ [s1[i][j][0],s1[i][j][1],s1[i][j][2]+s2[j][i][2]] for j in range(1,s-1)] for i in range(1,s-1)]
+    s4=[bezier([l3[i+1]]+s3[i]+[l4[i+1]],s) for i in range(len(s3))]
+    s4=[l1]+s4+[l2]
+    s4=bezier_surface(s4,s,s)
+    return s4
