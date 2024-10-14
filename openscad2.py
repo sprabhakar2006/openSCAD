@@ -6418,7 +6418,7 @@ def o_3d_surf(i_p,sol,r,o=0,f=1,closed=0):
     # i_p1=[p[0] for p in i_p1]
     return i_p1
 
-def ip_fillet(sol1,sol2,r1,r2,s=20,o=0,type=0,dist=0,vx=[],solid=0):
+def ip_fillet(sol1,sol2,r1,r2,s=20,o=0,type=0,dist=0,vx=[],solid=0,style=0,f=1):
     '''
     calculates a fillet at the intersection of 2 solids.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -6432,7 +6432,7 @@ def ip_fillet(sol1,sol2,r1,r2,s=20,o=0,type=0,dist=0,vx=[],solid=0):
     p1=ip_sol2sol(sol1,sol2,o)
     p2=i_p_p(sol2,p1,r1)
     p3=o_3d_rev(p1,sol1,r2,type=type,dist=dist,vx=vx)
-    fillet1=convert_3lines2fillet(p3,p2,p1,s=s)
+    fillet1=convert_3lines2fillet(p3,p2,p1,s=s,style=style,f=f)
     
     return fillet1
 
@@ -6482,7 +6482,7 @@ def ip_fillet(sol1,sol2,r1,r2,s=20,o=0,type=0,dist=0,vx=[],solid=0):
 #         fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
 #     return fillet1
 
-def ip_fillet_surf(surf,sol,r1,r2,s=20,type=0,dist=0,vx=[]):
+def ip_fillet_surf(surf,sol,r1,r2,s=20,type=0,dist=0,vx=[],style=0,f=1):
     '''
     calculates a fillet at the intersection of surface with solid.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -6494,7 +6494,7 @@ def ip_fillet_surf(surf,sol,r1,r2,s=20,type=0,dist=0,vx=[]):
     # if len(p1)!=len(p2):
     #     p2=o_3d(p1,sol,r1)
     p3=o_3d_rev(p1,surf,r2,type=type,dist=dist,vx=vx)
-    fillet1=convert_3lines2fillet(p3,p2,p1,s=s)
+    fillet1=convert_3lines2fillet(p3,p2,p1,s=s,style=style,f=f)
 
     return fillet1
 
@@ -8627,7 +8627,13 @@ def i_p_p(surf_1,i_p_l,d=1):
     for j in range(len(surf_1)):
         for i in range(len(i_p_l)):
             if pol(i_p_l[i],surf_1[j])==1:
-                l0=[i_p_l[i]]+surf_1[j][cKDTree(surf_1[j]).query(i_p_l[i],2)[1].max():]
+                a=cKDTree(surf_1[j]).query(i_p_l[i],2)[1]
+                if pol(i_p_l[i],surf_1[j][min(a):max(a)+1]):
+                    l0=[i_p_l[i]]+surf_1[j][max(a):]
+                elif pol(i_p_l[i],surf_1[j][max(a):max(a)+2]):
+                    l0=[i_p_l[i]]+surf_1[j][max(a)+1:]
+                else:
+                    l0=[i_p_l[i]]+surf_1[j][min(a):]
                 s=l_lenv_o(l0)/d
                 p1=equidistant_path(l0,s)[1]
                 r_ipl.append(p1)
