@@ -8634,8 +8634,8 @@ def i_p_p(surf_1,i_p_l,d=1):
                     l0=[i_p_l[i]]+surf_1[j][max(a)+1:]
                 else:
                     l0=[i_p_l[i]]+surf_1[j][min(a):]
-                s=l_lenv_o(l0)/d
-                p1=equidistant_path(l0,s)[1]
+                # s=l_lenv_o(l0)/d
+                p1=equidistant_path(l0,pitch=d)[1]
                 r_ipl.append(p1)
     return r_ipl
 
