@@ -6359,7 +6359,7 @@ def o_3d(i_p,sol,r,o=0,f=1,closed=0):
     # i_p1=[p[0] for p in i_p1]
     return i_p1
 
-def o_3d_rev(i_p,sol,r,o=0,closed=0,type=0,dist=0,vx=[],edges_closed=0):
+def o_3d_rev(i_p,sol,r,o=0,closed=0,type=0,dist=0,vx=[],edges_closed=0,cg=0):
     '''
     function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset.
     for closed loop path set closed=1
@@ -6390,7 +6390,11 @@ def o_3d_rev(i_p,sol,r,o=0,closed=0,type=0,dist=0,vx=[],edges_closed=0):
         s=[i_p,l_(c)]
         i_p1=psos_n_b(sol,s,dist=(abs(r) if dist==0 else dist))[-1]
     elif type==2:
-        i_p1=psos_v_1(sol,[l_(c)],prism_center(sol),vx,dist=(abs(r) if dist==0 else dist))[0]
+        if cg==0:
+            i_p1=psos_v_1(sol,[l_(c)],prism_center(sol),vx,dist=(abs(r) if dist==0 else dist))[0]
+        elif cg==1:
+            i_p1=psos_v_1(sol,[l_(c)],cog(sol),vx,dist=(abs(r) if dist==0 else dist))[0]
+            
     return i_p1
 
 # def o_3d_surf(i_p,sol,r,o=0):
@@ -6426,7 +6430,7 @@ def o_3d_surf(i_p,sol,r,o=0,f=1,closed=0):
     # i_p1=[p[0] for p in i_p1]
     return i_p1
 
-def ip_fillet(sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=0,f=1,edges_closed=1):
+def ip_fillet(sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=0,f=1,edges_closed=1,c=0):
     '''
     calculates a fillet at the intersection of 2 solids.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -6436,12 +6440,12 @@ def ip_fillet(sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=0,f=1,edges_clo
     sol1=cpo(cpo(sol1)+[cpo(sol1)[0]])
     p1=ip_sol2sol(sol1,sol2,o)
     p2=i_p_p(sol2,p1,r2)
-    p3=o_3d_rev(p1,sol1,r1,type=type,dist=dist,vx=vx,edges_closed=edges_closed)
+    p3=o_3d_rev(p1,sol1,r1,type=type,dist=dist,vx=vx,edges_closed=edges_closed,cg=c)
     fillet1=convert_3lines2fillet(p3,p2,p1,s=s,style=style,f=f)
     
     return fillet1
 
-def ip_fillet_closed(sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=0,f=1,edges_closed=1):
+def ip_fillet_closed(sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=0,f=1,edges_closed=1,c=0):
     '''
     calculates a fillet at the intersection of 2 solids.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -6451,13 +6455,13 @@ def ip_fillet_closed(sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=0,f=1,ed
     sol1=cpo(cpo(sol1)+[cpo(sol1)[0]])
     p1=ip_sol2sol(sol1,sol2,o)
     p2=i_p_p(sol2,p1,r2)
-    p3=o_3d_rev(p1,sol1,r1,type=type,dist=dist,vx=vx,edges_closed=edges_closed)
+    p3=o_3d_rev(p1,sol1,r1,type=type,dist=dist,vx=vx,edges_closed=edges_closed,cg=c)
     fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s,style=style,f=f)
     
     return fillet1
 
 
-def ip_fillet_surf(surf,sol,r1,r2,s=20,type=1,dist=0,vx=[],style=0,f=1,edges_closed=0):
+def ip_fillet_surf(surf,sol,r1,r2,s=20,type=1,dist=0,vx=[],style=0,f=1,edges_closed=0,c=0):
     '''
     calculates a fillet at the intersection of surface with solid.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -6466,12 +6470,12 @@ def ip_fillet_surf(surf,sol,r1,r2,s=20,type=1,dist=0,vx=[],style=0,f=1,edges_clo
         
     p1=ip_surf2sol(surf,sol)
     p2=i_p_p(sol,p1,r2)
-    p3=o_3d_rev(p1,surf,r1,type=type,dist=dist,vx=vx,edges_closed=edges_closed)
+    p3=o_3d_rev(p1,surf,r1,type=type,dist=dist,vx=vx,edges_closed=edges_closed,cg=c)
     fillet1=convert_3lines2fillet(p3,p2,p1,s=s,style=style,f=f)
 
     return fillet1
 
-def ip_fillet_surf_closed(surf,sol,r1,r2,s=20,type=1,dist=0,vx=[],style=0,f=1,edges_closed=0):
+def ip_fillet_surf_closed(surf,sol,r1,r2,s=20,type=1,dist=0,vx=[],style=0,f=1,edges_closed=0,c=0):
     '''
     calculates a fillet at the intersection of surface with solid.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -6480,7 +6484,7 @@ def ip_fillet_surf_closed(surf,sol,r1,r2,s=20,type=1,dist=0,vx=[],style=0,f=1,ed
         
     p1=ip_surf2sol(surf,sol)
     p2=i_p_p(sol,p1,r2)
-    p3=o_3d_rev(p1,surf,r1,type=type,dist=dist,vx=vx,edges_closed=edges_closed)
+    p3=o_3d_rev(p1,surf,r1,type=type,dist=dist,vx=vx,edges_closed=edges_closed,cg=c)
     fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s,style=style,f=f)
 
     return fillet1
