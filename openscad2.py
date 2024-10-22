@@ -3934,7 +3934,7 @@ def r2d(r):
 #     # sol=sol
 #     return sol if orientation==0 else cpo(sol)[:-1]
 
-def convert_3lines2fillet(pnt3,pnt2,pnt1,s=10,f=1,orientation=0,style=0):
+def convert_3lines2fillet(pnt3,pnt2,pnt1,s=10,f=1,orientation=0,style=2):
     '''
     Develops a fillet with 3 list of points in 3d space
     s: number of segments in the fillet, increase the segments in case finer model is required
@@ -5672,7 +5672,7 @@ def align_sec_1(sec1,sec2):
 #     sol=sol+[sol[0]]
 #     return sol
 
-def convert_3lines2fillet_closed(pnt3,pnt2,pnt1,s=10,f=1, orientation=0,style=0):
+def convert_3lines2fillet_closed(pnt3,pnt2,pnt1,s=10,f=1, orientation=0,style=2):
     '''
     Develops a fillet with 3 list of points in 3d space
     s: number of segments in the fillet, increase the segments in case finer model is required
