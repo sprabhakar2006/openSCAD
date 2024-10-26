@@ -9776,3 +9776,37 @@ def line2length(l1,length=1):
     v1=a_(l1[1])-a_(l1[0])
     u1=v1/norm(v1)
     return [l1[0],l_(l1[0]+u1*length)]
+
+def ip_surf2line(surf,line):# when line has more than 2 points
+    '''
+    function to calculate intersection point between a 3d surface and a line. 
+     "surf" is the 3d object which is intersected with a "line".
+    
+    '''
+
+
+    pa=surf
+    p1=array([[ [[pa[i][j],pa[i][j+1],pa[i+1][j]],[pa[i+1][j+1],pa[i+1][j],pa[i][j+1]]]
+     for j in range(len(pa[i])-1)] 
+              for i in range(len(pa)-1)]).reshape(-1,3,3)
+    pm=p1[:,0]
+    pn=p1[:,1]
+    po=p1[:,2]
+    px=array(line[:-1])
+    py=array(line[1:])
+    v1,v2,v3=py-px,pn-pm,po-pm
+    a,_=v1.shape
+    b,_=v2.shape
+    v1=array([v1]*b)
+    v2=-array([v2]*a).transpose(1,0,2)
+    v3=-array([v3]*a).transpose(1,0,2)
+    iim=array([v1,v2,v3]).transpose(1,2,0,3).transpose(0,1,3,2)+.00001
+    im=inv(iim)
+    p=array([pm]*a).transpose(1,0,2)-array([px]*b)
+    t=einsum('ijkl,ijl->ijk',im,p)
+    condition=(t[:,:,0]>=0)&(t[:,:,0]<=1)&(t[:,:,1]>=0)&(t[:,:,1]<=1)&(t[:,:,2]>=0)&(t[:,:,2]<=1)&((t[:,:,1]+t[:,:,2])<=1)
+    t1=t[:,:,0][condition]
+    i_p1=array([px]*b)[condition]+einsum('ij,i->ij',v1[condition],t1)
+    i_p2=i_p1[argsort([norm(p-px[0]) for p in i_p1])]
+
+    return i_p2.tolist()
