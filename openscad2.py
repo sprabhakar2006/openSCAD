@@ -9810,3 +9810,10 @@ def ip_surf2line(surf,line):# when line has more than 2 points
     i_p2=i_p1[argsort([norm(p-px[0]) for p in i_p1])]
 
     return i_p2.tolist()
+
+def line_as_axis(l1):
+    '''
+    convert line to an axis vector
+    '''
+    v1=l_(a_(l1[1])-a_(l1[0]))
+    return v1
