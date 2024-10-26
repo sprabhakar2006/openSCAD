@@ -9768,3 +9768,11 @@ def il_fillet_surf(il,surf1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,f=1)
     fillet1=convert_3lines2fillet(p3,p2,p1,s=s,style=style,f=f)
     
     return fillet1
+
+def line2length(l1,length=1):
+    '''
+    change the length of a line to the parameter distance 'length' keeping the initial point same
+    '''
+    v1=a_(l1[1])-a_(l1[0])
+    u1=v1/norm(v1)
+    return [l1[0],l_(l1[0]+u1*length)]
