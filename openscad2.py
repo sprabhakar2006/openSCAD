@@ -1685,7 +1685,8 @@ def q_rot2d(theta,pl):
     example:
     q_rot2d(45,[1,0]) => [0.7071067811865476, 0.7071067811865475]
     '''
-    return c3t2(c2t3(pl)@zrot(theta))
+    
+    return c3t2(c2t3(pl)@zrot(theta)) if a_(pl).shape[-1]==2 else c2t3(pl)@zrot(theta)
     
 def linear_extrude(sec,h=1,a=0,steps=1):
     '''
