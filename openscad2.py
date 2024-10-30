@@ -8559,7 +8559,7 @@ def i_p_p(surf_1,i_p_l,d=1):
     '''
     function to project the intersection point on the cutting lines based on the distance 'r'
     '''
-    surf_1=cpo(surf_1)
+    surf_1=cpo(surf_1) if d>0 else(cpo(flip(surf_1)))
     r_ipl=[]
     for j in range(len(surf_1)):
         for i in range(len(i_p_l)):
@@ -8572,7 +8572,7 @@ def i_p_p(surf_1,i_p_l,d=1):
                 else:
                     l0=[i_p_l[i]]+surf_1[j][min(a):]
                 # s=l_lenv_o(l0)/d
-                p1=equidistant_path(l0,pitch=d)[1]
+                p1=equidistant_path(l0,pitch=abs(d))[1]
                 r_ipl.append(p1)
     return r_ipl
 
