@@ -8555,6 +8555,27 @@ def pol(p1,l1):
 #     else:
 #         return True
 
+# def i_p_p(surf_1,i_p_l,d=1):
+#     '''
+#     function to project the intersection point on the cutting lines based on the distance 'r'
+#     '''
+#     surf_1=cpo(surf_1) if d>0 else(cpo(flip(surf_1)))
+#     r_ipl=[]
+#     for j in range(len(surf_1)):
+#         for i in range(len(i_p_l)):
+#             if pol(i_p_l[i],surf_1[j])==1:
+#                 a=cKDTree(surf_1[j]).query(i_p_l[i],2)[1]
+#                 if pol(i_p_l[i],surf_1[j][min(a):max(a)+1]):
+#                     l0=[i_p_l[i]]+surf_1[j][max(a):]
+#                 elif pol(i_p_l[i],surf_1[j][max(a):max(a)+2]):
+#                     l0=[i_p_l[i]]+surf_1[j][max(a)+1:]
+#                 else:
+#                     l0=[i_p_l[i]]+surf_1[j][min(a):]
+#                 # s=l_lenv_o(l0)/d
+#                 p1=equidistant_path(l0,pitch=abs(d))[1]
+#                 r_ipl.append(p1)
+#     return r_ipl
+
 def i_p_p(surf_1,i_p_l,d=1):
     '''
     function to project the intersection point on the cutting lines based on the distance 'r'
@@ -8563,16 +8584,15 @@ def i_p_p(surf_1,i_p_l,d=1):
     r_ipl=[]
     for j in range(len(surf_1)):
         for i in range(len(i_p_l)):
-            if pol(i_p_l[i],surf_1[j])==1:
+            if pol(i_p_l[i],surf_1[j]):
                 a=cKDTree(surf_1[j]).query(i_p_l[i],2)[1]
-                if pol(i_p_l[i],surf_1[j][min(a):max(a)+1]):
-                    l0=[i_p_l[i]]+surf_1[j][max(a):]
-                elif pol(i_p_l[i],surf_1[j][max(a):max(a)+2]):
-                    l0=[i_p_l[i]]+surf_1[j][max(a)+1:]
-                else:
-                    l0=[i_p_l[i]]+surf_1[j][min(a):]
-                # s=l_lenv_o(l0)/d
-                p1=equidistant_path(l0,pitch=abs(d))[1]
+                if pol(i_p_l[i],a_(surf_1[j])[a]) and a[0]<a[1]:
+                    p1=equidistant_path([i_p_l[i]]+surf_1[j][a[1]:],pitch=abs(d))[1]
+                elif pol(i_p_l[i],a_(surf_1[j])[a]) and a[1]<a[0]:
+                    p1=equidistant_path([i_p_l[i]]+surf_1[j][a[0]:],pitch=abs(d))[1]
+                elif pol(i_p_l[i],a_(surf_1[j])[[a[0],a[0]+1]]):
+                    p1=equidistant_path([i_p_l[i]]+surf_1[j][a[0]+1:],pitch=abs(d))[1]
+        
                 r_ipl.append(p1)
     return r_ipl
 
@@ -9818,3 +9838,9 @@ def line_as_axis(l1):
     '''
     v1=l_(a_(l1[1])-a_(l1[0]))
     return v1
+
+def qr2d(theta,pl):
+    '''
+    same as q_rot2d only short form to reduce writing efforts
+    '''
+    return q_rot2d(theta,pl)
