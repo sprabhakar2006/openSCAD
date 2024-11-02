@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import time
 from scipy.spatial import cKDTree, Delaunay
 # import pandas as pd
-import sympy as sym
+import sympy
 import math
 # from stl import mesh
 
@@ -6299,20 +6299,20 @@ def l2l_intersection(l1,l2):
     '''
     function to calculate line to line intersection points in 3d space
     '''
-    t1,t2=sym.symbols('t1 t2')
+    t1,t2=sympy.symbols('t1 t2')
     v1=array(l1[1])-array(l1[0])
     v2=array(l2[1])-array(l2[0])
     # array(p3[0])+v1*t1=array(p4[0])+v2*t2
     eq1=v1[0]*t1-v2[0]*t2-(array(l2[0])-array(l1[0]))[0]
     eq2=v1[1]*t1-v2[1]*t2-(array(l2[0])-array(l1[0]))[1]
     eq3=v1[2]*t1-v2[2]*t2-(array(l2[0])-array(l1[0]))[2]
-    f=sym.solve((eq1,eq2,eq3),(t1,t2))
+    f=sympy.solve((eq1,eq2,eq3),(t1,t2))
     if len(f)<2:
-        f=sym.solve((eq1,eq2),(t1,t2))
+        f=sympy.solve((eq1,eq2),(t1,t2))
         if len(f)<2:
-            f=sym.solve((eq1,eq3),(t1,t2))
+            f=sympy.solve((eq1,eq3),(t1,t2))
             if len(f)<2:
-                f=sym.solve((eq2,eq3),(t1,t2))
+                f=sympy.solve((eq2,eq3),(t1,t2))
     i_p=(array(l1[0])+v1*f[t1]).tolist()
     return array(i_p).astype(float).tolist()
     
@@ -6320,7 +6320,7 @@ def p2p_intersection_line(pa,pb):#plane to plane intersection line
     '''
     function to calculate intersection line between 2 planes
     '''
-    x,y,z=sym.symbols('x y z')
+    x,y,z=sympy.symbols('x y z')
     p0,p1,p2=array(pa)
     v1,v2=p1-p0,p2-p0
     n1=cross(v1,v2)
@@ -6332,7 +6332,7 @@ def p2p_intersection_line(pa,pb):#plane to plane intersection line
     eq1=n1[0]*x+n1[1]*y+n1[2]*z-p0@n1
     eq2=n2[0]*x+n2[1]*y+n2[2]*z-p3@n2
 
-    f=sym.solve([eq1,eq2],x,y)
+    f=sympy.solve([eq1,eq2],x,y)
 
     v4=cross(n1,n2)
     p6=array([f[x].subs(z,0),f[y].subs(z,0),0])
