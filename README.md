@@ -1,7 +1,7 @@
 # openSCAD
-openscad1.py has functions which help in making complex 3d objects.
+openscad2.py has functions which help in making complex 3d objects.
 refer to the wiki page here:
-https://github.com/sprabhakar2006/openSCAD/wiki/functions-description-in-openscad1.py-file
+https://github.com/sprabhakar2006/openSCAD/wiki/functions-description-in-openscad2.py-file
 
 examples:
 
