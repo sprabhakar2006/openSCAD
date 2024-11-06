@@ -2203,18 +2203,36 @@ def comb(n,i):
 #     '''
 #     return array([array([ comb((len(p)-1),i)*(1-t)**((len(p)-1)-i)*t**i*array(p[i])  for i in range(len(p))]).sum(0) for t in linspace(0,1,s)]).tolist()
 
-def bezier(p,s=10):
+# def bezier(p,s=10):
+#     '''
+#     bezier curve defined by points 'p' and number of segments 's'
+#     refer file "example of various functions" for application
+#     '''
+#     p=a_(p)
+#     n=len(p)
+#     k=n-1
+#     f=[[p[i]*comb(k,i)*u**i*(1-u)**(k-i) for i in range(n)] 
+#        for u in linspace(0,1,s)]    
+#     p1=l_(a_([p.sum(0) for p in a_(f)]))
+#     return p1
+
+def bezier(pl,s=20):
     '''
-    bezier curve defined by points 'p' and number of segments 's'
+    bezier curve defined by points 'pl' and number of segments 's'
     refer file "example of various functions" for application
     '''
-    p=a_(p)
-    n=len(p)
-    k=n-1
-    f=[[p[i]*comb(k,i)*u**i*(1-u)**(k-i) for i in range(n)] 
-       for u in linspace(0,1,s)]    
-    p1=l_(a_([p.sum(0) for p in a_(f)]))
-    return p1
+    def B(n,i,t):
+        '''
+        Bernstein function
+        '''
+        if i>n or i<0:
+            return 0
+        else:
+            return comb(n,i)*t**i*(1-t)**(n-i)
+            
+    b=[l_(a_([a_(pl[i])*B(len(pl)-1,i,t) for i in range(len(pl))]).sum(0)) 
+       for t in linspace(0,1,s)]
+    return b
 
 def arc_3d(v=[0,0,1],r=1,theta1=0,theta2=360,cw=-1,s=50):
     '''
