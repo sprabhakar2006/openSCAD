@@ -9862,3 +9862,37 @@ def qr2d(theta,pl):
     same as q_rot2d only short form to reduce writing efforts
     '''
     return q_rot2d(theta,pl)
+
+def psos_v_2(s2,s3,v1,dist=100000,unidirection=0):
+    '''
+    project a surface on to another without loosing the original points
+    surface 's3' will be projected on surface 's2'
+    'v1' are the vectors for projection. v1 are the list of vectors
+    '''
+    p0=a_(s3).reshape(-1,3)
+    f=faces_surface(len(s2),len(s2[0]))
+    v=a_(s2).reshape(-1,3)
+    tri=v[f]
+    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
+    
+    px=[]
+    for i in range(len(p0)):
+        n1=a_([uv(v1[i])]*len(p2))
+        v2,v3=p3-p2,p4-p2
+        iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
+        im=inv(iim)
+        # im.shape,p0[198].shape
+        t=(im@(p2-a_(p0[i])[None,:])[:,:,None]).reshape(-1,3)
+        t1,t2,t3=t[:,0],t[:,1],t[:,2]
+        if unidirection==0:
+            dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+        elif unidirection==1:
+            dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+        # im[517],inv(a_([a_([0,0,1]),-p3[517]+p2[517],-p4[517]+p2[517]]).transpose(1,0))
+        if dec.any()==1 and norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
+            px.append(a_(p0[i])+a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
+        elif dec.any()==0 or norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])>dist:
+            px.append(p0[i])
+    
+    px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
+    return px
