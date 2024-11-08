@@ -8612,7 +8612,7 @@ def i_p_p(surf_1,i_p_l,d=1):
                     p1=equidistant_path([i_p_l[i]]+surf_1[j][a[0]+1:],pitch=abs(d))[1]
         
                 r_ipl.append(p1)
-    return r_ipl
+    return path2path1(i_p_l,r_ipl) if len(r_ipl)!=len(i_p_l) else r_ipl
 
 # def i_p_p(surf_1,i_p_l,d=1):
 #     '''
