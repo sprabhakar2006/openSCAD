@@ -9106,3 +9106,25 @@ def rounding_with_subdivison(sol,n=4):
     for _ in range(n):
         sol=sub_d(sol)
     return sol
+
+def sub_d_1(b,a=[1/4,3/4]):
+    '''
+    input to rounding_with_subdivison function for open surfaces
+    '''
+    c=[[[polp(p1,a[0]),polp(p1,a[1])] for p1 in seg(p)[:-1]] for p in cpo(b)]
+    n1,n2,n3,n4=a_(c).shape
+    c=[b[0]]+cpo(a_(c).reshape(n1,n2*n3,n4))+[b[-1]]
+    d=[[[polp(p1,a[0]),polp(p1,a[1])] for p1 in seg(p)[:-1]] for p in c]
+    n1,n2,n3,n4=a_(d).shape
+    d=l_(a_(d).reshape(n1,n2*n3,n4))
+    d=[cpo(c)[0]]+cpo(d)+[cpo(c)[-1]]
+    return d
+
+def rounding_with_subdivison_surfaces(sol,n=4):
+    '''
+    round the corners with sub divison of surfaces
+    n: is the number of iterations of subdivisons
+    '''
+    for _ in range(n):
+        sol=sub_d_1(sol)
+    return sol
