@@ -126,26 +126,6 @@ function to calculate angle of a 2d vector starting from origin and end point wi
         return 360-abs(arctan(y/(0.000001 if x==0 else x)))*180/pi
 
 
-
-def q(vector=[1,0,0],point=[0,5,0],theta=0):
-    '''
-    function to rotate a point around a vector(axis) with angle theta
-    example:
-    q(vector=[1,0,0],point=[0,5,0],theta=90)
-    output: [0,0,5]
-    '''
-
-    t=theta
-    v=vector/(norm(vector))
-    a=t/2*pi/180
-    p=[cos(a),multiply(v,sin(a))]
-    p1=[p[0],-p[1]]
-    q=[0,[point[0],point[1],0] if len(point)==2 else point]
-    pq=[p[0]*q[0]-p[1]@q[1],multiply(p[0],q[1])+p[1]*q[0]+cross(p[1],q[1])]
-    pqp1=[pq[0]*p1[0]-pq[1]@p1[1],pq[0]*p1[1]+pq[1]*p1[0]+cross(pq[1],p1[1])]
-    transformation=pqp1[1].tolist()
-    return transformation
-
 def uv(v):
     '''
     function to calculate unit vector of a given vector
@@ -7841,11 +7821,11 @@ def i_p_p(surf_1,i_p_l,d=1):
                     p1=equidistant_path([i_p_l[i]]+surf_1[j][a[0]:],pitch=abs(d))[1]
                 elif pol(i_p_l[i],a_(surf_1[j])[[a[0],a[0]+1]]):
                     p1=equidistant_path([i_p_l[i]]+surf_1[j][a[0]+1:],pitch=abs(d))[1]
+                elif pol(i_p_l[i],a_(surf_1[j])[[a[0],a[0]-1]]):
+                    p1=equidistant_path([i_p_l[i]]+surf_1[j][a[0]:],pitch=abs(d))[1]
         
                 r_ipl.append(p1)
     return path2path1(i_p_l,r_ipl) if len(r_ipl)!=len(i_p_l) else r_ipl
-
-
 
 
 def bezier_c(sec,sp=10,ep=-10,s=20):
