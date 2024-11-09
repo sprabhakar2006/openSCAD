@@ -9098,10 +9098,11 @@ def sub_d(b,a=[1/4,3/4]):
     d=cpo(cpo(d)+[cpo(d)[0]])
     return d
 
-def rounding_with_subdivison(sol):
+def rounding_with_subdivison(sol,n=4):
     '''
     round the corners with sub divison of surfaces
+    n: is the number of iterations of subdivisons
     '''
-    for _ in range(4):
+    for _ in range(n):
         sol=sub_d(sol)
     return sol
