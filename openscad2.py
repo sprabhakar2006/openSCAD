@@ -9084,3 +9084,24 @@ def rot2d(a,sec):
     function to rotate a 2d section by a defined angle 'a'
     '''
     return c32(axis_rot([0,0,1],sec,a))
+
+def sub_d(b,a=[1/4,3/4]):
+    '''
+    input to rounding_with_subdivison function
+    '''
+    c=[[[polp(p1,a[0]),polp(p1,a[1])] for p1 in seg(p)[:-1]] for p in cpo(b)]
+    n1,n2,n3,n4=a_(c).shape
+    c=[b[0]]+cpo(a_(c).reshape(n1,n2*n3,n4))+[b[-1]]
+    d=[[[polp(p1,a[0]),polp(p1,a[1])] for p1 in seg(p)[:-1]] for p in c]
+    n1,n2,n3,n4=a_(d).shape
+    d=l_(a_(d).reshape(n1,n2*n3,n4))
+    d=cpo(cpo(d)+[cpo(d)[0]])
+    return d
+
+def rounding_with_subdivison(sol):
+    '''
+    round the corners with sub divison of surfaces
+    '''
+    for _ in range(4):
+        sol=sub_d(sol)
+    return sol
