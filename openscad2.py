@@ -1232,9 +1232,9 @@ def fillet_3p_3d(p0,p1,p2,r,s):# fillet with 3 known points 'p0,p1,p2' in 3d spa
     theta=(180-arccos(u1@u2)*180/pi)/2
     alpha=arccos(u1@u2)*180/pi
     l=r*tan(theta*pi/180)
-    cp=p1+q(n,u1*r/cos(theta*pi/180),alpha/2)
+    cp=p1+axis_rot(n,u1*r/cos(theta*pi/180),alpha/2)
     pa=p1+u1*l
-    arc=[ cp+q(n,pa-cp,-i) for i in linspace(0,theta*2,s)]
+    arc=[ cp+axis_rot(n,pa-cp,-i) for i in linspace(0,theta*2,s)]
     a,b,c=arc[0],arc[1:s-1],arc[s-1]
     return concatenate([[p1],arc]).tolist()
 
@@ -1252,7 +1252,7 @@ def fillet_3p_3d_cp(p0,p1,p2,r):# center point 'cp' of the fillet with 3 known p
     theta=(180-arccos(u1@u2)*180/pi)/2
     alpha=arccos(u1@u2)*180/pi
     l=r*tan(theta*pi/180)
-    cp=p1+q(n,u1*r/cos(theta*pi/180),alpha/2)
+    cp=p1+axis_rot(n,u1*r/cos(theta*pi/180),alpha/2)
     return cp.tolist()
 
 def i_p3d(l1,l2): # intersection point between 2 lines 'l1' and 'l2' in 3d space where both the lines are in the same plane
@@ -1874,8 +1874,8 @@ def ipf(prism,prism1,r,s,o=0):
     n=cross(v4,pnt)
     n=n/(norm(n,axis=1).reshape(-1,1)+.0001)*r
     pnt=n
-    cir=[[(p[i]+array(q(v4[i],pnt[i],t))).tolist() for t in linspace(-90,90,10)]for i in range(len(v4))] if o==0 else \
-    [[(p[i]+array(q(v4[i],pnt[i],-t))).tolist() for t in linspace(90,270,10)]for i in range(len(v4))] 
+    cir=[[(p[i]+array(axis_rot(v4[i],pnt[i],t))).tolist() for t in linspace(-90,90,10)]for i in range(len(v4))] if o==0 else \
+    [[(p[i]+array(axis_rot(v4[i],pnt[i],-t))).tolist() for t in linspace(90,270,10)]for i in range(len(v4))] 
     p2=[[ [cir[i][j],cir[i][j+1]] for j in range(len(cir[i])-1)] for i in range(len(cir))]
     p2=array(p2).reshape(-1,2,3)
     px=p2[:,0]
@@ -1927,8 +1927,8 @@ def ipf1(p,p1,r,s,o=0):
 
     pnt=v5[condition]
     
-    cir=[[(p[i]+array(q(v4[i],pnt[i],t))).tolist() for t in linspace(-90,90,10)]for i in range(len(v4))] if o==0 else \
-    [[(p[i]+array(q(v4[i],pnt[i],-t))).tolist() for t in linspace(90,270,10)]for i in range(len(v4))] 
+    cir=[[(p[i]+array(axis_rot(v4[i],pnt[i],t))).tolist() for t in linspace(-90,90,10)]for i in range(len(v4))] if o==0 else \
+    [[(p[i]+array(axis_rot(v4[i],pnt[i],-t))).tolist() for t in linspace(90,270,10)]for i in range(len(v4))] 
     p2=[[ [cir[i][j],cir[i][j+1]] for j in range(len(cir[i])-1)] for i in range(len(cir))]
     p2=array(p2).reshape(-1,2,3)
     px=p2[:,0]
@@ -2088,7 +2088,7 @@ def arc_3d(v=[0,0,1],r=1,theta1=0,theta2=360,cw=-1,s=50):
         a1=arccos(u1@ua)*180/pi
         a2=ang(v1[0],v1[1])
         s1=q_rot([f'z{a2}'],s)
-        sec1=[q(v2,p,a1) for p in s1]
+        sec1=[axis_rot(v2,p,a1) for p in s1]
         return sec1
 
 
@@ -3106,7 +3106,7 @@ def multiple_sec_extrude(path_points=[],radiuses_list=[],sections_list=[],option
             a1=arccos(u1@ua)*180/pi
             a2=ang(v1[0],v1[1])
             s2=q_rot(['x90','z-90',f'z{a2}'],sections[i])
-            s3=translate(p0,flip([q(v2,p,-a1) for p in s2]))
+            s3=translate(p0,flip([axis_rot(v2,p,-a1) for p in s2]))
             s4.append(s3)
     return s4
 
@@ -3196,9 +3196,9 @@ def fillet_sol2sol(p=[],p1=[],r=1,s=10,o=0,f=1.8):
     v_rot=nxt_pnt-pnt1
 
     if o==0:
-        cir=array([[pnt1[i]+array(q(v_rot[i],b[i]*r,t)) for t in linspace(0,180,5)] for i in arange(len(pnt1))]).tolist()
+        cir=array([[pnt1[i]+array(axis_rot(v_rot[i],b[i]*r,t)) for t in linspace(0,180,5)] for i in arange(len(pnt1))]).tolist()
     else:
-        cir=array([[pnt1[i]+array(q(v_rot[i],b[i]*r,-t)) for t in linspace(0,180,5)] for i in arange(len(pnt1))]).tolist()
+        cir=array([[pnt1[i]+array(axis_rot(v_rot[i],b[i]*r,-t)) for t in linspace(0,180,5)] for i in arange(len(pnt1))]).tolist()
 
     pc=array([[[cir[i][j],cir[i][j+1]]  for j in arange(len(cir[0])-1)] for i in arange(len(cir))]).reshape(-1,2,3)
 
@@ -3227,7 +3227,7 @@ def fillet_sol2sol(p=[],p1=[],r=1,s=10,o=0,f=1.8):
     pnt3=sort_pointsv(pnt1,pnt3) if len(pnt1)!=len(pnt3) else pnt3.tolist()
 
 
-    cir=array([[pnt1[i]+array(q(v_rot[i],b[i]*r,-t)) for t in linspace(-90,90,5)] for i in arange(len(pnt1))]).tolist()
+    cir=array([[pnt1[i]+array(axis_rot(v_rot[i],b[i]*r,-t)) for t in linspace(-90,90,5)] for i in arange(len(pnt1))]).tolist()
 
     
     pa=[[[[p1[i][j],p1[i][j+1],p1[i+1][j]],[p1[i+1][j+1],p1[i+1][j],p1[i][j+1]]] if j<len(p1[0])-1 else \
@@ -3330,9 +3330,9 @@ def fillet_surf2sol(p=[],p1=[],r=1,s=10,o=0,f=1.8):
     v_rot=nxt_pnt-pnt1
 
     if o==0:
-        cir=array([[pnt1[i]+array(q(v_rot[i],b[i]*r,t)) for t in linspace(0,180,5)] for i in arange(len(pnt1))]).tolist()
+        cir=array([[pnt1[i]+array(axis_rot(v_rot[i],b[i]*r,t)) for t in linspace(0,180,5)] for i in arange(len(pnt1))]).tolist()
     else:
-        cir=array([[pnt1[i]+array(q(v_rot[i],b[i]*r,-t)) for t in linspace(0,180,5)] for i in arange(len(pnt1))]).tolist()
+        cir=array([[pnt1[i]+array(axis_rot(v_rot[i],b[i]*r,-t)) for t in linspace(0,180,5)] for i in arange(len(pnt1))]).tolist()
 
     pc=array([[[cir[i][j],cir[i][j+1]]  for j in arange(len(cir[0])-1)] for i in arange(len(cir))]).reshape(-1,2,3)
 
@@ -3361,7 +3361,7 @@ def fillet_surf2sol(p=[],p1=[],r=1,s=10,o=0,f=1.8):
     pnt3=sort_pointsv(pnt1,pnt3) if len(pnt3)!= len(pnt1) else pnt3.tolist()
 
 
-    cir=array([[pnt1[i]+array(q(v_rot[i],b[i]*r,-t)) for t in linspace(-90,90,5)] for i in arange(len(pnt1))]).tolist()
+    cir=array([[pnt1[i]+array(axis_rot(v_rot[i],b[i]*r,-t)) for t in linspace(-90,90,5)] for i in arange(len(pnt1))]).tolist()
 
     
     pa=[[[[p1[i][j],p1[i][j+1],p1[i+1][j]],[p1[i+1][j+1],p1[i+1][j],p1[i][j+1]]] if j<len(p1[0])-1 else \
@@ -3570,10 +3570,10 @@ def vsp_extrude(sec,extrude_path, shape_path):
         a2=ang(v1[0],v1[1])
         s1=q_rot([f'z{a2}'],s)
         if i<len(p)-1:
-            s2.append(translate(p[i],[q(v2,p,a1) for p in s1]))
+            s2.append(translate(p[i],[axis_rot(v2,p,a1) for p in s1]))
         else:
-            s2.append(translate(p[i],[q(v2,p,a1) for p in s1]))
-            s2.append(translate(p[i+1],[q(v2,p,a1) for p in s1]))
+            s2.append(translate(p[i],[axis_rot(v2,p,a1) for p in s1]))
+            s2.append(translate(p[i+1],[axis_rot(v2,p,a1) for p in s1]))
 
     s3=flip([[p for p in p1 if ~isnan(p[0])] for p1 in s2])
     s3=[p for p in s3 if p!=[]]
@@ -4402,7 +4402,7 @@ def offset_sol(sol,d,o=0):
     in few cases this function may not work 
     
     '''
-    # sol=q_rot(['x.001'],sol)
+    
     n=array([len(remove_extra_points(p)) for p in sol]).argmax()
     if o==0:
         sol=[sort_points(sol[n],offset_3d(p,d)) for p in sol]
@@ -8107,7 +8107,6 @@ def nv2v_xy(v1):
     ua=array([0,0,-1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([-1,0,0]) if (u1==[0,0,-1]).all() else array([u1[0],u1[1],0])
     v2=cross(u1,ua)
     u2=v2/norm(v2)
-    # u3=array(q(u2,u1,-90))
     u3=axis_rot(u2,u1,-90)
     u1,u2,u3=array([u1,u2,u3]).tolist()
     return u2
@@ -8120,7 +8119,6 @@ def nv2v_z(v1):
     ua=array([0,0,-1]) if u1[2]==0 else array([0,-1,0]) if (u1==[0,0,1]).all() else array([-1,0,0]) if (u1==[0,0,-1]).all() else array([u1[0],u1[1],0])
     v2=cross(u1,ua)
     u2=v2/norm(v2)
-    # u3=array(q(u2,u1,-90))
     u3=cross(u2,u1)
     u1,u2,u3=array([u1,u2,u3]).tolist()
     return u3
@@ -9081,3 +9079,28 @@ def psos_v_2(s2,s3,v1,dist=100000,unidirection=0):
     
     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
     return px
+
+def rot(a,sol):
+    '''
+    function to rotate an object by axis and angles defined by a string 'a'
+    example:
+    rot(a='z30x70y-90',sol=[[0,0],[10,0]])
+    will rotate line [[0,0],[10,0]] first through z-axis by 30 deg 
+    then through x-axis by 70 deg and then through y-axis by -90 deg 
+    '''
+    b=[i for i,p in enumerate(a) if p=='x']
+    c=[i for i,p in enumerate(a) if p=='y']
+    d=[i for i,p in enumerate(a) if p=='z']
+    
+    e=l_(sort(b+c+d))+[len(a)]
+    th=[l_(a_(a[p[0]+1:p[1]]).astype(float)) for p in seg(e)[:-1]]
+    ax=[[1,0,0] if a[i]=='x' else [0,1,0] if a[i]=='y' else [0,0,1] for i in e[:-1]]
+    for i in range(len(ax)):
+        sol=axis_rot(ax[i],sol,th[i])
+    return sol
+
+def rot2d(a,sec):
+    '''
+    function to rotate a 2d section by a defined angle 'a'
+    '''
+    return c32(axis_rot([0,0,1],sec,a))
