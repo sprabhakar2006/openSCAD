@@ -9128,3 +9128,21 @@ def rounding_with_subdivison_surfaces(sol,n=4):
     for _ in range(n):
         sol=sub_d_1(sol)
     return sol
+
+def sub_d_2(b,a=[1/4,3/4]):
+    '''
+    input to function fillet_by_subdivison
+    '''
+    c=[[[polp(p1,a[0]),polp(p1,a[1])] for p1 in seg(p)[:-1]] for p in cpo(b)]
+    n1,n2,n3,n4=a_(c).shape
+    c=[b[0]]+cpo(a_(c).reshape(n1,n2*n3,n4))+[b[-1]]
+    
+    return c
+
+def fillet_by_subdivison(sol,a=[1/4,3/4]):
+    '''
+    produce fillet by subdividing an object
+    '''
+    for _ in range(4):
+        sol=sub_d_2(sol,a)
+    return sol
