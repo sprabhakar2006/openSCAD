@@ -8370,6 +8370,19 @@ def bspline_surface(pl,deg1=3,deg2=3,s1=100,s2=100,a=[1,1]):
     p2=cpo([bspline_closed(p,deg2,s2) if a[1]==1 else bspline_open(p,deg2,s2) for p in cpo(p1)])
     return p2
 
+def bspline_sol(pl,deg1=3,deg2=3,s1=100,s2=100,a=[1,1]):
+    '''
+    draws bspline surface from 2 control points list 'pl1' and 'pl2'
+    degree of curves are 'deg1' and 'deg2' in 2 directions 
+    which should lie 0<=deg1<len(pl[0]) for 'deg1' and
+    0<=deg2<=len(pl) for 'deg2'
+    s: number of points in the resultant curve
+    a: if a[0]==1 means set 1st shape of the surface to closed else to open and similarly for a[1]. open here means function bspline_open and closed means bspline_closed
+    '''
+    p1=[bspline_closed(p,deg1,s1) if a[0]==1 else bspline_open(p,deg1,s1) for p in pl]
+    p2=cso([bspline_closed(p,deg2,s2) if a[1]==1 else bspline_open(p,deg2,s2) for p in cso(p1)])
+    return p2
+
 def polp(l,t):# point on line parameteric
     '''
     find a point on line 'l' at parameter 't' where 0<=t<=1
@@ -9171,3 +9184,11 @@ def fillet_by_subdivison(sol,a=[1/4,3/4]):
     for _ in range(4):
         sol=sub_d_2(sol,a)
     return sol
+
+def cso(sol):
+    '''
+    change the orientation of points in solid
+    '''
+    a=cpo(sol)
+    b=[ a[i]+flip(a[-(i+1)]) for i in range(int(len(a)/2))]
+    return b
