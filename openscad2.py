@@ -9192,3 +9192,19 @@ def cso(sol):
     a=cpo(sol)
     b=[ a[i]+flip(a[-(i+1)]) for i in range(int(len(a)/2))]
     return b
+
+def ang_2lineccw_3d(p0,p1,p2):
+    v1,v2=p1-p0,p2-p0
+    u1,u2=v1/norm(v1),v2/norm(v2)
+    theta=r2d(arccos(u1@u2))
+    a=u1@u2
+    theta=theta if a<0 else 360-theta
+    return theta
+
+def ang_2linecw_3d(p0,p1,p2):
+    v1,v2=p1-p0,p2-p0
+    u1,u2=v1/norm(v1),v2/norm(v2)
+    theta=r2d(arccos(u1@u2))
+    a=u1@u2
+    theta=theta if a>0 else 360-theta
+    return theta
