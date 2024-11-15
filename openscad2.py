@@ -9211,3 +9211,38 @@ def cso(sol):
     b=[ a[i]+flip(a[-(i+1)]) for i in range(int(len(a)/2))]
     return b
 
+def offset_3d_path(path,dist=1):
+    '''
+    offsets any random closed 3d path by defined distance
+    '''
+    path1=equidistant_pathc(path,pitch=.1)
+    path1=rationalise_path(path1)
+    s1=sec2surface_1(path1,1)
+    l2=o_3d_surf(path1,s1,dist)
+    l3=remove_points_within_dist(path1,equidistant_pathc(l2,pitch=.1),dist-.02)
+    l3=sort_points(path,l3)
+    return l3
+
+def remove_points_within_dist(path,line,dist=1):
+    '''
+    function to remove points which are with in defined distance of a given path
+    path : is the original path
+    line: is the line from where the points needs to be removed
+    dist: is the distance with in which all the points to be excluded
+    '''
+
+    l2=line
+    p0=a_(path)
+    p1=a_(path[1:]+path[:1])
+    v1=p1-p0
+    l3=[]
+    for i in range(len(l2)):
+        p2=a_(l2[i])
+        v2=p2-p0
+        a,b=einsum('ij,ij->i',v1,v2),norm(v1,axis=1)
+        a=a/b
+        c=norm(cross(v1,v2),axis=1)/b
+        # d=norm(v2,axis=1)
+        if ~(c[arange(len(path))[((a>=0) & (a<=b))]]<dist).any():
+            l3.append(l2[i])
+    return l3
