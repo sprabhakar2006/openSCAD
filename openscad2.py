@@ -5741,7 +5741,6 @@ def o_3d_rev(i_p,sol,r,o=0,closed=0,type=0,dist=0,vx=[],edges_closed=0,cg=0):
             
     return i_p1
 
-
 def o_3d_surf(i_p,sol,r,o=0,f=1,closed=0):
     '''
     function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset
@@ -5756,10 +5755,29 @@ def o_3d_surf(i_p,sol,r,o=0,f=1,closed=0):
         c=array(i_p)+cross(b,a)*r
     elif o==1:
         c=array(i_p)+cross(a,b)*r
-    s=array([c+a*r*f,c-a*r*f])
-    i_p1=ip_surf2sol(sol,s)
+    i_p1=psos_v_2(sol,[c],a)[0]
 
     return i_p1
+
+
+# def o_3d_surf(i_p,sol,r,o=0,f=1,closed=0):
+#     '''
+#     function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset
+#     for closed loop path, set closed=1
+#     '''
+#     a=i_p_n_surf(i_p,sol)
+#     if closed==0:
+#         b=i_p_t_o(i_p)
+#     elif closed==1:
+#         b=i_p_t(ip)
+#     if o==0:
+#         c=array(i_p)+cross(b,a)*r
+#     elif o==1:
+#         c=array(i_p)+cross(a,b)*r
+#     s=array([c+a*r*f,c-a*r*f])
+#     i_p1=ip_surf2sol(sol,s)
+
+#     return i_p1
 
 def ip_fillet(sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,f=1,edges_closed=1,c=0):
     '''
@@ -9193,18 +9211,3 @@ def cso(sol):
     b=[ a[i]+flip(a[-(i+1)]) for i in range(int(len(a)/2))]
     return b
 
-def ang_2lineccw_3d(p0,p1,p2):
-    v1,v2=p1-p0,p2-p0
-    u1,u2=v1/norm(v1),v2/norm(v2)
-    theta=r2d(arccos(u1@u2))
-    a=u1@u2
-    theta=theta if a<0 else 360-theta
-    return theta
-
-def ang_2linecw_3d(p0,p1,p2):
-    v1,v2=p1-p0,p2-p0
-    u1,u2=v1/norm(v1),v2/norm(v2)
-    theta=r2d(arccos(u1@u2))
-    a=u1@u2
-    theta=theta if a>0 else 360-theta
-    return theta
