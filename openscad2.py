@@ -7823,11 +7823,11 @@ def pol(p1,l1):
 
 
 
-def i_p_p(surf_1,i_p_l,d=1):
+def i_p_p(surf_1,i_p_l,d=1.):
     '''
     function to project the intersection point on the cutting lines based on the distance 'r'
     '''
-    surf_1=cpo(surf_1) if d>0 else(cpo(flip(surf_1)))
+    surf_1=cpo(surf_1) if d>0. else(cpo(flip(surf_1)))
     r_ipl=[]
     for j in range(len(surf_1)):
         for i in range(len(i_p_l)):
@@ -8585,12 +8585,14 @@ def prism2cpo(s1):
     return s2
 
 
-def psos(s2,s3,v1,dist=100000):
+def psos(s2,s3,v1,dist=100000,unidirection=1):
     '''
     project a surface on to another without loosing the original points
     surface 's3' will be projected on surface 's2'
     'v1' is vector for projection
     'dist' is the maximum distance through which projection can happen
+    unidirection: if the projection is to be in both direction set parameter
+    unidirection to '1' else to '0'
     '''
     p0=a_(s3).reshape(-1,3)
     f=faces_surface(len(s2),len(s2[0]))
@@ -8606,7 +8608,10 @@ def psos(s2,s3,v1,dist=100000):
     for i in range(len(p0)):
         t=(im@(p2-p0[i][None,:])[:,:,None]).reshape(-1,3)
         t1,t2,t3=t[:,0],t[:,1],t[:,2]
-        dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+        if unidirection==0:
+            dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+        elif unidirection==1:
+            dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
         if dec.any()==1 and norm(a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
             px.append(p0[i]+a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
         elif dec.any()==0 or norm(a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])>dist:
@@ -9222,7 +9227,7 @@ def offset_3d_sec(path,dist=1,o=0):
     elif o==1:
         s1=sec2surface(path2,1)
     l2=o_3d_surf(path1,s1,dist)
-    l1=list_remove_points_within_dist(path,l2,dist-.02)
+    l1=list_remove_points_within_dist_closed(path,l2,dist-.02)
     l4=[l1[cKDTree(a_([l1,zeros(len(l1))]).transpose(1,0)).query([i,0])[1]] for i in range(len(l2))]
     l5=[cKDTree(path1).query(path[i])[1] for i in range(len(path))]
     l6=a_(l4)[l5]
