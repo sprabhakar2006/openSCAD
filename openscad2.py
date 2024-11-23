@@ -8864,61 +8864,61 @@ def cog(sol):
     '''
     return l_(a_(sol).reshape(-1,3).mean(0))
 
-def plos(s2,l1,v1,dist=100000):
-    '''
-    project a line 'l1' on to a surface
-    'v1' is vector for projection
-    'dist' is the maximum distance through which projection can happen
-    '''
-    p0=a_(l1)
-    f=faces_surface(len(s2),len(s2[0]))
-    v=a_(s2).reshape(-1,3)
-    tri=v[f]
-    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
-    n1=a_([v1]*len(p2))
-    v2,v3=p3-p2,p4-p2
+# def plos(s2,l1,v1,dist=100000):
+#     '''
+#     project a line 'l1' on to a surface
+#     'v1' is vector for projection
+#     'dist' is the maximum distance through which projection can happen
+#     '''
+#     p0=a_(l1)
+#     f=faces_surface(len(s2),len(s2[0]))
+#     v=a_(s2).reshape(-1,3)
+#     tri=v[f]
+#     p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
+#     n1=a_([v1]*len(p2))
+#     v2,v3=p3-p2,p4-p2
     
-    iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
-    im=inv(iim)
-    px=[]
-    for i in range(len(p0)):
-        t=(im@(p2-p0[i][None,:])[:,:,None]).reshape(-1,3)
-        t1,t2,t3=t[:,0],t[:,1],t[:,2]
-        dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-        if dec.any()==1 and norm(a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
-            px.append(p0[i]+a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
+#     iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
+#     im=inv(iim)
+#     px=[]
+#     for i in range(len(p0)):
+#         t=(im@(p2-p0[i][None,:])[:,:,None]).reshape(-1,3)
+#         t1,t2,t3=t[:,0],t[:,1],t[:,2]
+#         dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+#         if dec.any()==1 and norm(a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
+#             px.append(p0[i]+a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
 
-    px=l_(a_(px))
-    return px
+#     px=l_(a_(px))
+#     return px
 
-def plos_b(s2,l1,v1,dist=100000):
-    '''
-    project a line 'l1' on to a surface
-    'v1' is vector for projection, any side of the surface is picked
-    nearest point will be picked
-    'dist' is the maximum distance through which projection can happen
-    '''
-    p0=a_(l1)
-    f=faces_surface(len(s2),len(s2[0]))
-    v=a_(s2).reshape(-1,3)
-    tri=v[f]
-    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
-    n1=a_([v1]*len(p2))
-    v2,v3=p3-p2,p4-p2
+# def plos_b(s2,l1,v1,dist=100000):
+#     '''
+#     project a line 'l1' on to a surface
+#     'v1' is vector for projection, any side of the surface is picked
+#     nearest point will be picked
+#     'dist' is the maximum distance through which projection can happen
+#     '''
+#     p0=a_(l1)
+#     f=faces_surface(len(s2),len(s2[0]))
+#     v=a_(s2).reshape(-1,3)
+#     tri=v[f]
+#     p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
+#     n1=a_([v1]*len(p2))
+#     v2,v3=p3-p2,p4-p2
     
-    iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
-    im=inv(iim)
-    px=[]
-    for i in range(len(p0)):
-        t=(im@(p2-p0[i][None,:])[:,:,None]).reshape(-1,3)
-        t1,t2,t3=t[:,0],t[:,1],t[:,2]
-        dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-        if dec.any()==1 and norm(a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
-            px.append(p0[i]+a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
+#     iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
+#     im=inv(iim)
+#     px=[]
+#     for i in range(len(p0)):
+#         t=(im@(p2-p0[i][None,:])[:,:,None]).reshape(-1,3)
+#         t1,t2,t3=t[:,0],t[:,1],t[:,2]
+#         dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+#         if dec.any()==1 and norm(a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
+#             px.append(p0[i]+a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
 
 
-    px=l_(a_(px))
-    return px
+#     px=l_(a_(px))
+#     return px
 
 def interpolation_bspline_closed(p0,s=50,f=3.425):
     '''
@@ -9342,3 +9342,25 @@ def list_remove_points_within_dist_open(path,line,dist=1):
         if ~(c[arange(len(path)-1)[((a>=0) & (a<=b))]]<dist).any():
             l3.append(i)
     return l3
+
+def ppos(surf,pnt,vect,unidirection=1):#project point on surface
+    '''
+    function to project a point on a surface
+    'vect' is the vector in which direction the line would be projected.
+    'unidirection' to be set to '1' if the projection is required in the 
+    direction of the vector and set to '0' in case it is required in either of 
+    the direction. 
+    Projections happens at the nearest location on the surface from a line
+    '''
+    return psos(surf,[[pnt]],vect,unidirection=unidirection)[0][0]
+
+def plos(surf,line,vect,unidirection=1):#project line on surface
+    '''
+    function to project a line on a surface
+    'vect' is the vector in which direction the line would be projected.
+    'unidirection' to be set to '1' if the projection is required in the 
+    direction of the vector and set to '0' in case it is required in either of 
+    the direction. 
+    Projections happens at the nearest location on the surface from a line
+    '''
+    return psos(surf,[line],vect,unidirection=unidirection)[0]
