@@ -9364,3 +9364,29 @@ def plos(surf,line,vect,unidirection=1):#project line on surface
     Projections happens at the nearest location on the surface from a line
     '''
     return psos(surf,[line],vect,unidirection=unidirection)[0]
+
+def barycentric_normals(surf):
+    '''
+    finds normals for each triangle mesh of a surface
+    '''
+    f=faces_1(len(surf),len(surf[0]))
+    v=a_(surf).reshape(-1,3)
+    triangles=v[f]
+    p0=triangles[:,0]
+    p1=triangles[:,1]
+    p2=triangles[:,2]
+    v1=p1-p0
+    v2=p2-p0
+    n1=cross(v1,v2)
+    n1=n1/norm(n1,axis=1).reshape(-1,1)
+    return n1
+
+def barycenter(surf):
+    '''
+    finds center for each triangle mesh of a surface
+    '''
+    f=faces_1(len(surf),len(surf[0]))
+    v=a_(surf).reshape(-1,3)
+    triangles=v[f]
+    cp=triangles.mean(1)
+    return cp
