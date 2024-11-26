@@ -9365,11 +9365,16 @@ def plos(surf,line,vect,unidirection=1):#project line on surface
     '''
     return psos(surf,[line],vect,unidirection=unidirection)[0]
 
-def barycentric_normals(surf):
+def barycentric_normals(surf,edges_closed=1):
     '''
     finds normals for each triangle mesh of a surface
+    if it is a closed loop surface like cylinder, 
+    parameter edges_closed to be set to '1' else set to '0'
     '''
-    f=faces_1(len(surf),len(surf[0]))
+    if edges_closed==1:
+        f=faces_1(len(surf),len(surf[0]))
+    elif edges_closed==0:
+        f=faces_surface(len(surf),len(surf[0]))
     v=a_(surf).reshape(-1,3)
     triangles=v[f]
     p0=triangles[:,0]
@@ -9381,11 +9386,16 @@ def barycentric_normals(surf):
     n1=n1/norm(n1,axis=1).reshape(-1,1)
     return n1
 
-def barycenter(surf):
+def barycenter(surf,edges_closed=1):
     '''
     finds center for each triangle mesh of a surface
+    if it is a closed loop surface like cylinder, 
+    parameter edges_closed to be set to '1' else set to '0'
     '''
-    f=faces_1(len(surf),len(surf[0]))
+    if edges_closed==1:
+        f=faces_1(len(surf),len(surf[0]))
+    elif edges_closed==0:
+        f=faces_surface(len(surf),len(surf[0]))
     v=a_(surf).reshape(-1,3)
     triangles=v[f]
     cp=triangles.mean(1)
