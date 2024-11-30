@@ -8139,6 +8139,7 @@ def s_p(p_l): # starting point
 def sec2surface_1(sec1,s=1):
     '''
     create an aligned surface from a section 'sec1'
+    considers the min sum method
     '''
     sec2=[sec2surface(sec1[i:]+sec1[:i],s) for i in range(len(sec1))]
     sec2=[sum([l_len(p1) for p1 in p]) for p in sec2]
@@ -8146,6 +8147,17 @@ def sec2surface_1(sec1,s=1):
     sec3=sec2surface(sec1[n2:]+sec1[:n2],s)
     return sec3
 
+def sec2surface_2(sec1,s=1):
+    '''
+    create an aligned surface from a section 'sec1'
+    considers the max sum method
+    '''
+    sec2=[sec2surface(sec1[i:]+sec1[:i],s) for i in range(len(sec1))]
+    sec2=[sum([l_len(p1) for p1 in p]) for p in sec2]
+    n2=array(sec2).argmax()
+    sec3=sec2surface(sec1[n2:]+sec1[:n2],s)
+    return sec3
+    
 def vector2length(v,l=10):
     '''
     draw a defined vector to length 'l'
@@ -9400,3 +9412,49 @@ def barycenter(surf,edges_closed=1):
     triangles=v[f]
     cp=triangles.mean(1)
     return cp
+
+def h_lines_sec(sec,n=10):
+    '''
+    divide a 2d section 'sec' in to horizontal lines
+    'n' is the number of lines in the section
+    '''
+    py=m_points1_o([a_(sec)[:,1].min()+.001,a_(sec)[:,1].max()-.001],n)
+    px=zeros(len(py))
+    p2=a_([px,py]).transpose(1,0)
+    a=seg(sec)
+    p0=a_(a)[:,0]
+    p1=a_(a)[:,1]
+    v1=p1-p0
+    v2=a_([[1,0]]*len(v1))
+    # p0+v1*t1=p2+v2*t2
+    # v1*t1-v2*t2=p2-p0
+    iim=a_([v1,-v2+.000001]).transpose(1,0,2).transpose(0,2,1)
+    im=inv(iim)
+    t=einsum('ijk,hik->hij',im,p2[:,None,:]-p0[None,:])
+    p=p0+einsum('ij,hi->hij',v1,t[:,:,0])
+    dec=(t[:,:,0]>=0) & (t[:,:,0]<=1)
+    p1=l_(a_(seg(lexico(p[dec],[1,0],[1,1])))[::2])
+    return p1
+
+def v_lines_sec(sec,n=10):
+    '''
+    divide a 2d section 'sec' in to verticle lines
+    'n' is the number of lines in the section
+    '''
+    px=m_points1_o([a_(sec)[:,0].min()+.001,a_(sec)[:,0].max()-.001],n)
+    py=zeros(len(px))
+    p2=a_([px,py]).transpose(1,0)
+    a=seg(sec)
+    p0=a_(a)[:,0]
+    p1=a_(a)[:,1]
+    v1=p1-p0
+    v2=a_([[0,1]]*len(v1))
+    # p0+v1*t1=p2+v2*t2
+    # v1*t1-v2*t2=p2-p0
+    iim=a_([v1,-v2+.000001]).transpose(1,0,2).transpose(0,2,1)
+    im=inv(iim)
+    t=einsum('ijk,hik->hij',im,p2[:,None,:]-p0[None,:])
+    p=p0+einsum('ij,hi->hij',v1,t[:,:,0])
+    dec=(t[:,:,0]>=0) & (t[:,:,0]<=1)
+    p1=l_(a_(seg(lexico(p[dec],[0,1],[1,1])))[::2])
+    return p1
