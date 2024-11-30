@@ -9158,49 +9158,6 @@ def rot2d(a,sec):
     '''
     return c32(axis_rot([0,0,1],sec,a))
 
-def sub_d(b,a=[1/4,3/4]):
-    '''
-    input to rounding_with_subdivison function
-    '''
-    c=[[[polp(p1,a[0]),polp(p1,a[1])] for p1 in seg(p)[:-1]] for p in cpo(b)]
-    n1,n2,n3,n4=a_(c).shape
-    c=[b[0]]+cpo(a_(c).reshape(n1,n2*n3,n4))+[b[-1]]
-    d=[[[polp(p1,a[0]),polp(p1,a[1])] for p1 in seg(p)[:-1]] for p in c]
-    n1,n2,n3,n4=a_(d).shape
-    d=l_(a_(d).reshape(n1,n2*n3,n4))
-    d=cpo(cpo(d)+[cpo(d)[0]])
-    return d
-
-def rounding_with_subdivison(sol,n=4):
-    '''
-    round the corners with sub divison of surfaces
-    n: is the number of iterations of subdivisons
-    '''
-    for _ in range(n):
-        sol=sub_d(sol)
-    return sol
-
-def sub_d_1(b,a=[1/4,3/4]):
-    '''
-    input to rounding_with_subdivison function for open surfaces
-    '''
-    c=[[[polp(p1,a[0]),polp(p1,a[1])] for p1 in seg(p)[:-1]] for p in cpo(b)]
-    n1,n2,n3,n4=a_(c).shape
-    c=[b[0]]+cpo(a_(c).reshape(n1,n2*n3,n4))+[b[-1]]
-    d=[[[polp(p1,a[0]),polp(p1,a[1])] for p1 in seg(p)[:-1]] for p in c]
-    n1,n2,n3,n4=a_(d).shape
-    d=l_(a_(d).reshape(n1,n2*n3,n4))
-    d=[cpo(c)[0]]+cpo(d)+[cpo(c)[-1]]
-    return d
-
-def rounding_with_subdivison_surfaces(sol,n=4):
-    '''
-    round the corners with sub divison of surfaces
-    n: is the number of iterations of subdivisons
-    '''
-    for _ in range(n):
-        sol=sub_d_1(sol)
-    return sol
 
 def sub_d_2(b,a=[1/4,3/4]):
     '''
@@ -9458,3 +9415,32 @@ def v_lines_sec(sec,n=10):
     dec=(t[:,:,0]>=0) & (t[:,:,0]<=1)
     p1=l_(a_(seg(lexico(p[dec],[0,1],[1,1])))[::2])
     return p1
+
+def smoothening_by_subdivison(sec,iterations=4,open=0):
+    '''
+    smoothen a polyline by subdivision method.
+    if the polyline is closed loop, parameter 'open' should be set at '0'
+    else if the polyline is not a closed loop parameter 'open' to be set to '1'
+    '''
+    for i in range(iterations):
+        if open==0:
+            sec=l_(concatenate([[polp(p1,1/4),polp(p1,3/4)] for p1 in seg(sec)]))
+        elif open==1:
+            sec=[sec[0]]+l_(concatenate([[polp(p1,1/4),polp(p1,3/4)] for p1 in seg(sec)[:-1]]))+[sec[-1]]
+    return sec
+
+def smoothening_by_subdivison_of_solids(sol,iterations=4):
+    '''
+    smoothen a solid with sub-divison method
+    '''
+    sol=[smoothening_by_subdivison(p,iterations) for p in sol]
+    sol=cpo([smoothening_by_subdivison(p,iterations,1) for p in cpo(sol)])
+    return sol
+
+def smoothening_by_subdivison_of_surface(sol,iterations=4):
+    '''
+    smoothen a surface with sub-divison method
+    '''
+    sol=[smoothening_by_subdivison(p,iterations,1) for p in sol]
+    sol=cpo([smoothening_by_subdivison(p,iterations,1) for p in cpo(sol)])
+    return sol
