@@ -9416,16 +9416,16 @@ def v_lines_sec(sec,n=10):
     p1=l_(a_(seg(lexico(p[dec],[0,1],[1,1])))[::2])
     return p1
 
-def smoothening_by_subdivison(sec,iterations=4,open=0):
+def smoothening_by_subdivison(sec,iterations=4,closed=0):
     '''
     smoothen a polyline by subdivision method.
-    if the polyline is closed loop, parameter 'open' should be set at '0'
-    else if the polyline is not a closed loop parameter 'open' to be set to '1'
+    if the polyline is closed loop, parameter 'closed' should be set at '1'
+    else if the polyline is not a closed loop parameter 'closed' to be set to '0'
     '''
     for i in range(iterations):
-        if open==0:
+        if closed==1:
             sec=l_(concatenate([[polp(p1,1/4),polp(p1,3/4)] for p1 in seg(sec)]))
-        elif open==1:
+        elif closed==0:
             sec=[sec[0]]+l_(concatenate([[polp(p1,1/4),polp(p1,3/4)] for p1 in seg(sec)[:-1]]))+[sec[-1]]
     return sec
 
@@ -9433,14 +9433,26 @@ def smoothening_by_subdivison_of_solids(sol,iterations=4):
     '''
     smoothen a solid with sub-divison method
     '''
-    sol=[smoothening_by_subdivison(p,iterations) for p in sol]
-    sol=cpo([smoothening_by_subdivison(p,iterations,1) for p in cpo(sol)])
+    sol=[smoothening_by_subdivison(p,iterations,1) for p in sol]
+    sol=cpo([smoothening_by_subdivison(p,iterations,0) for p in cpo(sol)])
     return sol
 
 def smoothening_by_subdivison_of_surface(sol,iterations=4):
     '''
     smoothen a surface with sub-divison method
     '''
-    sol=[smoothening_by_subdivison(p,iterations,1) for p in sol]
-    sol=cpo([smoothening_by_subdivison(p,iterations,1) for p in cpo(sol)])
+    sol=[smoothening_by_subdivison(p,iterations,0) for p in sol]
+    sol=cpo([smoothening_by_subdivison(p,iterations,0) for p in cpo(sol)])
+    return sol
+
+def smoothening_by_subdivison_surf(sol,iterations=4,o=[0,0]):
+    '''
+    smoothen a solid with sub-divison method
+    iterations: number of iterations
+    o: if o[0]==0 (means closed==0) will set 1st shape of the surface to open else to closed and 
+    similarly for o[1]==0 will set the cpo(sol) surface to open else if o[1]==1 it will set the surface to closed.
+    an example can make this more clear
+    '''
+    sol=[smoothening_by_subdivison(p,iterations,o[0]) for p in sol]
+    sol=cpo([smoothening_by_subdivison(p,iterations,o[1]) for p in cpo(sol)])
     return sol
