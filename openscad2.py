@@ -9456,3 +9456,47 @@ def smoothening_by_subdivison_surf(sol,iterations=4,o=[0,0]):
     sol=[smoothening_by_subdivison(p,iterations,o[0]) for p in sol]
     sol=cpo([smoothening_by_subdivison(p,iterations,o[1]) for p in cpo(sol)])
     return sol
+
+def wrap_x(l1,path):
+    
+    l2=[l_len(p) for p in seg(path)[:-1]]
+    l2=a_([0]+l_(a_(l2).cumsum()))
+    l3=a_(l1)[:,0]
+    l4=[[0,p[1],p[2]] for p in c23(l1)]
+    l5=[[0,p[1],0] for p in c23(l1)]
+    t2=[]
+    for i in range(len(l3)):
+        n=arange(len(l2))[l2<l3[i]][-1]
+        t1=(l3[i]-l2[n])/l_len(seg(path)[n])
+        p0=seg(path)[n][0]
+        p1=seg(path)[n][1]
+        p2=a_(p0)*(1-t1)+a_(p1)*t1
+        v1=line_as_axis([p0,p1])
+        u1=v1/norm(v1)
+        u2=[0,sign(l4[i][2])*1,0]
+        d1=cross(u1,u2)*abs(l4[i][2])
+        t2.append(translate(p2+d1,l5[i]))
+
+    return t2
+
+def wrap_y(l1,path):
+    
+    l2=[l_len(p) for p in seg(path)[:-1]]
+    l2=a_([0]+l_(a_(l2).cumsum()))
+    l3=a_(l1)[:,1]
+    l4=[[p[0],0,p[2]] for p in c23(l1)]
+    l5=[[p[0],0,0] for p in c23(l1)]
+    t2=[]
+    for i in range(len(l3)):
+        n=arange(len(l2))[l2<l3[i]][-1]
+        t1=(l3[i]-l2[n])/l_len(seg(path)[n])
+        p0=seg(path)[n][0]
+        p1=seg(path)[n][1]
+        p2=a_(p0)*(1-t1)+a_(p1)*t1
+        v1=line_as_axis([p0,p1])
+        u1=v1/norm(v1)
+        u2=[sign(l4[i][2])*-1,0,0]
+        d1=cross(u1,u2)*abs(l4[i][2])
+        t2.append(translate(p2+d1,l5[i]))
+
+    return t2
