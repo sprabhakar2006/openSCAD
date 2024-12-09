@@ -9449,8 +9449,8 @@ def smoothening_by_subdivison_surf(sol,iterations=4,o=[0,0]):
     '''
     smoothen a solid with sub-divison method
     iterations: number of iterations
-    o: if o[0]==0 (means closed==0) will set 1st shape of the surface to open else to closed and 
-    similarly for o[1]==0 will set the cpo(sol) surface to open else if o[1]==1 it will set the surface to closed.
+    o: if o[0]==0 (means loop remains open for the 1st orientation, and '1' means the loop remains closed for the 1st orientation of the shape) 
+    similarly o[1]==0 (means loop remains open for the 2nd orientation, and '1' means the loop remains closed for the 2n orientation of the shape)
     an example can make this more clear
     '''
     sol=[smoothening_by_subdivison(p,iterations,o[0]) for p in sol]
@@ -9500,3 +9500,12 @@ def wrap_y(l1,path):
         t2.append(translate(p2+d1,l5[i]))
 
     return t2
+
+def thicken_surface(surf,t=1):
+    '''
+    gives thickness to a surface by amount 't'
+    '''
+    a=surf
+    b=surface_offset(surf,t)
+    sol=[a[i]+flip(b[i]) for i in range(len(a))]
+    return sol
