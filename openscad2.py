@@ -7927,14 +7927,14 @@ def project_points_on_sol(l_2,surf_1,n_1=[],both=0,n='all'):
         ip_1=array([ip_1[i][dec[i]][n] for i in range(len(l_2))]).tolist()
     return ip_1
 
-def points_inside_sol(p0,sol):
-    '''
-    finds points which are inside the solid,
-    solid needs to be defined in such a way that all sides are closed
-    '''
-    p1=project_points_on_sol(p0,sol,[1,0,0],1)
-    p2=array([ p for p in p0 if len(project_points_on_sol([p],sol,[1,0,0],1))%2!=0]).tolist()
-    return p2
+# def points_inside_sol(p0,sol):
+#     '''
+#     finds points which are inside the solid,
+#     solid needs to be defined in such a way that all sides are closed
+#     '''
+#     p1=project_points_on_sol(p0,sol,[1,0,0],1)
+#     p2=array([ p for p in p0 if len(project_points_on_sol([p],sol,[1,0,0],1))%2!=0]).tolist()
+#     return p2
 
 def plane_min_d_zrot(l1,l_a=[0,120,240]):
     '''
