@@ -9509,3 +9509,74 @@ def thicken_surface(surf,t=1):
     b=surface_offset(surf,t)
     sol=[a[i]+flip(b[i]) for i in range(len(a))]
     return sol
+
+def find_points_beyond_distance_of_surface(surf,pnts,d=1,edges_closed=1):
+    c=surf
+    if edges_closed==1:
+        f1=faces_1(len(c),len(c[0]))
+    elif edges_closed==0:
+        f1=faces_surface(len(c),len(c[0]))
+    vert1=a_(c).reshape(-1,3)
+    trngl=vert1[f1]
+    p0,p1,p2=trngl[:,0],trngl[:,1],trngl[:,2]
+    v1,v2=p1-p0,p2-p0
+    v0=barycentric_normals(c)
+    l0=a_(pnts)
+    # l0+v0*t0=p0+v1*t1+v2*t2
+    iim=a_([v0,-v1,-v2]).transpose(1,0,2).transpose(0,2,1)
+    im=inv(iim)
+    pa=[]
+    # pb=[]
+    for i in range(len(l0)):
+        p=p0-l0[i]
+        t0,t1,t2=einsum('ijk,ik->ij',im,p).transpose(1,0)
+        dec=(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&((t1+t2)<=1)
+        px=norm(einsum('ij,i->ij',v0,t0),axis=1)
+        if (px[dec]>d).all() and l_(px[dec])!=[]:
+            pa.append(pnts[i])
+            # pb.append(px[dec].min())
+    return pa
+
+def points_inside_solid(pnts,surf,edges_closed=1):
+    '''
+    finds all the points which are inside the solid
+    '''
+    c=surf
+    if edges_closed==1:
+        f1=faces_1(len(c),len(c[0]))
+    elif edges_closed==0:
+        f1=faces_surface(len(c),len(c[0]))
+    a1,a2,a3=a_([[1,0,0],[0,1,0],[0,0,1]])
+    l0=a_(pnts)
+    # f1=faces_1(len(c),len(c[0]))
+    vert1=a_(c).reshape(-1,3)
+    trngl=vert1[f1]
+    p0,p1,p2=trngl[:,0],trngl[:,1],trngl[:,2]
+    v1,v2=p1-p0,p2-p0
+    # l0+a1*t0=p0+v1*t1+v2*t2
+    # l0+a2*t0=p0+v1*t1+v2*t2
+    # l0+a3*t0=p0+v1*t1+v2*t2
+    iim1=a_([a_([a1]*len(v1)),-v1,-v2+.000001]).transpose(1,0,2).transpose(0,2,1)
+    im1=inv(iim1)
+    iim2=a_([a_([a2]*len(v1))+.000001,-v1,-v2]).transpose(1,0,2).transpose(0,2,1)
+    im2=inv(iim2)
+    iim3=a_([a_([a3]*len(v1))+.000001,-v1,-v2]).transpose(1,0,2).transpose(0,2,1)
+    im3=inv(iim3)
+    pb=[]
+    for i in range(len(l0)):
+        
+        p=p0-l0[i]
+        t0,t1,t2=einsum('ijk,ik->ij',im1,p).transpose(1,0)
+        dec=(t0>0)&(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&((t1+t2)<=1)
+        x1=ones(len(v1))[dec]
+        
+        t0,t1,t2=einsum('ijk,ik->ij',im2,p).transpose(1,0)
+        dec=(t0>0)&(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&((t1+t2)<=1)
+        x2=ones(len(v1))[dec]
+        
+        t0,t1,t2=einsum('ijk,ik->ij',im3,p).transpose(1,0)
+        dec=(t0>0)&(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&((t1+t2)<=1)
+        x3=ones(len(v1))[dec]
+        if (a_([x1.sum()%2,x2.sum()%2,x3.sum()%2])==1).sum()>=2:
+            pb.append(pnts[i])
+    return pb   
