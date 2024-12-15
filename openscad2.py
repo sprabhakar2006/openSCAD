@@ -6,7 +6,7 @@ from scipy.spatial import cKDTree, Delaunay
 # import pandas as pd
 import sympy
 import math
-# from stl import mesh
+from stl import mesh
 
 def arc(radius=0,start_angle=0,end_angle=0,cp=[0,0],s=20):
     '''
@@ -9556,27 +9556,64 @@ def points_inside_solid(pnts,surf,edges_closed=1):
     # l0+a1*t0=p0+v1*t1+v2*t2
     # l0+a2*t0=p0+v1*t1+v2*t2
     # l0+a3*t0=p0+v1*t1+v2*t2
-    iim1=a_([a_([a1]*len(v1)),-v1,-v2+.000001]).transpose(1,0,2).transpose(0,2,1)
+    iim1=a_([a_([a1]*len(v1)),-v1,-v2+.000001]).transpose(1,0,2).transpose(0,2,1)+.000001
     im1=inv(iim1)
-    iim2=a_([a_([a2]*len(v1))+.000001,-v1,-v2]).transpose(1,0,2).transpose(0,2,1)
+    iim2=a_([a_([a2]*len(v1))+.000001,-v1,-v2]).transpose(1,0,2).transpose(0,2,1)+.000001
     im2=inv(iim2)
-    iim3=a_([a_([a3]*len(v1))+.000001,-v1,-v2]).transpose(1,0,2).transpose(0,2,1)
+    iim3=a_([a_([a3]*len(v1))+.000001,-v1,-v2]).transpose(1,0,2).transpose(0,2,1)+.000001
     im3=inv(iim3)
     pb=[]
     for i in range(len(l0)):
         
         p=p0-l0[i]
         t0,t1,t2=einsum('ijk,ik->ij',im1,p).transpose(1,0)
-        dec=(t0>0)&(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&((t1+t2)<=1)
+        dec=(t0>=0)&(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&((t1+t2)<=1)
         x1=ones(len(v1))[dec]
         
         t0,t1,t2=einsum('ijk,ik->ij',im2,p).transpose(1,0)
-        dec=(t0>0)&(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&((t1+t2)<=1)
+        dec=(t0>=0)&(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&((t1+t2)<=1)
         x2=ones(len(v1))[dec]
         
         t0,t1,t2=einsum('ijk,ik->ij',im3,p).transpose(1,0)
-        dec=(t0>0)&(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&((t1+t2)<=1)
+        dec=(t0>=0)&(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&((t1+t2)<=1)
         x3=ones(len(v1))[dec]
         if (a_([x1.sum()%2,x2.sum()%2,x3.sum()%2])==1).sum()>=2:
             pb.append(pnts[i])
     return pb   
+
+
+def swp_triangles(sol):
+    '''
+    function to render triangular mesh
+    '''
+    vert1=l_(a_(sol).reshape(-1,3))
+    f1=l_(arange(len(sol)*len(sol[0])).reshape(-1,3))
+    return f'polyhedron({vert1},{f1},convexity=10);'
+
+def surface_split(sol,v1):
+    '''
+    function to split a 3d mesh surface, based on vector 
+    example, if you are looking at the object from the top use vector [0,0,1]
+    if from right [1,0,0] from left [-1,0,0], from front [0,1,0] , from back [0,-1,0] and so on...
+    '''
+    p0,p1,p2=a_(sol)[:,0],a_(sol)[:,1],a_(sol)[:,2]
+    p01=p1-p0
+    p02=p2-p0
+    a=sol.mean(1)
+    b=[]
+    for i in range(len(sol)):
+        la=a[i]+a_(v1)*.00001
+        lb=a[i]+a_(v1)
+        lab=lb-la
+        x1=cross(p01,p02)
+        x2=cross(p02,-lab)
+        x3=cross(-lab,p01)
+        t=einsum('ij,ij->i',x1,la-p0)/einsum('j,ij->i',-lab,x1)
+        u=einsum('ij,ij->i',x2,la-p0)/einsum('j,ij->i',-lab,x1)
+        v=einsum('ij,ij->i',x3,la-p0)/einsum('j,ij->i',-lab,x1)
+        dec=(t>=0)&(u>=0)&(u<=1)&(v>=0)&(v<=1)&((u+v)<=1)
+        if ~dec.any():
+            b.append(i)
+    
+    sol1=sol[a_(b)]
+    return sol1
