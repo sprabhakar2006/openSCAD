@@ -8363,29 +8363,29 @@ def bspline_closed(pl,deg=3,s=100):
     p1=l_(a_([a_([p0[i]*N(i,k,u,n,ak=deg) for i in range(len(p0))]).sum(0) for u in linspace(0,n-k+1,s)]))
     return p1[:-1]
 
-def bspline_surface_open(pl,deg1=3,deg2=3,s1=100,s2=100):
-    '''
-    draws bspline surface from 2 control points list 'pl1' and 'pl2'
-    degree of curves are 'deg1' and 'deg2' in 2 directions 
-    which should lie 0<=deg1<len(pl[0]) for 'deg1' and
-    0<=deg2<=len(pl) for 'deg2'
-    s: number of points in the resultant curve
-    '''
-    p1=[bspline_open(p,deg1,s1) for p in pl]
-    p2=cpo([bspline_open(p,deg2,s2) for p in cpo(p1)])
-    return p2
+# def bspline_surface_open(pl,deg1=3,deg2=3,s1=100,s2=100):
+#     '''
+#     draws bspline surface from 2 control points list 'pl1' and 'pl2'
+#     degree of curves are 'deg1' and 'deg2' in 2 directions 
+#     which should lie 0<=deg1<len(pl[0]) for 'deg1' and
+#     0<=deg2<=len(pl) for 'deg2'
+#     s: number of points in the resultant curve
+#     '''
+#     p1=[bspline_open(p,deg1,s1) for p in pl]
+#     p2=cpo([bspline_open(p,deg2,s2) for p in cpo(p1)])
+#     return p2
 
-def bspline_surface_closed(pl,deg1=3,deg2=3,s1=100,s2=100):
-    '''
-    draws bspline surface from 2 control points list 'pl1' and 'pl2'
-    degree of curves are 'deg1' and 'deg2' in 2 directions 
-    which should lie 0<=deg1<len(pl[0]) for 'deg1' and
-    0<=deg2<=len(pl) for 'deg2'
-    s: number of points in the resultant curve
-    '''
-    p1=[bspline_closed(p,deg1,s1) for p in pl]
-    p2=cpo([bspline_closed(p,deg2,s2) for p in cpo(p1)])
-    return p2
+# def bspline_surface_closed(pl,deg1=3,deg2=3,s1=100,s2=100):
+#     '''
+#     draws bspline surface from 2 control points list 'pl1' and 'pl2'
+#     degree of curves are 'deg1' and 'deg2' in 2 directions 
+#     which should lie 0<=deg1<len(pl[0]) for 'deg1' and
+#     0<=deg2<=len(pl) for 'deg2'
+#     s: number of points in the resultant curve
+#     '''
+#     p1=[bspline_closed(p,deg1,s1) for p in pl]
+#     p2=cpo([bspline_closed(p,deg2,s2) for p in cpo(p1)])
+#     return p2
 
 def bspline_surface(pl,deg1=3,deg2=3,s1=100,s2=100,a=[1,1]):
     '''
@@ -9429,21 +9429,21 @@ def smoothening_by_subdivison(sec,iterations=4,closed=0):
             sec=[sec[0]]+l_(concatenate([[polp(p1,1/4),polp(p1,3/4)] for p1 in seg(sec)[:-1]]))+[sec[-1]]
     return sec
 
-def smoothening_by_subdivison_of_solids(sol,iterations=4):
-    '''
-    smoothen a solid with sub-divison method
-    '''
-    sol=[smoothening_by_subdivison(p,iterations,1) for p in sol]
-    sol=cpo([smoothening_by_subdivison(p,iterations,0) for p in cpo(sol)])
-    return sol
+# def smoothening_by_subdivison_of_solids(sol,iterations=4):
+#     '''
+#     smoothen a solid with sub-divison method
+#     '''
+#     sol=[smoothening_by_subdivison(p,iterations,1) for p in sol]
+#     sol=cpo([smoothening_by_subdivison(p,iterations,0) for p in cpo(sol)])
+#     return sol
 
-def smoothening_by_subdivison_of_surface(sol,iterations=4):
-    '''
-    smoothen a surface with sub-divison method
-    '''
-    sol=[smoothening_by_subdivison(p,iterations,0) for p in sol]
-    sol=cpo([smoothening_by_subdivison(p,iterations,0) for p in cpo(sol)])
-    return sol
+# def smoothening_by_subdivison_of_surface(sol,iterations=4):
+#     '''
+#     smoothen a surface with sub-divison method
+#     '''
+#     sol=[smoothening_by_subdivison(p,iterations,0) for p in sol]
+#     sol=cpo([smoothening_by_subdivison(p,iterations,0) for p in cpo(sol)])
+#     return sol
 
 def smoothening_by_subdivison_surf(sol,iterations=4,o=[0,0]):
     '''
@@ -9617,3 +9617,22 @@ def surface_split(sol,v1):
     
     sol1=sol[a_(b)]
     return sol1
+
+def surface_reshape_with_2lines_and_pnt(l1,l2,pnt,s=20):
+    '''
+    reshape a surface with a point 'pnt'
+    '''
+    p0,p1=l1[cKDTree(l1).query(pnt)[1]],l2[cKDTree(l1).query(pnt)[1]]
+    l3=[p0,pnt,p1]
+    d1=len(l1)
+    d2=cKDTree(l1).query(pnt)[1]
+    a1=linspace(0,d2,d2)*90/d2
+    a2=linspace(0,d1-d2,(d1-d2))*90/(d1-d2)
+    a=a_(l_(sin(d2r(a1)))+l_(cos(d2r(a2))))
+    # a=linspace(0,len(l1),len(l1))*180/len(l1)
+    pnt1=pnt-a_(l1[cKDTree(l1).query(pnt)[1]])
+    b=[]
+    for i in range(len(l1)):
+        b.append([l1[i],l_(a_(l1[i])+[a[i]*pnt1[0],a[i]*pnt1[1],a[i]*pnt1[2]]),l2[i]])
+    b=[bspline_open(p,2,s) for p in b]
+    return b
