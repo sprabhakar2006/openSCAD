@@ -8486,11 +8486,13 @@ def lineFromPointTillEnd(l1,t):
         l2=[p0]+l1[n+1:]
     return l2
 
-def lineFromStartTillPoint(l1,t):
+def lineFromStartTillPoint(l1,pnt,dist=.01):
     '''
-    draws line from start till point at parameter t where 0<=t<=1
+    draws line from start till point 'pnt'.
+    the point with in distance 'dist' will be picked up
     deletes the rest of the line
     '''
+    t=timeToReachPoint(pnt,l1,dist)    
     p0=polp(l1,t)
     a=l_lenv_o(l1)*t
     b=a_([0]+[l_len(p) for p in seg(l1)[:-1]]).cumsum()
@@ -8502,20 +8504,41 @@ def lineFromStartTillPoint(l1,t):
         l2=l1[:n+1]+[p0]
     return l2
 
-def timeToReachPoint(p0,l1):
+def vcost(l1,p0,dist=.2):
+    '''
+    finds the projection of the point 'p0' on line 'l1' which is within distance 'dist' from the line
+    '''
+    v1=a_(l1[1])-a_(l1[0])
+    u1=v1/norm(v1)
+    d=norm(v1)
+    v2=a_(p0)-a_(l1[0])
+    d1,d2=v1@v2/norm(v1),cross(v1,v2)/norm(v1)
+    if d1>=0 and d1<=d and abs(d2)<=dist:
+        p1=l_(a_(l1[0])+u1*d1)
+        t1=d1/d
+    else:
+        p1=[]
+    return p1
+
+
+def timeToReachPoint(p0,l1,dist=.01):
     '''
     p0: point
     l1: line
+    dist: poin with in distance 'dist' will be picked up
     if the point is on the line, it gives back time
     where 0<=time<=1
     '''
+    l2=seg(l1)[:-1]
+    n1=[ i for i in range(len(l2)) if vcost(l2[i],p0,dist)!=[]]
+    p0=[] if n1==[] else vcost(l2[n1[0]],p0,dist)
     a=a_(seg(l1)[:-1])
     b,c=a[:,0],a[:,1]
     d=p0-b
     d=d/norm(d,axis=1).reshape(-1,1)
     e=c-b
     e=e/norm(e,axis=1).reshape(-1,1)
-    n=arange(len(a))[(d.round(4)==e.round(4)).all(1)][0]
+    n=arange(len(a))[(d.round(2)==e.round(2)).all(1)][0]
     d1=l_len([p0,l1[n]])+l_lenv_o(l1[:n+1])
     t1=d1/l_lenv_o(l1)
     return t1
@@ -9636,3 +9659,15 @@ def surface_reshape_with_2lines_and_pnt(l1,l2,pnt,s=20):
         b.append([l1[i],l_(a_(l1[i])+[a[i]*pnt1[0],a[i]*pnt1[1],a[i]*pnt1[2]]),l2[i]])
     b=[bspline_open(p,2,s) for p in b]
     return b
+
+def lineFromPointToPointOnLine(l1,p0,p1,dist=.01):
+    '''
+    Draw a line from a defined point to another point on a line.
+    points with in distance 'dist' will be picked up
+    Rest of the line will be deleted
+    
+    '''
+    l2=lineFromStartTillPoint(l1,p0,dist)
+    l3=lineFromStartTillPoint(l1,p1,dist)
+    l4=[p0]+exclude_points(l3,l2)
+    return l4
