@@ -9667,7 +9667,13 @@ def lineFromPointToPointOnLine(l1,p0,p1,dist=.01):
     Rest of the line will be deleted
     
     '''
-    l2=lineFromStartTillPoint(l1,p0,dist)
-    l3=lineFromStartTillPoint(l1,p1,dist)
-    l4=[p0]+exclude_points(l3,l2)
+    if p0==l1[0]:
+        l2=[]
+    else:
+        l2=lineFromStartTillPoint(l1,p0,dist)
+    if p1==l1[-1]:
+        l3=l1
+    else:
+        l3=lineFromStartTillPoint(l1,p1,dist)
+    l4=[p0]+(exclude_points(l3,l2) if p0!=l1[0] else l3)
     return l4
