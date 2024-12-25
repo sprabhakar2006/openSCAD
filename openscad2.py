@@ -8512,7 +8512,7 @@ def vcost(l1,p0,dist=.2):
     u1=v1/norm(v1)
     d=norm(v1)
     v2=a_(p0)-a_(l1[0])
-    d1,d2=v1@v2/norm(v1),cross(v1,v2)/norm(v1)
+    d1,d2=v1@v2/norm(v1),norm(cross(v1,v2))/norm(v1)
     if d1>=0 and d1<=d and abs(d2)<=dist:
         p1=l_(a_(l1[0])+u1*d1)
         t1=d1/d
@@ -9675,5 +9675,19 @@ def lineFromPointToPointOnLine(l1,p0,p1,dist=.01):
         l3=l1
     else:
         l3=lineFromStartTillPoint(l1,p1,dist)
-    l4=[p0]+(exclude_points(l3,l2) if p0!=l1[0] else l3)
+    l4=[l2[-1]]+(exclude_points(l3,l2) if p0!=l1[0] else l3)
     return l4
+
+def distanceOfPointFromLine(p0,l1):
+    '''
+    calculates the perpendicular distance of a point from a polyline
+    '''
+    px=[vcost(p,p0,1e5) for p in seg(l1)[:-1] if vcost(p,p0,1e5)!=[]]
+    return l_len([px[0],p0])  if px!=[] else []
+
+def perpendicularProjectionOfPointOnLine(p0,l1):
+    '''
+    finds the perpendicular projection of a point on a polyline, if one exists
+    '''
+    px=[vcost(p,p0,1e5) for p in seg(l1)[:-1] if vcost(p,p0,1e5)!=[]]
+    return px[0]  if px!=[] else []
