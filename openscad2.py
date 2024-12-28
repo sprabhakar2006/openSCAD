@@ -9691,3 +9691,16 @@ def perpendicularProjectionOfPointOnLine(p0,l1):
     '''
     px=[vcost(p,p0,1e5) for p in seg(l1)[:-1] if vcost(p,p0,1e5)!=[]]
     return px[0]  if px!=[] else []
+
+def switch_orientation(sol1):
+    '''
+    switch the orientation of the solid
+    '''
+    if len(sol1[0])%2==1:
+        sol1=[equidistant_path(p,len(sol1[0])) for p in sol1]
+    sol2=a_(sol1).transpose(1,0,2)
+    x,y,z=a_(sol2).shape
+    c=a_(sol2).reshape(2,int(x/2),y,3)[0]
+    d=a_(sol2).reshape(2,int(x/2),y,3)[1][::-1]
+    d=d[::-1].transpose(1,0,2)[::-1].transpose(1,0,2)[::-1]
+    return l_(a_([c,d]).transpose(1,0,2,3).reshape(-1,y*2,z))
