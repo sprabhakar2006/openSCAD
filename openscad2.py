@@ -59,9 +59,10 @@ def cw(sec):
     function to identify if an enclosed section is clockwise(cw) or counterclockwise(ccw)
     this returns 1 if section is clockwise and -1 if it is counterclockwise
     '''
+    sec=rot2d(0.001,sec)
     if len(sec)==3:
         p=array(sec)
-        return -1 if cross(p[1]-p[0],p[2]-p[0])>0 else 1
+        return -1 if cross(c23(p[1]-p[0]),c23(p[2]-p[0]))[-1]>0 else 1
     else:
         cp1=array(sec).mean(0)
         p0=[array(sec)[:,0].min()-1,cp1[1]]
@@ -69,7 +70,7 @@ def cw(sec):
 
         p1=array(sec)
         p2=array(sec[1:]+[sec[0]])
-        v2=p2-p1+.0000001
+        v2=p2-p1
         iim=array([v1,-v2]).transpose(1,0,2).transpose(0,2,1)
         im=inv(iim)
         p=p1-p0
@@ -87,7 +88,7 @@ def cw(sec):
         n=arange(len(sec))[(p1==p3).all(1)][0]
         p4=sec[n+1 if n<len(sec)-1 else 0]
 
-        cw=-1 if cross(array(p4)-array(p3),array(ip2[0])-array(p3))>0 else 1
+        cw=-1 if cross(c23(array(p4)-array(p3)),c23(array(ip2[0])-array(p3)))[-1]>0 else 1
         return cw
 
 
@@ -104,7 +105,7 @@ def cwv(sec):
     p2=p[1:]+[p[0]]
     p0,p1,p2=array([p0,p1,p2])
     p=array([p0,p1,p2]).transpose(1,0,2)
-    return [ -1 if cross(p1[1]-p1[0],p1[2]-p1[0])>=0 else 1 for p1 in p]
+    return [ -1 if cross(c23(p1[1]-p1[0]),c23(p1[2]-p1[0]))[-1]>=0 else 1 for p1 in p]
 
 
 def ang(x,y):
@@ -204,7 +205,7 @@ def f2d(p1,p2,p3,r0,r1,r2,theta0,theta1,theta2,u2,u3,s):
     p=p2+u2*(rf*tan(theta1*pi/180)).reshape(-1,1)
     q=array([p1,p2,p3]).transpose(1,0,2)
 
-    r=array([-1 if cross(p[1]-p[0],p[2]-p[0])>0 else 1 for p in q])
+    r=array([-1 if cross(c23(p[1]-p[0]),c23(p[2]-p[0]))[-1]>0 else 1 for p in q])
     n=r==-1
     n1=p-u2@array(rm(90))*rf.reshape(-1,1)
     n2=p-u2@array(rm(-90))*rf.reshape(-1,1)
@@ -428,7 +429,7 @@ def convert_secv(sec):
         r3=r_3pv(array(p_i),array(pi_plus),array(pi_2plus)).round(3)
         r=where((l2!=l3) & ((r1!=r2) | (r2!=r3)),0,r2)
         arr=swapaxes([pi_minus,p_i,pi_plus],0,1)
-        clock=array([-1 if cross(p[1]-p[0],p[2]-p[0])>0 else 1 for p in arr])
+        clock=array([-1 if cross(c23(p[1]-p[0]),c23(p[2]-p[0]))[-1]>0 else 1 for p in arr])
         c1=where(r==0,True,False)
         c2=where(r>=d,True,False)
         c3=where(clock==1,True,False)
@@ -511,7 +512,7 @@ def convert_secv1(sec):
         r3=r_3pv(array(p_i),array(pi_plus),array(pi_2plus)).round(3)
         r=where((l2!=l3) & ((r1!=r2) | (r2!=r3)),0,r2)
         arr=swapaxes([pi_minus,p_i,pi_plus],0,1)
-        clock=array([-1 if cross(p[1]-p[0],p[2]-p[0])>0 else 1 for p in arr])
+        clock=array([-1 if cross(c23(p[1]-p[0]),c23(p[2]-p[0]))[-1]>0 else 1 for p in arr])
         c1=where(r==0,True,False)
         c2=where(r>=d,True,False)
         c3=where(clock==-1,True,False)
@@ -594,7 +595,7 @@ def convert_secv2(sec,d):
         r3=r_3pv(array(p_i),array(pi_plus),array(pi_2plus)).round(3)
         r=where((l2!=l3) & ((r1!=r2) | (r2!=r3)),0,r2)
         arr=swapaxes([pi_minus,p_i,pi_plus],0,1)
-        clock=array([-1 if cross(p[1]-p[0],p[2]-p[0])>0 else 1 for p in arr])
+        clock=array([-1 if cross(c23(p[1]-p[0]),c23(p[2]-p[0]))[-1]>0 else 1 for p in arr])
         c1=where(r==0,True,False)
         c2=where(r>=d,True,False)
         c3=where(clock==-1,True,False)
@@ -793,38 +794,62 @@ def i_p2d(l1,l2):
     t1,t2=inv(array([v1,-v2]).transpose(1,0))@(l2[0]-l1[0])
     return (l1[0]+v1*t1).tolist()
 
-def s_int(s):
+# def s_int(s):
+#     '''
+#     calulates the self intersection points of a list of line segments 's'
+#     it also picks the points in case the 2 lines are just connected at 1 point and are not crossing
+#     refer to file 'example of various functions' for application example
+#     '''
+#     c=[]
+#     for i in range(len(s)):
+#         p0=array([s[i]]*len(s))[:,0]
+#         p1=array([s[i]]*len(s))[:,1]
+#         v1=p1-p0
+#         p2=array(s)[:,0]
+#         p3=array(s)[:,1]
+#         v2=p3-p2
+#         m=swapaxes([swapaxes([v1.T[0],-v2.T[0]],0,1),swapaxes([v1.T[1],-v2.T[1]],0,1)],0,1)
+#         n=m[where(det(m)!=0)]
+#         pa=p0[where(det(m)!=0)]
+#         pb=p2[where(det(m)!=0)]
+#         v=v1[where(det(m)!=0)]
+#         A=inv(n)
+#         B=pb-pa
+#         def mul(a,b):
+#             return a@b
+#         t=einsum('ijk,ik->ij',A,B)[:,0].round(4)
+#         u=einsum('ijk,ik->ij',A,B)[:,1].round(4)
+#         t1=where(t>=0,where(t<=1,True,False),False)
+#         u1=where(u>=0,where(u<=1,True,False),False)
+#         d=(pa+v*t.reshape(-1,1))[where(t1&u1==True)].tolist()
+#         if d!=[]:
+#             c=c+d
+#     return c
+
+def s_int(sec1):
     '''
     calulates the self intersection points of a list of line segments 's'
     it also picks the points in case the 2 lines are just connected at 1 point and are not crossing
+     
     refer to file 'example of various functions' for application example
     '''
-    c=[]
-    for i in range(len(s)):
-        p0=array([s[i]]*len(s))[:,0]
-        p1=array([s[i]]*len(s))[:,1]
-        v1=p1-p0
-        p2=array(s)[:,0]
-        p3=array(s)[:,1]
-        v2=p3-p2
-        m=swapaxes([swapaxes([v1.T[0],-v2.T[0]],0,1),swapaxes([v1.T[1],-v2.T[1]],0,1)],0,1)
-        n=m[where(det(m)!=0)]
-        pa=p0[where(det(m)!=0)]
-        pb=p2[where(det(m)!=0)]
-        v=v1[where(det(m)!=0)]
-        A=inv(n)
-        B=pb-pa
-        def mul(a,b):
-            return a@b
-        t=einsum('ijk,ik->ij',A,B)[:,0].round(4)
-        u=einsum('ijk,ik->ij',A,B)[:,1].round(4)
-        t1=where(t>=0,where(t<=1,True,False),False)
-        u1=where(u>=0,where(u<=1,True,False),False)
-        d=(pa+v*t.reshape(-1,1))[where(t1&u1==True)].tolist()
-        if d!=[]:
-            c=c+d
-    return c
+    n=len(sec1)
+    a=array(sec1)[comb_list(n)]
+    p0=a[:,0][:,0]
+    p1=a[:,0][:,1]
+    p2=a[:,1][:,0]
+    p3=a[:,1][:,1]
+    v1=p1-p0
+    v2=p3-p2
+    iim=array([v1,-v2+.00001]).transpose(1,0,2).transpose(0,2,1)
+    im=inv(iim)
+    p=p2-p0
 
+    t=einsum('ijk,ik->ij',im,p)
+    dcn=(t[:,0].round(4)>=0)&(t[:,0].round(4)<=1)&(t[:,1].round(4)>=0)&(t[:,1].round(4)<=1)
+    i_p1=p0+einsum('ij,i->ij',v1,t[:,0])
+    i_p1=i_p1[dcn].tolist()
+    return i_p1
 
 
 def r_3pv(p1,p2,p3):
@@ -1984,9 +2009,9 @@ def s_int1(sec1):
     p1=a[:,0][:,1]
     p2=a[:,1][:,0]
     p3=a[:,1][:,1]
-    v1=p1-p0
+    v1=a_(rot2d(0.00001,p1-p0))
     v2=p3-p2
-    iim=array([v1,-v2+.00001]).transpose(1,0,2).transpose(0,2,1)
+    iim=array([v1,-v2]).transpose(1,0,2).transpose(0,2,1)
     im=inv(iim)
     p=p2-p0
 
@@ -2938,7 +2963,7 @@ def helix(radius=10,pitch=10, number_of_coils=1, step_angle=1):
     refer to file "example of various functions" for application example
     
     '''
-    return [[radius*cos(i*pi/180),radius*sin(i*pi/180),i/360*pitch] for i in arange(0,360*number_of_coils,step_angle)]
+    return l_(a_([[radius*cos(d2r(i)),radius*sin(d2r(i)),i/360*pitch] for i in arange(0,360*number_of_coils,step_angle)]))
 
 
 def surf_offset(sec,d):
@@ -4173,7 +4198,7 @@ def equidistant_path(path,s=10,pitch=[]):
     divides a path in to equally spaced points
     refer file 'example of various functions.ipynb' for application examples
     '''
-    s= l_lenv_o(path)/pitch if pitch!=[] else s
+    s= l_lenv_o(path)/pitch if a_(pitch).size>0 else s
     v=[p[1]-p[0] for p in array(seg(path)[:-1])]
     l=[l_len(p) for p in seg(path)[:-1]]
     c=array(l).cumsum().tolist()
@@ -4195,7 +4220,7 @@ def equidistant_pathc(path,s=10,pitch=[]):
     divides a closed path in to equally spaced points
     refer file 'example of various functions.ipynb' for application examples
     '''
-    s= l_lenv(path)/pitch if pitch!=[] else s
+    s= l_lenv(path)/pitch if a_(pitch).size>0 else s
     v=[p[1]-p[0] for p in array(seg(path))]
     l=[l_len(p) for p in seg(path)]
     c=array(l).cumsum().tolist()
@@ -4886,7 +4911,7 @@ def path_offset_n(sec,r):
         sec4=s
     return sec4
     
-def faces(l,m):
+def faces(l:int,m:int):
     '''
     calculate the faces for the vertices with shape l x m with first and the last end closed
     '''
@@ -5200,7 +5225,7 @@ def gcd(a,b):
     '''
     calculates the greatest common divisor of 2 numbers 'a','b'
     '''
-    for _ in range(max(a,b)):
+    for _ in range(max([a,b])):
         if a>b:
             a=a-b
         elif b>a:
@@ -5607,11 +5632,12 @@ def perp_points_d(line,pnts,d):
         l1=array([line[0],line[1]])
         v1=l1[1]-l1[0]
         v2=array(pnts)-l1[0]
-        v2sint=cross(v1,v2)/norm(v1)
+        v2sint=cross(c23(v1),c23(v2))[:,-1]/norm(v1)
         v2cost=einsum('j,ij->i',v1,v2)/norm(v1)
         tx=v2cost/norm(v1)
         d1=(tx>=0) & (tx<=1) & (v2sint<d)
-        p7=array(pnts)[d1].tolist()
+        # p7=array(pnts)[d1].tolist()
+        p7=l_(a_(pnts)[d1])
     return p7
     
 def perp_distance_within_line(line,pnts):
@@ -5632,7 +5658,7 @@ def perp_distance_within_line(line,pnts):
         l1=array([line[0],line[1]])
         v1=l1[1]-l1[0]
         v2=array(pnts)-l1[0]
-        v2sint=cross(v1,v2)/norm(v1)
+        v2sint=cross(c23(v1),c23(v2))[:,-1]/norm(v1)
         v2cost=einsum('j,ij->i',v1,v2)/norm(v1)
         tx=v2cost/norm(v1)
         d1=(tx>=0) & (tx<=1)
@@ -5865,7 +5891,7 @@ def o_3d_tri(ip,v,f1,r,closed=0):
     n1=i_p_n_tri(ip,v,f1)
 
     if closed==0:
-        t1=i_p_t_o(i_p)
+        t1=i_p_t_o(ip)
     elif closed==1:
         t1=i_p_t(ip)
     o1=cross(n1,t1)
@@ -6388,7 +6414,7 @@ def sinewave(l,n,a,p):
     '''
 
     w1=[[i,a*sin(d2r(n*i*360/l))]  for i in linspace(0,l,p)]
-    return w1
+    return l_(w1)
 
 def cosinewave(l,n,a,p):
     '''
@@ -6397,7 +6423,7 @@ def cosinewave(l,n,a,p):
     '''
 
     w1=[[i,a*cos(d2r(n*i*360/l))]  for i in linspace(0,l,p)]
-    return w1
+    return l_(w1)
     
 def mod(a,b):
     '''
@@ -6416,7 +6442,7 @@ def e_wave(l=50,a=1,w=0.1,t=100):
     l: length of time
     
     '''
-    return [[i,a*exp(-i*w)]  for i in linspace(0,l,t)]
+    return l_([[i,a*exp(-i*w)]  for i in linspace(0,l,t)])
 
 def waves_2d_multiply(w1,w2,a=1):
     '''
@@ -6903,7 +6929,7 @@ def fillet_line_circle(l1,c1,r2,cw=-1,option=0,s=50):
     cp1=cp_arc(c1)
     v2=array(cp1)-array(l1[0])
     u2=v2/norm(v2)
-    l_1=norm(cross(v1,v2))/norm(v1)
+    l_1=norm(cross(c23(v1),c23(v2)))/norm(v1)
     p3=array(l1[0])+u1*(u1@v2)
     r1=r_arc(c1)
     d=sqrt((r1+r2)**2-(l_1+r2)**2) if option==0 else sqrt((r1+r2)**2-(l_1-r2)**2)
@@ -6970,7 +6996,7 @@ def fillet_line_circle_internal_3d(l1,c1,r2,cw=-1,option=0,s=50):
     cp1=cp_arc(c1)
     v2=array(cp1)-array(l1[0])
     u2=v2/norm(v2)
-    l_1=norm(cross(v1,v2))/norm(v1)
+    l_1=norm(cross(c23(v1),c23(v2)))/norm(v1)
     p3=array(l1[0])+u1*(u1@v2)
     r1=r_arc(c1)
     d=sqrt((r1-r2)**2-(l_1+r2)**2) if option==0 else sqrt((r1-r2)**2-(l_1-r2)**2)
@@ -6996,7 +7022,7 @@ def fillet_line_circle_internal(l1,c1,r2,cw=-1,option=0,s=50):
     cp1=cp_arc(c1)
     v2=array(cp1)-array(l1[0])
     u2=v2/norm(v2)
-    l_1=norm(cross(v1,v2))/norm(v1)
+    l_1=norm(cross(c23(v1),c23(v2)))/norm(v1)
     p3=array(l1[0])+u1*(u1@v2)
     r1=r_arc(c1)
     d=sqrt((r1-r2)**2-(l_1+r2)**2) if option==0 else sqrt((r1-r2)**2-(l_1-r2)**2)
@@ -7382,9 +7408,9 @@ def s_int1_list(sec1):
     p1=a[:,0][:,1]
     p2=a[:,1][:,0]
     p3=a[:,1][:,1]
-    v1=p1-p0
+    v1=a_(rot2d(0.00001,p1-p0))
     v2=p3-p2
-    iim=array([v1,-v2+.00001]).transpose(1,0,2).transpose(0,2,1)
+    iim=array([v1,-v2]).transpose(1,0,2).transpose(0,2,1)
     im=inv(iim)
     p=p2-p0
 
@@ -7778,23 +7804,26 @@ def offset_3d(sec,d,type=1):
     refer to the file"example of various functions" for application examples
     type: offset type default is '1' in case of any issue in offset, try with '2'
     '''
-    sec=axis_rot_o([1,0,0],sec,.0001)
+    # sec=axis_rot_o([1,0,0],sec,.001)
     l_2=rot_sec2xy_plane(sec)
     l_3=c3t2(l_2)
     l_4=offset(l_3,d,type)
     avg_1=array(l_2).mean(0)
     avg_2=array(c2t3(l_3)).mean(0)
     l_5=translate(avg_1-avg_2,l_4)
-    n_1=array(nv(sec))
+    n_1=array(nv(sec)).round(5)
     n_2=array([0,0,-1])
-    ax_1=cross(n_1,n_2)
-    theta=r2d(arccos(n_1@n_2))
-    l_6=axis_rot_o(ax_1,[l_5],-theta)[0]
-    l_6_1=axis_rot_o(ax_1,[l_2],-theta)[0]
-    avg_1=array(sec).mean(0)
-    avg_2=array(l_6_1).mean(0)
-    l_7=translate(avg_1-avg_2,l_6)
-    return l_7
+    if (l_(n_1)==[0,0,1]) | (l_(n_1)==[0,0,-1]):
+        return l_5
+    else:
+        ax_1=cross(n_1,n_2)
+        theta=r2d(arccos(n_1@n_2))
+        l_6=axis_rot_o(ax_1,[l_5],-theta)[0]
+        l_6_1=axis_rot_o(ax_1,[l_2],-theta)[0]
+        avg_1=array(sec).mean(0)
+        avg_2=array(l_6_1).mean(0)
+        l_7=translate(avg_1-avg_2,l_6)
+        return l_7
 
 def intersection_between_2_sketches(s1,s2):
     '''
@@ -9704,3 +9733,25 @@ def switch_orientation(sol1):
     d=a_(sol2).reshape(2,int(x/2),y,3)[1][::-1]
     d=d[::-1].transpose(1,0,2)[::-1].transpose(1,0,2)[::-1]
     return l_(a_([c,d]).transpose(1,0,2,3).reshape(-1,y*2,z))
+
+def i_line_fillet(intersection_line,solid_1,solid_2,distance_1=1,distance_2=1,segments=20):
+    '''
+    if the intersection line is defined between 2 solids. fillet can be drawn with the
+    information
+    '''
+    l1,sol1,sol2,r1,r2=intersection_line,solid_1,solid_2,distance_1,distance_2
+    l2=o_3d_rev(l1,sol1,r1)
+    l3=o_3d_rev(l1,sol2,r2)
+    f1=convert_3lines2fillet(l2,l3,l1,s=segments)
+    return f1
+
+def i_line_fillet_closed(intersection_line,solid_1,solid_2,distance_1=1,distance_2=1,segments=20):
+    '''
+    if the intersection line is defined between 2 solids. fillet (Closed loop) can be drawn with the
+    information
+    '''
+    l1,sol1,sol2,r1,r2=intersection_line,solid_1,solid_2,distance_1,distance_2
+    l2=o_3d_rev(l1,sol1,r1)
+    l3=o_3d_rev(l1,sol2,r2)
+    f1=convert_3lines2fillet_closed(l2,l3,l1,s=segments)
+    return f1
