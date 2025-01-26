@@ -1,12 +1,12 @@
 from numpy import *
 from numpy.linalg import *
-import matplotlib.pyplot as plt
+# import matplotlib.pyplot as plt
 import time
 from scipy.spatial import cKDTree, Delaunay
 # import pandas as pd
 import sympy
 import math
-from stl import mesh
+# from stl import mesh
 
 def arc(radius=0,start_angle=0,end_angle=0,cp=[0,0],s=20):
     '''
