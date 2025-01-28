@@ -8541,7 +8541,7 @@ def vcost(l1,p0,dist=.2):
     u1=v1/norm(v1)
     d=norm(v1)
     v2=a_(p0)-a_(l1[0])
-    d1,d2=v1@v2/norm(v1),norm(cross(v1,v2))/norm(v1)
+    d1,d2=v1@v2/norm(v1),norm(cross(c23(v1),c23(v2)))/norm(v1)
     if d1>=0 and d1<=d and abs(d2)<=dist:
         p1=l_(a_(l1[0])+u1*d1)
         t1=d1/d
