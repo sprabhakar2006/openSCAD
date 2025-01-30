@@ -9755,3 +9755,9 @@ def i_line_fillet_closed(intersection_line,solid_1,solid_2,distance_1=1,distance
     l3=o_3d_rev(l1,sol2,r2)
     f1=convert_3lines2fillet_closed(l2,l3,l1,s=segments)
     return f1
+
+def mid_line(l1,l2):
+    '''
+    draw a line in center of 2 lines 'l1' and 'l2'
+    '''
+    return [mid_point(p) for p in cpo([l1,l2])]
