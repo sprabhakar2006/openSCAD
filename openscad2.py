@@ -7368,7 +7368,7 @@ def surround_3d(path,r,s=20):
         sec=axis_rot_1([sec],v1,path[0],-t1)[0]
     return equidistant_pathc(sec,s)
 
-def plane(nv,size=[100,100]):
+def plane(nv,size=[100,100],intercept=[0,0,0]):
     '''
     plane defined by normal vector 'nv' with size as defined
     '''
