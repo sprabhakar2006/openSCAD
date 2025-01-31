@@ -7383,6 +7383,7 @@ def plane(nv,size=[100,100]):
     v1=array([array(v1)*-d1,array(v1)*d1])
     v2=array(v2)*d2
     s1=surface_line_vector(v1,v2,1)
+    s1=translate(intercept,s1)
     return s1
 
 def align_sec_2(sec1):
