@@ -9762,3 +9762,29 @@ def mid_line(l1,l2):
     draw a line in center of 2 lines 'l1' and 'l2'
     '''
     return [mid_point(p) for p in cpo([l1,l2])]
+
+def list_ang(l1):
+    '''
+    list of angles for each point for a closed loop section
+    '''
+    a=[]
+    for i in range(len(l1)):
+        if i==0:
+            p1=l1[i]
+            p0=l1[-1]
+            p2=l1[i+1]
+        elif i==len(l1)-1:
+            p1=l1[i]
+            p0=l1[i-1]
+            p2=l1[0]
+        else:
+            p1=l1[i]
+            p0=l1[i-1]
+            p2=l1[i+1]
+        p0,p1,p2=a_([p0,p1,p2])
+        p1p2=p2-p1
+        p0p1=p1-p0
+        u1=p1p2/norm(p1p2)
+        u2=p0p1/norm(p0p1)
+        a.append(l_(r2d(arccos(u1@u2))))
+    return a
