@@ -9799,7 +9799,7 @@ def surface_correction_after_offset_closed(surf_original,surf_off,dist=1):
         if len(d)==len(surf_original[i]):
             sol2.append(d)
         else:
-            d=sort_points(surf_original[i],d)
+            d=path2path1(surf_original[i],d)
             sol2.append(d)
     return sol2
 
@@ -9813,6 +9813,6 @@ def surface_correction_after_offset_open(surf_original,surf_off,dist=1):
         if len(d)==len(surf_original[i]):
             sol2.append(d)
         else:
-            d=sort_points(surf_original[i],d)
+            d=path2path1(surf_original[i],d)
             sol2.append(d)
     return sol2
