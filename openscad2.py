@@ -9788,3 +9788,17 @@ def list_ang(l1):
         u2=p0p1/norm(p0p1)
         a.append(l_(r2d(arccos(u1@u2))))
     return a
+
+def surface_correction_after_offset(surf_original,surf_off,dist=1):
+    '''
+    remove all the points from the offset surface which are less than the offset distance 'dist'
+    '''
+    sol2=[]
+    for i in range(len(surf_original)):
+        d=remove_points_within_dist_closed(surf_original[i],surf_off[i],dist-.01)
+        if len(d)==len(surf_original[i]):
+            sol2.append(d)
+        else:
+            d=sort_points(surf_original[i],d)
+            sol2.append(d)
+    return sol2
