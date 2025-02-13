@@ -9844,3 +9844,9 @@ def plos_v(s2,l1,v1,dist=100000,unidirection=0):
     from where the rays are emitted for projection
     '''
     return psos_v(s2,[l1],v1,dist=dist,unidirection=unidirection)[0]
+
+def lines2vectors(lines):
+    '''
+    convert lines to vectors
+    '''
+    return [line_as_axis(p) for p in lines]
