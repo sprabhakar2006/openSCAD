@@ -9816,3 +9816,31 @@ def surface_correction_after_offset_open(surf_original,surf_off,dist=1):
             d=path2path1(surf_original[i],d)
             sol2.append(d)
     return sol2
+
+def plos_v_2(s2,l1,v1,dist=100000,unidirection=0):
+    '''
+    project a line on to a surface without loosing the original points
+    line 'l1' will be projected on surface 's2'
+    'v1' are the vectors for projection. v1 are the list of vectors
+    '''
+    return psos_v_2(s2,[l1],v1,dist=dist,unidirection=unidirection)[0]
+
+def plos_v_1(s2,l1,v1,vx,dist=100000,unidirection=0):
+    '''
+    project a line on to a surface without loosing the original points
+    line 'l1' will be projected on surface 's2'
+    'v1' is vector for projection. this is a focal vector
+    'vx' is a vector to define plane through which each vector works for projecting
+    from where the rays are emitted for projection
+    '''
+    return psos_v_1(s2,[l1],v1,vx,dist=dist,unidirection=unidirection)[0]
+
+
+def plos_v(s2,l1,v1,dist=100000,unidirection=0):
+    '''
+    project a line on to a surface without loosing the original points
+    line 'l1' will be projected on surface 's2'
+    'v1' is vector for projection. this is a focal vector 
+    from where the rays are emitted for projection
+    '''
+    return psos_v(s2,[l1],v1,dist=dist,unidirection=unidirection)[0]
