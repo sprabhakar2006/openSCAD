@@ -8500,21 +8500,44 @@ def surface_4lines_enclosed(l1,l2,l3,l4,n=5):
     s1=[path2path1(s1[i],l5[i]) for i in range(len(l5))]
     return [equidistant_path(p,len(l1)-1) for p in s1]
 
-def lineFromPointTillEnd(l1,t):
+# def lineFromPointTillEnd(l1,t):
+#     '''
+#     removes the line till parameter t where 0<=t<=1
+#     keeps the rest of the line
+#     '''
+#     p0=polp(l1,t)
+#     a=l_lenv_o(l1)*t
+#     b=a_([0]+[l_len(p) for p in seg(l1)[:-1]]).cumsum()
+#     if a<b[-1]:
+#         n=arange(len(b))[b<=a][-1]
+#     if n==len(l1)-2:
+#         l2=[p0,l1[n+1]]
+#     else:
+#         l2=[p0]+l1[n+1:]
+#     return l2
+
+def lineFromPointTillEnd(l1,pnt,dist=.01):
     '''
-    removes the line till parameter t where 0<=t<=1
-    keeps the rest of the line
+    draws line from point 'pnt' till end of line 'l1'
+    the point with in distance 'dist' will be picked up
+    deletes the rest of the line
     '''
-    p0=polp(l1,t)
-    a=l_lenv_o(l1)*t
-    b=a_([0]+[l_len(p) for p in seg(l1)[:-1]]).cumsum()
-    if a<b[-1]:
-        n=arange(len(b))[b<=a][-1]
-    if n==len(l1)-2:
-        l2=[p0,l1[n+1]]
-    else:
-        l2=[p0]+l1[n+1:]
-    return l2
+    def lfpte(l1,t):
+        '''
+        removes the line till parameter t where 0<=t<=1
+        keeps the rest of the line
+        '''
+        p0=polp(l1,t)
+        a=l_lenv_o(l1)*t
+        b=a_([0]+[l_len(p) for p in seg(l1)[:-1]]).cumsum()
+        if a<b[-1]:
+            n=arange(len(b))[b<=a][-1]
+        if n==len(l1)-2:
+            l2=[p0,l1[n+1]]
+        else:
+            l2=[p0]+l1[n+1:]
+        return l2
+    return lfpte(l1,timeToReachPoint(pnt,l1,dist=dist))
 
 def lineFromStartTillPoint(l1,pnt,dist=.01):
     '''
