@@ -7279,8 +7279,8 @@ def solid_from_2surfaces(surf_1,surf_2):
     '''
     function to make a solid from 2 surfaces 
     '''
-    sol=surf_1+flip(surf_2)
-    sol=cpo(sol)
+    sol=[surf_1[i]+flip(surf_2[i]) for i in range(len(surf_1))]
+    # sol=cpo(sol)
     return sol
 
 def sec2surface(surf_1,s=1):
