@@ -9920,3 +9920,95 @@ def corner_and_radius3d(pnts,rds,s=5): # Corner radius 3d where 'pnts' are the l
         c.append(fillet_3p_3d(p0,p1,p2,rds[i],s)[1:])
     c=array(c).reshape(-1,3).tolist()
     return remove_extra_points(array(c).round(5))
+
+def twoCircleCrossTangent(c1,c2,cw=-1): # two circle cross tangent
+    '''
+    function to draw cross tangent between 2 circles
+    refer to the file "example of various functions " for application examples
+    '''
+    r1=r_arc(c1)
+    r2=r_arc(c2)
+    cp1=cp_arc(c1)
+    cp2=cp_arc(c2)
+    v1=[1,1]
+    v2=[-r2,r1]
+    cp1,cp2=array([cp1,cp2])
+    d=norm(cp2-cp1)
+    d1=(inv(array([v1,v2]).T)@array([d,0]))[0]
+    d2=(inv(array([v1,v2]).T)@array([d,0]))[1]
+    a=arcsin(r1/d1)*180/pi
+    v3=cp2-cp1
+    u3=v3/norm(v3)
+    b=arccos(u3@array([1,0]))*180/pi
+    if cw==-1:
+        if v3[0]>0 and v3[1]<=0:
+            theta1=270+a-b
+            theta2=90+a-b
+        elif v3[0]>=0 and v3[1]>0:
+            theta1=270+a+b
+            theta2=90+a+b
+        elif v3[0]<0 and v3[1]>=0:
+            theta1=270+a+b
+            theta2=90+a+b
+        else:
+            theta1=270+a-b
+            theta2=90+a-b
+    else:
+        if v3[0]>0 and v3[1]<=0:
+            theta2=270-a-b
+            theta1=90-a-b
+        elif v3[0]>=0 and v3[1]>0:
+            theta2=270-a+b
+            theta1=90-a+b
+        elif v3[0]<0 and v3[1]>=0:
+            theta2=270-a+b
+            theta1=90-a+b
+        else:
+            theta2=270-a-b
+            theta1=90-a-b
+        
+    p0=(cp1+array([r1*cos(theta1*pi/180),r1*sin(theta1*pi/180)])).tolist()
+    p1=(cp2+array([r2*cos(theta2*pi/180),r2*sin(theta2*pi/180)])).tolist()
+    return [p0,p1]
+
+def twoCircleTangentPoints(c1,c2): #2 circle tangent point full (both the sides)
+    '''
+    function to draw tangent line joining 2 circles 'c1' and 'c2'.
+    this works counter-clockwise
+    This function draws tangent line on both the sides
+    example:
+    cir1=circle(10)
+    cir2=circle(5,[15,6])
+    sec=twoCircleTangentPoints(cir1,cir2)
+    
+    refer file "example of various functions" for application
+    '''
+    r1=r_arc(c1)
+    r2=r_arc(c2)
+    cp1=cp_arc(c1)
+    cp2=cp_arc(c2)
+    cp1,cp2=array([cp1,cp2])
+    v1=cp2-cp1,
+    u1=v1/norm(v1)
+    ang1=arcsin((r2-r1)/norm(cp2-cp1))*180/pi
+
+    t1=cp1+u1@rm(90+ang1)*r1
+    t2=cp2+u1@rm(90+ang1)*r2
+
+    t3=cp1+u1@rm(-90-ang1)*r1
+    t4=cp2+u1@rm(-90-ang1)*r2
+
+    return [t3[0].tolist(),t4[0].tolist(),t2[0].tolist(),t1[0].tolist()]
+
+def pts3(pl):
+    '''
+    this functionis required for 3d turtle movement and works with function 'corner_radius3d'
+    example:
+    a=pts3([[0,0,0],[10,7,5,5],[0,0,20,5],[0,10,0]]) => 
+    [[0, 0, 0, 0], [10, 7, 5, 5], [10, 7, 25, 5], [10, 17, 25, 0]]
+    '''
+    a=pl
+    b=[p if len(p)==4 else p+[0] for p in a]
+    c=a_(b)[:,:3].cumsum(0)
+    d=a_([a_(b)[:,3]])
+    return l_(concatenate([c,d.T],axis=1))
