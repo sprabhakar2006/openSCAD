@@ -5927,7 +5927,7 @@ def ip_random(sol1,sol2):
     return i_p.tolist()
     
 def ellipse(a,b,s=50):
-    return [[a*cos(d2r(i)),b*sin(d2r(i))]  for i in linspace(0,360,s)[:-1]]
+    return l_([[a*cos(d2r(i)),b*sin(d2r(i))]  for i in linspace(0,360,s)[:-1]])
     
 def outside_3p_arc(p0,p1,p2,r,s=20):
     '''
@@ -7070,7 +7070,7 @@ def fillet_line_circle_3d(l1,c1,r2,cw=-1,option=0,s=50):
     p4=cp2+u4*r2
     return translate(tr,axis_rot(n2,arc_2p(p2,p4,r2,cw=cw,s=s),-theta))
 
-def mirror(p0,n1,loc):
+def mirror_line(p0,n1,loc):
     '''
     function to mirror the points list 'p0' defined by mirroring plane 'n1' with location 'loc'
     '''
@@ -7272,7 +7272,7 @@ def mirror_surface(surf_1,n1,loc=[0,0,0]):
     function to mirror a solid or surface base on a mirroring plane given by vector 'n1'
     passing through a point 'loc'
     '''
-    surf_1_1=[mirror(surf_1[i],n1,loc) for i in range(len(surf_1))]
+    surf_1_1=[mirror_line(surf_1[i],n1,loc) for i in range(len(surf_1))]
     return surf_1_1
 
 def solid_from_2surfaces(surf_1,surf_2):
@@ -9873,3 +9873,50 @@ def lines2vectors(lines):
     convert lines to vectors
     '''
     return [line_as_axis(p) for p in lines]
+
+def mirror_point(pnt,n1,loc):
+    '''
+    function to mirror a point 'pnt' defined by mirroring plane 'n1' passing through intercept 'loc'
+    '''
+    return mirror_line([pnt],n1,loc)[0]
+
+def corner_radius3d(pnts,s=5): # Corner radius 3d where 'pnts' are the list of points with 4th coordinate in each point is radius 'rds' and 's' is number of segments for each arc
+    rds=[pnts[i][3] if len(pnts[i])==4 else 0 for i in range(len(pnts))]
+    pnts=[pnts[i][:3] for i in range(len(pnts))]
+    c=[]
+    for i in range(len(pnts)):
+        if i==0:
+            p0=pnts[len(pnts)-1]
+            p1=pnts[i]
+            p2=pnts[i+1]
+        elif i<len(pnts)-1:
+            p0=pnts[i-1]
+            p1=pnts[i]
+            p2=pnts[i+1]
+        else:
+            p0=pnts[i-1]
+            p1=pnts[i]
+            p2=pnts[0]
+        c.append(fillet_3p_3d(p0,p1,p2,rds[i],s)[1:])
+    c=array(c).reshape(-1,3).tolist()
+    return remove_extra_points(array(c).round(5))
+
+def corner_and_radius3d(pnts,rds,s=5): # Corner radius 3d where 'pnts' are the list of points, 'rds' are the list of radiuses and 's' is number of segments for each arc
+
+    c=[]
+    for i in range(len(pnts)):
+        if i==0:
+            p0=pnts[len(pnts)-1]
+            p1=pnts[i]
+            p2=pnts[i+1]
+        elif i<len(pnts)-1:
+            p0=pnts[i-1]
+            p1=pnts[i]
+            p2=pnts[i+1]
+        else:
+            p0=pnts[i-1]
+            p1=pnts[i]
+            p2=pnts[0]
+        c.append(fillet_3p_3d(p0,p1,p2,rds[i],s)[1:])
+    c=array(c).reshape(-1,3).tolist()
+    return remove_extra_points(array(c).round(5))
