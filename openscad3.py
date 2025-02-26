@@ -3688,7 +3688,7 @@ def match_points_of_a_path_with_original_path_closed(original_path,path_to_match
 
 
 
-def ip_triangle(ip,sol1):
+def find_triangular_meshes_of_intersecting_points(ip,sol1):
     '''
     function to find the triangles on the solid 'sol1' where the intersection points list 'ip' lies
     '''
@@ -3718,36 +3718,7 @@ def ip_triangle(ip,sol1):
     return tri_1
 
 
-def ip_triangle_tri(ip,v,f1):
-    '''
-    function to find the triangles on the triangular mesh where the intersection points list 'ip' lies
-    '''
-    tri=array(v)[array(f1)]
-    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
-    p01,p02=p1-p0,p2-p0
-    n1=cross(p01,p02)
-    n1=n1/(norm(n1,axis=1).reshape(-1,1)+.00001)
-    tri=tri[~((n1==[0,0,0]).all(1))]
-    n1=n1[~((n1==[0,0,0]).all(1))]
-    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
-    p01,p02=p1-p0,p2-p0
-    la=array(ip)
-    lab=n1
-
-    iim=array([lab,-p01,-p02]).transpose(1,0,2).transpose(0,2,1)
-    im=inv(iim)
-
-    x=einsum('jkl,ijl->ijk',im,(p0-la[:,None]))
-    t=x[:,:,0]
-    u=x[:,:,1]
-    v=x[:,:,2]
-    decision=(t>=-0.01)&(t<=1)&(u>=-0.01)&(u<=1)&(v>=-0.01)&(v<=1)&((u+v)<=1)
-    tri_1=array([tri[decision[i]][0] for i in range(len(ip))]).tolist()
-
-    return tri_1
-
-
-def perp_points_d(line,pnts,d):
+def find_points_with_defined_distance_from_line(line,pnts,d):
     '''
     finds the points in list 'pnts' which are less than distance 'd' from the 'line'
     '''
@@ -3772,7 +3743,7 @@ def perp_points_d(line,pnts,d):
         p7=l_(a_(pnts)[d1])
     return p7
     
-def perp_distance_within_line(line,pnts):
+def find_distance_of_points_from_line(line,pnts):
     '''
     finds the perpendicular distance of the points in list 'pnts' from the 'line'
     only calculates if the projecton of the point lies within the line
@@ -3797,29 +3768,9 @@ def perp_distance_within_line(line,pnts):
         v2sint=array(v2sint)[d1].tolist()
     return v2sint
     
+
     
-def l2l_intersection(l1,l2):
-    '''
-    function to calculate line to line intersection points in 3d space
-    '''
-    t1,t2=sympy.symbols('t1 t2')
-    v1=array(l1[1])-array(l1[0])
-    v2=array(l2[1])-array(l2[0])
-    # array(p3[0])+v1*t1=array(p4[0])+v2*t2
-    eq1=v1[0]*t1-v2[0]*t2-(array(l2[0])-array(l1[0]))[0]
-    eq2=v1[1]*t1-v2[1]*t2-(array(l2[0])-array(l1[0]))[1]
-    eq3=v1[2]*t1-v2[2]*t2-(array(l2[0])-array(l1[0]))[2]
-    f=sympy.solve((eq1,eq2,eq3),(t1,t2))
-    if len(f)<2:
-        f=sympy.solve((eq1,eq2),(t1,t2))
-        if len(f)<2:
-            f=sympy.solve((eq1,eq3),(t1,t2))
-            if len(f)<2:
-                f=sympy.solve((eq2,eq3),(t1,t2))
-    i_p=(array(l1[0])+v1*f[t1]).tolist()
-    return array(i_p).astype(float).tolist()
-    
-def p2p_intersection_line(pa,pb):#plane to plane intersection line
+def plane_to_plane_intersection_line(pa,pb):#plane to plane intersection line
     '''
     function to calculate intersection line between 2 planes
     '''
@@ -3844,11 +3795,16 @@ def p2p_intersection_line(pa,pb):#plane to plane intersection line
     line=array([p7,p8]).tolist()
     return array(line).astype(float).tolist()
 
-def o_3d(i_p,sol,r,o=0,f=1,closed=0):
+def offset_an_intersection_line_on_solid( intersection_line,solid, offset_distance, options=0, f=1, closed=0):
     '''
     function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset.
     for closed loop path set closed=1
     '''
+    i_p=intersection_line
+    sol=solid
+    r=offset_distance
+    o=options
+    
     a=i_p_n(i_p,sol)
     if closed==0:
         b=i_p_t_o(i_p)
@@ -3863,7 +3819,11 @@ def o_3d(i_p,sol,r,o=0,f=1,closed=0):
     # i_p1=[p[0] for p in i_p1]
     return i_p1
 
-def o_3d_rev(i_p,sol,r,o=0,closed=0,type=0,dist=0,vx=[],edges_closed=1,cg=0):
+def  offset_an_intersection_line_on_solid_revised(intersection_line,solid, offset_distance, options=0,closed=0,type=0,dist=0,vx=[],edges_closed=1,cg=0):
+    i_p=intersection_line
+    sol=solid
+    r=offset_distance
+    o=options
     '''
     function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset.
     for closed loop path set closed=1
@@ -3899,11 +3859,16 @@ def o_3d_rev(i_p,sol,r,o=0,closed=0,type=0,dist=0,vx=[],edges_closed=1,cg=0):
             
     return i_p1
 
-def o_3d_surf(i_p,sol,r,o=0,f=1,closed=0):
+def offset_an_intersection_line_on_surface(intersection_line, surface, offset_distance, options=0, f=1, closed=0):
     '''
-    function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset
+    function to offset the intersection line on a surface by a defined distance . options can have values '0' or '1' and changes the direction of offset
     for closed loop path, set closed=1
     '''
+    i_p=intersection_line
+    sol=surface
+    r=offset_distance
+    o=options
+    
     a=i_p_n_surf(i_p,sol)
     if closed==0:
         b=i_p_t_o(i_p)
@@ -3918,32 +3883,17 @@ def o_3d_surf(i_p,sol,r,o=0,f=1,closed=0):
     return i_p1
 
 
-# def o_3d_surf(i_p,sol,r,o=0,f=1,closed=0):
-#     '''
-#     function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset
-#     for closed loop path, set closed=1
-#     '''
-#     a=i_p_n_surf(i_p,sol)
-#     if closed==0:
-#         b=i_p_t_o(i_p)
-#     elif closed==1:
-#         b=i_p_t(ip)
-#     if o==0:
-#         c=array(i_p)+cross(b,a)*r
-#     elif o==1:
-#         c=array(i_p)+cross(a,b)*r
-#     s=array([c+a*r*f,c-a*r*f])
-#     i_p1=ip_surf2sol(sol,s)
-
-#     return i_p1
-
-def ip_fillet(sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,f=1,edges_closed=1,c=0):
+def fillet_at_intersection_line_between_two_solids (sol1, sol2, offset_distance_on_sol1, offset_distance_on_sol2, number_of_segments_in_fillet=20, o=0,type=1,dist=0,vx=[],style=2,f=1,edges_closed=1,c=0):
     '''
     calculates a fillet at the intersection of 2 solids.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
     r1 is the distance by which intersection line offsets on sol1 and similarly r2 is on sol2 
     for type, dist and vx parameters refer function o_3d_rev
     '''
+    r1=offset_distance_on_sol1
+    r2=offset_distance_on_sol2
+    s=number_of_segments_in_fillet
+    
     sol1=cpo(cpo(sol1)+[cpo(sol1)[0]])
     p1=ip_sol2sol(sol1,sol2,o)
     p2=i_p_p(sol2,p1,r2)
@@ -3952,13 +3902,17 @@ def ip_fillet(sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,f=1,edges_clo
     
     return fillet1
 
-def ip_fillet_closed(sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,f=1,edges_closed=1,c=0):
+def fillet_at_intersection_line_between_two_solids_closed_loop( sol1, sol2, offset_distance_on_sol1, offset_distance_on_sol2, number_of_segments_in_fillet=20, o=0,type=1,dist=0,vx=[],style=2,f=1,edges_closed=1,c=0):
     '''
     calculates a fillet at the intersection of 2 solids.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
     r1 is the distance by which intersection line offsets on sol1 and similarly r2 is on sol2 
     for type, dist and vx parameters refer function o_3d_rev
     '''
+    r1=offset_distance_on_sol1
+    r2=offset_distance_on_sol2
+    s=number_of_segments_in_fillet
+    
     sol1=cpo(cpo(sol1)+[cpo(sol1)[0]])
     p1=ip_sol2sol(sol1,sol2,o)
     p2=i_p_p(sol2,p1,r2)
@@ -3968,13 +3922,16 @@ def ip_fillet_closed(sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,f=1,ed
     return fillet1
 
 
-def ip_fillet_surf(surf,sol,r1,r2,s=20,type=1,dist=0,vx=[],style=2,f=1,edges_closed=0,c=0):
+def fillet_at_intersection_line_between_surface_and_solid( surf, sol, offset_distance_on_surf, offset_distance_on_sol, number_of_segments_in_fillet=20 , type=1,dist=0,vx=[],style=2,f=1,edges_closed=0,c=0):
     '''
     calculates a fillet at the intersection of surface with solid.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
     r1 is the distance by which intersection line offsets on surf and similarly r2 is on sol 
     '''
-        
+    r1=offset_distance_on_surf
+    r2=offset_distance_on_sol
+    s=number_of_segments_in_fillet
+    
     p1=ip_surf2sol(surf,sol)
     p2=i_p_p(sol,p1,r2)
     p3=o_3d_rev(p1,surf,r1,type=type,dist=dist,vx=vx,edges_closed=edges_closed,cg=c)
@@ -3982,7 +3939,7 @@ def ip_fillet_surf(surf,sol,r1,r2,s=20,type=1,dist=0,vx=[],style=2,f=1,edges_clo
 
     return fillet1
 
-def ip_fillet_surf_closed(surf,sol,r1,r2,s=20,type=1,dist=0,vx=[],style=2,f=1,edges_closed=0,c=0):
+def fillet_at_intersection_line_between_surface_and_solid_closed_loop ( surf, sol, offset_distance_on_surf, offset_distance_on_sol, number_of_segments_in_fillet=20, type=1, dist=0, vx=[], style=2, f=1, edges_closed=0, c=0):
     '''
     calculates a fillet at the intersection of surface with solid.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -3996,72 +3953,15 @@ def ip_fillet_surf_closed(surf,sol,r1,r2,s=20,type=1,dist=0,vx=[],style=2,f=1,ed
 
     return fillet1
 
-def i_line_tri_fillet(v,f1,sol2,ip,r1,r2,s=20,o=0):
-    '''
-    calculates a fillet at the intersection of 2 solids when the intersection points 'ip' are separately defined.
-    r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
-    r1 is the distance by which intersection line offsets on sol2 and similarly r2 is on sol1 
-    '''
-    p1=ip
-    p2=o_3d_tri(p1,v,f1,r2)
-    p3=o_3d(p1,sol2,r1)
-    if len(p1)==len(p2)==len(p3):
-        fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
-    else:
-        p2=sort_points(p1,p2)
-        p2=path2path1(p1,p2)
-        p3=sort_points(p1,p3)
-        p3=path2path1(p1,p3)
-        p1,p2,p3=align_sol_1([p1,p2,p3])
-        fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s)
-    return fillet1
-
-def o_3d_tri(ip,v,f1,r,closed=0):
-    '''
-    function to offset the intersection points 'i_p' on a triangular mesh with vertices 'v' and faces 'f1' by distance 'r'.
-    '''
-    n1=i_p_n_tri(ip,v,f1)
-
-    if closed==0:
-        t1=i_p_t_o(ip)
-    elif closed==1:
-        t1=i_p_t(ip)
-    o1=cross(n1,t1)
-    p5=array([ip,(array(ip)-n1*r)]).transpose(1,0,2).tolist()
-    p6=array([ip,(array(ip)-o1*r)]).transpose(1,0,2).tolist()
-    o2=array([(array(ip)-o1*r)+n1*r,(array(ip)-o1*r)-n1*r]).tolist()
-    o3=cpo(o2)
-    p7=ip_tri2sol(v,f1,o2)
-    p7=[p[0] for p in p7]
-    return p7
-
-
-def ip_random(sol1,sol2):
-    v,f1=vnf2(sol1)
-    a=array(v)[array(f1)]
-    p0,p1,p2=a[:,0],a[:,1],a[:,2]
-    p01,p02=p1-p0,p2-p0
-    v,f1=vnf2(sol2)
-    b=array(v)[array(f1)]
-    c=b[:,0]
-    d=b[:,1]
-    e=b[:,2]
-    lcd,lde,lec=d-c,e-d,c-e
-    x=zeros(len(p01)*3).reshape(len(p01),3)
-    y=zeros(len(lcd)*3).reshape(len(lcd),3)
-
-    t=einsum('jk,ijk->ij',cross(p01,p02),c[:,None]-p0[None,:])/(einsum('ik,jk->ij',-lcd,cross(p01,p02))+.00001)
-    u=einsum('ijk,ijk->ij',cross(p02[None,:],-lcd[:,None]),c[:,None]-p0[None,:])/(einsum('ik,jk->ij',-lcd,cross(p01,p02))+.00001)
-    v=einsum('ijk,ijk->ij',cross(-lcd[:,None],p01[None,:]),c[:,None]-p0[None,:])/(einsum('ik,jk->ij',-lcd,cross(p01,p02))+.00001)
-    dcn=(t>=0)&(t<=1)&(u>=0)&(u<=1)&(v>=0)&(v<=1)&(u+v<=1)
-    i_p=((c[:,None]+x[None,:])+einsum('ijk,ij->ijk',(lcd[:,None]+x[None,:]),t))[dcn]
     
-    return i_p.tolist()
-    
-def ellipse(a,b,s=50):
+def ellipse(semi_major,semi_minor,number_of_segments=50):
+    '''
+    returns the ellipse with defined semi-major and semi-minor axis
+    '''
+    a,b,s=semi_major,semi_minor,number_of_segments
     return l_([[a*cos(d2r(i)),b*sin(d2r(i))]  for i in linspace(0,360,s)[:-1]])
     
-def outside_3p_arc(p0,p1,p2,r,s=20):
+def arc_tangent_to_3_points_triangle(p0,p1,p2,r,s=20):
     '''
     draws an arc with 3 points e.g. p0,p1,p2
     where p0p1 is line1 and p1p2 is line2
@@ -4086,31 +3986,11 @@ def outside_3p_arc(p0,p1,p2,r,s=20):
     else:
         return [p1]
 
-def round_corners(sec,s=10):
-    '''
-    function to create section with corner radiuses. e.g. 
-    following code has 3 points at [0,0],[10,0] and [7,15] and radiuses of 0.5,2 and 1 respectively,
-    s=5 represent the number of segments at each corner radius.
-    sec=round_corners(sec=[[0,0,.5],[10,0,2],[7,15,1]],s=5)
-    
-    refer file "example of various functions" for application
-    '''
-    sec=[p if len(p)==3 else [p[0],p[1],0] for p in sec]
-    p=array(sec)[:,:2].tolist()
-    p0=[p[-1]]+p[:-1]
-    p1=p[1:]+[p[0]]
-    r=array(sec)[:,2]
 
-    a=[]
-    for i in range(len(p)):
-        arc_1=outside_3p_arc(p0[i],p[i],p1[i],r[i],s)
-        a=a+arc_1
-    if s_int1(seg(a))!=[]:
-        raise ValueError('radiuses specified are larger than acceptable')
-    else:
-        return a
-
-def sol2path(sol,path):
+def extrude_solid_to_path(sol,path):
+    '''
+    function, extrudes solid with slices to any arbitrary path
+    '''
     sol1=c3t2(sol)
     zpath=[[0,0,p[0][2]] for p in sol]
     path2=path2path1(zpath,path)
@@ -4118,45 +3998,20 @@ def sol2path(sol,path):
     return sol2
 
 def comb_list(n):
+    '''
+    returns the list of combination for number of integers or characters where order doesn't matter.
+    example:
+    comb_list(3) =>
+    array([[0, 1],
+           [0, 2],
+           [1, 2]])
+    '''
     n=arange(n)
     a=array([n]*len(n)).transpose(1,0)
     b=array([n]*len(n))
     c=array([a,b]).transpose(1,0,2).transpose(0,2,1)
     d=concatenate([c[i][i+1:] for i in range(len(c))])
     return d
-
-def ip_nv_sol2sol(sol1,sol2):
-    '''
-    function finds the intersection point and the normal vector to that intersection point between 2 solids
-    sol1: solid on who's surface intersection points needs to be found
-    sol2: solid which intersects sol1
-    
-    '''
-    line=array([ seg(p)[:-1] for p in cpo(sol2)])
-    v,f1=vnf2(sol1)
-    tri=array(v)[array(f1)]
-    line=array([ seg(p)[:-1] for p in cpo(sol2)])
-    tri.shape,line.shape
-    la,lb=line[:,:,0],line[:,:,1]
-    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
-    lab=lb-la
-    p01,p02=p1-p0,p2-p0
-    t=einsum('kl,ijkl->ijk',cross(p01,p02),la[:,:,None]-p0)/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00000)
-    u=einsum('ijkl,ijkl->ijk',cross(p02[None,None,:,:],(-lab)[:,:,None,:]),(la[:,:,None,:]-p0[None,None,:,:]))/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00000)
-    v=einsum('ijkl,ijkl->ijk',cross((-lab)[:,:,None,:],p01[None,None,:,:]),(la[:,:,None,:]-p0[None,None,:,:]))/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00000)
-    condition=(t>=0)&(t<=1)&(u>=0)&(u<=1)&(v>=0)&(v<=1)&(u+v<1)
-
-    a=(la[:,None,:,None,:]+lab[:,None,:,None,:]*t[:,None,:,:,None])
-    n1=-array([cross(p01,p02)/norm(cross(p01,p02),axis=1).reshape(-1,1)]*len(line))[:,None,None,:]
-    b=condition[:,None,:,:]
-    c,d=[],[]
-    for i in range(len(a)):
-        c.append(a[i][b[i]].tolist())
-        d.append(n1[i][b[i]].tolist())
-
-    p=[p for p in c if p!=[]]
-    n1=[d[i] for i in range(len(c)) if c[i]!=[]]
-    return [p,n1]
 
 
 def corner_radius(sec,s=20):
@@ -4259,6 +4114,110 @@ def corner_radius(sec,s=20):
     d=c3t2(q_rot(['z.0001'],d))
     return d
 
+def corner_radius_with_turtle(sec,s=20):
+    '''
+    function to create section with corner radiuses. e.g. 
+    following code has 3 points at [0,0],[10,0] and [7,15] and radiuses of 0.5,2 and 1 respectively,
+    s=5 represent the number of segments at each corner radius.
+    sec=corner_radius(pl=[[0,0,.5],[10,0,2],[7,15,1]],s=5)
+    
+    refer file "example of various functions" for application
+    '''
+    sec=pts1(sec)
+    r_l=array(sec)[:,2].tolist()
+    sec=array(sec)[:,:2].tolist()
+
+    p0=[sec[-1]]+sec[:-1]
+    p1=sec
+    p2=sec[1:]+[sec[0]]
+
+    p0,p1,p2=array([p0,p1,p2])
+    v1,v2=p0-p1,p2-p1
+    u1,u2=v1/norm(v1,axis=1).reshape(-1,1),v2/norm(v2,axis=1).reshape(-1,1)
+    p_o=cwv(p1.tolist())
+
+    theta=[(180-ang_2lineccw(p1[i],p0[i],p2[i]))/2  if p_o[i]==1 else (180-ang_2linecw(p1[i],p0[i],p2[i]))/2 for i in range(len(p0))]
+    th0=[theta[-1]]+theta[:-1]
+    th1=theta
+    c_p1=array([p1[i] if r_l[i]==0 else  
+                array(p1[i])+(u1[i]*r_l[i]/cos(d2r(theta[i])))@[[cos(d2r((180-2*theta[i])/2)),sin(d2r((180-2*theta[i])/2))],[-sin(d2r((180-2*theta[i])/2)),cos(d2r((180-2*theta[i])/2))]]
+                if p_o[i]==1 else 
+                array(p1[i])+(u1[i]*r_l[i]/cos(d2r(theta[i])))@[[cos(d2r((180-2*theta[i])/2)),-sin(d2r((180-2*theta[i])/2))],[sin(d2r((180-2*theta[i])/2)),cos(d2r((180-2*theta[i])/2))]]
+                for i in range(len(p0))]).tolist()
+
+    cir_1=[ 
+        [p1[i].tolist()]
+        if r_l[i]==0 else
+        circle(r_l[i],cp=c_p1[i])
+        for i in range(len(p0))]
+
+    # radiuses
+    r0=[r_l[-1]]+r_l[:-1]
+    r1=r_l
+    # circles
+    c0=[cir_1[-1]]+cir_1[:-1]
+    c1=cir_1
+    # center points
+    cp0=[c_p1[-1]]+c_p1[:-1]
+    cp1=c_p1
+    # orientations
+    p_o_0=[p_o[-1]]+p_o[:-1]
+    p_o_1=p_o
+    a=[]
+    for i in range(len(p0)):
+        if r0[i]==0 and r1[i]==0:
+            a.append([p1[i].tolist()])
+        elif p_o_0[i]==-1 and r0[i]>0 and r1[i]==0:
+            a.append([cir_p_t(c0[i],p1[i]),p1[i].tolist()])
+        elif p_o_0[i]==1 and r0[i]>0 and r1[i]==0:
+            a.append([p_cir_t(p1[i],c0[i]),p1[i].tolist()])
+        elif p_o_1[i]==-1 and r0[i]==0 and r1[i]>0:
+            a.append([p_cir_t(p0[i],c1[i])])
+        elif p_o_1[i]==1 and r0[i]==0 and r1[i]>0:
+            a.append([cir_p_t(c1[i],p0[i])])
+        elif p_o_0[i]==1 and p_o_1[i]==1 and r0[i]>0 and r1[i]>0:
+            if (r0[i]*tan(d2r(th0[i]))+r1[i]*tan(d2r(th1[i])))>norm(p1[i]-p0[i]):
+                raise ValueError('radiuses more than acceptable limit')
+            else:
+                a.append(flip(tctpf(r0[i],r1[i],cp0[i],cp1[i])[2:]))
+        elif p_o_0[i]==1 and p_o_1[i]==-1 and r0[i]>0 and r1[i]>0:
+            a.append(tcct(r0[i],r1[i],cp0[i],cp1[i],1))
+        elif p_o_0[i]==-1 and p_o_1[i]==1 and r0[i]>0 and r1[i]>0:
+            a.append(tcct(r0[i],r1[i],cp0[i],cp1[i],-1))
+        elif p_o_0[i]==-1 and p_o_1[i]==-1 and r0[i]>0 and r1[i]>0:
+            if (r0[i]*tan(d2r(th0[i]))+r1[i]*tan(d2r(th1[i])))>norm(p1[i]-p0[i]):
+                raise ValueError('radiuses more than acceptable limit')
+            else:
+                a.append(tctpf(r0[i],r1[i],cp0[i],cp1[i])[:2])
+
+    b=[0]
+    for i in range(len(p0)):
+        if r_l[i]>0:
+            b.append(b[-1]+2)
+        else:
+            b.append(b[-1]+1)
+
+    b=array(b[1:])-1
+
+
+    c=concatenate(a).tolist()
+    c=c if r_l[-1]==0 else c[1:]+[c[0]]
+    d=[]
+    for i in range(len(p0)):
+        if r_l[i]==0:
+            d.append([c[b[i]]])
+        else:
+            d.append( arc_2p(c[b[i]-1],c[b[i]],r_l[i],p_o[i],s))
+            
+
+    d=(concatenate(d).round(8)).tolist()
+    d=min_d_points(d,.0001)
+    d=c3t2(q_rot(['z.0001'],d))
+    return d
+
+
+
+
 def surround(path,r,s=20):
     '''
     function to surround a path to create a rounded section
@@ -4272,85 +4231,6 @@ def surround(path,r,s=20):
     sec=a[1:-1]+arc1+b[1:-1]+arc2
     return sec
 
-def int_seg_list(sec1):
-    n=len(sec1)
-    a=array(sec1)[comb_list(n)]
-    p0=a[:,0][:,0]
-    p1=a[:,0][:,1]
-    p2=a[:,1][:,0]
-    p3=a[:,1][:,1]
-    v1=p1-p0
-    v2=p3-p2
-    iim=array([v1,-v2+.00001]).transpose(1,0,2).transpose(0,2,1)
-    im=inv(iim)
-    p=p2-p0
-
-    t=einsum('ijk,ik->ij',im,p)
-    dcn=(t[:,0].round(4)>0)&(t[:,0].round(4)<1)&(t[:,1].round(4)>0)&(t[:,1].round(4)<1)
-
-    d=comb_list(n)[dcn]
-    return d
-
-def oset(sec,r):
-    sec0=intersections(offset_segv(sec,r))
-    i_p1=s_int1(seg(sec0))
-    d=int_seg_list(seg(sec0))
-    sec2=array(sec0)
-    for i in range(len(d)):
-        a=arange(d[i][0]+1)
-        b=arange(d[i][0],d[i][1]+1)
-        c=arange(d[i][1],len(sec2))
-        if (len(a)+len(c))<len(b):
-            sec2[a]=array([i_p1[i]]*len(a))
-        else:
-            sec2[b]=array([i_p1[i]]*len(b))
-    sec2=array(sec2).tolist()
-            
-    return sec2
-
-def arot(v,theta):
-    '''
-    rotation matrix for rotating objects around any arbitrary axis defined by vector 'v'
-    follows right hand thumb rule for rotation
-    '''
-    u=v/norm(v)
-    return array([
-    [cos(d2r(theta))+u[0]**2*(1-cos(d2r(theta))),u[1]*u[0]*(1-cos(d2r(theta)))+u[2]*sin(d2r(theta)),u[2]*u[0]*(1-cos(d2r(theta)))-u[1]*sin(d2r(theta))],
-    [u[0]*u[1]*(1-cos(d2r(theta)))-u[2]*sin(d2r(theta)),cos(d2r(theta))+u[1]**2*(1-cos(d2r(theta))),u[2]*u[1]*(1-cos(d2r(theta)))+u[0]*sin(d2r(theta))],
-    [u[0]*u[2]*(1-cos(d2r(theta)))+u[1]*sin(d2r(theta)),u[1]*u[2]*(1-cos(d2r(theta)))-u[0]*sin(d2r(theta)),cos(d2r(theta))+u[2]**2*(1-cos(d2r(theta)))]
-    ])
-
-def xrot(theta):
-    '''
-    rotation matrix to rotate objects around x-axis
-    follows right hand thumb rule for rotation
-    '''
-    return array([
-        [1,0,0],
-        [0,cos(d2r(theta)),sin(d2r(theta))],
-        [0,-sin(d2r(theta)),cos(d2r(theta))]
-    ])
-
-def yrot(theta):
-    '''
-    rotation matrix to rotate objects around y-axis
-    follows right hand thumb rule for rotation
-    '''
-    return array([
-        [cos(d2r(theta)),0,-sin(d2r(theta))],
-        [0,1,0],
-        [sin(d2r(theta)),0,cos(d2r(theta))]
-    ])
-
-def zrot(theta):
-    '''
-    rotation matrix to rotate objects around z-axis
-    follows right hand thumb rule for rotation
-    '''
-    return array([[cos(d2r(theta)),sin(d2r(theta)),0],
-                 [-sin(d2r(theta)),cos(d2r(theta)),0],
-                  [0,0,1]
-                 ])
 
 def surface_from_2_waves(p0,p1,amplitude=1):
     '''
@@ -4427,7 +4307,7 @@ def surface_from_2_waves_norm(p0,p1,amplitude=1):
     p2=array([[[j[0],j[1],j[2]/a*amplitude]  for j in i] for i in p2]).tolist()
     return p2
 
-def cir_theta_line(r=1,cp=[0,0],theta=90,l=1):
+def tangent_line_to_a_circle(circle,theta=90,length=1):
     '''
     function to draw a line tangent to a circle defined by radius 'r'
     center point 'cp' and line is defined by angle 'theta' and length 'l'
@@ -4436,12 +4316,15 @@ def cir_theta_line(r=1,cp=[0,0],theta=90,l=1):
     In case negative the line is drawn on the opposite side
     
     '''
+    r=r_arc(circle)
+    cp=cp_arc(circle)
+    l=length
     p0=[r*cos(d2r(270+theta)),r*sin(d2r(270+theta))]
     p1=(array(p0)+q_rot2d(theta,[l,0])).tolist()
     p0,p1= (array([p0,p1])+cp).tolist()
     return [p0,p1]
 
-def fillet_intersection_lines(l1,l2,r,s=10):
+def fillet_between_intersection_of_two_lines(l1,l2,r,s=10):
     '''
     function calculates the fillet at intersection between 2 lines
     'l1' and 'l2'
@@ -4512,32 +4395,6 @@ def equate_points(sec,sec1):
     sec1=array([sec1]*int(a/len(sec1))).transpose(1,0,2).reshape(-1,c).tolist()
     return [sec,sec1]
 
-def pies2(sec,pnts):
-    '''
-    function to find 3d points 'pnts' which are inside an enclosed 2d section 'sec'
-    refer to the file "example of various functions " for application examples
-    
-    
-    '''
-    pnts=rev_pnts(sec,pnts)
-    if pnts!=[]:
-        s8,s4=[sec,pnts]
-        p0=array(s4)
-        p2=s8
-        p3=s8[1:]+[s8[0]]
-        p2,p3=array([p2,p3])
-        # v1=array([[[1,0]]*len(p2)]*len(p0))
-        v1=array([ones(len(p2)),zeros(len(p2))]).transpose(1,0)
-        v2=(p3-p2)+.000001
-        p=p2-p0[:,:2][:,None]
-        im=pinv(array([v1,-v2]).transpose(1,0,2).transpose(0,2,1))
-        im=array([im]*len(p0))
-        t=einsum('ijkl,ijl->ijk',im,p)
-
-        s10=[p0[i] for i in range(len(p0)) if \
-                t[i][(t[i][:,0]>=0)&(t[i][:,1]>=0)&(t[i][:,1]<=1)].shape[0]%2 \
-             ==1]
-        return array(s10).tolist()
 
 def sinewave(l,n,a,p):
     '''
@@ -4659,24 +4516,6 @@ def extrude_wave2path(w1,c1):
     w3=w3[:-1]
     return w3
 
-def x_fit(curve,pnt):
-    '''
-    fit a point's 'z' coordinate as per a curve in the x-z plane
-    '''
-    a=array(curve)[:,0]
-    b=array(curve)[:,2]
-    c=pnt[0]
-    
-    n2=arange(len(a))[a>c][0]
-    n1=n2-1
-    dy=b[n2]-b[n1]
-    dx=a[n2]-a[n1]
-    dybdx=dy/dx
-    dx1=c-a[n1]
-    d=b[n1]+dybdx*dx1
-    pnt1=[c,pnt[1],d]
-    return pnt1
-
 def convert_3lines2surface(l1,l2,l3,s=50):
     '''
     convert 3 lines to surface
@@ -4719,75 +4558,6 @@ def SurfaceFrom3LinesInDifferentPlanes(a3,a4,a5,s=50):
 
 def mid_point(w1):
     return equidistant_path(w1,2)[1]
-
-def curve_4p(p0,p1,p2,p3):
-    '''
-    create smooth curve with 4 points
-    '''
-    if cwv([p0,p1,p2,p3])[1:-1]==[-1,-1]:
-        return curve_4p_0(p0,p1,p2,p3)
-    elif cwv([p0,p1,p2,p3])[1:-1]==[-1,1]:
-        return curve_4p_01(p0,p1,p2,p3)
-    elif cwv([p0,p1,p2,p3])[1:-1]==[1,-1]:
-        return curve_4p_10(p0,p1,p2,p3)
-    elif cwv([p0,p1,p2,p3])[1:-1]==[1,1]:
-        return curve_4p_1(p0,p1,p2,p3)
-
-def curve_4p_0(p0,p1,p2,p3):
-    p12=((array(p1)+array(p2))/2).tolist()
-    v12=array(p2)-array(p1)
-    v12_90=q_rot2d(90,v12)
-    p12_90=(array(p12)+v12_90).tolist()
-    a1=arc_3p(p0,p1,p2)
-    a2=arc_3p(p1,p2,p3)
-    p4=l_cir_ip([p12_90,p12],a1)[1]
-    p5=l_cir_ip([p12_90,p12],a2)[1]
-    p45=((array(p4)+array(p5))/2).tolist()
-    a3=arc_3p(p0,p1,p45)
-    a4=arc_3p(p45,p2,p3)
-    return a3+a4[1:]
-
-def curve_4p_1(p0,p1,p2,p3):
-    p12=((array(p1)+array(p2))/2).tolist()
-    v12=array(p2)-array(p1)
-    v12_90=q_rot2d(90,v12)
-    p12_90=(array(p12)+v12_90).tolist()
-    a1=arc_3p(p0,p1,p2)
-    a2=arc_3p(p1,p2,p3)
-    p4=l_cir_ip([p12_90,p12],a1)[0]
-    p5=l_cir_ip([p12_90,p12],a2)[0]
-    p45=((array(p4)+array(p5))/2).tolist()
-    a3=arc_3p(p0,p1,p45)
-    a4=arc_3p(p45,p2,p3)
-    return a3+a4[1:]
-
-def curve_4p_01(p0,p1,p2,p3):
-    p12=((array(p1)+array(p2))/2).tolist()
-    v12=array(p2)-array(p1)
-    v12_90=q_rot2d(90,v12)
-    p12_90=(array(p12)+v12_90).tolist()
-    a1=arc_3p(p0,p1,p2)
-    a2=arc_3p(p1,p2,p3)
-    p4=l_cir_ip([p12_90,p12],a1)[1]
-    p5=l_cir_ip([p12_90,p12],a2)[0]
-    p45=((array(p4)+array(p5))/2).tolist()
-    a3=arc_3p(p0,p1,p45)
-    a4=arc_3p(p45,p2,p3)
-    return a3+a4[1:]
-
-def curve_4p_10(p0,p1,p2,p3):
-    p12=((array(p1)+array(p2))/2).tolist()
-    v12=array(p2)-array(p1)
-    v12_90=q_rot2d(90,v12)
-    p12_90=(array(p12)+v12_90).tolist()
-    a1=arc_3p(p0,p1,p2)
-    a2=arc_3p(p1,p2,p3)
-    p4=l_cir_ip([p12_90,p12],a1)[0]
-    p5=l_cir_ip([p12_90,p12],a2)[1]
-    p45=((array(p4)+array(p5))/2).tolist()
-    a3=arc_3p(p0,p1,p45)
-    a4=arc_3p(p45,p2,p3)
-    return a3+a4[1:]
 
 def cw_3p_3d(points):
     '''
@@ -4840,24 +4610,6 @@ def smoothen_2d(p0,s=50):
     arc_n=concatenate([bezier(p,50)  for p in pnts]).tolist()
     return equidistant_path(arc_1+arc_n+arc_2,s)
 
-def curve_2d(p0,s=50):
-    '''
-    draw smooth curves with random points 'p0'
-    '''
-    r0=[r_3p([p0[i],p0[i+1],p0[i+2]])  for i in range(len(p0)-2)]
-    c0=[cw([p0[i],p0[i+1],p0[i+2]])  for i in range(len(p0)-2)]
-    
-    arc_m=[
-        [arc_2p(p0[i+1],p0[i+2],r0[i],c0[i],50),
-        arc_2p(p0[i+1],p0[i+2],r0[i+1],c0[i+1],50)]
-        for i in range(len(p0)-3)]
-    pnts=[[mid_point([mid_point(p[0]),mid_point(p[1])]),
-           mid_point([mid_point(p[0]),mid_point(p[1])]),
-           p[0][-1]]  for p in arc_m]
-    pnts=[p0[0],p0[1]]+concatenate(pnts).tolist()+[p0[-1]]
-    pnts=array(pnts).reshape(-1,3,2).tolist()
-    arc_n=[ arc_3p(p[0],p[1],p[2]) for p in pnts]
-    return concatenate(arc_n).tolist()
 
 def faces_surface(l,m):
     '''
@@ -4872,20 +4624,6 @@ def faces_surface(l,m):
         ] 
            for i in range(l-1)
       ]).reshape(-1,3).tolist()
-
-def surface_offset_fine(surf_1,d=1):
-    '''
-    offset a given surface by a distance 'd'
-    '''
-    l,m=len(surf_1),len(surf_1[0])
-    f_1=faces_surface(l,m)
-    v_1=array(surf_1).reshape(-1,3).tolist()
-    f_2=array(surf_1).reshape(-1,3)[f_1]
-    n1=array([nv(p)  for p in f_2])
-    n2=array([n1[(array(f_1)==i).any(1)].mean(0) for i in range(len(v_1))])
-    v_2=array(v_1)+n2*d
-    return v_2.reshape(l,m,3).tolist()
-
 
 
 def surface_offset(surf,d=1):
@@ -5040,7 +4778,7 @@ def create_mesh(v,f):
     sol.vectors=v_1[f_1]
     return sol
 
-def arc_with_start_pt_and_cp(start_point=[],center_point=[],theta=90,segments=30):
+def arc_with_start_point_and_center(start_point=[],center_point=[],theta=90,segments=30):
     '''
     function to draw an arc with known center_point and start_point
     '''
@@ -5050,7 +4788,7 @@ def arc_with_start_pt_and_cp(start_point=[],center_point=[],theta=90,segments=30
     arc_1=arc_1.tolist()
     return arc_1
 
-def fillet_line_circle(l1,c1,r2,cw=-1,option=0,s=50):
+def fillet_between_line_and_circle(l1,c1,r2,cw=-1,option=0,s=50):
     '''
     function to draw a fillet between a line and a circle
     option can be '0' or '1' to flip the fillet from one side to another
@@ -5074,7 +4812,7 @@ def fillet_line_circle(l1,c1,r2,cw=-1,option=0,s=50):
     p4=cp2+u4*r2
     return arc_2p(p2,p4,r2,cw=cw,s=s)
 
-def fillet_intersection_lines_3d(l1,l2,r,s=10):
+def fillet_at_intersection_of_two_lines_3d(l1,l2,r,s=10):
     '''
     function calculates the fillet at intersection between 2 3d lines in 1 plane
     'l1' and 'l2'
@@ -5105,7 +4843,7 @@ def fillet_intersection_lines_3d(l1,l2,r,s=10):
     arc_1=arc_2p(p1,p2,r,clock,s)
     return axis_rot(n2,arc_1,-theta)
 
-def fillet_line_circle_internal_3d(l1,c1,r2,cw=-1,option=0,s=50):
+def fillet_inside_between_line_and_circle_3d(l1,c1,r2,cw=-1,option=0,s=50):
     '''
     function to draw a fillet between a line and a circle in 3d space, where the fillet is drawn inside of the circle
     circle and line should be in same plane
@@ -5143,7 +4881,7 @@ def fillet_line_circle_internal_3d(l1,c1,r2,cw=-1,option=0,s=50):
     return arc_2p_3d(n1,p2,p4,r2,cw=cw,s=s)
 
 
-def fillet_line_circle_internal(l1,c1,r2,cw=-1,option=0,s=50):
+def fillet_inside_between_line_and_circle_2d(l1,c1,r2,cw=-1,option=0,s=50):
     '''
     function to draw a fillet between a line and a circle, where the fillet is drawn inside of the circle
     option can be '0' or '1' to flip the fillet from one side to another
@@ -5167,7 +4905,7 @@ def fillet_line_circle_internal(l1,c1,r2,cw=-1,option=0,s=50):
     p4=cp2-u4*r2
     return arc_2p(p2,p4,r2,cw=cw,s=s)
 
-def fillet_line_circle_3d(l1,c1,r2,cw=-1,option=0,s=50):
+def fillet_outside_between_line_and_circle_3d(l1,c1,r2,cw=-1,option=0,s=50):
     '''
     function to draw a fillet between a line and a circle in 3d space.
     line and circle should be in the same plane
@@ -5383,7 +5121,7 @@ def path_offset_3d(sec,d):
     sec2=translate(array(sec).mean(0),sec2)
     return sort_points(sec,sec2)
 
-def surface_line_vector(line=[[0,0,0],[10,0,0]],vector=[0,0,1],both_sides=0):
+def surface_from_line_and_vector(line=[[0,0,0],[10,0,0]],vector=[0,0,1],both_sides=0):
     '''
     draw a surface base on a line and a vector.
     if surface is required both sides of the line, both_sides option should be marked as '1' else default for only one side is '0'
@@ -5415,7 +5153,7 @@ def solid_from_2surfaces(surf_1,surf_2):
     # sol=cpo(sol)
     return sol
 
-def sec2surface(surf_1,s=1):
+def convert_closed_section_to_surface(surf_1,s=1):
     '''
     function to convert a closed polygon to lines
     e.g.
@@ -5455,7 +5193,7 @@ def sec2lines(sec,n=20,s=10):
     
     return c
 
-def rot_sec2xy_plane(sec):
+def rotate_3d_sketch_parallel_to_xy_plane(sec):
     '''
     function to rotate any section open or closed parallel to x-y plane
     
@@ -5529,12 +5267,13 @@ def align_sec_2(sec1):
     sol2=sec1[i:]+sec1[:i]
     return sol2
 
-def s_int1_list(sec1):
+def list_the_index_of_self_intersecting_segments(segments_list):
     '''
     calulates the self intersection list numbers of segment lists 'sec1'
     it picks the intersection points only if the 2 lines are crossing each other
 
     '''
+    sec1=segments_list
     n=len(sec1)
     a=array(sec1)[comb_list(n)]
     p0=a[:,0][:,0]
@@ -5575,7 +5314,7 @@ def points_inside_offset_surround(sec,sec2,r):
 
 
 
-def list_r1(sec):
+def list_of_radius_at_each_point_of_a_closed_section(sec):
     '''
     function to list the radius at each point of a section
     '''
@@ -5600,7 +5339,7 @@ def exclude_numbers(a,b):
 def subset(b,a):
     return (array(b)[:,None]==array(a)[None,:]).any(1).all()
 
-def points_inside_offset_surround_list(sec,sec2,r):
+def index_of_points_inside_offset_surround(sec,sec2,r):
     '''
     finds all the points list, in a list of points 'sec2' which are inside the offset surround of an enclosed section 'sec'
     '''
@@ -5918,7 +5657,7 @@ def surface_4_lines_enclosed(l_1,l_2,l_3,l_4,n1,n2,s=20,ext=20):
     s_5=[project_line_on_surface(cpo(s_3)[i],s_4[i],n2)  for i in range(len(cpo(s_3)))]
     return [l_3]+cpo(s_5)[1:-1]+[l_4]
 
-def arc_with_start_pt_and_cp_3d(n1,start_point=[],center_point=[],theta=90,segments=30):
+def arc_with_start_point_and_center_3d(n1,start_point=[],center_point=[],theta=90,segments=30):
     '''
     function to draw an arc with known center_point and start_point in 3d space
     n1 is the normal which defines the plane
@@ -5985,7 +5724,7 @@ def pol(p1,l1):
 
 
 
-def i_p_p(surf_1,i_p_l,d=1.):
+def intersection_points_projection_on_intersecting_solid(surf_1,i_p_l,d=1.):
     '''
     function to project the intersection point on the cutting lines based on the distance 'r'
     '''
@@ -6008,132 +5747,7 @@ def i_p_p(surf_1,i_p_l,d=1.):
     return path2path1(i_p_l,r_ipl) if len(r_ipl)!=len(i_p_l) else r_ipl
 
 
-def bezier_c(sec,sp=10,ep=-10,s=20):
-    '''
-    create a smooth closed section
-    sp: starting point in the section
-    ep: end point in the section
-    s: number of segments
-    '''
-    a=bezier(equidistant_path(sec[sp:ep],s),s)
-    b=bezier(equidistant_path(sec[ep-1:]+sec[:sp+1],s),s)
-    c=a+b[1:-1]
-    return c
 
-def project_points_on_surface(l_2,surf_1,n_1=[],both=0,n='all'):
-    '''
-    function for projecting points on to a surface.
-    n_1 is a direction vector for projecting the line
-    an example video can be refered for clarity
-    '''
-    n_1=surface_normal(surf_1,1) if n_1==[] else n_1
-    # p1+v1*t1=p2+v2*t2+v3*t3
-    f_1=faces_surface(len(surf_1),len(surf_1[0]))
-    v_1=array(surf_1).reshape(-1,3)
-    tri=v_1[f_1]
-    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
-    v2,v3=p3-p2,p4-p2
-    v1=array(n_1)
-    p1=array(l_2)
-    v1=array([[v1]*len(p2)]*len(p1))
-    v2=array([v2]*len(p1))
-    v3=array([v3]*len(p1))
-    iim=array([v1,-v2,-v3+.000001]).transpose(1,2,0,3).transpose(0,1,3,2)
-    im=inv(iim)
-    p=p2[None,:,:]-p1[:,None,:]
-    t=einsum('ijkl,ijl->ijk',im,p)
-    t1,t2,t3=t[:,:,0],t[:,:,1],t[:,:,2]
-    if both==0:
-        dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-    elif both==1:
-        dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-    ip_1=p1[:,None,:]+einsum('ijk,ij->ijk',v1,t[:,:,0])
-    if n=='all':
-        ip_1=ip_1[dec].tolist()
-    else:
-        ip_1=array([ip_1[i][dec[i]][n] for i in range(len(l_2))]).tolist()
-    return ip_1
-
-def project_points_on_sol(l_2,surf_1,n_1=[],both=0,n='all'):
-    '''
-    function for projecting points on to a sol.
-    n_1 is a direction vector for projecting the line
-    an example video can be refered for clarity
-    '''
-    surf_1=q_rot(['y.00001'],surf_1)
-    n_1=surface_normal(surf_1,1) if n_1==[] else n_1
-    # p1+v1*t1=p2+v2*t2+v3*t3
-    f_1=faces_1(len(surf_1),len(surf_1[0]))
-    v_1=array(surf_1).reshape(-1,3)
-    tri=v_1[f_1]
-    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
-    v2,v3=p3-p2,p4-p2
-    v1=array(n_1)
-    p1=array(l_2)
-    v1=array([[v1]*len(p2)]*len(p1))
-    v2=array([v2]*len(p1))
-    v3=array([v3]*len(p1))
-    iim=array([v1,-v2,-v3+.000001]).transpose(1,2,0,3).transpose(0,1,3,2)
-    im=inv(iim)
-    p=p2[None,:,:]-p1[:,None,:]
-    t=einsum('ijkl,ijl->ijk',im,p)
-    t1,t2,t3=t[:,:,0],t[:,:,1],t[:,:,2]
-    if both==0:
-        dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-    elif both==1:
-        dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-    ip_1=p1[:,None,:]+einsum('ijk,ij->ijk',v1,t[:,:,0])
-    if n=='all':
-        ip_1=ip_1[dec].tolist()
-    else:
-        ip_1=array([ip_1[i][dec[i]][n] for i in range(len(l_2))]).tolist()
-    return ip_1
-
-# def points_inside_sol(p0,sol):
-#     '''
-#     finds points which are inside the solid,
-#     solid needs to be defined in such a way that all sides are closed
-#     '''
-#     p1=project_points_on_sol(p0,sol,[1,0,0],1)
-#     p2=array([ p for p in p0 if len(project_points_on_sol([p],sol,[1,0,0],1))%2!=0]).tolist()
-#     return p2
-
-def plane_min_d_zrot(l1,l_a=[0,120,240]):
-    '''
-    out of the list of angles 'l_a' rotated through z-axis which plane fits the best for a 3d section 'l1'. here the plane with normal vector [1,0,0] is considered for calculation
-    '''
-    n1=[q_rot([f'z{i}'],[1,0,0]) for i in l_a] 
-    a=[ppplane(l1,i,array(l1).mean(0)) for i in n1]
-    b=[array([l_len(p1) for p1 in cpo([l1,p])]).sum() for p in a]
-    return l_a[array(b).argmin()]
-
-def plane_min_d_yrot(l1,l_a=[0,120,240]):
-    '''
-    out of the list of angles 'l_a' rotated through y-axis which plane fits the best for a 3d section 'l1'. here the plane with normal vector [1,0,0] is considered for calculation
-    '''
-    n1=[q_rot([f'y{i}'],[1,0,0]) for i in l_a] 
-    a=[ppplane(l1,i,array(l1).mean(0)) for i in n1]
-    b=[array([l_len(p1) for p1 in cpo([l1,p])]).sum() for p in a]
-    return l_a[array(b).argmin()]
-
-def plane_min_d_xrot(l1,l_a=[0,120,240]):
-    '''
-    out of the list of angles 'l_a' rotated through x-axis which plane fits the best for a 3d section 'l1'. here the plane with normal vector [0,1,0] is considered for calculation
-    '''
-    n1=[q_rot([f'z{i}'],[0,1,0]) for i in l_a] 
-    a=[ppplane(l1,i,array(l1).mean(0)) for i in n1]
-    b=[array([l_len(p1) for p1 in cpo([l1,p])]).sum() for p in a]
-    return l_a[array(b).argmin()]
-
-def plane_min_d_axis_rot(l1,axis=[1,0,1],l_a=[0,120,240],rotation_axis=[]):
-    '''
-    out of the list of angles 'l_a' rotated through axis perpendicular to 'axis' defined on which plane fits the best for a 3d section 'l1'.
-    '''
-    rotation_axis=cross([0,0,-1],axis) if array(rotation_axis).tolist()==[] else rotation_axis
-    n1=[axis_rot(rotation_axis,axis,i) for i in l_a] 
-    a=[ppplane(l1,i,array(l1).mean(0)) for i in n1]
-    b=[array([l_len(p1) for p1 in cpo([l1,p])]).sum() for p in a]
-    return l_a[array(b).argmin()]
 
 def best_fit_plane_1(l1):
     '''
@@ -6259,7 +5873,7 @@ def path_extrude_over_multiple_sec_open(sec_1,path,twist=0):
             sol_5.append(translate(-v3*cp_1[0],translate(-v2*cp_1[1],sol_4[i])))
         return sol_5
 
-def nv2v_xy(v1):
+def normal_vector_to_any_vector_in_xy_plane(v1):
     '''
     returns a normal vector to any vector in x-y plane
     '''
@@ -6271,7 +5885,7 @@ def nv2v_xy(v1):
     u1,u2,u3=array([u1,u2,u3]).tolist()
     return u2
 
-def nv2v_z(v1):
+def normal_vector_to_any_vector(v1):
     '''
     returns a normal vector to any vector in +/- z direction
     '''
@@ -6298,7 +5912,7 @@ def s_p(p_l): # starting point
         return s_pnt.tolist()
 
 
-def sec2surface_1(sec1,s=1):
+def convert_closed_section_to_surface_minimum_sum_method(sec1,s=1):
     '''
     create an aligned surface from a section 'sec1'
     considers the min sum method
@@ -6309,7 +5923,7 @@ def sec2surface_1(sec1,s=1):
     sec3=sec2surface(sec1[n2:]+sec1[:n2],s)
     return sec3
 
-def sec2surface_2(sec1,s=1):
+def convert_closed_section_to_surface_maximum_sum_method(sec1,s=1):
     '''
     create an aligned surface from a section 'sec1'
     considers the max sum method
@@ -6328,7 +5942,7 @@ def vector2length(v,l=10):
     v1=(u*l).tolist()
     return v1
 
-def tangent_on_cir_from_pnt(c,p,l=1,side=0):
+def tangent_on_circle_from_any_point_on_circle(c,p,l=1,side=0):
     '''
     function to draw a tangent on a circle 'c' from any given
     point 'p' on the circle. length of the tangent 'l'
@@ -6398,7 +6012,7 @@ def lb2p(p0,p1):
     l2=s_int1(seg(c1)+seg(c2))
     return l2
 
-def lexico(pnts=[],seq=[0,1,2],ord=[1,1,1]):
+def lexicographic_sorting_of_points(pnts=[],seq=[0,1,2],ord=[1,1,1]):
     '''
     lexicographic ordering of a points list
     seq: defines the seduence in which the points needs to be ordered
@@ -6411,7 +6025,7 @@ def lexico(pnts=[],seq=[0,1,2],ord=[1,1,1]):
     elif len(pnts[0])==3:
         return sorted(pnts,key=lambda x:(ord[0]*x[seq[0]],ord[1]*x[seq[1]],ord[2]*x[seq[2]]))
 
-def fillet_3points(p1,p2,p3,s=10):
+def fillet_from_3_points(p1,p2,p3,s=10):
     '''
     creates a fillet with 3 defined points
     '''
@@ -6419,7 +6033,7 @@ def fillet_3points(p1,p2,p3,s=10):
     arc1=bezier(l2,s)
     return arc1
 
-def surface2sec(surf):
+def convert_surface_to_section(surf):
     '''
     reverse of sec2surface_1 function
     '''
@@ -6525,29 +6139,6 @@ def bspline_closed(pl,deg=3,s=100):
     p1=l_(a_([a_([p0[i]*N(i,k,u,n,ak=deg) for i in range(len(p0))]).sum(0) for u in linspace(0,n-k+1,s)]))
     return p1[:-1]
 
-# def bspline_surface_open(pl,deg1=3,deg2=3,s1=100,s2=100):
-#     '''
-#     draws bspline surface from 2 control points list 'pl1' and 'pl2'
-#     degree of curves are 'deg1' and 'deg2' in 2 directions 
-#     which should lie 0<=deg1<len(pl[0]) for 'deg1' and
-#     0<=deg2<=len(pl) for 'deg2'
-#     s: number of points in the resultant curve
-#     '''
-#     p1=[bspline_open(p,deg1,s1) for p in pl]
-#     p2=cpo([bspline_open(p,deg2,s2) for p in cpo(p1)])
-#     return p2
-
-# def bspline_surface_closed(pl,deg1=3,deg2=3,s1=100,s2=100):
-#     '''
-#     draws bspline surface from 2 control points list 'pl1' and 'pl2'
-#     degree of curves are 'deg1' and 'deg2' in 2 directions 
-#     which should lie 0<=deg1<len(pl[0]) for 'deg1' and
-#     0<=deg2<=len(pl) for 'deg2'
-#     s: number of points in the resultant curve
-#     '''
-#     p1=[bspline_closed(p,deg1,s1) for p in pl]
-#     p2=cpo([bspline_closed(p,deg2,s2) for p in cpo(p1)])
-#     return p2
 
 def bspline_surface(pl,deg1=3,deg2=3,s1=100,s2=100,a=[1,1]):
     '''
@@ -6596,57 +6187,6 @@ def polp(l,t):# point on line parameteric
     else:
         raise ValueError('value of t should be between 0 - 1')
 
-def interpolate(p0,s=100):
-    '''
-    create a smooth line joining all the points in the list p0
-    '''
-    def l_basis(i,n,u):
-        t=[j/(n-1) for j in range(n)]
-        a=[]
-        for j in range(n):
-            a.append((u-t[j])/(t[i]-t[j]) if (t[i]-t[j])!=0 else 1)
-        return prod(a).round(5)
-    n=len(p0)
-    p1=l_(a_([a_([a_(p0[i])*l_basis(i,n,u)  for i in range(n)]).sum(0) 
-           for u in linspace(0,1,s)]))
-    return p1
-
-def surface_4lines_enclosed(l1,l2,l3,l4,n=5):
-    '''
-    create surface with 4 lines enclosed area
-    l1 and l2 are opposite lines and l3 and l4 are opposite lines
-    starting point of l1 and l3 should match
-    end point of l3 and starting point of l2 should match
-    end point of l1 and starting point of l4 should match
-    end point of l4 and end point of l2 should match
-    counterclockwise points should match as following
-    l1[0]l3[0]->l1[-1]l4[0]->l4[-1]l2[-1]->l2[0]l3[-1]
-    (l1[-1] means end point of l1)
-    'n' is the number of segment lines between l1 and l2
-    '''
-    l5=slice_sol([l1,l2],n)
-    l3=path2path1(cpo(l5)[0],l3)
-    l4=path2path1(cpo(l5)[-1],l4)
-    l5=cpo([l3]+cpo(l5)+[l4])
-    s1=cpo(slice_sol([l3,l4],len(l5[0])))
-    s1=[path2path1(s1[i],l5[i]) for i in range(len(l5))]
-    return [equidistant_path(p,len(l1)-1) for p in s1]
-
-# def lineFromPointTillEnd(l1,t):
-#     '''
-#     removes the line till parameter t where 0<=t<=1
-#     keeps the rest of the line
-#     '''
-#     p0=polp(l1,t)
-#     a=l_lenv_o(l1)*t
-#     b=a_([0]+[l_len(p) for p in seg(l1)[:-1]]).cumsum()
-#     if a<b[-1]:
-#         n=arange(len(b))[b<=a][-1]
-#     if n==len(l1)-2:
-#         l2=[p0,l1[n+1]]
-#     else:
-#         l2=[p0]+l1[n+1:]
-#     return l2
 
 def lineFromPointTillEnd(l1,pnt,dist=.01):
     '''
@@ -6705,6 +6245,21 @@ def vcost(l1,p0,dist=.2):
         p1=[]
     return p1
 
+def vcost_without_bounds(l1,p0,dist=.2):
+    '''
+    finds the projection of the point 'p0' on line 'l1' which is within distance 'dist' from the line
+    '''
+    v1=a_(l1[1])-a_(l1[0])
+    u1=v1/norm(v1)
+    d=norm(v1)
+    v2=a_(p0)-a_(l1[0])
+    d1,d2=v1@v2/norm(v1),norm(cross(c23(v1),c23(v2)))/norm(v1)
+    if abs(d2)<=dist:
+        p1=l_(a_(l1[0])+u1*d1)
+        t1=d1/d
+    else:
+        p1=[]
+    return p1
 
 def timeToReachPoint(p0,l1,dist=.01):
     '''
@@ -6742,10 +6297,11 @@ def movePointOnLine(l1,p0,d):
         t1=d/l_lenv_o(l1)
         return polp(l1,t1)
 
-def ip_triangle_surf(ip,sol1):
+def find_triangular_meshes_of_intersecting_points_on_surface(ip,surface):
     '''
     function to find the triangles on the solid 'sol1' where the intersection points list 'ip' lies
     '''
+    sol1=surface
     v,f1=vnf1(sol1)
     tri=array(v)[array(f1)]
     p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
@@ -6805,7 +6361,7 @@ def prism2cpo(s1):
     return s2
 
 
-def psos(s2,s3,v1,dist=100000,unidirection=1):
+def project_surface_on_to_another_surface(surface_on_which_to_project, surface_to_project, vector_for_projection, distance_limit_for_projection=100000, unidirection=1):
     '''
     project a surface on to another without loosing the original points
     surface 's3' will be projected on surface 's2'
@@ -6814,6 +6370,8 @@ def psos(s2,s3,v1,dist=100000,unidirection=1):
     unidirection: if the projection is to be in both direction set parameter
     unidirection to '1' else to '0'
     '''
+    s2,s3,v1=surface_on_which_to_project, surface_to_project, vector_for_projection
+    dist=distance_limit_for_projection
     p0=a_(s3).reshape(-1,3)
     f=faces_surface(len(s2),len(s2[0]))
     v=a_(s2).reshape(-1,3)
@@ -6848,13 +6406,14 @@ def reorient_sec(sec):
     sec2=[p[0] for p in sec1]+flip([p[-1] for p in sec1])
     return sec2
 
-def psos_v(s2,s3,v1,dist=100000,unidirection=0):
+def project_surface_on_to_another_surface_with_focal_point (surface_on_which_to_project, surface_to_project, focal_point, distance_limit_for_projection=100000, unidirection=0):
     '''
     project a surface on to another without loosing the original points
     surface 's3' will be projected on surface 's2'
     'v1' is vector for projection. this is a focal vector 
     from where the rays are emitted for projection
     '''
+    s2,s3,v1,dist=surface_on_which_to_project, surface_to_project, focal_point, distance_limit_for_projection
     p0=a_(s3).reshape(-1,3)
     f=faces_surface(len(s2),len(s2[0]))
     v=a_(s2).reshape(-1,3)
@@ -6868,43 +6427,6 @@ def psos_v(s2,s3,v1,dist=100000,unidirection=0):
         iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
         im=inv(iim)
         # im.shape,p0[198].shape
-        t=(im@(p2-a_(p0[i])[None,:])[:,:,None]).reshape(-1,3)
-        t1,t2,t3=t[:,0],t[:,1],t[:,2]
-        if unidirection==0:
-            dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-        elif unidirection==1:
-            dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-
-        if dec.any()==1 and norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
-            px.append(a_(p0[i])+a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
-        elif dec.any()==0 or norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])>dist:
-            px.append(p0[i])
-    
-    px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
-    return px
-
-def psos_v_1(s2,s3,v1,vx,dist=100000,unidirection=0):
-    '''
-    project a surface on to another without loosing the original points
-    surface 's3' will be projected on surface 's2'
-    'v1' is vector for projection. this is a focal vector
-    'vx' is a vector to define plane through which each vector works for projecting
-    from where the rays are emitted for projection
-    '''
-    p0=a_(s3).reshape(-1,3)
-    f=faces_surface(len(s2),len(s2[0]))
-    v=a_(s2).reshape(-1,3)
-    tri=v[f]
-    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
-    
-    px=[]
-    for i in range(len(p0)):
-        v4=ppplane([v1],vx,p0[i])[0]
-        n1=a_([uv(v4-p0[i])]*len(p2))
-        v2,v3=p3-p2,p4-p2
-        iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
-        im=inv(iim)
-
         t=(im@(p2-a_(p0[i])[None,:])[:,:,None]).reshape(-1,3)
         t1,t2,t3=t[:,0],t[:,1],t[:,2]
         if unidirection==0:
@@ -7016,12 +6538,14 @@ def surface_normals(surf,direction=1):
 
     return n2
 
-def psos_n(s2,s3,direction=1,dist=100000):
+def project_surface_on_to_another_with_surface_normals( surface_on_which_to_project, surface_to_project, direction=1, dist=100000):
     '''
     project a surface on to another without loosing the original points
     surface 's3' will be projected on surface 's2'
     the projection is based on the normal to the surface s3 and the direction of normals can be changed from '1' to '-1'
     '''
+    s2=surface_on_which_to_project
+    s3=surface_to_project
     p0=a_(s3).reshape(-1,3)
     f=faces_surface(len(s2),len(s2[0]))
     v=a_(s2).reshape(-1,3)
@@ -7047,36 +6571,6 @@ def psos_n(s2,s3,direction=1,dist=100000):
     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
     return px
 
-def psos_n_b(s2,s3,dist=100000):
-    '''
-    project a surface on to another without loosing the original points
-    surface 's3' will be projected on surface 's2'
-    the projection is based on the normal to the surface s3 and the direction of normals can be changed from '1' to '-1'
-    '''
-    p0=a_(s3).reshape(-1,3)
-    f=faces_surface(len(s2),len(s2[0]))
-    v=a_(s2).reshape(-1,3)
-    tri=v[f]
-    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
-    v1=l_(surface_normals(s3,1))
-    px=[]
-    for i in range(len(p0)):
-        n1=a_([v1[i]]*len(p2))
-        v2,v3=p3-p2,p4-p2
-        iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
-        im=inv(iim)
-
-        t=(im@(p2-a_(p0[i])[None,:])[:,:,None]).reshape(-1,3)
-        t1,t2,t3=t[:,0],t[:,1],t[:,2]
-        dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-
-        if dec.any()==1 and norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
-            px.append(a_(p0[i])+a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
-        elif dec.any()==0 or norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])>dist:
-            px.append(p0[i])
-    
-    px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
-    return px
 
 def cog(sol):
     '''
@@ -7084,61 +6578,6 @@ def cog(sol):
     '''
     return l_(a_(sol).reshape(-1,3).mean(0))
 
-# def plos(s2,l1,v1,dist=100000):
-#     '''
-#     project a line 'l1' on to a surface
-#     'v1' is vector for projection
-#     'dist' is the maximum distance through which projection can happen
-#     '''
-#     p0=a_(l1)
-#     f=faces_surface(len(s2),len(s2[0]))
-#     v=a_(s2).reshape(-1,3)
-#     tri=v[f]
-#     p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
-#     n1=a_([v1]*len(p2))
-#     v2,v3=p3-p2,p4-p2
-    
-#     iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
-#     im=inv(iim)
-#     px=[]
-#     for i in range(len(p0)):
-#         t=(im@(p2-p0[i][None,:])[:,:,None]).reshape(-1,3)
-#         t1,t2,t3=t[:,0],t[:,1],t[:,2]
-#         dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-#         if dec.any()==1 and norm(a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
-#             px.append(p0[i]+a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
-
-#     px=l_(a_(px))
-#     return px
-
-# def plos_b(s2,l1,v1,dist=100000):
-#     '''
-#     project a line 'l1' on to a surface
-#     'v1' is vector for projection, any side of the surface is picked
-#     nearest point will be picked
-#     'dist' is the maximum distance through which projection can happen
-#     '''
-#     p0=a_(l1)
-#     f=faces_surface(len(s2),len(s2[0]))
-#     v=a_(s2).reshape(-1,3)
-#     tri=v[f]
-#     p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
-#     n1=a_([v1]*len(p2))
-#     v2,v3=p3-p2,p4-p2
-    
-#     iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
-#     im=inv(iim)
-#     px=[]
-#     for i in range(len(p0)):
-#         t=(im@(p2-p0[i][None,:])[:,:,None]).reshape(-1,3)
-#         t1,t2,t3=t[:,0],t[:,1],t[:,2]
-#         dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-#         if dec.any()==1 and norm(a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
-#             px.append(p0[i]+a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
-
-
-#     px=l_(a_(px))
-#     return px
 
 def interpolation_bspline_closed(p0,s=50,f=3.425):
     '''
@@ -7222,7 +6661,8 @@ def surfaceFrom4linesEnclosure(l1,l2,l3,l4,s=50):
     s4=[l1]+s4+[l2]
     s4=bspline_surface_open(s4,3,3,s,s)
     return s4
-def il_fillet(il,sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,f=1):
+    
+def intersection_line_fillet(il,sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,f=1):
     '''
     calculates a fillet at the intersection of 2 solids.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -7237,7 +6677,7 @@ def il_fillet(il,sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,f=1):
     
     return fillet1
 
-def il_fillet_surf(il,surf1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,f=1):
+def intersection_line_fillet_surface(il,surf1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,f=1):
     '''
     calculates a fillet at the intersection of surface with solid.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -7301,18 +6741,15 @@ def line_as_axis(l1):
     v1=l_(a_(l1[1])-a_(l1[0]))
     return v1
 
-def qr2d(theta,pl):
-    '''
-    same as q_rot2d only short form to reduce writing efforts
-    '''
-    return q_rot2d(theta,pl)
-
-def psos_v_2(s2,s3,v1,dist=100000,unidirection=0):
+def project_surface_on_to_another_with_list_of_vectors ( surface_on_which_to_project ,surface_to_project ,list_of_vectors_for_projection_direction ,dist=100000, unidirection=0):
     '''
     project a surface on to another without loosing the original points
     surface 's3' will be projected on surface 's2'
     'v1' are the vectors for projection. v1 are the list of vectors
     '''
+    s2=surface_on_which_to_project
+    s3=surface_to_project
+    v1=list_of_vectors_for_projection_direction
     p0=a_(s3).reshape(-1,3)
     f=faces_surface(len(s2),len(s2[0]))
     v=a_(s2).reshape(-1,3)
@@ -7410,19 +6847,7 @@ def offset_3d_sec(path,dist=1,o=0):
     l6=a_(l4)[l5]
     path1=l_(a_(l2)[l6])
     return path1
-    
 
-# def offset_3d_sec(path,dist=1):
-#     '''
-#     offsets any random closed 3d path by defined distance
-#     '''
-#     path1=equidistant_pathc(path,pitch=.1)
-#     path1=rationalise_path(path1)
-#     s1=sec2surface_1(path1,1)
-#     l2=o_3d_surf(path1,s1,dist)
-#     l3=remove_points_within_dist(path1,equidistant_pathc(l2,pitch=.1),dist-.02)
-#     l3=sort_points(path,l3)
-#     return l3
 
 def remove_points_within_dist_closed(path,line,dist=1):
     '''
@@ -7520,7 +6945,7 @@ def list_remove_points_within_dist_open(path,line,dist=1):
             l3.append(i)
     return l3
 
-def ppos(surf,pnt,vect,unidirection=1):#project point on surface
+def project_a_point_on_surface(surf,pnt,vect,unidirection=1):#project point on surface
     '''
     function to project a point on a surface
     'vect' is the vector in which direction the line would be projected.
@@ -7531,7 +6956,7 @@ def ppos(surf,pnt,vect,unidirection=1):#project point on surface
     '''
     return psos(surf,[[pnt]],vect,unidirection=unidirection)[0][0]
 
-def plos(surf,line,vect,unidirection=1):#project line on surface
+def project_a_line_on_surface(surf,line,vect,unidirection=1):#project line on surface
     '''
     function to project a line on a surface
     'vect' is the vector in which direction the line would be projected.
@@ -7578,7 +7003,7 @@ def barycenter(surf,edges_closed=1):
     cp=triangles.mean(1)
     return cp
 
-def h_lines_sec(sec,n=10):
+def horizontal_lines_on_closed_section(sec,n=10):
     '''
     divide a 2d section 'sec' in to horizontal lines
     'n' is the number of lines in the section
@@ -7601,7 +7026,7 @@ def h_lines_sec(sec,n=10):
     p1=l_(a_(seg(lexico(p[dec],[1,0],[1,1])))[::2])
     return p1
 
-def v_lines_sec(sec,n=10):
+def vertical_lines_on_closed_section(sec,n=10):
     '''
     divide a 2d section 'sec' in to verticle lines
     'n' is the number of lines in the section
@@ -7637,21 +7062,6 @@ def smoothening_by_subdivison(sec,iterations=4,closed=0):
             sec=[sec[0]]+l_(concatenate([[polp(p1,1/4),polp(p1,3/4)] for p1 in seg(sec)[:-1]]))+[sec[-1]]
     return sec
 
-# def smoothening_by_subdivison_of_solids(sol,iterations=4):
-#     '''
-#     smoothen a solid with sub-divison method
-#     '''
-#     sol=[smoothening_by_subdivison(p,iterations,1) for p in sol]
-#     sol=cpo([smoothening_by_subdivison(p,iterations,0) for p in cpo(sol)])
-#     return sol
-
-# def smoothening_by_subdivison_of_surface(sol,iterations=4):
-#     '''
-#     smoothen a surface with sub-divison method
-#     '''
-#     sol=[smoothening_by_subdivison(p,iterations,0) for p in sol]
-#     sol=cpo([smoothening_by_subdivison(p,iterations,0) for p in cpo(sol)])
-#     return sol
 
 def smoothening_by_subdivison_surf(sol,iterations=4,o=[0,0]):
     '''
@@ -7890,7 +7300,7 @@ def switch_orientation(sol1):
     d=d[::-1].transpose(1,0,2)[::-1].transpose(1,0,2)[::-1]
     return l_(a_([c,d]).transpose(1,0,2,3).reshape(-1,y*2,z))
 
-def i_line_fillet(intersection_line,solid_1,solid_2,distance_1=1,distance_2=1,segments=20):
+def intersection_line_fillet (intersection_line,solid_1, solid_2, distance_1=1, distance_2=1, segments=20):
     '''
     if the intersection line is defined between 2 solids. fillet can be drawn with the
     information
@@ -7901,7 +7311,7 @@ def i_line_fillet(intersection_line,solid_1,solid_2,distance_1=1,distance_2=1,se
     f1=convert_3lines2fillet(l2,l3,l1,s=segments)
     return f1
 
-def i_line_fillet_closed(intersection_line,solid_1,solid_2,distance_1=1,distance_2=1,segments=20):
+def intersection_line_fillet_closed (intersection_line,solid_1, solid_2, distance_1=1, distance_2=1, segments=20):
     '''
     if the intersection line is defined between 2 solids. fillet (Closed loop) can be drawn with the
     information
@@ -7972,32 +7382,35 @@ def surface_correction_after_offset_open(surf_original,surf_off,dist=1):
             sol2.append(d)
     return sol2
 
-def plos_v_2(s2,l1,v1,dist=100000,unidirection=0):
+def project_a_line_on_to_a_surface_with_list_of_vectors (surface,line, list_of_vectors_for_projection, dist=100000, unidirection=0):
     '''
     project a line on to a surface without loosing the original points
     line 'l1' will be projected on surface 's2'
     'v1' are the vectors for projection. v1 are the list of vectors
     '''
+    s2=surface
+    l1=line
+    v1=list_of_vectors_for_projection
     return psos_v_2(s2,[l1],v1,dist=dist,unidirection=unidirection)[0]
 
-def plos_v_1(s2,l1,v1,vx,dist=100000,unidirection=0):
+def project_a_line_on_to_a_surface_with_focal_line (surface ,line ,focal_line , dist=100000, unidirection=0):
     '''
     project a line on to a surface without loosing the original points
-    line 'l1' will be projected on surface 's2'
-    'v1' is vector for projection. this is a focal vector
-    'vx' is a vector to define plane through which each vector works for projecting
-    from where the rays are emitted for projection
+    'line' will be projected on 'surface'
+    focal_line is the line from where the rays are emitted for projection
     '''
-    return psos_v_1(s2,[l1],v1,vx,dist=dist,unidirection=unidirection)[0]
+    s2,l1,l2=surface ,line ,focal_line
+    return project_surface_on_to_another_surface_with_focal_line(s2,[l1],l2,dist=dist,unidirection=unidirection)[0]
 
 
-def plos_v(s2,l1,v1,dist=100000,unidirection=0):
+def project_a_line_on_to_a_surface_with_focal_point(surface ,line ,focal_point ,dist=100000,unidirection=0):
     '''
     project a line on to a surface without loosing the original points
     line 'l1' will be projected on surface 's2'
     'v1' is vector for projection. this is a focal vector 
     from where the rays are emitted for projection
     '''
+    s2,l1,v1=surface, line, focal_point
     return psos_v(s2,[l1],v1,dist=dist,unidirection=unidirection)[0]
 
 def lines2vectors(lines):
@@ -8032,6 +7445,30 @@ def corner_radius3d(pnts,s=5): # Corner radius 3d where 'pnts' are the list of p
         c.append(fillet_3p_3d(p0,p1,p2,rds[i],s)[1:])
     c=array(c).reshape(-1,3).tolist()
     return remove_extra_points(array(c).round(5))
+
+def corner_radius3d_with_turtle(pnts,s=5): # Corner radius 3d where 'pnts' are the list of points with 4th coordinate in each point is radius 'rds' and 's' is number of segments for each arc
+    pnts=pts3(pnts)
+    rds=[pnts[i][3] if len(pnts[i])==4 else 0 for i in range(len(pnts))]
+    pnts=[pnts[i][:3] for i in range(len(pnts))]
+    c=[]
+    for i in range(len(pnts)):
+        if i==0:
+            p0=pnts[len(pnts)-1]
+            p1=pnts[i]
+            p2=pnts[i+1]
+        elif i<len(pnts)-1:
+            p0=pnts[i-1]
+            p1=pnts[i]
+            p2=pnts[i+1]
+        else:
+            p0=pnts[i-1]
+            p1=pnts[i]
+            p2=pnts[0]
+        c.append(fillet_3p_3d(p0,p1,p2,rds[i],s)[1:])
+    c=array(c).reshape(-1,3).tolist()
+    return remove_extra_points(array(c).round(5))
+
+
 
 def corner_and_radius3d(pnts,rds,s=5): # Corner radius 3d where 'pnts' are the list of points, 'rds' are the list of radiuses and 's' is number of segments for each arc
 
@@ -8144,3 +7581,39 @@ def pts3(pl):
     c=a_(b)[:,:3].cumsum(0)
     d=a_([a_(b)[:,3]])
     return l_(concatenate([c,d.T],axis=1))
+
+def project_surface_on_to_another_surface_with_focal_line(surface_on_which_to_project, surface_to_project, focal_line, dist=100000, unidirection=0):
+    '''
+    project a surface on to another without loosing the original points
+    focal_line is the line from which the rays are emitting and creates vectors for projection on to the surface
+    '''
+    s2,s3,v1=surface_on_which_to_project, surface_to_project, focal_line
+    p0=a_(s3).reshape(-1,3)
+    f=faces_surface(len(s2),len(s2[0]))
+    v=a_(s2).reshape(-1,3)
+    tri=v[f]
+    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
+    a=[vcost_without_bounds(l1,p,1e5) for p in p0]
+    b=cpo([a,p0])
+    v1=[line_as_axis(p) for p in b]
+    px=[]
+    for i in range(len(p0)):
+        n1=a_([uv(v1[i])]*len(p2))
+        v2,v3=p3-p2,p4-p2
+        iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
+        im=inv(iim)
+        # im.shape,p0[198].shape
+        t=(im@(p2-a_(p0[i])[None,:])[:,:,None]).reshape(-1,3)
+        t1,t2,t3=t[:,0],t[:,1],t[:,2]
+        if unidirection==0:
+            dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+        elif unidirection==1:
+            dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+
+        if dec.any()==1 and norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
+            px.append(a_(p0[i])+a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
+        elif dec.any()==0 or norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])>dist:
+            px.append(p0[i])
+    
+    px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
+    return px
