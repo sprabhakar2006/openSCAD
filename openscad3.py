@@ -841,7 +841,7 @@ def cir_2p(p1,p2,r,cw=1,s=20):
 
 
 
-def cp_arc_2p(p1,p2,r,cw=-1):
+def center_arc_2p(p1,p2,r,cw=-1):
     '''
     center point of an arc with 2 points 'p1,p2' with radius 'r' and with orientation clockwise (1) or counterclock wise(-1)
     
@@ -1855,7 +1855,7 @@ def circle_with_3_defined_points(p1,p2,p3,s=30):
 
     return circle(r,cp,s)
 
-def center_point_of_circle_with_3_defined_points(p1,p2,p3):
+def center_of_circle_with_3_defined_points(p1,p2,p3):
     '''
     function to calculate center point of a circle created from 3 known points 'p1','p2','p3'
     refer to the file "example of various functions " for application examples
@@ -2760,7 +2760,7 @@ def slice_sol_1(sol_1,n=10):
     return cpo([equidistant_path(p,n) for p in cpo(sol_1)])
 
     
-def center_point_arc(arc1):
+def center_arc(arc1):
     '''
     function returns the center point of a given circle or arc
     
@@ -3265,7 +3265,7 @@ def circle_from_3points_3d(points,s=20):
     cir1=translate(array(points).mean(0),axis_rot(a1,cir1,-t1))
     return cir1
 
-def center_point_of_circle_3d(cir):
+def center_of_circle_3d(cir):
     '''
     center point of circle with atleast 3 known list of 'points' in 3d space
     '''
@@ -3604,7 +3604,7 @@ def arc_long_2p_3d(n1,p0,p1,r,cw=1,s=20):
     arc1=translate(array([p0,p1]).mean(0),axis_rot(a1,arc1,-t1))
     return arc1
     
-def center_point_arc_2p_3d(n1,p0,p1,r,cw=1):
+def center_arc_2p_3d(n1,p0,p1,r,cw=1):
     '''
     calculates the center point of the circle drawn through 2 points 
     n1: normal vector to define plane on which the arc/ circle drawn
@@ -7617,3 +7617,19 @@ def project_surface_on_to_another_surface_with_focal_line(surface_on_which_to_pr
     
     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
     return px
+
+def center_arc_2p(p1,p2,r,cw=-1):
+    '''
+    center point of an arc with 2 points 'p1,p2' with radius 'r' and with orientation clockwise (1) or counterclock wise(-1)
+    
+    refer file "example of various functions" for application example
+    
+    '''
+    p1,p2=array([p1,p2])
+    p3=p1+(p2-p1)/2
+    d=norm(p3-p1)
+    l=sqrt(abs(r**2-d**2))
+    v=p1-p3
+    u=v/norm(v)
+    cp=p3+(u*l)@rm(-90 if cw==-1 else 90)
+    return cp.tolist()
