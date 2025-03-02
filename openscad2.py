@@ -6036,8 +6036,8 @@ def corner_radius(sec,s=20):
     
     refer file "example of various functions" for application
     '''
-    r_l=array(sec)[:,2].tolist()
-    sec=array(sec)[:,:2].tolist()
+    r_l=[0 if len(p)==2 else p[2] for p in sec]
+    sec=[ [p[0],p[1]] for p in sec]
 
     p0=[sec[-1]]+sec[:-1]
     p1=sec
