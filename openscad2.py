@@ -9946,3 +9946,17 @@ def pts3(pl):
     c=a_(b)[:,:3].cumsum(0)
     d=a_([a_(b)[:,3]])
     return l_(concatenate([c,d.T],axis=1))
+
+def line_as_vector(line):
+    '''
+    convert a line to vector
+    '''
+    return line_as_axis(line)
+
+def line_as_unit_vector(line):
+    '''
+    convert a line to unit vector
+    '''
+    v1=line_as_vector(line)
+
+    return l_(v1/norm(v1))
