@@ -8003,90 +8003,23 @@ def plane_min_d_axis_rot(l1,axis=[1,0,1],l_a=[0,120,240],rotation_axis=[]):
     b=[array([l_len(p1) for p1 in cpo([l1,p])]).sum() for p in a]
     return l_a[array(b).argmin()]
 
-def best_fit_plane_1(l1):
+def best_fit_plane(pnts):
     '''
-    input function to best_fit_plane function
+    returns a best fit plane approximation and intercept
     '''
-    a=[120]
-    for i in range(11):
-        a.append(a[-1]/2)
-    b=0
-    for i in a:
-        b=plane_min_d_zrot(l1,l_a=[b-i,b,b+i])
-    
-    axis=q_rot([f'z{b}'],[1,0,0])
-    c=0
-    for i in a:
-        c=plane_min_d_axis_rot(l1,axis,l_a=[c-i,c,c+i])
-    
-    f_a=axis_rot(cross([0,0,-1],axis),q_rot([f'z{b}'],[1,0,0]),c)
-    return f_a
-
-def best_fit_plane_2(l1):
-    '''
-    input function to best_fit_plane function
-    '''
-    a=[120]
-    for i in range(11):
-        a.append(a[-1]/2)
-    b=0
-    for i in a:
-        b=plane_min_d_yrot(l1,l_a=[b-i,b,b+i])
-    
-    axis=q_rot([f'y{b}'],[1,0,0])
-    c=0
-    for i in a:
-        c=plane_min_d_axis_rot(l1,axis,l_a=[c-i,c,c+i])
-    
-    f_a=axis_rot(cross([0,-1,0],axis),axis,c)
-    return f_a
-
-def best_fit_plane_3(l1):
-    '''
-    input function to best_fit_plane function
-    '''
-    a=[120]
-    for i in range(11):
-        a.append(a[-1]/2)
-    b=0
-    for i in a:
-        b=plane_min_d_xrot(l1,l_a=[b-i,b,b+i])
-    
-    axis=q_rot([f'x{b}'],[0,-1,0])
-    c=0
-    for i in a:
-        c=plane_min_d_axis_rot(l1,axis,l_a=[c-i,c,c+i])
-    
-    f_a=axis_rot(cross([0,1,0],axis),axis,c)
-    return f_a
-
-def best_fit_plane(l1):
-    '''
-    calculates the best fit plane for a 3d section 'l1'
-    '''
-    a=best_fit_plane_1(l1)
-    b=best_fit_plane_2(l1)
-    c=best_fit_plane_3(l1)
-    d=ppplane(l1,a,array(l1).mean(0).tolist())
-    e=ppplane(l1,b,array(l1).mean(0).tolist())
-    f=ppplane(l1,c,array(l1).mean(0).tolist())
-    
-    l2=array([ l_len(p) for p in cpo([l1,d])]).sum()
-    l3=array([ l_len(p) for p in cpo([l1,e])]).sum()
-    l4=array([ l_len(p) for p in cpo([l1,f])]).sum()
-    x=array([a,b,c])[array([l2,l3,l4]).argmin()].tolist()
-    a1=cross(a,b)
-    a1=a1/norm(a1)
-
-    y=[120]
-    for i in range(11):
-        y.append(y[-1]/2)
-    g=0
-    for i in y:
-        g=plane_min_d_axis_rot(l1,x,[g-i,g,g+i],a1)
-    
-    a2=axis_rot(a1,x,g)
-    return a2
+    x2=(a_(pnts)[:,0]**2).sum()
+    xy=(a_(pnts)[:,0]*a_(pnts)[:,1]).sum()
+    x=(a_(pnts)[:,0]).sum()
+    y2=(a_(pnts)[:,1]**2).sum()
+    y=(a_(pnts)[:,1]).sum()
+    hx=(a_(pnts)[:,2]*a_(pnts)[:,0]).sum()
+    hy=(a_(pnts)[:,2]*a_(pnts)[:,1]).sum()
+    h=(a_(pnts)[:,2]).sum()
+    m1=l_([[x2,xy,x],[xy,y2,y],[x,y,len(pnts)]])
+    m11=l_(a_(m1).transpose(1,0))
+    m2=l_([hx,hy,h])
+    a0,a1,a2=l_(inv(m1)@m2)
+    return [[a0,a1,-1],l_(a_(pnts).mean(0))]
 
 def path_extrude_over_multiple_sec_open(sec_1,path,twist=0):
     '''
