@@ -4976,21 +4976,6 @@ def sort_surface(l3):
         b.append(sort_points(b[-1],l3[i]))
     return b
 
-def convert_4lines_enclosure2surface(a,c,b,d,s=30):
-    '''
-    function to convert and enclosed area of lines to surface
-    note that a and c are opposite arcs or polylines and b and d are opposite arcs
-    
-    '''
-    a=equidistant_path(a,s)
-    b=equidistant_path(b,s)
-    c=equidistant_path(c,s)
-    d=equidistant_path(d,s)
-    
-    s_1=slice_sol([a,c],s)
-    m_1=[mid_point(p) for p in s_1]
-    s_2=convert_3lines2surface(b,m_1,d)
-    return s_2
 
 def solid_from_fillet(fillet_1,d):
     '''
@@ -5639,23 +5624,7 @@ def swp_sec(sec):
     
     return f'polyhedron({sec},{[n1]},convexity=10);'
 
-def surface_4_lines_enclosed(l_1,l_2,l_3,l_4,n1,n2,s=20,ext=20):
-    '''
-    create a surface with 4 line
-    l_1 and l_2 are 2 opposite lines
-    l_3 and l_4 are other 2 opposite lines
-    n1 is length of the surface for lines l_1 and l_2 in the direction normal to the arc l1 / l2required
-    e.g. it can be [0,30,0] meaning line l_1 is extended 30 mm in y-direction to create a surface
-    n2 is the normal for projection of lines cpo([l_3,l_4]) on to surfaces earlier created
-    s is the number of slices in the cpo([l_3,l_4])
-    ext is the extension required for the lines l1/ l2, in most of the cases it is not required to be changed
-    '''
-    s_1=surface_line_vector(extend_arc3d(l_1,ext,both=1),array(n1)*100,1)
-    s_2=surface_line_vector(extend_arc3d(l_2,ext,both=1),array(n1)*100,1)
-    s_3=slice_sol([l_3,l_4],s)
-    s_4=slice_surfaces(s_1,s_2,len(l_3)-1)
-    s_5=[project_line_on_surface(cpo(s_3)[i],s_4[i],n2)  for i in range(len(cpo(s_3)))]
-    return [l_3]+cpo(s_5)[1:-1]+[l_4]
+
 
 def arc_with_start_point_and_center_3d(n1,start_point=[],center_point=[],theta=90,segments=30):
     '''
@@ -5747,92 +5716,6 @@ def intersection_points_projection_on_intersecting_solid(surf_1,i_p_l,d=1.):
     return path2path1(i_p_l,r_ipl) if len(r_ipl)!=len(i_p_l) else r_ipl
 
 
-
-
-def best_fit_plane_1(l1):
-    '''
-    input function to best_fit_plane function
-    '''
-    a=[120]
-    for i in range(11):
-        a.append(a[-1]/2)
-    b=0
-    for i in a:
-        b=plane_min_d_zrot(l1,l_a=[b-i,b,b+i])
-    
-    axis=q_rot([f'z{b}'],[1,0,0])
-    c=0
-    for i in a:
-        c=plane_min_d_axis_rot(l1,axis,l_a=[c-i,c,c+i])
-    
-    f_a=axis_rot(cross([0,0,-1],axis),q_rot([f'z{b}'],[1,0,0]),c)
-    return f_a
-
-def best_fit_plane_2(l1):
-    '''
-    input function to best_fit_plane function
-    '''
-    a=[120]
-    for i in range(11):
-        a.append(a[-1]/2)
-    b=0
-    for i in a:
-        b=plane_min_d_yrot(l1,l_a=[b-i,b,b+i])
-    
-    axis=q_rot([f'y{b}'],[1,0,0])
-    c=0
-    for i in a:
-        c=plane_min_d_axis_rot(l1,axis,l_a=[c-i,c,c+i])
-    
-    f_a=axis_rot(cross([0,-1,0],axis),axis,c)
-    return f_a
-
-def best_fit_plane_3(l1):
-    '''
-    input function to best_fit_plane function
-    '''
-    a=[120]
-    for i in range(11):
-        a.append(a[-1]/2)
-    b=0
-    for i in a:
-        b=plane_min_d_xrot(l1,l_a=[b-i,b,b+i])
-    
-    axis=q_rot([f'x{b}'],[0,-1,0])
-    c=0
-    for i in a:
-        c=plane_min_d_axis_rot(l1,axis,l_a=[c-i,c,c+i])
-    
-    f_a=axis_rot(cross([0,1,0],axis),axis,c)
-    return f_a
-
-def best_fit_plane(l1):
-    '''
-    calculates the best fit plane for a 3d section 'l1'
-    '''
-    a=best_fit_plane_1(l1)
-    b=best_fit_plane_2(l1)
-    c=best_fit_plane_3(l1)
-    d=ppplane(l1,a,array(l1).mean(0).tolist())
-    e=ppplane(l1,b,array(l1).mean(0).tolist())
-    f=ppplane(l1,c,array(l1).mean(0).tolist())
-    
-    l2=array([ l_len(p) for p in cpo([l1,d])]).sum()
-    l3=array([ l_len(p) for p in cpo([l1,e])]).sum()
-    l4=array([ l_len(p) for p in cpo([l1,f])]).sum()
-    x=array([a,b,c])[array([l2,l3,l4]).argmin()].tolist()
-    a1=cross(a,b)
-    a1=a1/norm(a1)
-
-    y=[120]
-    for i in range(11):
-        y.append(y[-1]/2)
-    g=0
-    for i in y:
-        g=plane_min_d_axis_rot(l1,x,[g-i,g,g+i],a1)
-    
-    a2=axis_rot(a1,x,g)
-    return a2
 
 def path_extrude_over_multiple_sec_open(sec_1,path,twist=0):
     '''
@@ -6641,26 +6524,6 @@ def bezier_surface(pl,s1=100,s2=100):
     p2=cpo([bezier(p,s2) for p in cpo(p1)])
     return p2
 
-
-
-def surfaceFrom4linesEnclosure(l1,l2,l3,l4,s=50):
-    '''
-    surface with 4 lines in an enclosed section
-    l1 and l2 are opposite sides
-    l3 and l4 are opposite sides
-    l1[0] and l3[0] are same points or nearly same
-    l3[-1] and l2[0] are same points or nearly same
-    l1[-1] and l4[0] are same points or nearly same
-    l4[-1] and l2[-1] are same points or nearly same
-    '''
-    l1,l2,l3,l4=[ equidistant_path(p,s-1) for p in [l1,l2,l3,l4]]
-    s1=slice_sol([l1,l2],s-1)
-    s2=slice_sol([l3,l4],s-1)
-    s3=[ [ s1[i][j] for j in range(1,s-1)] for i in range(1,s-1)]
-    s4=[[l3[i+1]]+s3[i]+[l4[i+1]] for i in range(len(s3))]
-    s4=[l1]+s4+[l2]
-    s4=bspline_surface_open(s4,3,3,s,s)
-    return s4
     
 def intersection_line_fillet(il,sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,f=1):
     '''
@@ -7633,3 +7496,24 @@ def center_arc_2p(p1,p2,r,cw=-1):
     u=v/norm(v)
     cp=p3+(u*l)@rm(-90 if cw==-1 else 90)
     return cp.tolist()
+
+def convert_4lines_enclosure2surface(l1,l2,l3,l4,n=5):
+    '''
+    create surface with 4 lines enclosed area
+    l1 and l2 are opposite lines and l3 and l4 are opposite lines
+    starting point of l1 and l3 should match
+    end point of l3 and starting point of l2 should match
+    end point of l1 and starting point of l4 should match
+    end point of l4 and end point of l2 should match
+    counterclockwise points should match as following
+    l1[0]l3[0]->l1[-1]l4[0]->l4[-1]l2[-1]->l2[0]l3[-1]
+    (l1[-1] means end point of l1)
+    'n' is the number of segment lines between l1 and l2
+    '''
+    l5=slice_sol([l1,l2],n)
+    l3=path2path1(cpo(l5)[0],l3)
+    l4=path2path1(cpo(l5)[-1],l4)
+    l5=cpo([l3]+cpo(l5)+[l4])
+    s1=cpo(slice_sol([l3,l4],len(l5[0])))
+    s1=[path2path1(s1[i],l5[i]) for i in range(len(l5))]
+    return [equidistant_path(p,len(l1)-1) for p in s1]
