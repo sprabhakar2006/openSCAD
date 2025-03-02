@@ -8007,6 +8007,7 @@ def best_fit_plane(pnts):
     '''
     returns a best fit plane approximation and intercept
     '''
+    pnts=axis_rot_o([1,1,0],pnts,.00001)
     x2=(a_(pnts)[:,0]**2).sum()
     xy=(a_(pnts)[:,0]*a_(pnts)[:,1]).sum()
     x=(a_(pnts)[:,0]).sum()
