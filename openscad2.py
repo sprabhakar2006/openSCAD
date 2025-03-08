@@ -7233,7 +7233,8 @@ def path_offset_3d(sec,d):
     avg1=array(sec0).mean(0)
     sec1=translate(-avg1,sec0)
 
-    nv1=-array(nv(sec1))
+    # nv1=-array(nv(sec1))
+    nv1=-a_(best_fit_plane(sec1)[0])
     nz=[0,0,1]
     nr=cross(nv1,nz) if abs(nv1).tolist()!=[0,0,1] else nv1
     theta=r2d(arccos(nv1@array(nz)))
@@ -7258,7 +7259,7 @@ def surface_line_vector(line=[[0,0,0],[10,0,0]],vector=[0,0,1],both_sides=0):
     '''
     l_1=translate(array(vector),line)
     l_2=translate(-array(vector),line) if both_sides==1 else line
-    return [l_1,l_2]
+    return [l_2,l_1]
 
 def slice_surfaces(surf_1,surf_1_1,n=10):
     '''
@@ -8642,11 +8643,19 @@ def psos(s2,s3,v1,dist=100000,unidirection=1):
     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
     return px
 
-def reorient_sec(sec):
+def reorient_sec_1(sec):
     '''
     re-orient section to create a better surface through 'prism' function
     '''
     sec1=sec2surface_1(sec)
+    sec2=[p[0] for p in sec1]+flip([p[-1] for p in sec1])
+    return sec2
+
+def reorient_sec_2(sec):
+    '''
+    re-orient section to create a better surface through 'prism' function
+    '''
+    sec1=sec2surface_2(sec)
     sec2=[p[0] for p in sec1]+flip([p[-1] for p in sec1])
     return sec2
 
@@ -9835,25 +9844,25 @@ def corner_radius3d(pnts,s=5): # Corner radius 3d where 'pnts' are the list of p
     c=array(c).reshape(-1,3).tolist()
     return remove_extra_points(array(c).round(5))
 
-def corner_and_radius3d(pnts,rds,s=5): # Corner radius 3d where 'pnts' are the list of points, 'rds' are the list of radiuses and 's' is number of segments for each arc
+# def corner_and_radius3d(pnts,rds,s=5): # Corner radius 3d where 'pnts' are the list of points, 'rds' are the list of radiuses and 's' is number of segments for each arc
 
-    c=[]
-    for i in range(len(pnts)):
-        if i==0:
-            p0=pnts[len(pnts)-1]
-            p1=pnts[i]
-            p2=pnts[i+1]
-        elif i<len(pnts)-1:
-            p0=pnts[i-1]
-            p1=pnts[i]
-            p2=pnts[i+1]
-        else:
-            p0=pnts[i-1]
-            p1=pnts[i]
-            p2=pnts[0]
-        c.append(fillet_3p_3d(p0,p1,p2,rds[i],s)[1:])
-    c=array(c).reshape(-1,3).tolist()
-    return remove_extra_points(array(c).round(5))
+#     c=[]
+#     for i in range(len(pnts)):
+#         if i==0:
+#             p0=pnts[len(pnts)-1]
+#             p1=pnts[i]
+#             p2=pnts[i+1]
+#         elif i<len(pnts)-1:
+#             p0=pnts[i-1]
+#             p1=pnts[i]
+#             p2=pnts[i+1]
+#         else:
+#             p0=pnts[i-1]
+#             p1=pnts[i]
+#             p2=pnts[0]
+#         c.append(fillet_3p_3d(p0,p1,p2,rds[i],s)[1:])
+#     c=array(c).reshape(-1,3).tolist()
+#     return remove_extra_points(array(c).round(5))
 
 def twoCircleCrossTangent(c1,c2,cw=-1): # two circle cross tangent
     '''
@@ -9960,3 +9969,32 @@ def line_as_unit_vector(line):
     v1=line_as_vector(line)
 
     return l_(v1/norm(v1))
+
+def h_line_on_surface(surf,y=0):
+    '''
+    draws horizontal lines on the surface at defined 'y' intercept
+    '''
+    c=surf
+    d=a_([seg(p) for p in c]).reshape(-1,2,3)
+    e=a_([d[:,0,1],d[:,1,1]]).transpose(1,0)
+    l1=arange(len(d))[a_([e.min(1)<=y,e.max(1)>y]).transpose(1,0).all(1)]
+    t1=(y-e[l1][:,0])/(e[l1][:,1]-e[l1][:,0])
+    p1=l_(einsum('ij,i->ij',d[l1][:,0],(1-t1))+einsum('ij,i->ij',d[l1][:,1],t1))
+    if len(p1)>1:
+        p2=lexico(p1,[0,1,2],[1,1,1])
+        return p2
+    else:
+        return []
+
+def convert_surface_to_fill_all_holes(surf,number_of_lines=100,
+                                      number_of_points_in_each_line=50):
+    '''
+    convert a solid made through function prism to surface with parallel lines
+    '''
+    min_y=a_(surf).reshape(-1,3)[:,1].min()
+    max_y=a_(surf).reshape(-1,3)[:,1].max()
+    a=[ equidistant_path(h_line_on_surface(surf,i),number_of_points_in_each_line-1) 
+       for i in linspace(min_y+.001,max_y-.001,number_of_lines)
+       if h_line_on_surface_1(surf,i)!=[]]
+    
+    return a

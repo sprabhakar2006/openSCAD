@@ -3665,3 +3665,13 @@ c=[for(p=l1)p.z]
 function pts3(pl)=
 [for(i=[0:len(pl)-1]) sum_v(loop(pl,0,i))];
 
+
+    // module for rendering polyhedron with a closed polygon
+module swp_sec(sec){
+let(
+v1=sec,
+f1=[for(i=[0:len(sec)-1]) i]
+)
+polyhedron(v1,[f1],convexity=10);
+
+}

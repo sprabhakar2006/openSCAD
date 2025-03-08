@@ -183,3 +183,13 @@ u=uv(sec1[i_plus]-sec1[i])
 // echo(uv([2,3,4])); // => ECHO: [0.371391, 0.557086, 0.742781]
 
 function uv(v)=v/norm(v);
+
+    // module for rendering polyhedron with a closed polygon
+module swp_sec(sec){
+let(
+v1=sec,
+f1=[for(i=[0:len(sec)-1]) i]
+)
+polyhedron(v1,[f1],convexity=10);
+
+}

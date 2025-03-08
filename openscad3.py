@@ -5392,42 +5392,42 @@ def coil(r1,r2,n1=1):
     c1=[[r_l[i]*cos(d2r(theta_1[i])),r_l[i]*sin(d2r(theta_1[i]))] for i in range(len(r_l))]
     return c1
 
-def corner_n_radius_list(p0,r_l,n=10):
-    '''
-    corner list 'p0' and radius list 'r_l' will create a smothened section
-    'n' is the number of segments in each filleted corner
+# def corner_n_radius_list(p0,r_l,n=10):
+#     '''
+#     corner list 'p0' and radius list 'r_l' will create a smothened section
+#     'n' is the number of segments in each filleted corner
     
-    '''
-    # r_l=[.01 if i==0 else i for i in r_l]
-    p1=seg(p0)
-    p2=[p1[-1]]+p1[:-1]
-    p3=p1
-    s1=[fillet_intersection_lines(p2[i],p3[i],r_l[i],s=n) if r_l[i]!=0 else [p0[i]] for i in range(len(p1))]
-    s2=concatenate(s1).tolist()
-    return remove_extra_points(array(s2).round(5))
+#     '''
+#     # r_l=[.01 if i==0 else i for i in r_l]
+#     p1=seg(p0)
+#     p2=[p1[-1]]+p1[:-1]
+#     p3=p1
+#     s1=[fillet_intersection_lines(p2[i],p3[i],r_l[i],s=n) if r_l[i]!=0 else [p0[i]] for i in range(len(p1))]
+#     s2=concatenate(s1).tolist()
+#     return remove_extra_points(array(s2).round(5))
 
-def corner_n_radius_list_3d(p0,r_l,n=10):
-    '''
-    corner list 'p0' and radius list 'r_l' will create a smothened 3d path or closed section
-    'n' is the number of segments in each filleted corner
+# def corner_n_radius_list_3d(p0,r_l,n=10):
+#     '''
+#     corner list 'p0' and radius list 'r_l' will create a smothened 3d path or closed section
+#     'n' is the number of segments in each filleted corner
     
-    '''
+#     '''
 
-    p1=[p0[-1]]+p0[:-1]
-    s1=[]
-    for i in range(len(p0)):
-        if i<len(p0)-1 and r_l[i]>0:
-            a=fillet_3p_3d(p1[i],p0[i],p0[i+1],r_l[i],n)[1:]
-        elif i<len(p0)-1 and r_l[i]==0:
-            a=[p0[i]]
-        elif i==len(p0)-1 and r_l[i]==0:
-            a=[p0[i]]
-        elif i==len(p0)-1 and r_l[i]>0:
-            a=fillet_3p_3d(p1[i],p0[i],p0[0],r_l[i],n)[1:]
-        s1.append(a)
+#     p1=[p0[-1]]+p0[:-1]
+#     s1=[]
+#     for i in range(len(p0)):
+#         if i<len(p0)-1 and r_l[i]>0:
+#             a=fillet_3p_3d(p1[i],p0[i],p0[i+1],r_l[i],n)[1:]
+#         elif i<len(p0)-1 and r_l[i]==0:
+#             a=[p0[i]]
+#         elif i==len(p0)-1 and r_l[i]==0:
+#             a=[p0[i]]
+#         elif i==len(p0)-1 and r_l[i]>0:
+#             a=fillet_3p_3d(p1[i],p0[i],p0[0],r_l[i],n)[1:]
+#         s1.append(a)
     
-    s1=remove_extra_points(concatenate(s1).round(5))
-    return s1
+#     s1=remove_extra_points(concatenate(s1).round(5))
+#     return s1
 
 def path_extrude_closed(sec_1,path,twist=0):
     '''
@@ -5916,14 +5916,18 @@ def fillet_from_3_points(p1,p2,p3,s=10):
     arc1=bezier(l2,s)
     return arc1
 
+# def convert_surface_to_section(surf):
+#     '''
+#     reverse of sec2surface_1 function
+#     '''
+#     a,b,c=array(surf).transpose(1,0,2).shape
+#     d=l_(array(surf).transpose(1,0,2))
+#     e=[d[i]+flip(d[-i-1]) for i in range(int(a/2))]
+#     return e
+
 def convert_surface_to_section(surf):
-    '''
-    reverse of sec2surface_1 function
-    '''
-    a,b,c=array(surf).transpose(1,0,2).shape
-    d=l_(array(surf).transpose(1,0,2))
-    e=[d[i]+flip(d[-i-1]) for i in range(int(a/2))]
-    return e
+    return surf[0]+flip(surf[-1])
+
 
 def join_arcs_closed(pl,rl,ol,ls,s):
     '''
@@ -7333,25 +7337,25 @@ def corner_radius3d_with_turtle(pnts,s=5): # Corner radius 3d where 'pnts' are t
 
 
 
-def corner_and_radius3d(pnts,rds,s=5): # Corner radius 3d where 'pnts' are the list of points, 'rds' are the list of radiuses and 's' is number of segments for each arc
+# def corner_and_radius3d(pnts,rds,s=5): # Corner radius 3d where 'pnts' are the list of points, 'rds' are the list of radiuses and 's' is number of segments for each arc
 
-    c=[]
-    for i in range(len(pnts)):
-        if i==0:
-            p0=pnts[len(pnts)-1]
-            p1=pnts[i]
-            p2=pnts[i+1]
-        elif i<len(pnts)-1:
-            p0=pnts[i-1]
-            p1=pnts[i]
-            p2=pnts[i+1]
-        else:
-            p0=pnts[i-1]
-            p1=pnts[i]
-            p2=pnts[0]
-        c.append(fillet_3p_3d(p0,p1,p2,rds[i],s)[1:])
-    c=array(c).reshape(-1,3).tolist()
-    return remove_extra_points(array(c).round(5))
+#     c=[]
+#     for i in range(len(pnts)):
+#         if i==0:
+#             p0=pnts[len(pnts)-1]
+#             p1=pnts[i]
+#             p2=pnts[i+1]
+#         elif i<len(pnts)-1:
+#             p0=pnts[i-1]
+#             p1=pnts[i]
+#             p2=pnts[i+1]
+#         else:
+#             p0=pnts[i-1]
+#             p1=pnts[i]
+#             p2=pnts[0]
+#         c.append(fillet_3p_3d(p0,p1,p2,rds[i],s)[1:])
+#     c=array(c).reshape(-1,3).tolist()
+#     return remove_extra_points(array(c).round(5))
 
 def twoCircleCrossTangent(c1,c2,cw=-1): # two circle cross tangent
     '''
@@ -7517,3 +7521,4 @@ def convert_4lines_enclosure2surface(l1,l2,l3,l4,n=5):
     s1=cpo(slice_sol([l3,l4],len(l5[0])))
     s1=[path2path1(s1[i],l5[i]) for i in range(len(l5))]
     return [equidistant_path(p,len(l1)-1) for p in s1]
+
