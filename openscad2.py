@@ -9998,3 +9998,19 @@ def convert_surface_to_fill_all_holes(surf,number_of_lines=100,
        if h_line_on_surface_1(surf,i)!=[]]
     
     return a
+
+def derivative2d(line):
+    b=seg(line)[:-1]
+    c=[line_as_unit_vector(p) for p in b]
+    d=[p[1]/p[0] for p in c]
+    x=l_(a_(line)[:,0])[:-1]
+    e=cpo([x,d])
+    return e
+
+def derivative3d(line):
+    b=seg(line)[:-1]
+    c=[line_as_unit_vector(p) for p in b]
+    d=l_([p[2]/norm(p[:2]) for p in c])
+    x=l_(a_(line)[:,:2][:-1])
+    e=[x[i]+[d[i]] for i in range(len(x))]
+    return e
