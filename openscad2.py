@@ -4399,20 +4399,12 @@ def points2line_min_d_point(line,points,f=1):
         return []
 
 
-def offset_sol(sol,d,o=0):
+def offset_sol(sol,d):
     '''
     function to calculate offset of a 3d object by distance 'd'
-    option 'o' can be set to '0' or '1' depending on the shape of the object.
-    in case the shape of the 3d object is twisted,option should be set to '1'
-    in few cases this function may not work 
-    
     '''
     
-    n=array([len(remove_extra_points(p)) for p in sol]).argmax()
-    if o==0:
-        sol=[sort_points(sol[n],offset_3d(p,d)) for p in sol]
-    else:
-        sol=[offset_3d(p,d) for p in sol]
+    sol=[offset_3d(p,d) for p in sol]
     return sol
     
 
@@ -7329,7 +7321,8 @@ def rot_sec2xy_plane(sec):
     function to rotate any section open or closed parallel to x-y plane
     
     '''
-    n1=nv(sec)
+    # n1=nv(sec)
+    n1=uv(best_fit_plane(sec)[0])
     if (array(n1).round(5).tolist()==[0,0,1]) | (array(n1).round(5).tolist()==[0,0,-1]) :
         return sec
     else:
@@ -7813,7 +7806,8 @@ def offset_3d(sec,d,type=1):
     avg_1=array(l_2).mean(0)
     avg_2=array(c2t3(l_3)).mean(0)
     l_5=translate(avg_1-avg_2,l_4)
-    n_1=array(nv(sec)).round(5)
+    # n_1=array(nv(sec)).round(5)
+    n_1=a_(uv(best_fit_plane(sec)[0]))
     n_2=array([0,0,-1])
     if (l_(n_1)==[0,0,1]) | (l_(n_1)==[0,0,-1]):
         return l_5
