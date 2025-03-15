@@ -6,6 +6,7 @@ from scipy.spatial import cKDTree, Delaunay
 # import pandas as pd
 import sympy
 import math
+from skimage import measure
 # from stl import mesh
 
 def arc(radius=0,start_angle=0,end_angle=0,cp=[0,0],s=20):
@@ -10008,3 +10009,36 @@ def derivative3d(line):
     x=l_(a_(line)[:,:2][:-1])
     e=[x[i]+[d[i]] for i in range(len(x))]
     return e
+
+def points_to_meshes(pnts,voxel_size=.1,iso_level_percentile=75):
+    '''
+    create triangle meshes from a list of points using marching cube method
+    '''
+    pnts=a_(pnts)
+    mins=min(pnts,axis=0)-3*voxel_size
+    maxs=max(pnts,axis=0)+3*voxel_size
+    x = arange(mins[0], maxs[0], voxel_size)
+    y = arange(mins[1], maxs[1], voxel_size)
+    z = arange(mins[2], maxs[2], voxel_size)
+    x, y, z = meshgrid(x, y, z, indexing='ij')
+    grid_points = vstack([x.ravel(), y.ravel(), z.ravel()]).T
+    distances=cKDTree(pnts).query(grid_points)[0]
+    scalar_field=distances.reshape(x.shape)
+    iso_level = percentile(distances, iso_level_percentile)
+    verts, faces, _, _ = measure.marching_cubes(scalar_field, level=iso_level, allow_degenerate=False)
+    verts = verts * voxel_size + mins
+    return f'polyhedron({l_(verts)},{l_(faces)},convexity=10);'
+
+# def iso_surfaces(pnts,level_size=1):
+#     '''
+#     create various iso levels to divide the points
+#     '''
+#     ss=level_size
+#     m1=a_(pnts).min(axis=0)-1
+#     m2=a_(pnts).max(axis=0)+1
+#     ns=int(round((m2[2]-m1[2])/ss,0))
+#     a=[[m1,[m1[0],m2[1],m1[2]]],[[m1[0],m1[1],m2[2]],[m1[0],m2[1],m2[2]]]]
+#     a=m_points1_o(a,ns)
+#     b=translate([m2[0]-m1[0],0,0],a)
+#     s1=cpo([a,b])
+#     return s1
