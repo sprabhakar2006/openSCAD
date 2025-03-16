@@ -3415,10 +3415,11 @@ def path_offset_new(sec,r):
         sec4=s
     return sec4
     
-def faces_with_first_and_last_end_closed(l:int,m:int):
+def faces_with_first_and_last_end_closed(sol):
     '''
     calculate the faces for the vertices with shape l x m with first and the last end closed
     '''
+    l,m=len(sol),len(sol[0])
     n1=arange(m,dtype=int)
     n2=array([[[[(j+1)+i*m,j+i*m,j+(i+1)*m],[(j+1)+i*m,j+(i+1)*m,(j+1)+(i+1)*m]] \
              if j<m-1 else \
@@ -3429,11 +3430,12 @@ def faces_with_first_and_last_end_closed(l:int,m:int):
     return n
 
 
-def faces_with_first_and_the_last_ends_open(l,m):
+def faces_with_first_and_the_last_ends_open(sol):
     '''
     returns the faces for the vertices with shape l x m with first and the last end open
     '''
-    return concatenate(faces(l,m)[1:-1]).tolist()
+    l,m=len(sol),len(sol[0])
+    return faces(l,m)[1:-1]
 
     
 

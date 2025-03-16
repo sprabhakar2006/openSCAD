@@ -1391,7 +1391,7 @@ def m_points1(sec,s,d=.25):# multiple points with in the straight lines in the c
     c=[]
     for i in range(len(sec)):
         i_plus=i+1 if i<len(sec)-1 else 0
-        if l_len([sec[i],sec[i_plus]])>=d:
+        if l_len([sec[i],sec[i_plus]])/s>=d:
             c.append(ls([sec[i],sec[i_plus]],s))
         else:
             c.append([sec[i],sec[i_plus]])
@@ -1407,7 +1407,7 @@ def m_points1_o(sec,s,d=.25):# multiple points with in the straight lines in the
     c=[]
     for i in range(len(sec)-1):
         i_plus=i+1 if i<len(sec)-1 else 0
-        if l_len([sec[i],sec[i_plus]])>=d:
+        if l_len([sec[i],sec[i_plus]])/s>=d:
             c.append(ls([sec[i],sec[i_plus]],s))
         else:
             c.append([sec[i],sec[i_plus]])
@@ -4636,17 +4636,29 @@ def equivalent_rot_axis(r1=[]):
     return [v2.tolist(),theta]
     
 
-def rationalise_path(p1):
+# def rationalise_path(p1):
+#     '''
+#     removes all the points which are in straight line
+#     '''
+#     p1=l_(p1)
+#     p2=a_(p1[:-1])
+#     p3=a_(p1[1:])
+#     v1=p3-p2
+#     u1=l_((v1/norm(v1,axis=1).reshape(-1,1)).round(4))
+#     p4=[p1[0]]+[ p1[i] for i in range(1,len(u1)-1) if u1[i]!=u1[i-1]]+[p1[-1]]
+#     return p4
+
+def rationalise_path(path):
     '''
     removes all the points which are in straight line
     '''
-    p1=l_(p1)
-    p2=a_(p1[:-1])
-    p3=a_(p1[1:])
-    v1=p3-p2
-    u1=l_((v1/norm(v1,axis=1).reshape(-1,1)).round(4))
-    p4=[p1[0]]+[ p1[i] for i in range(1,len(u1)-1) if u1[i]!=u1[i-1]]+[p1[-1]]
-    return p4
+    a=seg(path)[:-1]
+    b=[line_as_unit_vector(p) for p in a]
+    c=[path[0]]
+    for i in range(1,len(a)):
+        if norm(a_(b[i])-a_(b[i-1]))>.001:
+            c.append(path[i])
+    return c+[path[-1]]
 
 def cir_3p_3d(points,s=20):
     '''
@@ -10029,16 +10041,16 @@ def points_to_meshes(pnts,voxel_size=.1,iso_level_percentile=75):
     verts = verts * voxel_size + mins
     return f'polyhedron({l_(verts)},{l_(faces)},convexity=10);'
 
-# def iso_surfaces(pnts,level_size=1):
-#     '''
-#     create various iso levels to divide the points
-#     '''
-#     ss=level_size
-#     m1=a_(pnts).min(axis=0)-1
-#     m2=a_(pnts).max(axis=0)+1
-#     ns=int(round((m2[2]-m1[2])/ss,0))
-#     a=[[m1,[m1[0],m2[1],m1[2]]],[[m1[0],m1[1],m2[2]],[m1[0],m2[1],m2[2]]]]
-#     a=m_points1_o(a,ns)
-#     b=translate([m2[0]-m1[0],0,0],a)
-#     s1=cpo([a,b])
-#     return s1
+def iso_surfaces(pnts,level_size=1):
+    '''
+    create various iso levels to divide the points
+    '''
+    ss=level_size
+    m1=a_(pnts).min(axis=0)-1
+    m2=a_(pnts).max(axis=0)+1
+    ns=int(round((m2[2]-m1[2])/ss,0))
+    a=[[m1,[m1[0],m2[1],m1[2]]],[[m1[0],m1[1],m2[2]],[m1[0],m2[1],m2[2]]]]
+    a=m_points1_o(a,ns)
+    b=translate([m2[0]-m1[0],0,0],a)
+    s1=cpo([a,b])
+    return s1
