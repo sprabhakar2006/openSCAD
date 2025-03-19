@@ -1382,7 +1382,7 @@ def resize3d(prism,rsz):
     rev_prism=[[[avg[0]+r_x*(p[0]-avg[0]),avg[1]+r_y*(p[1]-avg[1]),avg[2]+r_z*(p[2]-avg[2])] for p in prism[i]] 
                for i in range(len(prism))]
     t=((array(bb(rev_prism))-array(bb(prism)))/2).tolist()
-    return translate(t,rev_prism)
+    return l_(translate(t,rev_prism))
 
 def resize3d_centered(prism,rsz):
     '''
@@ -1405,7 +1405,7 @@ def resize3d_centered(prism,rsz):
     
     rev_prism=[[[avg[0]+r_x*(p[0]-avg[0]),avg[1]+r_y*(p[1]-avg[1]),avg[2]+r_z*(p[2]-avg[2])] for p in prism[i]] 
                for i in range(len(prism))]
-    return rev_prism
+    return l_(rev_prism)
 
 
 def bb(prism):
@@ -2146,20 +2146,6 @@ def points_and_faces(sol1):
     n=[n1]+n2+[n3]
     pnt=array(bead2).reshape(-1,3).round(4).tolist()
     return [pnt,n]
-
-
-def path_offset(path,d):
-    a=offset_segv(path,d)[:-1]
-    b=[a[0][0]]+intersections(a)[1:]+[a[-1][-1]]
-    c=s_int1(seg(b))
-    c=b+c if c!=[] else b
-    d=cs1(path,abs(d))[:-1]
-    e=[ pies1(p,c) for p in d]
-    e=[p for p in e if p!=[]]
-    f=remove_extra_points(concatenate(e)) if e!=[] else []
-    g=exclude_points(c,f) if f!=[] else c
-    g=sort_points(path,g)
-    return g
 
 
 def fillet_at_instersection_of_2solids(p=[],p1=[],r=1,s=10,o=0,f=1.8):
@@ -3236,18 +3222,6 @@ def lexicographic_segments_sort_xy(sec1):
     sec2=remove_extra_points(concatenate(sec2))
     return sec2
     
-
-def rationalise_path(p1):
-    '''
-    removes all the points which are in straight line
-    '''
-    p1=l_(p1)
-    p2=a_(p1[:-1])
-    p3=a_(p1[1:])
-    v1=p3-p2
-    u1=l_((v1/norm(v1,axis=1).reshape(-1,1)).round(4))
-    p4=[p1[0]]+[ p1[i] for i in range(1,len(u1)-1) if u1[i]!=u1[i-1]]+[p1[-1]]
-    return p4
 
 def circle_from_3points_3d(points,s=20):
     '''
