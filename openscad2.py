@@ -1703,7 +1703,7 @@ def rsz3d(prism,rsz):
     rev_prism=[[[avg[0]+r_x*(p[0]-avg[0]),avg[1]+r_y*(p[1]-avg[1]),avg[2]+r_z*(p[2]-avg[2])] for p in prism[i]] 
                for i in range(len(prism))]
     t=((array(bb(rev_prism))-array(bb(prism)))/2).tolist()
-    return translate(t,rev_prism)
+    return l_(translate(t,rev_prism))
 
 def rsz3dc(prism,rsz):
     '''
@@ -1726,7 +1726,7 @@ def rsz3dc(prism,rsz):
     
     rev_prism=[[[avg[0]+r_x*(p[0]-avg[0]),avg[1]+r_y*(p[1]-avg[1]),avg[2]+r_z*(p[2]-avg[2])] for p in prism[i]] 
                for i in range(len(prism))]
-    return rev_prism
+    return l_(rev_prism)
 
 
 def bb(prism):
@@ -2647,33 +2647,53 @@ def rev_pnts(sec,pnts):
     return p0.tolist()
     
 
-def pies1(sec,pnts):
-    '''
-    function to find points 'pnts' which are inside an enclosed section 'sec'
-    refer to the file "example of various functions " for application examples
+# def pies1(sec,pnts):
+#     '''
+#     function to find points 'pnts' which are inside an enclosed section 'sec'
+#     refer to the file "example of various functions " for application examples
     
     
-    '''
-    pnts=rev_pnts(sec,pnts)
-    if pnts!=[]:
-        s8,s4=[sec,pnts]
-        p0=array(s4)
-        p2=s8
-        p3=s8[1:]+[s8[0]]
-        p2,p3=array([p2,p3])
-        # v1=array([[[1,0]]*len(p2)]*len(p0))
-        v1=array([ones(len(p2)),zeros(len(p2))]).transpose(1,0)
-        v2=(p3-p2)+.000001
-        p=p2-p0[:,None]
-        im=pinv(array([v1,-v2]).transpose(1,0,2).transpose(0,2,1))
-        im=array([im]*len(p0))
-        t=einsum('ijkl,ijl->ijk',im,p)
+#     '''
+#     pnts=rev_pnts(sec,pnts)
+#     if pnts!=[]:
+#         s8,s4=[sec,pnts]
+#         p0=array(s4)
+#         p2=s8
+#         p3=s8[1:]+[s8[0]]
+#         p2,p3=array([p2,p3])
+#         # v1=array([[[1,0]]*len(p2)]*len(p0))
+#         v1=array([ones(len(p2)),zeros(len(p2))]).transpose(1,0)
+#         v2=(p3-p2)+.000001
+#         p=p2-p0[:,None]
+#         im=pinv(array([v1,-v2]).transpose(1,0,2).transpose(0,2,1))
+#         im=array([im]*len(p0))
+#         t=einsum('ijkl,ijl->ijk',im,p)
 
-        s10=[p0[i] for i in range(len(p0)) if \
-                t[i][(t[i][:,0]>=0)&(t[i][:,1]>=0)&(t[i][:,1]<=1)].shape[0]%2 \
-             ==1]
-        return array(s10).tolist()
+#         s10=[p0[i] for i in range(len(p0)) if \
+#                 t[i][(t[i][:,0]>=0)&(t[i][:,1]>=0)&(t[i][:,1]<=1)].shape[0]%2 \
+#              ==1]
+#         return array(s10).tolist()
 
+def pies1(section,pnts):
+    s1=section
+    v1=[1,0.00001]
+    v2=a_([line_as_vector(p) for p in seg(s1)])+[0,.000001]
+    p0=a_(pnts)
+    p1=a_(s1)
+    # p0+v1*t1=p1+v2*t2
+    # v1*t1-v2*t2=p1-p0
+    b=[]
+    for i in range(len(p0)):
+        v3=a_([v1]*len(s1))
+        iim=a_([v3,-v2]).transpose(1,0,2).transpose(0,2,1)
+        im=inv(iim)
+        p=(p1-p0[i][None,:])
+        p.shape,im.shape
+        t1,t2=einsum('ijk,ik->ij',im,p).transpose(1,0)
+        dec=(t1>0)&(t2>0)&(t2<1)
+        if l_(dec.sum()%2!=0):
+            b.append(pnts[i])
+    return b
 
 def rsec(line,radius):
     p0=line[0]
@@ -3134,17 +3154,20 @@ def pntsnfaces(bead2):
 
 
 def path_offset(path,d):
-    a=offset_segv(path,d)[:-1]
-    b=[a[0][0]]+intersections(a)[1:]+[a[-1][-1]]
-    c=s_int1(seg(b))
-    c=b+c if c!=[] else b
-    d=cs1(path,abs(d))[:-1]
-    e=[ pies1(p,c) for p in d]
-    e=[p for p in e if p!=[]]
-    f=remove_extra_points(concatenate(e)) if e!=[] else []
-    g=exclude_points(c,f) if f!=[] else c
-    g=sort_points(path,g)
-    return g
+    if d==0:
+        return path
+    else:
+        a=offset_segv(path,d)[:-1]
+        b=[a[0][0]]+intersections(a)[1:]+[a[-1][-1]]
+        c=s_int1(seg(b))
+        c=b+c if c!=[] else b
+        d=cs1(path,abs(d))[:-1]
+        e=[ pies1(p,c) for p in d]
+        e=[p for p in e if p!=[]]
+        f=remove_extra_points(concatenate(e)) if e!=[] else []
+        g=exclude_points(c,f) if f!=[] else c
+        g=sort_points(path,g)
+        return g
 
 
 def fillet_sol2sol(p=[],p1=[],r=1,s=10,o=0,f=1.8):
@@ -4897,7 +4920,6 @@ def path_offset_n(sec,r):
     a=s_int1(sec1)
     if a!=[]:
         sec2=a+s
-
         sec2=array(sec2)
         clean=cs1(sec,abs(r)-.01)[:-1]
         clean1=[p[1:]+[p[0]] for p in clean]
@@ -10054,3 +10076,45 @@ def iso_surfaces(pnts,level_size=1):
     b=translate([m2[0]-m1[0],0,0],a)
     s1=cpo([a,b])
     return s1
+
+def iso_surfaces1(pnts,level_size=1):
+    '''
+    create various iso levels to divide the points
+    '''
+    ss=level_size
+    m1=a_(pnts).min(axis=0)
+    m2=a_(pnts).max(axis=0)
+    ns=int(round((m2[2]-m1[2])/ss,0))
+    x0,y0,z0=l_(m1)
+    x1,y1,z1=l_(m2)
+    l1=m_points1_o([[x0,y0,z0],[x1,y0,z0]],ns,.00001)
+    l2=m_points1_o([[x0,y1,z0],[x1,y1,z0]],ns,.00001)
+    s1=m_points1_o([l1,l2],ns,.00001)
+    l1=m_points1_o([[x0,y0,z1],[x1,y0,z1]],ns,.00001)
+    l2=m_points1_o([[x0,y1,z1],[x1,y1,z1]],ns,.00001)
+    s2=m_points1_o([l1,l2],ns,.00001)
+    surface=m_points1_o([s1,s2],ns,.00001)
+    return surface
+
+def ip_sol2sol_each_line(sol1,sol2,n=0):
+    line=array([ seg(p)[:-1] for p in cpo(sol2)])
+    v,f1=vnf2(sol1)
+    tri=array(v)[array(f1)]
+    line=array([ seg(p)[:-1] for p in cpo(sol2)])
+    tri.shape,line.shape
+    la,lb=line[:,:,0],line[:,:,1]
+    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+    lab=lb-la
+    p01,p02=p1-p0,p2-p0
+    t=einsum('kl,ijkl->ijk',cross(p01,p02),la[:,:,None]-p0)/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00000)
+    u=einsum('ijkl,ijkl->ijk',cross(p02[None,None,:,:],(-lab)[:,:,None,:]),(la[:,:,None,:]-p0[None,None,:,:]))/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00000)
+    v=einsum('ijkl,ijkl->ijk',cross((-lab)[:,:,None,:],p01[None,None,:,:]),(la[:,:,None,:]-p0[None,None,:,:]))/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00000)
+    condition=(t>=0)&(t<=1)&(u>=0)&(u<=1)&(v>=0)&(v<=1)&(u+v<1)
+
+    a=(la[:,None,:,None,:]+lab[:,None,:,None,:]*t[:,None,:,:,None])
+    b=condition[:,None,:,:]
+    c=[]
+    for i in range(len(a)):
+        c.append(a[i][b[i]].tolist())
+
+    return c

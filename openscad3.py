@@ -1924,32 +1924,31 @@ def exclude_segments(list,list_to_exclude):
     return array(list)[~ (array(list)==array(list_to_exclude)[:,None]).all(2).all(2).transpose(1,0).any(1)].tolist()
 
 
-def points_inside_enclosed_section(sec,pnts):
+
+def points_inside_enclosed_section(section,pnts):
     '''
     function to find points 'pnts' which are inside an enclosed section 'sec'
     refer to the file "example of various functions " for application examples
-    
-    
     '''
-    pnts=rev_pnts(sec,pnts)
-    if pnts!=[]:
-        s8,s4=[sec,pnts]
-        p0=array(s4)
-        p2=s8
-        p3=s8[1:]+[s8[0]]
-        p2,p3=array([p2,p3])
-        # v1=array([[[1,0]]*len(p2)]*len(p0))
-        v1=array([ones(len(p2)),zeros(len(p2))]).transpose(1,0)
-        v2=(p3-p2)+.000001
-        p=p2-p0[:,None]
-        im=pinv(array([v1,-v2]).transpose(1,0,2).transpose(0,2,1))
-        im=array([im]*len(p0))
-        t=einsum('ijkl,ijl->ijk',im,p)
-
-        s10=[p0[i] for i in range(len(p0)) if \
-                t[i][(t[i][:,0]>=0)&(t[i][:,1]>=0)&(t[i][:,1]<=1)].shape[0]%2 \
-             ==1]
-        return array(s10).tolist()
+    s1=section
+    v1=[1,0.00001]
+    v2=a_([line_as_vector(p) for p in seg(s1)])+[0,.000001]
+    p0=a_(pnts)
+    p1=a_(s1)
+    # p0+v1*t1=p1+v2*t2
+    # v1*t1-v2*t2=p1-p0
+    b=[]
+    for i in range(len(p0)):
+        v3=a_([v1]*len(s1))
+        iim=a_([v3,-v2]).transpose(1,0,2).transpose(0,2,1)
+        im=inv(iim)
+        p=(p1-p0[i][None,:])
+        p.shape,im.shape
+        t1,t2=einsum('ijk,ik->ij',im,p).transpose(1,0)
+        dec=(t1>0)&(t2>0)&(t2<1)
+        if l_(dec.sum()%2!=0):
+            b.append(pnts[i])
+    return b
 
 
 def rounded_section(line,r1,r2,s=20):
