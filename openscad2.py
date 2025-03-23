@@ -10044,7 +10044,7 @@ def derivative3d(line):
     e=[x[i]+[d[i]] for i in range(len(x))]
     return e
 
-def points_to_meshes(pnts,voxel_size=.1,iso_level_percentile=75):
+def points_to_meshes(pnts,voxel_size=.1,iso_level_percentile=2):
     '''
     create triangle meshes from a list of points using marching cube method
     '''
@@ -10077,23 +10077,27 @@ def iso_surfaces(pnts,level_size=1):
     s1=cpo([a,b])
     return s1
 
-def iso_surfaces1(pnts,level_size=1):
+def iso_surfaces3d(pnts,level_size=1):
     '''
     create various iso levels to divide the points
     '''
     ss=level_size
     m1=a_(pnts).min(axis=0)
     m2=a_(pnts).max(axis=0)
-    ns=int(round((m2[2]-m1[2])/ss,0))
+    # ns=int(round((m2[2]-m1[2])/ss,0))
     x0,y0,z0=l_(m1)
     x1,y1,z1=l_(m2)
-    l1=m_points1_o([[x0,y0,z0],[x1,y0,z0]],ns,.00001)
-    l2=m_points1_o([[x0,y1,z0],[x1,y1,z0]],ns,.00001)
-    s1=m_points1_o([l1,l2],ns,.00001)
-    l1=m_points1_o([[x0,y0,z1],[x1,y0,z1]],ns,.00001)
-    l2=m_points1_o([[x0,y1,z1],[x1,y1,z1]],ns,.00001)
-    s2=m_points1_o([l1,l2],ns,.00001)
-    surface=m_points1_o([s1,s2],ns,.00001)
+    ns1=int(round((x1-x0)/ss,0))
+    ns2=int(round((y1-y0)/ss,0))
+    ns3=int(round((z1-z0)/ss,0))
+    
+    l1=m_points1_o([[x0,y0,z0],[x1,y0,z0]],ns1,.00001)
+    l2=m_points1_o([[x0,y1,z0],[x1,y1,z0]],ns1,.00001)
+    s1=m_points1_o([l1,l2],ns2,.00001)
+    l1=m_points1_o([[x0,y0,z1],[x1,y0,z1]],ns1,.00001)
+    l2=m_points1_o([[x0,y1,z1],[x1,y1,z1]],ns1,.00001)
+    s2=m_points1_o([l1,l2],ns2,.00001)
+    surface=m_points1_o([s1,s2],ns3,.00001)
     return surface
 
 def ip_sol2sol_each_line(sol1,sol2,n=0):
@@ -10118,3 +10122,22 @@ def ip_sol2sol_each_line(sol1,sol2,n=0):
         c.append(a[i][b[i]].tolist())
 
     return c
+
+def grid2d(pnts,resolution=1):
+    '''
+    creates a grid of points to cover a 2d shape
+    '''
+    ss=resolution
+    m1=a_(pnts).min(axis=0)
+    m2=a_(pnts).max(axis=0)
+    
+    x0,y0=l_(m1)
+    x1,y1=l_(m2)
+
+    ns1=int(round((x1-x0)/ss,0))
+    ns2=int(round((y1-y0)/ss,0))
+    l1=m_points1_o([[x0,y0],[x1,y0]],ns1,.00001)
+    l2=m_points1_o([[x0,y1],[x1,y1]],ns1,.00001)
+    s1=m_points1_o([l1,l2],ns2,.00001)
+    
+    return l_(a_(s1).reshape(-1,2))
