@@ -10209,3 +10209,6 @@ def concave_hull(c,n=[]):
         return d[:-1]
     else:
         return concave_hull(c,n+1)
+
+def sterguss(n):
+    return 3 if n<=200 else round(1+log2(n))
