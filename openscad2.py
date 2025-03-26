@@ -7696,75 +7696,75 @@ def sort_random_points(l_1,n_1,k=3):
     l_6=array(l_1)[cKDTree(l_4).query(l_5)[1]].tolist()
     return l_6
 
-def concave_hull(p_l,k):
-    '''
-    finds the concave hull for a points list "p_l"
-    value of factor "k" can be defined >=2
-    for very big value of "k", the function will work like a convex hull
-    '''
+# def concave_hull(p_l,k):
+#     '''
+#     finds the concave hull for a points list "p_l"
+#     value of factor "k" can be defined >=2
+#     for very big value of "k", the function will work like a convex hull
+#     '''
 
-    def s_p(p_l): # starting point
-        '''
-        find the starting point for a convex hull
-        bottom left point
-        '''
-        l_1=array(p_l).round(5)
-        a=l_1[l_1[:,1].argsort()]
-        if len(a[a[:,1]==a[:,1].min()])>1:
-            b=a[a[:,1]==a[:,1].min()]
-            s_pnt=b[b[:,0].argsort()][0]
-        else:
-            s_pnt=a[0]
-        return s_pnt.tolist()
+#     def s_p(p_l): # starting point
+#         '''
+#         find the starting point for a convex hull
+#         bottom left point
+#         '''
+#         l_1=array(p_l).round(5)
+#         a=l_1[l_1[:,1].argsort()]
+#         if len(a[a[:,1]==a[:,1].min()])>1:
+#             b=a[a[:,1]==a[:,1].min()]
+#             s_pnt=b[b[:,0].argsort()][0]
+#         else:
+#             s_pnt=a[0]
+#         return s_pnt.tolist()
 
-    def n_p(p_l,k): # next point
-        l_2=p_l
-        p0=s_p(l_2)
-        a=n_n(p0,l_2,k)
-        p1=(array(p0)-[1,0]).tolist()
-        n_pnt=array(a)[array([ang_2linecw(p0,p1,p) for p in a]).argmax()].tolist()
-        return n_pnt
+#     def n_p(p_l,k): # next point
+#         l_2=p_l
+#         p0=s_p(l_2)
+#         a=n_n(p0,l_2,k)
+#         p1=(array(p0)-[1,0]).tolist()
+#         n_pnt=array(a)[array([ang_2linecw(p0,p1,p) for p in a]).argmax()].tolist()
+#         return n_pnt
     
-    def n_n(p1,p_l,k=3):# nearest neighnours
-        l_2=array(p_l)
-        k=len(l_2)-1 if len(l_2)<=k else k
-        a=l_2[cKDTree(l_2).query(p1,k+1)[1]][cKDTree(l_2).query(p1,k+1)[0]>0.001].tolist()
-        return a
+#     def n_n(p1,p_l,k=3):# nearest neighnours
+#         l_2=array(p_l)
+#         k=len(l_2)-1 if len(l_2)<=k else k
+#         a=l_2[cKDTree(l_2).query(p1,k+1)[1]][cKDTree(l_2).query(p1,k+1)[0]>0.001].tolist()
+#         return a
     
-    def s_g_a_p(p0,p1,n_n_p):# select greatest angle point
-        return array(n_n_p)[array([ang_2linecw(p1,p0,p) for p in n_n_p]).argmax()].tolist()
+#     def s_g_a_p(p0,p1,n_n_p):# select greatest angle point
+#         return array(n_n_p)[array([ang_2linecw(p1,p0,p) for p in n_n_p]).argmax()].tolist()
     
-    def s_o_a(p0,p1,n_n_p): # sort on angle
-       return flip(array(n_n_p)[array([ang_2linecw(p1,p0,p) for p in n_n_p]).argsort()].tolist())
+#     def s_o_a(p0,p1,n_n_p): # sort on angle
+#        return flip(array(n_n_p)[array([ang_2linecw(p1,p0,p) for p in n_n_p]).argsort()].tolist())
     
-    p_l=remove_extra_points(array(p_l).round(5))
-    p0=s_p(p_l)
-    p1=n_p(p_l,k)
-    o_p_l=[p0,p1]
-    b_p_l=exclude_points(p_l,o_p_l[0])
+#     p_l=remove_extra_points(array(p_l).round(5))
+#     p0=s_p(p_l)
+#     p1=n_p(p_l,k)
+#     o_p_l=[p0,p1]
+#     b_p_l=exclude_points(p_l,o_p_l[0])
     
-    while (len(b_p_l)>2):
-        a=n_n(o_p_l[-1],b_p_l,k if len(b_p_l)>3 else 2)
-        a=s_o_a(o_p_l[-2],o_p_l[-1],a)
-        b=[]
-        while (b==[]):
-            for p in a:
-                if s_int1(seg(o_p_l+[p])[:-1])==[]:
-                    b.append(p)
-                    break
-            if b!=[]:
-                o_p_l.append(s_g_a_p(o_p_l[-2],o_p_l[-1],b))
-            else:
-                k=k+1
-                a=n_n(o_p_l[-1],b_p_l,k if len(b_p_l)>3 else 2)
-        b_p_l=exclude_points(p_l,o_p_l)
-        b_p_l.append(p0)
-        if o_p_l[-1]==p0:
-            o_p_l=o_p_l[:-1]
-            b_p_l=exclude_points(b_p_l,[p0])
-            break
+#     while (len(b_p_l)>2):
+#         a=n_n(o_p_l[-1],b_p_l,k if len(b_p_l)>3 else 2)
+#         a=s_o_a(o_p_l[-2],o_p_l[-1],a)
+#         b=[]
+#         while (b==[]):
+#             for p in a:
+#                 if s_int1(seg(o_p_l+[p])[:-1])==[]:
+#                     b.append(p)
+#                     break
+#             if b!=[]:
+#                 o_p_l.append(s_g_a_p(o_p_l[-2],o_p_l[-1],b))
+#             else:
+#                 k=k+1
+#                 a=n_n(o_p_l[-1],b_p_l,k if len(b_p_l)>3 else 2)
+#         b_p_l=exclude_points(p_l,o_p_l)
+#         b_p_l.append(p0)
+#         if o_p_l[-1]==p0:
+#             o_p_l=o_p_l[:-1]
+#             b_p_l=exclude_points(b_p_l,[p0])
+#             break
 
-    return o_p_l
+#     return o_p_l
 
 def t_vec(path):
     '''
@@ -10141,3 +10141,71 @@ def grid2d(pnts,resolution=1):
     s1=m_points1_o([l1,l2],ns2,.00001)
     
     return l_(a_(s1).reshape(-1,2))
+
+def ang_v(v):
+    '''
+    finds angle of a vector
+    '''
+    return ang(v[0],v[1])
+
+def con_h(pnts,n=3):
+    '''
+    Input function to concave_hull function
+    '''
+    def ax(line_seg,pnts):
+        for i in range(len(pnts)):
+            l1=line_seg+[pnts[i]]
+            l2=s_int1(seg(l1)[:-1])
+            if l2==[]:
+                return l_(pnts[i])
+        return []
+        
+    def bx(l1,p0,p1,pnts,n):
+        pnts=a_(pnts)
+        x1=pnts[cKDTree(pnts).query(p0,n)[1]]
+        x2=x1[a_([ang_2linecw(p0,p1,p) for p in x1]).argsort()[::-1]]
+        if ax(l1,x2)!=[]:
+            return ax(l1,x2)
+        elif n<len(pnts):
+            return bx(l1,p0,p1,pnts,n+1)
+        else:
+            return []
+            
+    c=remove_extra_points(pnts)
+    s1=s_pnt(c)
+    c=exclude_points(c,[s1])
+    x1=a_(c)[cKDTree(c).query(s1,n)[1]]
+    l1=a_([ ang_2linecw(s1,[s1[0],s1[1]-1],p) for p in x1])
+    s2=l_(x1[l1.argmax()])
+    c=exclude_points(c,[s2])+[s1]
+    
+    x1=a_(c)[cKDTree(c).query(s2,n)[1]]
+    l1=a_([ ang_2linecw(s2,s1,p) for p in x1])
+    s3=l_(x1[l1.argmax()])
+    c=exclude_points(c,[s3])
+    d=[s1,s2,s3]
+    while((len(c)>2)):
+        if l_(round(d[-1],3))==l_(round(d[0],3)):
+            break
+        else:
+            p0,p1=d[-1],d[-2]
+            p2=bx(d,p0,p1,c,n)
+            if p2!=[]:
+                d.append(p2)
+                c=exclude_points(c,[p2])
+            else:
+                break
+
+    return d
+    
+def concave_hull(c,n=[]):
+    '''
+    finds the concave hull of a given random points
+    '''
+    n=sterguss(len(c)) if n==[] else n
+    d=con_h(c,n)
+    e=exclude_points(c,d)
+    if (len(e)==len(pies1(d,e))) and l_(round(d[-1],3))==l_(round(d[0],3)):
+        return d[:-1]
+    else:
+        return concave_hull(c,n+1)
