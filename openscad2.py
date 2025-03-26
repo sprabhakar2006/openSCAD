@@ -2612,9 +2612,13 @@ def next_point(points,s_p):
 
 
 
+# def exclude_points(list1,list_to_exclude):
+#     list1,list_to_exclude=array(list1).round(5),array(list_to_exclude).round(5)
+#     return list1[~(list_to_exclude==list1[:,None]).all(2).any(1)].tolist()
+
 def exclude_points(list1,list_to_exclude):
-    list1,list_to_exclude=array(list1).round(5),array(list_to_exclude).round(5)
-    return list1[~(list_to_exclude==list1[:,None]).all(2).any(1)].tolist()
+    la,lb=array(list1).round(5),array(list_to_exclude).round(5)
+    return a_(list1)[~(lb==la[:,None]).all(2).any(1)].tolist()
     
 def exclude_seg(list,list_to_exclude):
     return array(list)[~ (array(list)==array(list_to_exclude)[:,None]).all(2).all(2).transpose(1,0).any(1)].tolist()
@@ -10184,16 +10188,17 @@ def con_h(pnts,n=3):
     s3=l_(x1[l1.argmax()])
     c=exclude_points(c,[s3])
     d=[s1,s2,s3]
-    while((len(c)>2)):
-        if l_(round(d[-1],3))==l_(round(d[0],3)):
+    while((len(c)>0)):
+        if d[-1]==d[0]:
             break
         else:
             p0,p1=d[-1],d[-2]
-            p2=bx(d,p0,p1,c,n)
+            p2=bx(d,p0,p1,c,l_(min([n,len(c)])))
             if p2!=[]:
                 d.append(p2)
                 c=exclude_points(c,[p2])
             else:
+                
                 break
 
     return d
@@ -10205,7 +10210,7 @@ def concave_hull(c,n=[]):
     n=sterguss(len(c)) if n==[] else n
     d=con_h(c,n)
     e=exclude_points(c,d)
-    if (len(e)==len(pies1(d,e))) and l_(round(d[-1],3))==l_(round(d[0],3)):
+    if (len(e)==len(pies1(d,e))) and (d[-1]==d[0]):
         return d[:-1]
     else:
         return concave_hull(c,n+1)

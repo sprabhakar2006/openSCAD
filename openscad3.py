@@ -5498,75 +5498,6 @@ def sort_random_points(l_1,n_1,k=3):
     l_6=array(l_1)[cKDTree(l_4).query(l_5)[1]].tolist()
     return l_6
 
-def concave_hull(p_l,k):
-    '''
-    finds the concave hull for a points list "p_l"
-    value of factor "k" can be defined >=2
-    for very big value of "k", the function will work like a convex hull
-    '''
-
-    def s_p(p_l): # starting point
-        '''
-        find the starting point for a convex hull
-        bottom left point
-        '''
-        l_1=array(p_l).round(5)
-        a=l_1[l_1[:,1].argsort()]
-        if len(a[a[:,1]==a[:,1].min()])>1:
-            b=a[a[:,1]==a[:,1].min()]
-            s_pnt=b[b[:,0].argsort()][0]
-        else:
-            s_pnt=a[0]
-        return s_pnt.tolist()
-
-    def n_p(p_l,k): # next point
-        l_2=p_l
-        p0=s_p(l_2)
-        a=n_n(p0,l_2,k)
-        p1=(array(p0)-[1,0]).tolist()
-        n_pnt=array(a)[array([ang_2linecw(p0,p1,p) for p in a]).argmax()].tolist()
-        return n_pnt
-    
-    def n_n(p1,p_l,k=3):# nearest neighnours
-        l_2=array(p_l)
-        k=len(l_2)-1 if len(l_2)<=k else k
-        a=l_2[cKDTree(l_2).query(p1,k+1)[1]][cKDTree(l_2).query(p1,k+1)[0]>0.001].tolist()
-        return a
-    
-    def s_g_a_p(p0,p1,n_n_p):# select greatest angle point
-        return array(n_n_p)[array([ang_2linecw(p1,p0,p) for p in n_n_p]).argmax()].tolist()
-    
-    def s_o_a(p0,p1,n_n_p): # sort on angle
-       return flip(array(n_n_p)[array([ang_2linecw(p1,p0,p) for p in n_n_p]).argsort()].tolist())
-    
-    p_l=remove_extra_points(array(p_l).round(5))
-    p0=s_p(p_l)
-    p1=n_p(p_l,k)
-    o_p_l=[p0,p1]
-    b_p_l=exclude_points(p_l,o_p_l[0])
-    
-    while (len(b_p_l)>2):
-        a=n_n(o_p_l[-1],b_p_l,k if len(b_p_l)>3 else 2)
-        a=s_o_a(o_p_l[-2],o_p_l[-1],a)
-        b=[]
-        while (b==[]):
-            for p in a:
-                if s_int1(seg(o_p_l+[p])[:-1])==[]:
-                    b.append(p)
-                    break
-            if b!=[]:
-                o_p_l.append(s_g_a_p(o_p_l[-2],o_p_l[-1],b))
-            else:
-                k=k+1
-                a=n_n(o_p_l[-1],b_p_l,k if len(b_p_l)>3 else 2)
-        b_p_l=exclude_points(p_l,o_p_l)
-        b_p_l.append(p0)
-        if o_p_l[-1]==p0:
-            o_p_l=o_p_l[:-1]
-            b_p_l=exclude_points(b_p_l,[p0])
-            break
-
-    return o_p_l
 
 def t_vec(path):
     '''
@@ -6995,51 +6926,7 @@ def find_points_beyond_distance_of_surface(surf,pnts,d=1,edges_closed=1):
         if (px[dec]>d).all() and l_(px[dec])!=[]:
             pa.append(pnts[i])
             # pb.append(px[dec].min())
-    return pa
-
-def points_inside_solid(pnts,surf,edges_closed=1):
-    '''
-    finds all the points which are inside the solid
-    '''
-    c=surf
-    if edges_closed==1:
-        f1=faces_1(len(c),len(c[0]))
-    elif edges_closed==0:
-        f1=faces_surface(len(c),len(c[0]))
-    a1,a2,a3=a_([[1,0,0],[0,1,0],[0,0,1]])
-    l0=a_(pnts)
-    # f1=faces_1(len(c),len(c[0]))
-    vert1=a_(c).reshape(-1,3)
-    trngl=vert1[f1]
-    p0,p1,p2=trngl[:,0],trngl[:,1],trngl[:,2]
-    v1,v2=p1-p0,p2-p0
-    # l0+a1*t0=p0+v1*t1+v2*t2
-    # l0+a2*t0=p0+v1*t1+v2*t2
-    # l0+a3*t0=p0+v1*t1+v2*t2
-    iim1=a_([a_([a1]*len(v1)),-v1,-v2+.000001]).transpose(1,0,2).transpose(0,2,1)+.000001
-    im1=inv(iim1)
-    iim2=a_([a_([a2]*len(v1))+.000001,-v1,-v2]).transpose(1,0,2).transpose(0,2,1)+.000001
-    im2=inv(iim2)
-    iim3=a_([a_([a3]*len(v1))+.000001,-v1,-v2]).transpose(1,0,2).transpose(0,2,1)+.000001
-    im3=inv(iim3)
-    pb=[]
-    for i in range(len(l0)):
-        
-        p=p0-l0[i]
-        t0,t1,t2=einsum('ijk,ik->ij',im1,p).transpose(1,0)
-        dec=(t0>=0)&(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&((t1+t2)<=1)
-        x1=ones(len(v1))[dec]
-        
-        t0,t1,t2=einsum('ijk,ik->ij',im2,p).transpose(1,0)
-        dec=(t0>=0)&(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&((t1+t2)<=1)
-        x2=ones(len(v1))[dec]
-        
-        t0,t1,t2=einsum('ijk,ik->ij',im3,p).transpose(1,0)
-        dec=(t0>=0)&(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&((t1+t2)<=1)
-        x3=ones(len(v1))[dec]
-        if (a_([x1.sum()%2,x2.sum()%2,x3.sum()%2])==1).sum()>=2:
-            pb.append(pnts[i])
-    return pb   
+    return pa  
 
 
 def swp_triangles(sol):
