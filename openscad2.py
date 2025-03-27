@@ -60,6 +60,7 @@ def cw(sec):
     function to identify if an enclosed section is clockwise(cw) or counterclockwise(ccw)
     this returns 1 if section is clockwise and -1 if it is counterclockwise
     '''
+    sec=remove_extra_points(sec)
     sec=rot2d(0.001,sec)
     if len(sec)==3:
         p=array(sec)
@@ -10210,7 +10211,7 @@ def concave_hull(c,n=[]):
     n=sterguss(len(c)) if n==[] else n
     d=con_h(c,n)
     e=exclude_points(c,d)
-    if (len(e)==len(pies1(d,e))) and (d[-1]==d[0]):
+    if (len(e)==len(pies1(offset(d[:-1],.011),e))) and (d[-1]==d[0]):
         return d[:-1]
     else:
         return concave_hull(c,n+1)
