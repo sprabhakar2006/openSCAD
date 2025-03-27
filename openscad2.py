@@ -10189,7 +10189,7 @@ def con_h(pnts,n=3):
     s3=l_(x1[l1.argmax()])
     c=exclude_points(c,[s3])
     d=[s1,s2,s3]
-    while((len(c)>0)):
+    while((len(c)>2)):
         if d[-1]==d[0]:
             break
         else:
@@ -10204,14 +10204,16 @@ def con_h(pnts,n=3):
 
     return d
     
-def concave_hull(c,n=[]):
+def concave_hull(c,n=0):
     '''
     finds the concave hull of a given random points
     '''
-    n=sterguss(len(c)) if n==[] else n
+    n= n if n>0 else sterguss(len(c))
+    
     d=con_h(c,n)
     e=exclude_points(c,d)
-    if (len(e)==len(pies1(offset(d[:-1],.011),e))) and (d[-1]==d[0]):
+    r=norm(a_(d).max(0)-a_(d).min(0))/50
+    if (len(e)==len(pies1(offset(d[:-1],r),e))) and (d[-1]==d[0]):
         return d[:-1]
     else:
         return concave_hull(c,n+1)
