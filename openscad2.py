@@ -3553,7 +3553,7 @@ def c2ro(sol,s):#circular to rectangulat orientation
     '''
     # angle=360/len(sol[0])/2
     sol=cpo(sol)
-    return [m_points1(sol[i]+flip(sol[len(sol)-1-i]),s) for i in range(int(len(sol)/2))]
+    return [m_points1(sol[i]+flip(sol[len(sol)-1-i]),s,.001) for i in range(int(len(sol)/2))]
     
     
 def vsp_extrude(sec,extrude_path, shape_path):
@@ -7701,75 +7701,75 @@ def sort_random_points(l_1,n_1,k=3):
     l_6=array(l_1)[cKDTree(l_4).query(l_5)[1]].tolist()
     return l_6
 
-# def concave_hull(p_l,k):
-#     '''
-#     finds the concave hull for a points list "p_l"
-#     value of factor "k" can be defined >=2
-#     for very big value of "k", the function will work like a convex hull
-#     '''
+def con_h1(p_l,k):
+    '''
+    finds the concave hull for a points list "p_l"
+    value of factor "k" can be defined >=2
+    for very big value of "k", the function will work like a convex hull
+    '''
 
-#     def s_p(p_l): # starting point
-#         '''
-#         find the starting point for a convex hull
-#         bottom left point
-#         '''
-#         l_1=array(p_l).round(5)
-#         a=l_1[l_1[:,1].argsort()]
-#         if len(a[a[:,1]==a[:,1].min()])>1:
-#             b=a[a[:,1]==a[:,1].min()]
-#             s_pnt=b[b[:,0].argsort()][0]
-#         else:
-#             s_pnt=a[0]
-#         return s_pnt.tolist()
+    def s_p(p_l): # starting point
+        '''
+        find the starting point for a convex hull
+        bottom left point
+        '''
+        l_1=array(p_l).round(5)
+        a=l_1[l_1[:,1].argsort()]
+        if len(a[a[:,1]==a[:,1].min()])>1:
+            b=a[a[:,1]==a[:,1].min()]
+            s_pnt=b[b[:,0].argsort()][0]
+        else:
+            s_pnt=a[0]
+        return s_pnt.tolist()
 
-#     def n_p(p_l,k): # next point
-#         l_2=p_l
-#         p0=s_p(l_2)
-#         a=n_n(p0,l_2,k)
-#         p1=(array(p0)-[1,0]).tolist()
-#         n_pnt=array(a)[array([ang_2linecw(p0,p1,p) for p in a]).argmax()].tolist()
-#         return n_pnt
+    def n_p(p_l,k): # next point
+        l_2=p_l
+        p0=s_p(l_2)
+        a=n_n(p0,l_2,k)
+        p1=(array(p0)-[1,0]).tolist()
+        n_pnt=array(a)[array([ang_2linecw(p0,p1,p) for p in a]).argmax()].tolist()
+        return n_pnt
     
-#     def n_n(p1,p_l,k=3):# nearest neighnours
-#         l_2=array(p_l)
-#         k=len(l_2)-1 if len(l_2)<=k else k
-#         a=l_2[cKDTree(l_2).query(p1,k+1)[1]][cKDTree(l_2).query(p1,k+1)[0]>0.001].tolist()
-#         return a
+    def n_n(p1,p_l,k=3):# nearest neighnours
+        l_2=array(p_l)
+        k=len(l_2)-1 if len(l_2)<=k else k
+        a=l_2[cKDTree(l_2).query(p1,k+1)[1]][cKDTree(l_2).query(p1,k+1)[0]>0.001].tolist()
+        return a
     
-#     def s_g_a_p(p0,p1,n_n_p):# select greatest angle point
-#         return array(n_n_p)[array([ang_2linecw(p1,p0,p) for p in n_n_p]).argmax()].tolist()
+    def s_g_a_p(p0,p1,n_n_p):# select greatest angle point
+        return array(n_n_p)[array([ang_2linecw(p1,p0,p) for p in n_n_p]).argmax()].tolist()
     
-#     def s_o_a(p0,p1,n_n_p): # sort on angle
-#        return flip(array(n_n_p)[array([ang_2linecw(p1,p0,p) for p in n_n_p]).argsort()].tolist())
+    def s_o_a(p0,p1,n_n_p): # sort on angle
+       return flip(array(n_n_p)[array([ang_2linecw(p1,p0,p) for p in n_n_p]).argsort()].tolist())
     
-#     p_l=remove_extra_points(array(p_l).round(5))
-#     p0=s_p(p_l)
-#     p1=n_p(p_l,k)
-#     o_p_l=[p0,p1]
-#     b_p_l=exclude_points(p_l,o_p_l[0])
+    p_l=remove_extra_points(array(p_l).round(5))
+    p0=s_p(p_l)
+    p1=n_p(p_l,k)
+    o_p_l=[p0,p1]
+    b_p_l=exclude_points(p_l,o_p_l[0])
     
-#     while (len(b_p_l)>2):
-#         a=n_n(o_p_l[-1],b_p_l,k if len(b_p_l)>3 else 2)
-#         a=s_o_a(o_p_l[-2],o_p_l[-1],a)
-#         b=[]
-#         while (b==[]):
-#             for p in a:
-#                 if s_int1(seg(o_p_l+[p])[:-1])==[]:
-#                     b.append(p)
-#                     break
-#             if b!=[]:
-#                 o_p_l.append(s_g_a_p(o_p_l[-2],o_p_l[-1],b))
-#             else:
-#                 k=k+1
-#                 a=n_n(o_p_l[-1],b_p_l,k if len(b_p_l)>3 else 2)
-#         b_p_l=exclude_points(p_l,o_p_l)
-#         b_p_l.append(p0)
-#         if o_p_l[-1]==p0:
-#             o_p_l=o_p_l[:-1]
-#             b_p_l=exclude_points(b_p_l,[p0])
-#             break
+    while (len(b_p_l)>2):
+        a=n_n(o_p_l[-1],b_p_l,k if len(b_p_l)>3 else 2)
+        a=s_o_a(o_p_l[-2],o_p_l[-1],a)
+        b=[]
+        while (b==[]):
+            for p in a:
+                if s_int1(seg(o_p_l+[p])[:-1])==[]:
+                    b.append(p)
+                    break
+            if b!=[]:
+                o_p_l.append(s_g_a_p(o_p_l[-2],o_p_l[-1],b))
+            else:
+                k=k+1
+                a=n_n(o_p_l[-1],b_p_l,k if len(b_p_l)>3 else 2)
+        b_p_l=exclude_points(p_l,o_p_l)
+        b_p_l.append(p0)
+        if o_p_l[-1]==p0:
+            o_p_l=o_p_l[:-1]
+            b_p_l=exclude_points(b_p_l,[p0])
+            break
 
-#     return o_p_l
+    return o_p_l
 
 def t_vec(path):
     '''
@@ -10049,7 +10049,7 @@ def derivative3d(line):
     e=[x[i]+[d[i]] for i in range(len(x))]
     return e
 
-def points_to_meshes(pnts,voxel_size=.1,iso_level_percentile=2):
+def points_to_meshes(pnts,voxel_size=.1,iso_level_percentile=2,flip=0):
     '''
     create triangle meshes from a list of points using marching cube method
     '''
@@ -10065,6 +10065,10 @@ def points_to_meshes(pnts,voxel_size=.1,iso_level_percentile=2):
     scalar_field=distances.reshape(x.shape)
     iso_level = percentile(distances, iso_level_percentile)
     verts, faces, _, _ = measure.marching_cubes(scalar_field, level=iso_level, allow_degenerate=False)
+    if flip==0:
+        faces=faces
+    elif flip==1:
+        faces=a_([p[::-1] for p in faces])
     verts = verts * voxel_size + mins
     return f'polyhedron({l_(verts)},{l_(faces)},convexity=10);'
 
@@ -10128,13 +10132,13 @@ def ip_sol2sol_each_line(sol1,sol2,n=0):
 
     return c
 
-def grid2d(pnts,resolution=1):
+def grid2d(pnts,resolution=1,offset=0):
     '''
     creates a grid of points to cover a 2d shape
     '''
     ss=resolution
-    m1=a_(pnts).min(axis=0)
-    m2=a_(pnts).max(axis=0)
+    m1=a_(pnts).min(axis=0)-offset
+    m2=a_(pnts).max(axis=0)+offset
     
     x0,y0=l_(m1)
     x1,y1=l_(m2)
@@ -10201,7 +10205,7 @@ def con_h(pnts,n=3):
             else:
                 
                 break
-
+    
     return d
     
 def concave_hull(c,n=0):
@@ -10209,7 +10213,6 @@ def concave_hull(c,n=0):
     finds the concave hull of a given random points
     '''
     n= n if n>0 else sterguss(len(c))
-    
     d=con_h(c,n)
     e=exclude_points(c,d)
     r=norm(a_(d).max(0)-a_(d).min(0))/50
