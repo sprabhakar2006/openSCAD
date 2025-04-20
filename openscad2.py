@@ -6292,7 +6292,7 @@ def surface_from_2_waves_min(p0,p1,amplitude=1):
     p1=q_rot(['x90','z90'],[[i,sin(d2r(360/70*i*2))]  for i in arange(0,71)])
     surf=surface_from_2_waves_min(p0,p1,2)
     '''
-    p2=array([[[i[0],j[1],min(i[2],j[2])]  for j in array(p1)]  for i in array(p0)])
+    p2=array([[[i[0],j[1],a_([i[2],j[2]]).min()]  for j in array(p1)]  for i in array(p0)])
     a=p2[:,:,2].max()
     p2=array([[[j[0],j[1],j[2]/a*amplitude]  for j in i] for i in p2]).tolist()
     return p2
@@ -6307,7 +6307,7 @@ def surface_from_2_waves_max(p0,p1,amplitude=1):
     p1=q_rot(['x90','z90'],[[i,sin(d2r(360/70*i*2))]  for i in arange(0,71)])
     surf=surface_from_2_waves_max(p0,p1,2)
     '''
-    p2=array([[[i[0],j[1],max(i[2],j[2])]  for j in array(p1)]  for i in array(p0)])
+    p2=array([[[i[0],j[1],max([i[2],j[2]])]  for j in array(p1)]  for i in array(p0)])
     a=p2[:,:,2].max()
     p2=array([[[j[0],j[1],j[2]/a*amplitude]  for j in i] for i in p2]).tolist()
     return p2
@@ -6817,6 +6817,14 @@ def surface_thicken(surf_1,d=1):
     surf_2=surface_offset(surf_1,d)
     sol=[surf_1[i]+flip(surf_2[i])  for i in range(len(surf_1))]
     return sol
+
+def surface_thicken_1(surf,d=1):
+    '''
+    function same as surface_thicken but with different orientation
+    '''
+    a=surface_offset(surf,d)
+    b=swp_prism_h(surf,a) if d<0 else swp_prism_h(a,surf)
+    return b
 
 def boundary_edges_sol(sol):
     '''
