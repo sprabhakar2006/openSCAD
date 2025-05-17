@@ -120,13 +120,13 @@ function to calculate angle of a 2d vector starting from origin and end point wi
  
     '''
     if x>=0 and y>=0:
-        return arctan(y/(0.000001 if x==0 else x))*180/pi
+        return l_(arctan(y/(0.000001 if x==0 else x))*180/pi)
     elif x<0 and y>=0:
-        return 180-abs(arctan(y/x))*180/pi
+        return l_(180-abs(arctan(y/x))*180/pi)
     elif  x<0 and y<0:
-        return 180+abs(arctan(y/x))*180/pi
+        return l_(180+abs(arctan(y/x))*180/pi)
     else:
-        return 360-abs(arctan(y/(0.000001 if x==0 else x)))*180/pi
+        return l_(360-abs(arctan(y/(0.000001 if x==0 else x)))*180/pi)
 
 
 def uv(v):
@@ -9431,51 +9431,51 @@ def barycenter(surf,edges_closed=1):
     cp=triangles.mean(1)
     return cp
 
-def h_lines_sec(sec,n=10):
-    '''
-    divide a 2d section 'sec' in to horizontal lines
-    'n' is the number of lines in the section
-    '''
-    py=m_points1_o([a_(sec)[:,1].min()+.001,a_(sec)[:,1].max()-.001],n)
-    px=zeros(len(py))
-    p2=a_([px,py]).transpose(1,0)
-    a=seg(sec)
-    p0=a_(a)[:,0]
-    p1=a_(a)[:,1]
-    v1=p1-p0
-    v2=a_([[1,0]]*len(v1))
-    # p0+v1*t1=p2+v2*t2
-    # v1*t1-v2*t2=p2-p0
-    iim=a_([v1,-v2+.000001]).transpose(1,0,2).transpose(0,2,1)
-    im=inv(iim)
-    t=einsum('ijk,hik->hij',im,p2[:,None,:]-p0[None,:])
-    p=p0+einsum('ij,hi->hij',v1,t[:,:,0])
-    dec=(t[:,:,0]>=0) & (t[:,:,0]<=1)
-    p1=l_(a_(seg(lexico(p[dec],[1,0],[1,1])))[::2])
-    return p1
+# def h_lines_sec(sec,n=10):
+#     '''
+#     divide a 2d section 'sec' in to horizontal lines
+#     'n' is the number of lines in the section
+#     '''
+#     py=m_points1_o([a_(sec)[:,1].min()+.001,a_(sec)[:,1].max()-.001],n)
+#     px=zeros(len(py))
+#     p2=a_([px,py]).transpose(1,0)
+#     a=seg(sec)
+#     p0=a_(a)[:,0]
+#     p1=a_(a)[:,1]
+#     v1=p1-p0
+#     v2=a_([[1,0]]*len(v1))
+#     # p0+v1*t1=p2+v2*t2
+#     # v1*t1-v2*t2=p2-p0
+#     iim=a_([v1,-v2+.000001]).transpose(1,0,2).transpose(0,2,1)
+#     im=inv(iim)
+#     t=einsum('ijk,hik->hij',im,p2[:,None,:]-p0[None,:])
+#     p=p0+einsum('ij,hi->hij',v1,t[:,:,0])
+#     dec=(t[:,:,0]>=0) & (t[:,:,0]<=1)
+#     p1=l_(a_(seg(lexico(p[dec],[1,0],[1,1])))[::2])
+#     return p1
 
-def v_lines_sec(sec,n=10):
-    '''
-    divide a 2d section 'sec' in to verticle lines
-    'n' is the number of lines in the section
-    '''
-    px=m_points1_o([a_(sec)[:,0].min()+.001,a_(sec)[:,0].max()-.001],n)
-    py=zeros(len(px))
-    p2=a_([px,py]).transpose(1,0)
-    a=seg(sec)
-    p0=a_(a)[:,0]
-    p1=a_(a)[:,1]
-    v1=p1-p0
-    v2=a_([[0,1]]*len(v1))
-    # p0+v1*t1=p2+v2*t2
-    # v1*t1-v2*t2=p2-p0
-    iim=a_([v1,-v2+.000001]).transpose(1,0,2).transpose(0,2,1)
-    im=inv(iim)
-    t=einsum('ijk,hik->hij',im,p2[:,None,:]-p0[None,:])
-    p=p0+einsum('ij,hi->hij',v1,t[:,:,0])
-    dec=(t[:,:,0]>=0) & (t[:,:,0]<=1)
-    p1=l_(a_(seg(lexico(p[dec],[0,1],[1,1])))[::2])
-    return p1
+# def v_lines_sec(sec,n=10):
+#     '''
+#     divide a 2d section 'sec' in to verticle lines
+#     'n' is the number of lines in the section
+#     '''
+#     px=m_points1_o([a_(sec)[:,0].min()+.001,a_(sec)[:,0].max()-.001],n)
+#     py=zeros(len(px))
+#     p2=a_([px,py]).transpose(1,0)
+#     a=seg(sec)
+#     p0=a_(a)[:,0]
+#     p1=a_(a)[:,1]
+#     v1=p1-p0
+#     v2=a_([[0,1]]*len(v1))
+#     # p0+v1*t1=p2+v2*t2
+#     # v1*t1-v2*t2=p2-p0
+#     iim=a_([v1,-v2+.000001]).transpose(1,0,2).transpose(0,2,1)
+#     im=inv(iim)
+#     t=einsum('ijk,hik->hij',im,p2[:,None,:]-p0[None,:])
+#     p=p0+einsum('ij,hi->hij',v1,t[:,:,0])
+#     dec=(t[:,:,0]>=0) & (t[:,:,0]<=1)
+#     p1=l_(a_(seg(lexico(p[dec],[0,1],[1,1])))[::2])
+#     return p1
 
 def smoothening_by_subdivison(sec,iterations=4,closed=0):
     '''
@@ -10231,3 +10231,53 @@ def concave_hull(c,n=0):
 
 def sterguss(n):
     return 3 if n<=200 else round(1+log2(n))
+
+def h_lines(sec,n=10,o=.1):
+    '''
+    horizontal lines are drawn covering the bounding box of a sketch
+    '''
+    m1=a_(sec).min(axis=0)+[-o,o]
+    m2=a_(sec).max(axis=0)+[o,-o]
+    x0,y0=l_(m1)
+    x1,y1=l_(m2)
+    b=equidistant_path([[[x0,y0],[x1,y0]],[[x0,y1],[x1,y1]]],n-1)
+    return b
+
+def h_lines_sec(sec,n=10,o=.1):
+    '''
+    horizontal lines are drawn covering the closed loop secton
+    '''
+    d=rot2d(.001,h_lines(sec,n,o))
+    e=l_(a_(s_int1(d+seg(sec))).round(4))
+    g=seg(lexicographic_sort_yx(e))
+    g=l_(a_(g)[(a_([line_as_unit_vector(p) for p in g]).round(4)[:,0]>0)])
+    m_p=[mid_point(p) for p in g]
+    m_p1=pies1(sec,m_p)
+    la,lb=array(m_p).round(5),array(m_p1).round(5)
+    h=a_(g)[(lb==la[:,None]).all(2).any(1)].tolist()
+    return h
+
+def v_lines(sec,n=10,o=.1):
+    '''
+    verticle lines are drawn covering the bounding box of a sketch
+    '''
+    m1=a_(sec).min(axis=0)+[o,-o]
+    m2=a_(sec).max(axis=0)+[-o,o]
+    x0,y0=l_(m1)
+    x1,y1=l_(m2)
+    b=equidistant_path([[[x0,y0],[x0,y1]],[[x1,y0],[x1,y1]]],n-1)
+    return b
+
+def v_lines_sec(sec,n=10,o=.1):
+    '''
+    verticle lines are drawn to fill the closed section
+    '''
+    d=rot2d(-.001,v_lines(sec,n,o))
+    e=l_(a_(s_int1(d+seg(sec))).round(4))
+    g=seg(lexicographic_sort_xy(e))
+    g=l_(a_(g)[(a_([line_as_unit_vector(p) for p in g]).round(4)[:,1]>0)])
+    m_p=[mid_point(p) for p in g]
+    m_p1=pies1(sec,m_p)
+    la,lb=array(m_p).round(5),array(m_p1).round(5)
+    h=a_(g)[(lb==la[:,None]).all(2).any(1)].tolist()
+    return h
