@@ -1606,7 +1606,7 @@ def tctp(r1,r2,cp1,cp2): # 2 circle tangent points (one side) r1 and r2 are the 
 
     return tctpf(r1,r2,cp1,cp2)[:2]
 
-two_circle_tangent=tctp
+
 
 def tctpf(r1,r2,cp1,cp2): #2 circle tangent point full (both the sides)
     '''
@@ -1632,7 +1632,7 @@ def tctpf(r1,r2,cp1,cp2): #2 circle tangent point full (both the sides)
 
     return [t3[0].tolist(),t4[0].tolist(),t2[0].tolist(),t1[0].tolist()]
 
-two_circle_tangent_both_sides=tctpf
+
 
 def circle(r,cp=[0,0],s=50): # circle with radius r and center point cp, s is the number of segments in the circle
     '''
@@ -1843,7 +1843,7 @@ def rsz2d(sec,rsz):
     s=array([ avg+array([r_x*(sec[i][0]-avg[0]),r_y*(sec[i][1]-avg[1])-((min_y-avg[1])*r_y-(min_y-avg[1]))]) for i in range(len(sec))]).round(4)
     return s[sort(unique(s,axis=0,return_index=True)[1])].tolist()
 
-resize_2d=rsz2d
+resize2d=rsz2d
 
 def rsz2dc(sec,rsz):
     '''
@@ -2420,7 +2420,7 @@ def tcct(r1,r2,cp1,cp2,cw=-1): # two circle cross tangent
     p1=(cp2+array([r2*cos(theta2*pi/180),r2*sin(theta2*pi/180)])).tolist()
     return [p0,p1]
 
-two_circles_cross_tangent=tcct
+
 
 def arc_3p(p1,p2,p3,s=30):
     ''' 
@@ -9964,7 +9964,9 @@ def twoCircleCrossTangent(c1,c2,cw=-1): # two circle cross tangent
     p1=(cp2+array([r2*cos(theta2*pi/180),r2*sin(theta2*pi/180)])).tolist()
     return [p0,p1]
 
-def twoCircleTangentPoints(c1,c2): #2 circle tangent point full (both the sides)
+two_circle_cross_tangent=twoCircleCrossTangent
+
+def twoCircleTangentPoints(c1,c2,side=0): #2 circle tangent point full (both the sides)
     '''
     function to draw tangent line joining 2 circles 'c1' and 'c2'.
     this works counter-clockwise
@@ -9990,8 +9992,10 @@ def twoCircleTangentPoints(c1,c2): #2 circle tangent point full (both the sides)
 
     t3=cp1+u1@rm(-90-ang1)*r1
     t4=cp2+u1@rm(-90-ang1)*r2
+    t5=[t3[0].tolist(),t4[0].tolist(),t2[0].tolist(),t1[0].tolist()]
+    return t5[:2] if side==0 else t5[2:]
 
-    return [t3[0].tolist(),t4[0].tolist(),t2[0].tolist(),t1[0].tolist()]
+two_circle_tangent=twoCircleTangentPoints
 
 def pts3(pl):
     '''
