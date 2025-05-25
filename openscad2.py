@@ -3789,6 +3789,27 @@ def end_cap(sol,r,s=20):
     s2=f11+flip(f1)+[f11[0]]
 
     return [s1,s2]
+
+def end_cap_1(sol,r,s=20):
+    '''
+    create a rounded edge instead of sharp edge for a hole created with linear_extrude 
+    or path_extrude_open function
+    '''
+    l1=sol[0]
+    l2=offset_3d(l1,r)
+    l3=i_p_p(sol,l1,r)
+    f1=cpo(convert_3lines2fillet(l2,l3,l1,s))[:-1]
+    f11=surface_offset(f1,r)[0]
+    s1=[f11]+f1
+
+    l1=sol[-1]
+    l2=offset_3d(l1,r)
+    l3=i_p_p(sol,l1,-r)
+    f1=cpo(convert_3lines2fillet(l3,l2,l1,s))[:-1]
+    f11=surface_offset(f1,r)[-1]
+    s2=f1+[f11]
+
+    return [s1,s2]
         
 def d2r(d):
     '''
