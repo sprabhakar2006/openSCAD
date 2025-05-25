@@ -3743,32 +3743,52 @@ def axis_rot(axis,solid,angle):
 
 rotate_around_axis=axis_rot
 
-def end_cap(sol,r=1,s=10):
+# def end_cap(sol,r=1,s=10):
+#     '''
+#     function to draw radius at the ends of 'path_extrude_open' models
+#     sol: path extruded solid
+#     r: radius at the ends
+#     s: segments of the radius
+#     '''
+#     sol=axis_rot_o([0,1,0],sol,.00001)
+#     n1=nv(sol[0])
+#     l1=i_p_p(sol,sol[0],r)
+#     l2=offset_3d(sol[0],-r)
+#     fil1=convert_3lines2fillet_closed(l2,l1,sol[0],s=s)
+#     fil1=cpo(fil1)[:-1]
+#     fil2=translate(array(n1)*r*2,scl3dc(fil1,1.5))
+#     f3=flip(fil1)+fil2+[fil1[-1]]
+
+
+#     n1=nv(sol[-1])
+#     l1=i_p_p(flip(sol),sol[-1],r)
+#     l2=offset_3d(sol[-1],-r)
+#     fil1=convert_3lines2fillet_closed(l2,l1,sol[-1],s=s)
+#     fil1=cpo(fil1)[:-1]
+#     fil2=translate(array(n1)*r*-2,scl3dc(fil1,1.5))
+#     f4=flip(fil1)+fil2+[fil1[-1]]
+#     return [f3,flip(f4)]
+
+def end_cap(sol,r,s=20):
     '''
-    function to draw radius at the ends of 'path_extrude_open' models
-    sol: path extruded solid
-    r: radius at the ends
-    s: segments of the radius
+    create a rounded edge instead of sharp edge for a solid created with linear_extrude 
+    or path_extrude_open function
     '''
-    sol=axis_rot_o([0,1,0],sol,.00001)
-    n1=nv(sol[0])
-    l1=i_p_p(sol,sol[0],r)
-    l2=offset_3d(sol[0],-r)
-    fil1=convert_3lines2fillet_closed(l2,l1,sol[0],s=s)
-    fil1=cpo(fil1)[:-1]
-    fil2=translate(array(n1)*r*2,scl3dc(fil1,1.5))
-    f3=flip(fil1)+fil2+[fil1[-1]]
+    l1=sol[0]
+    l2=offset_3d(l1,-r)
+    l3=i_p_p(sol,l1,r)
+    f1=cpo(convert_3lines2fillet(l2,l3,l1,s))[:-1]
+    f11=surface_offset(f1,-r)
+    s1=f11+flip(f1)+[f11[0]]
 
+    l1=sol[-1]
+    l2=offset_3d(l1,-r)
+    l3=i_p_p(sol,l1,-r)
+    f1=cpo(convert_3lines2fillet(l3,l2,l1,s))[:-1]
+    f11=surface_offset(f1,-r)
+    s2=f11+flip(f1)+[f11[0]]
 
-    n1=nv(sol[-1])
-    l1=i_p_p(flip(sol),sol[-1],r)
-    l2=offset_3d(sol[-1],-r)
-    fil1=convert_3lines2fillet_closed(l2,l1,sol[-1],s=s)
-    fil1=cpo(fil1)[:-1]
-    fil2=translate(array(n1)*r*-2,scl3dc(fil1,1.5))
-    f4=flip(fil1)+fil2+[fil1[-1]]
-    return [f3,flip(f4)]
-
+    return [s1,s2]
         
 def d2r(d):
     '''
