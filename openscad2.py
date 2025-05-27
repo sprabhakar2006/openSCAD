@@ -8600,27 +8600,45 @@ def vcost(l1,p0,dist=.2):
     return p1
 
 
-def timeToReachPoint(p0,l1,dist=.01):
+# def timeToReachPoint(p0,l1,dist=.01):
+#     '''
+#     p0: point
+#     l1: line
+#     dist: poin with in distance 'dist' will be picked up
+#     if the point is on the line, it gives back time
+#     where 0<=time<=1
+#     '''
+#     l2=seg(l1)[:-1]
+#     n1=[ i for i in range(len(l2)) if vcost(l2[i],p0,dist)!=[]]
+#     p0=[] if n1==[] else vcost(l2[n1[0]],p0,dist)
+#     a=a_(seg(l1)[:-1])
+#     b,c=a[:,0],a[:,1]
+#     d=p0-b
+#     d=d/norm(d,axis=1).reshape(-1,1)
+#     e=c-b
+#     e=e/norm(e,axis=1).reshape(-1,1)
+#     n=arange(len(a))[(d.round(2)==e.round(2)).all(1)][0]
+#     d1=l_len([p0,l1[n]])+l_lenv_o(l1[:n+1])
+#     t1=d1/l_lenv_o(l1)
+#     return t1
+
+def timeToReachPoint(p0,l1,dist=.1):
     '''
     p0: point
     l1: line
-    dist: poin with in distance 'dist' will be picked up
-    if the point is on the line, it gives back time
-    where 0<=time<=1
+    dist: point within distance 'dist' of line will be picked
+    it return time where 0<=time<=1
     '''
-    l2=seg(l1)[:-1]
-    n1=[ i for i in range(len(l2)) if vcost(l2[i],p0,dist)!=[]]
-    p0=[] if n1==[] else vcost(l2[n1[0]],p0,dist)
-    a=a_(seg(l1)[:-1])
-    b,c=a[:,0],a[:,1]
-    d=p0-b
-    d=d/norm(d,axis=1).reshape(-1,1)
-    e=c-b
-    e=e/norm(e,axis=1).reshape(-1,1)
-    n=arange(len(a))[(d.round(2)==e.round(2)).all(1)][0]
-    d1=l_len([p0,l1[n]])+l_lenv_o(l1[:n+1])
-    t1=d1/l_lenv_o(l1)
-    return t1
+    sec1=seg(l1)[:-1]
+    n=0
+    for i in range(len(sec1)):
+        if vcost(sec1[i],p0,dist):
+            n=i
+    a=l_lenv_o(l1[:n+1])
+    b=l_len([l1[n],p0])
+    c=l_lenv_o(l1)
+    return (a+b)/c
+
 
 def movePointOnLine(l1,p0,d):
     '''
