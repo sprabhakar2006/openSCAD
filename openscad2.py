@@ -10250,7 +10250,7 @@ def con_h(pnts,n=3):
     c=exclude_points(c,[s2])+[s1]
     
     x1=a_(c)[cKDTree(c).query(s2,n)[1]]
-    l1=a_([ ang_2linecw(s2,s1,p) for p in x1])
+    l1=a_([ ang_2linecw(s2,[s2[0],s2[1]-1],p) for p in x1])
     s3=l_(x1[l1.argmax()])
     c=exclude_points(c,[s3])
     d=[s1,s2,s3]
@@ -10457,3 +10457,13 @@ def corner_radius3d_with_turtle(pnts,s=5): # Corner radius 3d where 'pnts' are t
         c.append(fillet_3p_3d(p0,p1,p2,rds[i],s)[1:])
     c=array(c).reshape(-1,3).tolist()
     return remove_extra_points(array(c).round(5))
+
+def trim_sec_ip(sec,p0,p1,side=0,dist=.1):
+    '''
+    trim any closed loop section given 2 points (p0,p1) on the sec
+    dist: points can be approximately with in a defined distance "dist" from the section 
+    '''
+    sec=sec+[sec[0]]
+    c2=lineFromPointToPointOnLine(sec,p0,p1,dist) if side==0 else lineFromPointToPointOnLine(sec,p1,p0,dist)
+    c2=lineFromPointTillEnd(sec,c2[0],dist)+lineFromStartTillPoint(sec,c2[1],dist) if len(c2)==2 else c2
+    return remove_duplicates(c2)
