@@ -3769,20 +3769,22 @@ rotate_around_axis=axis_rot
 #     f4=flip(fil1)+fil2+[fil1[-1]]
 #     return [f3,flip(f4)]
 
-def end_cap(sol,r,s=20):
+def end_cap(sol,r,s=20,t=1):
     '''
     create a rounded edge instead of sharp edge for a solid created with linear_extrude 
     or path_extrude_open function
+    "t" is the type of offset to be used, in most of the cases it will be default 1.
+    in case 1 does not work use 2 instead
     '''
     l1=sol[0]
-    l2=offset_3d(l1,-r)
+    l2=offset_3d(l1,-r,t)
     l3=i_p_p(sol,l1,r)
     f1=cpo(convert_3lines2fillet(l2,l3,l1,s))[:-1]
     f11=surface_offset(f1,-r)
     s1=f11+flip(f1)+[f11[0]]
 
     l1=sol[-1]
-    l2=offset_3d(l1,-r)
+    l2=offset_3d(l1,-r,t)
     l3=i_p_p(sol,l1,-r)
     f1=cpo(convert_3lines2fillet(l3,l2,l1,s))[:-1]
     f11=surface_offset(f1,-r)
@@ -3790,20 +3792,22 @@ def end_cap(sol,r,s=20):
 
     return [s1,s2]
 
-def end_cap_1(sol,r,s=20):
+def end_cap_1(sol,r,s=20,t=1):
     '''
     create a rounded edge instead of sharp edge for a hole created with linear_extrude 
     or path_extrude_open function
+     "t" is the type of offset to be used, in most of the cases it will be default 1.
+    in case 1 does not work use 2 instead
     '''
     l1=sol[0]
-    l2=offset_3d(l1,r)
+    l2=offset_3d(l1,r,t)
     l3=i_p_p(sol,l1,r)
     f1=cpo(convert_3lines2fillet(l2,l3,l1,s))[:-1]
     f11=surface_offset(f1,r)[0]
     s1=[f11]+f1
 
     l1=sol[-1]
-    l2=offset_3d(l1,r)
+    l2=offset_3d(l1,r,t)
     l3=i_p_p(sol,l1,-r)
     f1=cpo(convert_3lines2fillet(l3,l2,l1,s))[:-1]
     f11=surface_offset(f1,r)[-1]
@@ -4455,12 +4459,12 @@ def points2line_min_d_point(line,points,f=1):
         return []
 
 
-def offset_sol(sol,d):
+def offset_sol(sol,d,type=1):
     '''
     function to calculate offset of a 3d object by distance 'd'
     '''
     
-    sol=[offset_3d(p,d) for p in sol]
+    sol=[offset_3d(p,d,type) for p in sol]
     return sol
     
 
@@ -8751,6 +8755,14 @@ def psos(s2,s3,v1,dist=100000,unidirection=1):
 
     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
     return px
+
+def reorient_sec(sec):
+    '''
+    re-orient section to create a better surface through 'prism' function
+    '''
+    sec1=sec2surface_1(sec)
+    sec2=[p[0] for p in sec1]+flip([p[-1] for p in sec1])
+    return sec2
 
 def reorient_sec_1(sec):
     '''
