@@ -4398,15 +4398,25 @@ def ang_2lineccw(p0,p1,p2):
     a2=ang(v2[0],v2[1])
     return 360 if a1-a2==0 else 360-(a1-a2) if a2<a1 else a2-a1 
 
+# def ang_2linecw(p0,p1,p2):
+#     '''
+#     cw angle of the line p0p2 from the base line p0p1
+#     '''
+#     p0,p1,p2=array([p0,p1,p2])
+#     v1,v2=p1-p0,p2-p0
+#     a1=ang(v1[0],v1[1])
+#     a2=ang(v2[0],v2[1])
+#     return 0 if a1-a2==0 else a1-a2 if a2<a1 else 360+(a1-a2) 
+
 def ang_2linecw(p0,p1,p2):
     '''
     cw angle of the line p0p2 from the base line p0p1
     '''
     p0,p1,p2=array([p0,p1,p2])
     v1,v2=p1-p0,p2-p0
-    a1=ang(v1[0],v1[1])
-    a2=ang(v2[0],v2[1])
-    return 0 if a1-a2==0 else a1-a2 if a2<a1 else 360+(a1-a2) 
+    a=ang(v1[0],v1[1])
+    b=ang(v2[0],v2[1])
+    return l_(abs(a-b) if b<=a else (360-b)+a)
 
 def l_lenv(l):
     '''
@@ -10497,3 +10507,28 @@ def trim_sec_ip(sec,p0,p1,side=0,dist=.1):
     c2=lineFromPointToPointOnLine(sec,p0,p1,dist) if side==0 else lineFromPointToPointOnLine(sec,p1,p0,dist)
     c2=lineFromPointTillEnd(sec,c2[0],dist)+lineFromStartTillPoint(sec,c2[1],dist) if len(c2)==2 else c2
     return remove_duplicates(c2)
+
+def homogenise_points(a=[],pitch=1,closed_loop=0):
+    '''
+    function to homogenise the points of a open or closed section, 
+    meaning the pitch between 2 consecutive points of the section remains same,
+    it can be multi-dimensional list of array.
+    here:
+    "a" is the list which needs to be homogenise
+    "pitch" is the pitch between 2 consecutive points
+    "closed_loop" to be set to "1" if the section is closed loop or else set it to "0"
+    '''
+    try:
+        b=a_(a)
+    except:
+        b=[ equidistant_path(p,10) for p in a]
+    if len(a_(b).shape)>2:
+        if closed_loop==1:
+            return [equidistant_pathc(p,pitch=pitch) for p in a]
+        elif closed_loop==0:
+            return [ equidistant_path(p,pitch=pitch) for p in a]
+    else:
+        if closed_loop==1:
+            return equidistant_pathc(a,pitch=pitch)
+        elif closed_loop==0:
+            return equidistant_path(a,pitch=pitch)
