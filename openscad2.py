@@ -4384,7 +4384,7 @@ def equidistant_pathc(path,s=10,pitch=[]):
                 p_rev.append(px.tolist())
                 d[j]=c[-1]+1
     p_rev=[path[0]]+p_rev
-    return p_rev[:int(s)]
+    return p_rev[:int(s)+1] if a_(pitch).size>0 else p_rev[:s]
 
 
     
@@ -10258,69 +10258,86 @@ def ang_v(v):
     '''
     return ang(v[0],v[1])
 
-def con_h(pnts,n=3):
-    '''
-    Input function to concave_hull function
-    '''
-    def ax(line_seg,pnts):
-        for i in range(len(pnts)):
-            l1=line_seg+[pnts[i]]
-            l2=s_int1(seg(l1)[:-1])
-            if l2==[]:
-                return l_(pnts[i])
-        return []
+# def con_h(pnts,n=3):
+#     '''
+#     Input function to concave_hull function
+#     '''
+#     def ax(line_seg,pnts):
+#         for i in range(len(pnts)):
+#             l1=line_seg+[pnts[i]]
+#             l2=s_int1(seg(l1)[:-1])
+#             if l2==[]:
+#                 return l_(pnts[i])
+#         return []
         
-    def bx(l1,p0,p1,pnts,n):
-        pnts=a_(pnts)
-        x1=pnts[cKDTree(pnts).query(p0,n)[1]]
-        x2=x1[a_([ang_2linecw(p0,p1,p) for p in x1]).argsort()[::-1]]
-        if ax(l1,x2)!=[]:
-            return ax(l1,x2)
-        elif n<len(pnts):
-            return bx(l1,p0,p1,pnts,n+1)
-        else:
-            return []
+#     def bx(l1,p0,p1,pnts,n):
+#         pnts=a_(pnts)
+#         x1=pnts[cKDTree(pnts).query(p0,n)[1]]
+#         x2=x1[a_([ang_2linecw(p0,p1,p) for p in x1]).argsort()[::-1]]
+#         if ax(l1,x2)!=[]:
+#             return ax(l1,x2)
+#         # elif n<len(pnts):
             
-    c=remove_extra_points(pnts)
-    s1=s_pnt(c)
-    c=exclude_points(c,[s1])
-    x1=a_(c)[cKDTree(c).query(s1,n)[1]]
-    l1=a_([ ang_2linecw(s1,[s1[0],s1[1]-1],p) for p in x1])
-    s2=l_(x1[l1.argmax()])
-    c=exclude_points(c,[s2])+[s1]
+#         #     return bx(l1,p0,p1,pnts,n+1)
+#         else:
+#             return []
+#     n1=n        
+#     c=remove_extra_points(pnts)
+#     s1=s_pnt(c)
+#     c=exclude_points(c,[s1])
+#     x1=a_(c)[cKDTree(c).query(s1,n)[1]]
+#     l1=a_([ ang_2linecw(s1,[s1[0],s1[1]-1],p) for p in x1])
+#     s2=l_(x1[l1.argmax()])
+#     c=exclude_points(c,[s2])+[s1]
     
-    x1=a_(c)[cKDTree(c).query(s2,n)[1]]
-    l1=a_([ ang_2linecw(s2,[s2[0],s2[1]-1],p) for p in x1])
-    s3=l_(x1[l1.argmax()])
-    c=exclude_points(c,[s3])
-    d=[s1,s2,s3]
-    while((len(c)>2)):
-        if d[-1]==d[0]:
-            break
-        else:
-            p0,p1=d[-1],d[-2]
-            p2=bx(d,p0,p1,c,l_(min([n,len(c)])))
-            if p2!=[]:
-                d.append(p2)
-                c=exclude_points(c,[p2])
-            else:
-                
-                break
+#     x1=a_(c)[cKDTree(c).query(s2,n)[1]]
+#     l1=a_([ ang_2linecw(s2,[s2[0],s2[1]-1],p) for p in x1])
+#     s3=l_(x1[l1.argmax()])
+#     c=exclude_points(c,[s3])
+#     d=[s1,s2,s3]
+#     while((len(c)>2)):
+#         if d[-1]==d[0]:
+#             break
+#         else:
+#             p0,p1=d[-1],d[-2]
+#             p2=bx(d,p0,p1,c,l_(min([n,len(c)])))
+#             if p2!=[]:
+#                 d.append(p2)
+#                 c=exclude_points(c,[p2])
+#             else:
+#                 d=d[:-1]
+#                 n=n+1
+#                 if (n>n1+5):
+#                     break
+                    
     
-    return d
+#     return d
     
-def concave_hull(c,n=0):
-    '''
-    finds the concave hull of a given random points
-    '''
-    n= n if n>0 else sterguss(len(c))
-    d=con_h(c,n)
-    e=exclude_points(c,d)
-    r=norm(a_(d).max(0)-a_(d).min(0))/50
-    if (len(e)==len(pies1(offset(d[:-1],r),e))) and (d[-1]==d[0]):
-        return d[:-1]
-    else:
-        return concave_hull(c,n+1)
+# def concave_hull(c,n=0):
+#     '''
+#     finds the concave hull of a given random points
+#     '''
+#     n= n if n>0 else sterguss(len(c))
+    
+#     d=con_h(c,n)
+#     e=exclude_points(c,d)
+#     if len(pies1(d,e))>=(len(c)-len(d))*.99:
+#         return d[:-1]
+#     else:
+#         return concave_hull(c,n+1)
+
+# def concave_hull(c,n=0):
+#     '''
+#     finds the concave hull of a given random points
+#     '''
+#     n= n if n>0 else sterguss(len(c))
+#     d=con_h(c,n)
+#     e=exclude_points(c,d)
+#     r=norm(a_(d).max(0)-a_(d).min(0))/50
+#     if (len(e)==len(pies1(offset(d[:-1],r),e))) and (d[-1]==d[0]):
+#         return d[:-1]
+#     else:
+#         return concave_hull(c,n+1)
 
 def sterguss(n):
     return 3 if n<=200 else round(1+log2(n))
@@ -10532,3 +10549,65 @@ def homogenise_points(a=[],pitch=1,closed_loop=0):
             return equidistant_pathc(a,pitch=pitch)
         elif closed_loop==0:
             return equidistant_path(a,pitch=pitch)
+
+def concave_hull(points,n=3):
+    
+    def k_nearest_points(points_list,point,n):
+        '''
+        find n nearest points from a points_list near to point.
+        points will be sorted w.r.t. distance near to far
+        '''
+        return l_(a_(points_list)[cKDTree(points_list).query(point,n)[1]])
+
+    def spoa(points_list,p0,p1):
+        '''
+        sort the points_list w.r.t. angle each point makes with line p0p1.
+        where p0 is the center for rotation. e.g. it is the ange between line p0p1 and p0p2
+        where consider p2 as one of the point in 
+        '''
+        return l_(a_(points_list)[a_([ang_2linecw(p0,p1,p)  for p in points_list]).argsort()[::-1]])
+
+    def spaci(points_list,line):
+        '''
+        sort points on angle and check self intersection
+        '''
+        a=l_(a_(points_list)[a_([ang_2linecw(line[-1],line[-2],p)  
+                                 for p in points_list]).argsort()[::-1]])
+        for i in range(len(a)):
+            if s_int1(seg(line+[a[i]])[:-1])==[]:
+                line=line+[a[i]]
+                break
+        return line
+
+    def ffp(points,n):
+        '''
+        first four points calculation
+        '''
+        p0=s_pnt(points)
+        pnts=exclude_points(points,p0)
+        l1=k_nearest_points(pnts,p0,n)
+        p1=spoa(l1,p0,translate_2d([0,-1],p0))[0]
+        pnts=exclude_points(pnts,p1)
+        l1=k_nearest_points(pnts,p1,n)
+        p2=spoa(l1,p1,p0)[0]
+        pnts=exclude_points(pnts,p2)
+        l1=k_nearest_points(pnts,p2,n)
+        p3=spoa(l1,p2,p1)[0]
+        pnts=exclude_points(pnts,p3)+[p0]
+        l2=[p0,p1,p2,p3]
+        return [l2,pnts]
+
+    
+    l2,pnts=ffp(points,n)
+    while(len(pnts)>2):
+        if l2[-1]==l2[0]:
+            break
+        l1=k_nearest_points(pnts,l2[-1],n)
+        l3=spaci(l1,l2)
+        if l2==l3:
+            n=n+1
+            l2,pnts=ffp(points,n)
+        else:
+            l2=l3
+        pnts=exclude_points(pnts,l2[-1])
+    return l2[:-1]
