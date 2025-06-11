@@ -3223,6 +3223,8 @@ def pntsnfaces(bead2):
 def path_offset(path,d):
     if d==0:
         return path
+    elif len(rationalise_path(path))==2:
+        return offset_segv(path,d)[:-1][0]
     else:
         a=offset_segv(path,d)[:-1]
         b=[a[0][0]]+intersections(a)[1:]+[a[-1][-1]]
