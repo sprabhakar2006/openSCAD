@@ -4021,36 +4021,36 @@ def r_arc(arc1):
 
 radius_arc2d=r_arc
     
-def fillet_l_cir(line=[],cir1=[],fillet_radius=1,s=20):
-    '''
-    function to draw fillet between a line and a circle
-    '''
-    p0,p1=array(line)
-    cp=array(cp_arc(cir1))
-    r1=r_arc(cir1)
-    r2=fillet_radius
-    v1=p1-p0
-    v2=cp-p0
-    u1=v1/norm(v1)
-    u2=v2/norm(v2)
-    d1=u1@v2
-    p2=p0+u1*d1
-    v3=p2-cp
-    u3=v3/norm(v3)
-    h=norm(p2-cp)-r2
-    r=r1+r2
-    d=sqrt(r**2-h**2)
-    cp1=cp+u3*h-u1*d
-    cp2=cp+u3*h+u1*d
-    p3=p0+u1*(d1-d)
-    p4=l_cir_ip([cp1,cp],cir1)[0]
-    p5=p0+u1*(d1+d)
-    p6=l_cir_ip([cp2,cp],cir1)[0]
-    fillet1=arc_2p(p3,p4,r2,cw([p0,p2,cp]),s=s)
-    fillet2=arc_2p(p5,p6,r2,cw([p1,p2,cp]),s=s)
-    return [fillet1, fillet2]
+# def fillet_l_cir(line=[],cir1=[],fillet_radius=1,s=20):
+#     '''
+#     function to draw fillet between a line and a circle
+#     '''
+#     p0,p1=array(line)
+#     cp=array(cp_arc(cir1))
+#     r1=r_arc(cir1)
+#     r2=fillet_radius
+#     v1=p1-p0
+#     v2=cp-p0
+#     u1=v1/norm(v1)
+#     u2=v2/norm(v2)
+#     d1=u1@v2
+#     p2=p0+u1*d1
+#     v3=p2-cp
+#     u3=v3/norm(v3)
+#     h=norm(p2-cp)-r2
+#     r=r1+r2
+#     d=sqrt(r**2-h**2)
+#     cp1=cp+u3*h-u1*d
+#     cp2=cp+u3*h+u1*d
+#     p3=p0+u1*(d1-d)
+#     p4=l_cir_ip([cp1,cp],cir1)[0]
+#     p5=p0+u1*(d1+d)
+#     p6=l_cir_ip([cp2,cp],cir1)[0]
+#     fillet1=arc_2p(p3,p4,r2,cw([p0,p2,cp]),s=s)
+#     fillet2=arc_2p(p5,p6,r2,cw([p1,p2,cp]),s=s)
+#     return [fillet1, fillet2]
 
-fillet_between_line_circle=fillet_l_cir
+
 
 
 def o_solid(nv=[0,0,1],sec=[],thickness=10,trns1=0,trns2=0,trns3=0, theta=[0,0,0]): #oriented solid
@@ -7116,29 +7116,29 @@ def fillet_line_circle_internal_3d(l1,c1,r2,cw=-1,option=0,s=50):
     return arc_2p_3d(n1,p2,p4,r2,cw=cw,s=s)
 
 
-def fillet_line_circle_internal(l1,c1,r2,cw=-1,option=0,s=50):
-    '''
-    function to draw a fillet between a line and a circle, where the fillet is drawn inside of the circle
-    option can be '0' or '1' to flip the fillet from one side to another
-    's' is the number of segments in the arc
-    '''
-    v1=array(l1[1])-array(l1[0])
-    u1=v1/norm(v1)
-    cp1=cp_arc(c1)
-    v2=array(cp1)-array(l1[0])
-    u2=v2/norm(v2)
-    l_1=norm(cross(c23(v1),c23(v2)))/norm(v1)
-    p3=array(l1[0])+u1*(u1@v2)
-    r1=r_arc(c1)
-    d=sqrt((r1-r2)**2-(l_1+r2)**2) if option==0 else sqrt((r1-r2)**2-(l_1-r2)**2)
-    p2=p3-u1*d
-    v3=array(cp1)-p3
-    u3=v3/norm(v3)
-    cp2=p2-u3*r2 if option==0 else p2+u3*r2
-    v4=array(cp1)-cp2
-    u4=v4/norm(v4)
-    p4=cp2-u4*r2
-    return arc_2p(p2,p4,r2,cw=cw,s=s)
+# def fillet_line_circle_internal(l1,c1,r2,cw=-1,option=0,s=50):
+#     '''
+#     function to draw a fillet between a line and a circle, where the fillet is drawn inside of the circle
+#     option can be '0' or '1' to flip the fillet from one side to another
+#     's' is the number of segments in the arc
+#     '''
+#     v1=array(l1[1])-array(l1[0])
+#     u1=v1/norm(v1)
+#     cp1=cp_arc(c1)
+#     v2=array(cp1)-array(l1[0])
+#     u2=v2/norm(v2)
+#     l_1=norm(cross(c23(v1),c23(v2)))/norm(v1)
+#     p3=array(l1[0])+u1*(u1@v2)
+#     r1=r_arc(c1)
+#     d=sqrt((r1-r2)**2-(l_1+r2)**2) if option==0 else sqrt((r1-r2)**2-(l_1-r2)**2)
+#     p2=p3-u1*d
+#     v3=array(cp1)-p3
+#     u3=v3/norm(v3)
+#     cp2=p2-u3*r2 if option==0 else p2+u3*r2
+#     v4=array(cp1)-cp2
+#     u4=v4/norm(v4)
+#     p4=cp2-u4*r2
+#     return arc_2p(p2,p4,r2,cw=cw,s=s)
 
 def fillet_line_circle_3d(l1,c1,r2,cw=-1,option=0,s=50):
     '''
@@ -10613,3 +10613,84 @@ def concave_hull(points,n=3):
             l2=l3
         pnts=exclude_points(pnts,l2[-1])
     return l2[:-1]
+
+def fillet_line_circle(l1,c1,r=1,o=1,s=10):
+    '''
+    fillet between a line and a circle
+    'o' is option which can be set from 1 to 4 for fillets in 4 different direction.
+    's' is the number of segments of the fillet
+    '''
+    def vcost1(l1,p0):
+        '''
+        finds the projection of the point 'p0' on line 'l1'
+        '''
+        v1=a_(l1[1])-a_(l1[0])
+        u1=v1/norm(v1)
+        v2=a_(p0)-a_(l1[0])
+        d1,d2=v1@v2/norm(v1),norm(cross(c23(v1),c23(v2)))/norm(v1)
+        p1=l_(a_(l1[0])+u1*d1)
+        return p1
+    l1=rot2d(.0001,l1)
+    r1=r_arc(c1)
+    r2=r
+    if o==1 or o==3:
+        l2=path_offset(l1,-r2)
+    elif o==2 or o==4:
+        l2=path_offset(l1,r2)
+    cp=cp_arc(c1)
+    p0=vcost1(l2,cp)
+    u1=a_(line_as_unit_vector(l2))
+    if o==1 or o==2:
+        p1=l_(a_(p0)+u1*sqrt((r1+r2)**2-l_len([cp,p0])**2))
+    elif o==3 or o==4:
+        p1=l_(a_(p0)-u1*sqrt((r1+r2)**2-l_len([cp,p0])**2))
+        
+    u2=a_(line_as_unit_vector([cp,p1]))
+    p2=l_(a_(cp)+u2*r1)
+    p3=vcost1(l1,p1)
+    if o==1 or o==4:
+        a1=arc_2p(p2,p3,r2,-1,s=s)
+    elif o==2 or o==3:
+        a1=arc_2p(p2,p3,r2,1,s=s)
+    return a1
+
+def fillet_line_circle_internal(l1,c1,r=1,o=1,s=10):
+    '''
+    fillet between a line and a circle. This is inside the circle fillet
+    'o' is option which can be set from 1 to 4 for fillets in 4 different direction.
+    's' is the number of segments of the fillet
+    '''
+    def vcost1(l1,p0):
+            '''
+            finds the projection of the point 'p0' on line 'l1'
+            '''
+            v1=a_(l1[1])-a_(l1[0])
+            u1=v1/norm(v1)
+            v2=a_(p0)-a_(l1[0])
+            d1,d2=v1@v2/norm(v1),norm(cross(c23(v1),c23(v2)))/norm(v1)
+            p1=l_(a_(l1[0])+u1*d1)
+            return p1
+    l1=rot2d(.0001,l1)
+    r1=r_arc(c1)
+    r2=r
+    if o==1 or o==3:
+        l2=path_offset(l1,-r2)
+    elif o==2 or o==4:
+        l2=path_offset(l1,r2)
+    cp=cp_arc(c1)
+    p0=vcost1(l2,cp)
+    u1=a_(line_as_unit_vector(l2))
+    if o==1 or o==2:
+        p1=l_(a_(p0)+u1*sqrt((r1-r2)**2-l_len([cp,p0])**2))
+    elif o==3 or o==4:
+        p1=l_(a_(p0)-u1*sqrt((r1-r2)**2-l_len([cp,p0])**2))
+        
+    u2=a_(line_as_unit_vector([cp,p1]))
+    p2=l_(a_(cp)+u2*r1)
+    p3=vcost1(l1,p1)
+    
+    if o==1 or o==4:
+        a1=arc_2p(p2,p3,r2,1,s=s)
+    elif o==2 or o==3:
+        a1=arc_2p(p2,p3,r2,-1,s=s)
+    return a1
