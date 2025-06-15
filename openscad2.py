@@ -4948,6 +4948,10 @@ def l_sec_ip(line,sec):
         pnts=p[0]+v2*t2
         if 0<=t2<=1:
             p_l.append(pnts.tolist())
+    try:
+        p_l=l_(a_(p_l)[cKDTree([line[0]]).query(p_l)[0].argsort()])
+    except:
+        p_l=[]
     return p_l
 
 line_section_ip=l_sec_ip
@@ -4963,7 +4967,7 @@ def l_sec_ip_3d(sec,line):
     line2=c3t2(axis_rot(a1,line1,t1))
     l1=len(sec2)
     p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
-    pnts=l_sec_ip(line2,sec2)
+    pnts=line_section_ip(line2,sec2)
     pnts=translate(array(sec).mean(0),axis_rot(a1,pnts,-t1)) if pnts!=[] else []
     return pnts
 
@@ -10694,3 +10698,66 @@ def fillet_line_circle_internal(l1,c1,r=1,o=1,s=10):
     elif o==2 or o==3:
         a1=arc_2p(p2,p3,r2,-1,s=s)
     return a1
+
+def extend_line(line,sec):
+    '''
+    extend a line to an intersecting section
+    '''
+    l1=line[-2:]
+    v1=line_as_unit_vector(l1)
+    v2=lines2vectors(seg(sec))
+    v1=[v1]*len(v2)
+    iim=a_([a_(v1),-a_(v2)]).transpose(1,0,2).transpose(0,2,1)
+    im=inv(iim)
+    p=a_(sec)-a_(l1[1])
+    tx=einsum('ijk,ik->ij',im,p)
+    ta,tb=tx.transpose(1,0)
+    d1=(ta>0.001)&(tb>=0)&(tb<1)
+    p0=l_(a_(l1[1])+a_(v1[0])[None,:]*ta[d1][:,None])
+    p0=l_(a_(p0)[(cKDTree([l1[1]]).query(p0))[0].argsort()][0])
+    return line[:-1]+[p0]
+
+# def line_section_ip(line,sec):
+#     '''
+#     line to section intersection points sorted w.r.t. distance from the line starting point
+#     '''
+#     l1=line[-2:]
+#     v1=line_as_unit_vector(l1)
+#     v2=lines2vectors(seg(sec))
+#     v1=[v1]*len(v2)
+#     iim=a_([a_(v1),-a_(v2)]).transpose(1,0,2).transpose(0,2,1)
+#     im=inv(iim)
+#     p=a_(sec)-a_(l1[0])
+#     tx=einsum('ijk,ik->ij',im,p)
+#     ta,tb=tx.transpose(1,0)
+#     d1=(tb>=0)&(tb<1)
+#     p0=l_(a_(l1[0])+a_(v1[0])[None,:]*ta[d1][:,None])
+#     try:
+#         p0=l_(a_(p0)[(cKDTree([l1[0]]).query(p0))[0].argsort()])
+#     except:
+#         p0=[]
+#     return p0
+
+def line_multi_sections_ip(line,sections=[]):
+    '''
+    intersection points between line and multiple sections.
+    intersection points sorted w.r.t. distance from the line's starting point
+    '''
+    l1=line[-2:]
+    s1=l_(concatenate([seg(p) for p in sections]))
+    v1=line_as_unit_vector(l1)
+    v2=lines2vectors(s1)
+    v1=[v1]*len(v2)
+    iim=a_([a_(v1),-a_(v2)]).transpose(1,0,2).transpose(0,2,1)
+    im=inv(iim)
+    p=a_(s1)[:,0]-a_(l1[0])
+    tx=einsum('ijk,ik->ij',im,p)
+    ta,tb=tx.transpose(1,0)
+    d1=(tb>=0)&(tb<1)
+    p0=l_(a_(l1[0])+a_(v1[0])[None,:]*ta[d1][:,None])
+    try:
+        p0=l_(a_(p0)[(cKDTree([l1[0]]).query(p0))[0].argsort()])
+    except:
+        p0=[]
+
+    return p0
