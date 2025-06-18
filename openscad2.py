@@ -7179,16 +7179,17 @@ def fillet_line_circle_3d(l1,c1,r2,cw=-1,option=0,s=50):
     p4=cp2+u4*r2
     return translate(tr,axis_rot(n2,arc_2p(p2,p4,r2,cw=cw,s=s),-theta))
 
-def mirror_line(p0,n1,loc):
+def mirror_line(p1,n1,loc):
     '''
     function to mirror the points list 'p0' defined by mirroring plane 'n1' with location 'loc'
     '''
+    p0=c23(p1)
     a=ppplane(p0,n1,loc)
     b=[]
     for i in range(len(a)):
         v1=array(a[i])-p0[i]
         b.append((array(a[i])+v1).tolist())
-    return b
+    return c32(b) if a_(p1).shape[-1]==2 else b
 
 def change_orientation(surf):
     '''
