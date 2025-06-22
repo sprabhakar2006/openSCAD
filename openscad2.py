@@ -10790,3 +10790,35 @@ def dim_linear(p0,vector,cross_hair_size=2,text_color="blue",text_size=1,line_co
     color("{lc}")for(p={[l1,l2,l3,l4,l5]})p_line3d(p,.1);
     color("{tc}")translate({p0})linear_extrude(.2)text(str({l_len(l1)}),{ts});'''
     return txt
+
+def dim_radial(a1,cross_hair_size=2,text_color="blue",text_size=1,line_color="blue",arc_color="magenta"):
+    '''
+    radial dimensions with defined arc or circle 'a1'
+    '''
+    def point_vector(point,vector):
+        '''
+        draw a line by defining a point and vector
+        '''
+        p0=a_(point)
+        v0=a_(vector)
+        p1=p0+v0
+        return l_(a_([p0,p1]))
+    c1=center_circle3d(a1)
+    p0=mid_point(a1)
+    vector=line_as_vector([c1,p0])
+    l1=point_vector(c1,vector)
+    chs=cross_hair_size
+    tc=text_color
+    ts=text_size
+    lc=line_color
+    ac=arc_color
+    pl1=plane(line_as_axis(l1),[chs,chs],l1[0])
+    l2=[mid_point(pl1[0]),mid_point(pl1[1])]
+    l3=mid_line(pl1[0],pl1[1])
+    l4,l5=translate(vector,[l2,l3])
+    p0=mid_point(l1)
+    txt=f'''
+    color("{ac}") p_line3d({a1},.1);
+    color("{lc}")for(p={[l1,l2,l3,l4,l5]})p_line3d(p,.1);
+    color("{tc}")translate({p0})linear_extrude(.2)text(str("R",{round(l_len(l1),2)}),{ts});'''
+    return txt
