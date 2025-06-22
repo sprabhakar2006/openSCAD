@@ -10849,3 +10849,14 @@ def dim_angular(l1,l2,text_color="blue",text_size=1,line_color="blue",arc_color=
     color("{tc}")translate({p6})linear_extrude(.2)text(str({round(a1,2)},"deg"),{ts});
     '''
     return txt
+
+def vcost1(l1,p0):
+    '''
+    finds the projection of the point 'p0' on line 'l1'
+    '''
+    v1=a_(l1[1])-a_(l1[0])
+    u1=v1/norm(v1)
+    v2=a_(p0)-a_(l1[0])
+    d1,d2=v1@v2/norm(v1),norm(cross(c23(v1),c23(v2)))/norm(v1)
+    p1=l_(a_(l1[0])+u1*d1)
+    return p1
