@@ -10822,3 +10822,30 @@ def dim_radial(a1,cross_hair_size=2,text_color="blue",text_size=1,line_color="bl
     color("{lc}")for(p={[l1,l2,l3,l4,l5]})p_line3d(p,.1);
     color("{tc}")translate({p0})linear_extrude(.2)text(str("R",{round(l_len(l1),2)}),{ts});'''
     return txt
+
+def dim_angular(l1,l2,text_color="blue",text_size=1,line_color="blue",arc_color="magenta"):
+    '''
+    angular dimension between 2 lines 'l1' and 'l2'
+    '''
+    tc=text_color
+    ts=text_size
+    lc=line_color
+    ac=arc_color
+    v1,v2=[line_as_unit_vector(p) for p in [l1,l2]]
+    v1=l_(a_(v1)*-1)
+    a1=l_(r2d(arcsin(round(norm(cross(v1,v2))/(norm(v1)*norm(v2)),4))))
+    p2=l_(v1)
+    p3=vcost1([p2,[0,0,0]],l_(v2))
+    d1=l_len([p2,p3])
+    a1=180-a1 if d1>1 else a1
+    p4=movePointOnLine(flip(l1),l1[-1],(l_len(l1)+l_len(l2))/2/4)
+    p5=movePointOnLine(l2,l2[0],(l_len(l1)+l_len(l2))/2/4)
+    d2=l_len([p4,p5])
+    a2=arc_2p_3d(nv([v1,[0,0,0],v2]),p4,p5,d2)
+    p6=mid_point(a2)
+    txt=f'''
+    color("{lc}")for(p={[l1,l2]})p_line3d(p,.1);
+    color("{ac}")p_line3d({a2},.1);
+    color("{tc}")translate({p6})linear_extrude(.2)text(str({round(a1,2)},"deg"),{ts});
+    '''
+    return txt
