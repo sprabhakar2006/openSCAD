@@ -10768,13 +10768,13 @@ def dim_linear(p0,vector,cross_hair_size=2,text_color="blue",text_size=1,line_co
     linear dimensions with defined point and vector
     '''
     def point_vector(point,vector):
-    '''
-    draw a line by defining a point and vector
-    '''
-    p0=a_(point)
-    v0=a_(vector)
-    p1=p0+v0
-    return l_(a_([p0,p1]))
+        '''
+        draw a line by defining a point and vector
+        '''
+        p0=a_(point)
+        v0=a_(vector)
+        p1=p0+v0
+        return l_(a_([p0,p1]))
     
     l1=point_vector(p0,vector)
     chs=cross_hair_size
