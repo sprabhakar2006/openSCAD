@@ -10860,3 +10860,37 @@ def vcost1(l1,p0):
     d1,d2=v1@v2/norm(v1),norm(cross(c23(v1),c23(v2)))/norm(v1)
     p1=l_(a_(l1[0])+u1*d1)
     return p1
+
+def dim_linear1(l1,gap=2,cross_hair_size=2,text_color="blue",text_size=1,line_color="blue"):
+    '''
+    linear dimensions with defined line l1
+    '''
+    def point_vector(point,vector):
+        '''
+        draw a line by defining a point and vector
+        '''
+        p0=a_(point)
+        v0=a_(vector)
+        p1=p0+v0
+        return l_(a_([p0,p1]))
+    p0=l1[0]
+    vector=line_as_axis(l1)
+    l1=point_vector(p0,vector)
+    chs=cross_hair_size
+    tc=text_color
+    ts=text_size
+    lc=line_color
+    pl1=plane(vector,[gap,gap],l1[0])
+    l2=[mid_point(pl1[0]),mid_point(pl1[1])]
+    l3=mid_line(pl1[0],pl1[1])
+    p0=l3[0]
+    p1=translate(vector,p0)
+    pl1=plane(vector,[chs,chs],p0)
+    l2=[mid_point(pl1[0]),mid_point(pl1[1])]
+    l3=mid_line(pl1[0],pl1[1])
+    l4,l5=translate(vector,[l2,l3])
+    p2=mid_point([p0,p1])
+    txt=f'''
+    color("{lc}")for(p={[[p0,p1],l2,l3,l4,l5]})p_line3d(p,.1);
+    color("{tc}")translate({p2})linear_extrude(.2)text(str({l_len(l1)}),{ts});'''
+    return txt
