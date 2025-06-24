@@ -10825,7 +10825,7 @@ def dim_radial(a1,cross_hair_size=2,text_color="blue",text_size=1,line_color="bl
     txt=f'''
     color("{ac}") p_line3d({a1},.1);
     color("{lc}")for(p={[l1,l2,l3,l4,l5]})p_line3d(p,.1);
-    color("{tc}")translate({p0})linear_extrude(.2)text(str("R",{round(l_len(l1),2)}),{ts});'''
+    color("{tc}")translate({p0})linear_extrude(.2)text(str("R",{round(l_len([c1,a1[0]]),2)}),{ts});'''
     return txt
 
 def dim_angular(l1,l2,text_color="blue",text_size=1,line_color="blue",arc_color="magenta"):
@@ -10899,3 +10899,12 @@ def dim_linear(l1,gap=2,cross_hair_size=2,text_color="blue",text_size=1,line_col
     color("{lc}")for(p={[[p0,p1],l2,l3,l4,l5]})p_line3d(p,.1);
     color("{tc}")translate({p2})linear_extrude(.2)text(str({l_len(l1)}),{ts});'''
     return txt
+
+def point_vector(point,vector):
+        '''
+        draw a line by defining a point and vector
+        '''
+        p0=a_(point)
+        v0=a_(vector)
+        p1=p0+v0
+        return l_(a_([p0,p1]))
