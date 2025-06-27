@@ -1718,10 +1718,13 @@ def cylinder(r1=1,r2=1,h=1,s=50,r=0,d=0,d1=0,d2=0,center=False):
     else:
         return sol
 
-def square(s=0,center=False):
+def square(s=0,r=0,seg=10,center=False):
     m= s if type(s)==int or type(s)==float else s[0]
     n= s if type(s)==int or type(s)==float else s[1]
-    sec=cr(pts1([[0,0,.01],[m,0,.01],[0,n,.01],[-m,0,.01]]),10)
+    if r==0:
+        sec=turtle2d([[0,0],[m,0],[0,n],[-m,0]])
+    else:
+        sec=corner_radius_with_turtle([[0,0,.01],[m,0,.01],[0,n,.01],[-m,0,.01]],seg)
     sec1= [[p[0]-m/2,p[1]-n/2] for p in sec] if center==True else sec
     return sec1
 
@@ -4765,6 +4768,7 @@ def cp_cir_3d(cir):
     return cp
 
 center_circle3d=cp_cir_3d
+center_arc3d=cp_cir_3d
 
 def centroid_3p_3d(points):
     '''
@@ -10556,6 +10560,18 @@ def homogenise_points(a=[],pitch=1,closed_loop=0):
             return equidistant_pathc(a,pitch=pitch)
         elif closed_loop==0:
             return equidistant_path(a,pitch=pitch)
+
+def homogenise(a=[],pitch=1,closed_loop=0):
+    '''
+    refer function homogenise_points
+    In addition to the function homogenise_points, it mixes all the points together in one level.
+    '''
+    try:
+        if len(a_(a).shape)==2:
+            return homogenise_points(a,pitch,closed_loop)
+    except:
+        if len(a)>1 and len(a_(a[0]).shape)==2:
+            return l_(concatenate(homogenise_points(a,pitch,closed_loop)))
 
 def concave_hull(points,n=3):
     
