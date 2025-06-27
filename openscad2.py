@@ -10569,6 +10569,9 @@ def homogenise(a=[],pitch=1,closed_loop=0):
     try:
         if len(a_(a).shape)==2:
             return homogenise_points(a,pitch,closed_loop)
+            
+        elif len(a)>1 and len(a_(a[0]).shape)==2:
+            return l_(concatenate(homogenise_points(a,pitch,closed_loop)))
     except:
         if len(a)>1 and len(a_(a[0]).shape)==2:
             return l_(concatenate(homogenise_points(a,pitch,closed_loop)))
