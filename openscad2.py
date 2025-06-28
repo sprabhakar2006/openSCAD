@@ -10937,3 +10937,25 @@ def wrap_surface_around_path(surf,path):
     '''
     surf=translate([0,.001,0],surf)
     return [ wrap_around(p,path) for p in surf]
+
+def s_int1_first(sec1):
+    '''
+    similar to 's_int1' function but only calculates intersection with the first segment with all the other segment
+    '''
+    n=len(sec1)
+    a=array(sec1)[comb_list(n)[comb_list(n)[:,0]==0]]
+    p0=a[:,0][:,0]
+    p1=a[:,0][:,1]
+    p2=a[:,1][:,0]
+    p3=a[:,1][:,1]
+    v1=a_(rot2d(0.00001,p1-p0))
+    v2=p3-p2
+    iim=array([v1,-v2]).transpose(1,0,2).transpose(0,2,1)
+    im=inv(iim)
+    p=p2-p0
+
+    t=einsum('ijk,ik->ij',im,p)
+    dcn=(t[:,0].round(4)>0)&(t[:,0].round(4)<1)&(t[:,1].round(4)>0)&(t[:,1].round(4)<1)
+    i_p1=p0+einsum('ij,i->ij',v1,t[:,0])
+    i_p1=i_p1[dcn].tolist()
+    return i_p1
