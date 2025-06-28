@@ -3899,7 +3899,7 @@ def wrap_around(sec,path):
         sec1.append(c.tolist())  
     return sec1
 
-
+wrap_section_around_path=wrap_around
     
 def align_sec(sec1,sec2,ang=10):
     '''
@@ -10822,6 +10822,7 @@ def dim_radial(a1,cross_hair_size=2,text_color="blue",text_size=1,line_color="bl
         v0=a_(vector)
         p1=p0+v0
         return l_(a_([p0,p1]))
+    a1=c23(a1)
     c1=center_circle3d(a1)
     p0=mid_point(a1)
     vector=line_as_vector([c1,p0])
@@ -10851,6 +10852,7 @@ def dim_angular(l1,l2,text_color="blue",text_size=1,line_color="blue",arc_color=
     '''
     angular dimension between 2 lines 'l1' and 'l2'
     '''
+    l1,l2=c23([l1,l2])
     tc=text_color
     ts=text_size
     lc=line_color
@@ -10897,6 +10899,7 @@ def dim_linear(l1,gap=2,cross_hair_size=2,text_color="blue",text_size=1,line_col
         v0=a_(vector)
         p1=p0+v0
         return l_(a_([p0,p1]))
+    l1=c23(l1)
     p0=l1[0]
     vector=line_as_axis(l1)
     l1=point_vector(p0,vector)
@@ -10927,3 +10930,10 @@ def point_vector(point,vector):
         v0=a_(vector)
         p1=p0+v0
         return l_(a_([p0,p1]))
+
+def wrap_surface_around_path(surf,path):
+    '''
+    wrap a surface around a specified 3d path
+    '''
+    surf=translate([0,.001,0],surf)
+    return [ wrap_around(p,path) for p in surf]
