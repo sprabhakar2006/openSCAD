@@ -10598,7 +10598,7 @@ def concave_hull(points,n=3):
         sort points on angle and check self intersection
         '''
         x1=a_([ang_2linecw(line[-1],line[-2],p) for p in points_list]).round(2)
-        x1[x1>270]=0
+        x1[x1>330]=0
         a=l_(a_(points_list)[x1.argsort()[::-1]])
         for i in range(len(a)):
             if s_int1(seg(line+[a[i]])[:-1])==[]:
