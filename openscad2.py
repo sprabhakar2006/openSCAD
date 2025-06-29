@@ -10597,8 +10597,9 @@ def concave_hull(points,n=3):
         '''
         sort points on angle and check self intersection
         '''
-        a=l_(a_(points_list)[a_([ang_2linecw(line[-1],line[-2],p)  
-                                 for p in points_list]).argsort()[::-1]])
+        x1=a_([ang_2linecw(line[-1],line[-2],p) for p in points_list]).round(2)
+        x1[x1>270]=0
+        a=l_(a_(points_list)[x1.argsort()[::-1]])
         for i in range(len(a)):
             if s_int1(seg(line+[a[i]])[:-1])==[]:
                 line=line+[a[i]]
@@ -10959,3 +10960,89 @@ def s_int1_first(sec1):
     i_p1=p0+einsum('ij,i->ij',v1,t[:,0])
     i_p1=i_p1[dcn].tolist()
     return i_p1
+
+def points_projection_on_line_within(line,points):
+    
+    def vcost_within(l1,p0):
+        '''
+        finds the projection of the point 'p0' on line 'l1'.
+        projects only those points which are strictly projected within the line
+        '''
+        v1=a_(l1[1])-a_(l1[0])
+        u1=v1/norm(v1)
+        d=norm(v1)
+        v2=a_(p0)-a_(l1[0])
+        d1,d2=v1@v2/norm(v1),norm(cross(c23(v1),c23(v2)))/norm(v1)
+        if d1>=0 and d1<=d :
+            p1=l_(a_(l1[0])+u1*d1)
+            t1=d1/d
+        else:
+            p1=[]
+        return p1
+    a=[ vcost_within(line,p) for p in points]
+    b=[p for p in a if p!=[]]
+    return b
+
+def vcost_within(l1,p0):
+    '''
+    finds the projection of the point 'p0' on line 'l1'.
+    projects only those points which are strictly projected within the line
+    '''
+    v1=a_(l1[1])-a_(l1[0])
+    u1=v1/norm(v1)
+    d=norm(v1)
+    v2=a_(p0)-a_(l1[0])
+    d1,d2=v1@v2/norm(v1),norm(cross(c23(v1),c23(v2)))/norm(v1)
+    if d1>=0 and d1<=d :
+        p1=l_(a_(l1[0])+u1*d1)
+        t1=d1/d
+    else:
+        p1=[]
+    return p1
+
+def projected_points_on_line_within(line,points):
+    def vcost_within_point(l1,p0):
+        '''
+        finds the projected point, refer function vcost_within
+        '''
+        v1=a_(l1[1])-a_(l1[0])
+        u1=v1/norm(v1)
+        d=norm(v1)
+        v2=a_(p0)-a_(l1[0])
+        d1,d2=v1@v2/norm(v1),norm(cross(c23(v1),c23(v2)))/norm(v1)
+        if d1>=0 and d1<=d :
+            p1=p0
+            
+        else:
+            p1=[]
+        return p1
+    a=[ vcost_within_point(line,p) for p in points]
+    b=[ p for p in a if p!=[]]
+    return b
+
+def line_projection_sorting(line,points):
+    '''
+    sort the projected points in the order in which they are projected 
+    from line's first point to the last point
+    '''
+    p0=projected_points_on_line_within(line,points)
+    p1=points_projection_on_line_within(line,points)
+    p2=l_(a_(p0)[cKDTree(p1).query(line[0],len(p1))[1]])
+    return p2
+
+def sort_seg_on_line_length(segments):
+    l1=segments
+    l2=a_([l_len(p) for p in l1]).argsort()[::-1]
+    l1=l_(a_(l1)[l2])
+    return l1
+
+def ang3points(p0,p1,p2):
+    '''
+    angle of 3 consecutive points p0,p1,p2
+    function shows the angle p0p1p2
+    '''
+    if cw([p0,p1,p2])==1:
+       a1= ang_2lineccw(p1,p0,p2)
+    elif cw([p0,p1,p2])==-1:
+        a1=ang_2linecw(p1,p0,p2)
+    return a1
