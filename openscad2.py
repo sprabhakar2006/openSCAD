@@ -172,32 +172,32 @@ def each(a):
             c.append(p1)
     return c
 
-def cr1(pl,s=20):
-    pl1=array(pl)[:,0:2].tolist()
-    rl=[0 if len(p)==2 else p[2] for p in pl]
-    return fillet2d(pl1,rl,s)
+# def cr1(pl,s=20):
+#     pl1=array(pl)[:,0:2].tolist()
+#     rl=[0 if len(p)==2 else p[2] for p in pl]
+#     return fillet2d(pl1,rl,s)
 
-def cr(pl,s=20):
-    '''
-    function to create section with corner radiuses. e.g. 
-    following code has 3 points at [0,0],[10,0] and [7,15] and radiuses of 0.5,2 and 1 respectively,
-    s=5 represent the number of segments at each corner radius.
-    sec=cr(pl=[[0,0,.5],[10,0,2],[7,15,1]],s=5)
+# def cr(pl,s=20):
+#     '''
+#     function to create section with corner radiuses. e.g. 
+#     following code has 3 points at [0,0],[10,0] and [7,15] and radiuses of 0.5,2 and 1 respectively,
+#     s=5 represent the number of segments at each corner radius.
+#     sec=cr(pl=[[0,0,.5],[10,0,2],[7,15,1]],s=5)
     
-    refer file "example of various functions" for application
-    '''
-    sec=array(cr1(pl,s)).round(8)
-    s1=sec[sort(unique(sec,axis=0,return_index=True)[1])].tolist()
-    return s1
+#     refer file "example of various functions" for application
+#     '''
+#     sec=array(cr1(pl,s)).round(8)
+#     s1=sec[sort(unique(sec,axis=0,return_index=True)[1])].tolist()
+#     return s1
 
-def cr_c(pl,s=20):
-    sec=array(cr1(pl,s)).round(8)
-    s1=sec[sort(unique(sec,axis=0,return_index=True)[1])].tolist()
-    p0,p1=array([s1[len(s1)-1],s1[0]])
-    v=p1-p0
-    p=(p0+v*.999).tolist()
+# def cr_c(pl,s=20):
+#     sec=array(cr1(pl,s)).round(8)
+#     s1=sec[sort(unique(sec,axis=0,return_index=True)[1])].tolist()
+#     p0,p1=array([s1[len(s1)-1],s1[0]])
+#     v=p1-p0
+#     p=(p0+v*.999).tolist()
     
-    return s1+[p]
+#     return s1+[p]
 
 def f2d(p1,p2,p3,r0,r1,r2,theta0,theta1,theta2,u2,u3,s):
     l1=norm(p1-p2,axis=1)
@@ -2999,51 +2999,51 @@ def surf_base(surf,h=0):
     t=array(surf).reshape(-1,3).mean(0)[2]
     return s2 if h>t else flip(s2)
 
-def cr_3d(p,s=5): # Corner radius 3d where 'p' are the list of points (turtle movement) and 's' is number of segments for each arc
-    pnts=array(p)[:,0:3]
-    pnts=pnts.cumsum(0)
-
-    rds=array(p)[:,3]
-    c=[]
-    for i in range(len(pnts)):
-        if i==0:
-            p0=pnts[len(pnts)-1]
-            p1=pnts[i]
-            p2=pnts[i+1]
-        elif i<len(pnts)-1:
-            p0=pnts[i-1]
-            p1=pnts[i]
-            p2=pnts[i+1]
-        else:
-            p0=pnts[i-1]
-            p1=pnts[i]
-            p2=pnts[0]
-        c.append(fillet_3p_3d(p0,p1,p2,rds[i],s)[1:])
-    c=array(c).reshape(-1,3).tolist()
-    return remove_extra_points(array(c).round(5)) 
-
-def cr_3d_abs(p,s=5): # Corner radius 3d where 'p' are the list of points and 's' is number of segments for each arc
-    pnts=array(p)[:,0:3]
+# def cr_3d(p,s=5): # Corner radius 3d where 'p' are the list of points (turtle movement) and 's' is number of segments for each arc
+#     pnts=array(p)[:,0:3]
 #     pnts=pnts.cumsum(0)
 
-    rds=array(p)[:,3]
-    c=[]
-    for i in range(len(pnts)):
-        if i==0:
-            p0=pnts[len(pnts)-1]
-            p1=pnts[i]
-            p2=pnts[i+1]
-        elif i<len(pnts)-1:
-            p0=pnts[i-1]
-            p1=pnts[i]
-            p2=pnts[i+1]
-        else:
-            p0=pnts[i-1]
-            p1=pnts[i]
-            p2=pnts[0]
-        c.append(fillet_3p_3d(p0,p1,p2,rds[i],s)[1:])
-    c=array(c).reshape(-1,3).tolist()
-    return remove_extra_points(array(c).round(5))
+#     rds=array(p)[:,3]
+#     c=[]
+#     for i in range(len(pnts)):
+#         if i==0:
+#             p0=pnts[len(pnts)-1]
+#             p1=pnts[i]
+#             p2=pnts[i+1]
+#         elif i<len(pnts)-1:
+#             p0=pnts[i-1]
+#             p1=pnts[i]
+#             p2=pnts[i+1]
+#         else:
+#             p0=pnts[i-1]
+#             p1=pnts[i]
+#             p2=pnts[0]
+#         c.append(fillet_3p_3d(p0,p1,p2,rds[i],s)[1:])
+#     c=array(c).reshape(-1,3).tolist()
+#     return remove_extra_points(array(c).round(5)) 
+
+# def cr_3d_abs(p,s=5): # Corner radius 3d where 'p' are the list of points and 's' is number of segments for each arc
+#     pnts=array(p)[:,0:3]
+# #     pnts=pnts.cumsum(0)
+
+#     rds=array(p)[:,3]
+#     c=[]
+#     for i in range(len(pnts)):
+#         if i==0:
+#             p0=pnts[len(pnts)-1]
+#             p1=pnts[i]
+#             p2=pnts[i+1]
+#         elif i<len(pnts)-1:
+#             p0=pnts[i-1]
+#             p1=pnts[i]
+#             p2=pnts[i+1]
+#         else:
+#             p0=pnts[i-1]
+#             p1=pnts[i]
+#             p2=pnts[0]
+#         c.append(fillet_3p_3d(p0,p1,p2,rds[i],s)[1:])
+#     c=array(c).reshape(-1,3).tolist()
+#     return remove_extra_points(array(c).round(5))
 
 
 
@@ -6231,6 +6231,7 @@ def corner_radius(sec,s=20):
     d=c3t2(q_rot(['z.0001'],d))
     return d
 
+cr2d=corner_radius
 
 def surround(path,r,s=20):
     '''
@@ -9986,6 +9987,8 @@ def corner_radius3d(pnts,s=5): # Corner radius 3d where 'pnts' are the list of p
     c=array(c).reshape(-1,3).tolist()
     return remove_extra_points(array(c).round(5))
 
+cr3d=corner_radius3d
+
 # def corner_and_radius3d(pnts,rds,s=5): # Corner radius 3d where 'pnts' are the list of points, 'rds' are the list of radiuses and 's' is number of segments for each arc
 
 #     c=[]
@@ -10504,6 +10507,8 @@ def corner_radius_with_turtle(sec,s=20):
     d=c3t2(q_rot(['z.0001'],d))
     return d
 
+cr2dt=corner_radius_with_turtle
+
 def corner_radius3d_with_turtle(pnts,s=5): # Corner radius 3d where 'pnts' are the list of points with 4th coordinate in each point is radius 'rds' and 's' is number of segments for each arc
     pnts=pts3(pnts)
     rds=[pnts[i][3] if len(pnts[i])==4 else 0 for i in range(len(pnts))]
@@ -10525,6 +10530,8 @@ def corner_radius3d_with_turtle(pnts,s=5): # Corner radius 3d where 'pnts' are t
         c.append(fillet_3p_3d(p0,p1,p2,rds[i],s)[1:])
     c=array(c).reshape(-1,3).tolist()
     return remove_extra_points(array(c).round(5))
+
+cr3dt=corner_radius3d_with_turtle
 
 def trim_sec_ip(sec,p0,p1,side=0,dist=.1):
     '''
