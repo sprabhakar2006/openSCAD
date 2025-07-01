@@ -10583,7 +10583,7 @@ def homogenise(a=[],pitch=1,closed_loop=0):
         if len(a)>1 and len(a_(a[0]).shape)==2:
             return l_(concatenate(homogenise_points(a,pitch,closed_loop)))
 
-def concave_hull(points,n=3):
+def concave_hull(points,n=3,engaging_angle=270):
     
     def k_nearest_points(points_list,point,n):
         '''
@@ -10600,12 +10600,12 @@ def concave_hull(points,n=3):
         '''
         return l_(a_(points_list)[a_([ang_2linecw(p0,p1,p)  for p in points_list]).argsort()[::-1]])
 
-    def spaci(points_list,line):
+    def spaci(points_list,line,engaging_angle):
         '''
         sort points on angle and check self intersection
         '''
         x1=a_([ang_2linecw(line[-1],line[-2],p) for p in points_list]).round(2)
-        x1[x1>330]=0
+        x1[x1>engaging_angle]=0
         a=l_(a_(points_list)[x1.argsort()[::-1]])
         for i in range(len(a)):
             if s_int1(seg(line+[a[i]])[:-1])==[]:
@@ -10637,7 +10637,7 @@ def concave_hull(points,n=3):
         if l2[-1]==l2[0]:
             break
         l1=k_nearest_points(pnts,l2[-1],n)
-        l3=spaci(l1,l2)
+        l3=spaci(l1,l2,engaging_angle)
         if l2==l3:
             n=n+1
             l2,pnts=ffp(points,n)
