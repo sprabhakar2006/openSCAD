@@ -4427,7 +4427,7 @@ def l_lenv(l):
     '''
     calculates sum of lengths of all the segments in a line 'l' considering the section is closed
     '''
-    return array([l_len(p) for p in seg(l)]).sum()
+    return l_(array([l_len(p) for p in seg(l)]).sum())
 
 length_closed_section=l_lenv
 
@@ -4435,7 +4435,7 @@ def l_lenv_o(l):
     '''
     calculates sum of lengths of all the segments in a line 'l' considering the section is open
     '''
-    return array([l_len(p) for p in seg(l)[:-1]]).sum()
+    return l_(array([l_len(p) for p in seg(l)[:-1]]).sum())
 
 length_open_section=l_lenv_o
 
@@ -7887,6 +7887,8 @@ def swp_sec(sec):
 
 def surface_4_lines_enclosed(l_1,l_2,l_3,l_4,n1,n2,s=20,ext=20):
     '''
+    Use function surface_from_4_lines instead of this
+    
     create a surface with 4 line
     l_1 and l_2 are 2 opposite lines
     l_3 and l_4 are other 2 opposite lines
@@ -8531,26 +8533,26 @@ def interpolate(p0,s=100):
            for u in linspace(0,1,s)]))
     return p1
 
-def surface_4lines_enclosed(l1,l2,l3,l4,n=5):
-    '''
-    create surface with 4 lines enclosed area
-    l1 and l2 are opposite lines and l3 and l4 are opposite lines
-    starting point of l1 and l3 should match
-    end point of l3 and starting point of l2 should match
-    end point of l1 and starting point of l4 should match
-    end point of l4 and end point of l2 should match
-    counterclockwise points should match as following
-    l1[0]l3[0]->l1[-1]l4[0]->l4[-1]l2[-1]->l2[0]l3[-1]
-    (l1[-1] means end point of l1)
-    'n' is the number of segment lines between l1 and l2
-    '''
-    l5=slice_sol([l1,l2],n)
-    l3=path2path1(cpo(l5)[0],l3)
-    l4=path2path1(cpo(l5)[-1],l4)
-    l5=cpo([l3]+cpo(l5)+[l4])
-    s1=cpo(slice_sol([l3,l4],len(l5[0])))
-    s1=[path2path1(s1[i],l5[i]) for i in range(len(l5))]
-    return [equidistant_path(p,len(l1)-1) for p in s1]
+# def surface_4lines_enclosed(l1,l2,l3,l4,n=5):
+#     '''
+#     create surface with 4 lines enclosed area
+#     l1 and l2 are opposite lines and l3 and l4 are opposite lines
+#     starting point of l1 and l3 should match
+#     end point of l3 and starting point of l2 should match
+#     end point of l1 and starting point of l4 should match
+#     end point of l4 and end point of l2 should match
+#     counterclockwise points should match as following
+#     l1[0]l3[0]->l1[-1]l4[0]->l4[-1]l2[-1]->l2[0]l3[-1]
+#     (l1[-1] means end point of l1)
+#     'n' is the number of segment lines between l1 and l2
+#     '''
+#     l5=slice_sol([l1,l2],n)
+#     l3=path2path1(cpo(l5)[0],l3)
+#     l4=path2path1(cpo(l5)[-1],l4)
+#     l5=cpo([l3]+cpo(l5)+[l4])
+#     s1=cpo(slice_sol([l3,l4],len(l5[0])))
+#     s1=[path2path1(s1[i],l5[i]) for i in range(len(l5))]
+#     return [equidistant_path(p,len(l1)-1) for p in s1]
 
 # def lineFromPointTillEnd(l1,t):
 #     '''
@@ -9158,24 +9160,25 @@ def bezier_surface(pl,s1=100,s2=100):
 
 
 
-def surfaceFrom4linesEnclosure(l1,l2,l3,l4,s=50):
-    '''
-    surface with 4 lines in an enclosed section
-    l1 and l2 are opposite sides
-    l3 and l4 are opposite sides
-    l1[0] and l3[0] are same points or nearly same
-    l3[-1] and l2[0] are same points or nearly same
-    l1[-1] and l4[0] are same points or nearly same
-    l4[-1] and l2[-1] are same points or nearly same
-    '''
-    l1,l2,l3,l4=[ equidistant_path(p,s-1) for p in [l1,l2,l3,l4]]
-    s1=slice_sol([l1,l2],s-1)
-    s2=slice_sol([l3,l4],s-1)
-    s3=[ [ s1[i][j] for j in range(1,s-1)] for i in range(1,s-1)]
-    s4=[[l3[i+1]]+s3[i]+[l4[i+1]] for i in range(len(s3))]
-    s4=[l1]+s4+[l2]
-    s4=bspline_surface_open(s4,3,3,s,s)
-    return s4
+# def surfaceFrom4linesEnclosure(l1,l2,l3,l4,s=50):
+#     '''
+#     surface with 4 lines in an enclosed section
+#     l1 and l2 are opposite sides
+#     l3 and l4 are opposite sides
+#     l1[0] and l3[0] are same points or nearly same
+#     l3[-1] and l2[0] are same points or nearly same
+#     l1[-1] and l4[0] are same points or nearly same
+#     l4[-1] and l2[-1] are same points or nearly same
+#     '''
+#     l1,l2,l3,l4=[ equidistant_path(p,s-1) for p in [l1,l2,l3,l4]]
+#     s1=slice_sol([l1,l2],s-1)
+#     s2=slice_sol([l3,l4],s-1)
+#     s3=[ [ s1[i][j] for j in range(1,s-1)] for i in range(1,s-1)]
+#     s4=[[l3[i+1]]+s3[i]+[l4[i+1]] for i in range(len(s3))]
+#     s4=[l1]+s4+[l2]
+#     s4=bspline_surface_open(s4,3,3,s,s)
+#     return s4
+
 def il_fillet(il,sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,f=1):
     '''
     calculates a fillet at the intersection of 2 solids.
@@ -11053,3 +11056,41 @@ def ang3points(p0,p1,p2):
     elif cw([p0,p1,p2])==-1:
         a1=ang_2linecw(p1,p0,p2)
     return a1
+
+def fit_pline2line(polyline,line):
+    '''
+    fit a polyline between 2 defined points or a line
+    '''
+    def pline2length(line,length):
+        a=line
+        d=length
+        l1=l_len([a[0],a[-1]])
+        rt=d/l1
+        b=[[0,0,0]]+turtle3d([line_as_vector( c23(line2length(p,l_len(p)*rt))) for p in seg(a)[:-1]])
+        return c32(b) if a_(a).shape[1]==2 else b
+    a=c23(polyline)
+    l1=line
+    d=l_len(l1)
+    b=pline2length(a,d)
+    t1=a_(l1[0])-a_(b[0])
+    b=translate(t1,b)
+    u1=line_as_unit_vector(l1)
+    u2=line_as_unit_vector([b[0],b[-1]])
+    a1=cross(u1,u2)
+    theta1=-l_(r2d(arccos(a_(u1)@a_(u2))))
+    b=axis_rot_1(b,a1,b[0],theta1)
+    return b
+
+def surface_from_4_lines(l1,l2,l3,l4,s1=15,s2=15):
+    '''
+    create a surface by 4 lines enclosure
+    s1 is the number of segments in l1 and l2 (which are opposite to each other)
+    s2 is the number of segments in l3 and l4 (which are opposite to each other)
+    '''
+    l1,l2=[equidistant_path(p,s1) for p in [l1,l2]]
+    l3,l4=[equidistant_path(p,s2) for p in [l3,l4]]
+    
+    s1=slice_sol([l1,l2],len(l3)-1)
+    s2=cpo([l3,l4])
+    s3=[ fit_pline2line(s1[i],s2[i]) for i in range(len(s1))]
+    return s3
