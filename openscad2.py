@@ -6672,24 +6672,37 @@ def convert_lines2surface_spline(lines,s=50):
 
 
 
-def SurfaceFrom3LinesInDifferentPlanes(a3,a4,a5,s=50):
+# def SurfaceFrom3LinesInDifferentPlanes(a3,a4,a5,s=50):
+#     '''
+#     create surface with 3 lines in different plane.
+#     option 'o' needs to be adjusted between '0' and '1' based on the result correctness
+#     example:
+#     w1=arc_3p_3d([[0,0,0],[20,0,5],[40,0,0]])
+#     w2=arc_3p_3d([[0,0,0],[-1,15,3],[-2,30,0]])
+#     w3=arc_3p_3d([[-2,30,0],[15,35,4],[30,40,0]])
+#     surf_2=SurfaceFrom3LinesInDifferentPlanes(w1,w2,w3,s=30)
+#     '''
+#     a3=equidistant_path(a3,s)
+#     a4=equidistant_path(a4,s)
+#     a5=equidistant_path(a5,s)
+    
+#     surf_1=slice_sol([a3,a5],s)
+#     surf_1=[translate(array(a4[i]),translate(-array(surf_1[i][0]),surf_1[i])) for i in range(len(surf_1))]
+#     return surf_1
+
+def SurfaceFrom3LinesInDifferentPlanes(l1,l2,l3,s1=20,s2=20):
     '''
     create surface with 3 lines in different plane.
-    option 'o' needs to be adjusted between '0' and '1' based on the result correctness
-    example:
-    w1=arc_3p_3d([[0,0,0],[20,0,5],[40,0,0]])
-    w2=arc_3p_3d([[0,0,0],[-1,15,3],[-2,30,0]])
-    w3=arc_3p_3d([[-2,30,0],[15,35,4],[30,40,0]])
-    surf_2=SurfaceFrom3LinesInDifferentPlanes(w1,w2,w3,s=30)
+    
     '''
-    a3=equidistant_path(a3,s)
-    a4=equidistant_path(a4,s)
-    a5=equidistant_path(a5,s)
+    l1=equidistant_path(l1,s1)
+    l2=equidistant_path(l2,s1)
+    l3=equidistant_path(l3,s2)
     
-    surf_1=slice_sol([a3,a5],s)
-    surf_1=[translate(array(a4[i]),translate(-array(surf_1[i][0]),surf_1[i])) for i in range(len(surf_1))]
+    
+    l4=fit_pline2line(l3,[l1[-1],l2[-1]])
+    surf_1=surface_from_4_lines(l1,l2,l3,l4,s1,s2)
     return surf_1
-    
 
 def mid_point(w1):
     return equidistant_path(w1,2)[1]
