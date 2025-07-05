@@ -9260,9 +9260,9 @@ def ip_surf2line(surf,line):# when line has more than 2 points
     condition=(t[:,:,0]>=0)&(t[:,:,0]<=1)&(t[:,:,1]>=0)&(t[:,:,1]<=1)&(t[:,:,2]>=0)&(t[:,:,2]<=1)&((t[:,:,1]+t[:,:,2])<=1)
     t1=t[:,:,0][condition]
     i_p1=array([px]*b)[condition]+einsum('ij,i->ij',v1[condition],t1)
-    i_p2=i_p1[argsort([norm(p-px[0]) for p in i_p1])]
-
-    return i_p2.tolist()
+    t1=a_([timeToReachPoint(p,line) for p in i_p1]).argsort()
+    i_p1=l_(a_(i_p1)[t1])
+    return i_p1
 
 def line_as_axis(l1):
     '''
