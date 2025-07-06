@@ -9363,24 +9363,33 @@ def cso(sol):
     b=[ a[i]+flip(a[-(i+1)]) for i in range(int(len(a)/2))]
     return b
 
-def offset_3d_sec(path,dist=1,o=0):
-    '''
-    offsets any random closed 3d path by defined distance
-    '''
-    path1=equidistant_pathc(path,pitch=.1)
-    path2=rationalise_path(path1)
-    if o==0:
-        s1=sec2surface_1(path2,1)
-    elif o==1:
-        s1=sec2surface(path2,1)
-    l2=o_3d_surf(path1,s1,dist)
-    l1=list_remove_points_within_dist_closed(path,l2,dist-.02)
-    l4=[l1[cKDTree(a_([l1,zeros(len(l1))]).transpose(1,0)).query([i,0])[1]] for i in range(len(l2))]
-    l5=[cKDTree(path1).query(path[i])[1] for i in range(len(path))]
-    l6=a_(l4)[l5]
-    path1=l_(a_(l2)[l6])
-    return path1
-    
+# def offset_3d_sec(path,dist=1,o=0):
+#     '''
+#     offsets any random closed 3d path by defined distance
+#     '''
+#     path1=equidistant_pathc(path,pitch=.1)
+#     path2=rationalise_path(path1)
+#     if o==0:
+#         s1=sec2surface_1(path2,1)
+#     elif o==1:
+#         s1=sec2surface(path2,1)
+#     l2=o_3d_surf(path1,s1,dist)
+#     l1=list_remove_points_within_dist_closed(path,l2,dist-.02)
+#     l4=[l1[cKDTree(a_([l1,zeros(len(l1))]).transpose(1,0)).query([i,0])[1]] for i in range(len(l2))]
+#     l5=[cKDTree(path1).query(path[i])[1] for i in range(len(path))]
+#     l6=a_(l4)[l5]
+#     path1=l_(a_(l2)[l6])
+#     return path1
+
+def offset_3d_sec(line1,d=1):
+    l1=line1
+    s1=sec2surface(l1)
+    s2=surface_offset(s1,1)
+    l2=surface2sec(s2)[0]
+    s3=cpo([l1,l2])
+    s4=surface_offset(s3,d)
+    s5=cpo(s4)[0]
+    return s5
 
 # def offset_3d_sec(path,dist=1):
 #     '''
