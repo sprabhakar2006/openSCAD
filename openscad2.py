@@ -11145,3 +11145,6 @@ def s_int1_3d(sec1):
     i_p1=p0+einsum('ij,i->ij',v1,t[:,0])
     i_p1=i_p1[dcn2].tolist()
     return i_p1
+
+def sec_start_pos(sec,n=0):
+    return sec[n:]+sec[:n]
