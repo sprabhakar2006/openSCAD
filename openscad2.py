@@ -11148,3 +11148,14 @@ def s_int1_3d(sec1):
 
 def sec_start_pos(sec,n=0):
     return sec[n:]+sec[:n]
+
+def lines_fillets_solid(l1,l2,l3,l4,l5,s=20,o=1):
+    '''
+    convert 5 lines to solid for removing sharp edges from a shape
+    '''
+    f1=cpo(cpo(convert_3lines2fillet(l1,l3,l2,s))[:-1])
+    f2=cpo(cpo(convert_3lines2fillet(l3,l5,l4,s))[:-1])
+    f3=[ f1[i]+f2[i] for i in range(len(f1))]
+    f4=surface_offset(f3,o)
+    sol1=solid_from_2surfaces(f3,f4)
+    return sol1
