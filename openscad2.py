@@ -11159,3 +11159,12 @@ def lines_fillets_solid(l1,l2,l3,l4,l5,s=20,o=1):
     f4=surface_offset(f3,o)
     sol1=solid_from_2surfaces(f3,f4)
     return sol1
+
+def fileopen(fname='trial.scad',txt=''):
+   
+   with open(fname,'w+') as f:
+       f.write(f'''
+       include<dependencies2.scad>
+       
+       ''')
+       f.write(txt)
