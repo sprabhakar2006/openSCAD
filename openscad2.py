@@ -6,7 +6,7 @@ from scipy.spatial import cKDTree, Delaunay
 # import pandas as pd
 import sympy
 import math
-from skimage import measure
+# from skimage import measure
 # from stl import mesh
 
 def arc(radius=0,start_angle=0,end_angle=0,cp=[0,0],s=20):
@@ -11161,7 +11161,6 @@ def lines_fillets_solid(l1,l2,l3,l4,l5,s=20,o=1):
     return sol1
 
 def fileopen(txt='',fname='trial.scad'):
-   
    with open(fname,'w+') as f:
        f.write(f'''include<dependencies2.scad>''')
        f.write(txt)
