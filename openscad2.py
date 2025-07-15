@@ -7929,35 +7929,29 @@ def arc_with_start_pt_and_cp_3d(n1,start_point=[],center_point=[],theta=90,segme
     arc_1=arc_1.tolist()
     return arc_1
 
-def offset_3d(sec,d,type=1):
+def offset_3d(sec,d,type_of_offset=1):
     '''
     offsets an enclosed section in 3d space, in case the section is in 1 plane
     sec: section in 3d space
     d: offset distance -ve sign means inner offset and +ve sign is outer offset
     refer to the file"example of various functions" for application examples
-    type: offset type default is '1' in case of any issue in offset, try with '2'
+    type_of_offset: offset type default is '1' in case of any issue in offset, try with '2'
     '''
-    # sec=axis_rot_o([1,0,0],sec,.001)
-    l_2=rot_sec2xy_plane(sec)
-    l_3=c3t2(l_2)
-    l_4=offset(l_3,d,type)
-    avg_1=array(l_2).mean(0)
-    avg_2=array(c2t3(l_3)).mean(0)
-    l_5=translate(avg_1-avg_2,l_4)
-    # n_1=array(nv(sec)).round(5)
-    n_1=a_(uv(best_fit_plane(sec)[0]))
-    n_2=array([0,0,-1])
-    if (l_(n_1)==[0,0,1]) | (l_(n_1)==[0,0,-1]):
-        return l_5
+    sec1=rot_sec2xy_plane(sec)
+    sec2=c32(sec1)
+    sec3=offset(sec2,d,type_of_offset)
+    a=a_(sec[0])
+    b=a_(c23(c32(sec)[0]))
+    v1=uv(best_fit_plane(sec)[0])
+    if (l_(a_(v1).round(4))==[0,0,-1]) | (l_(a_(v1).round(4))==[0,0,1]):
+        sec5=translate(a-b,sec3)
     else:
-        ax_1=cross(n_1,n_2)
-        theta=r2d(arccos(n_1@n_2))
-        l_6=axis_rot_o(ax_1,[l_5],-theta)[0]
-        l_6_1=axis_rot_o(ax_1,[l_2],-theta)[0]
-        avg_1=array(sec).mean(0)
-        avg_2=array(l_6_1).mean(0)
-        l_7=translate(avg_1-avg_2,l_6)
-        return l_7
+        v2=[0,0,-1]
+        theta=l_(r2d(arccos(a_(v1)@v2)))
+        ax_1=cross(v1,v2)
+        sec4=axis_rot_1(c23(sec3),ax_1,c23(sec2)[0],-theta)
+        sec5=translate(a-b,sec4)
+    return sec5
 
 def intersection_between_2_sketches(s1,s2):
     '''
