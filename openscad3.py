@@ -4714,79 +4714,59 @@ def fillet_intersection_lines_3d(l1,l2,r,s=10):
     arc_1=arc_2p(p1,p2,r,clock,s)
     return axis_rot(n2,arc_1,-theta)
 
-def fillet_line_circle_internal_3d(l1,c1,r2,cw=-1,option=0,s=50):
+def fillet_line_circle_internal_3d(line,cir,r=1,o=1,s=20):
     '''
-    function to draw a fillet between a line and a circle in 3d space, where the fillet is drawn inside of the circle
-    circle and line should be in same plane
-    option can be '0' or '1' to flip the fillet from one side to another
-    's' is the number of segments in the arc
+    creates fillet between a line and an arc in 3d space.
+    fillet is created internal
+    The line and arc should lie in same plane
+    'r' is the radius of the fillet
+    'o' is option of fillet, means which side of the line and arc it should be created.
+    the value of 'o' can be set from 1 to 4, as there could be only 4 sides a fillet can be created
+    's' is the number of segments in the fillet
     '''
-    tr=array(l1+c1).mean(0)
-    l1=translate(-tr,l1)
-    c1=translate(-tr,c1)
-    
-    n1=nv(c1)
-    n1=n1/norm(n1)
-    n2=cross(n1,[0,0,-1])
-    theta=r2d(arccos(n1@[0,0,-1]))
-    l1=c3t2(axis_rot(n2,l1,theta))
-    c1=c3t2(axis_rot(n2,c1,theta))
-    
-    v1=array(l1[1])-array(l1[0])
-    u1=v1/norm(v1)
-    cp1=cp_arc(c1)
-    v2=array(cp1)-array(l1[0])
-    u2=v2/norm(v2)
-    l_1=norm(cross(c23(v1),c23(v2)))/norm(v1)
-    p3=array(l1[0])+u1*(u1@v2)
-    r1=r_arc(c1)
-    d=sqrt((r1-r2)**2-(l_1+r2)**2) if option==0 else sqrt((r1-r2)**2-(l_1-r2)**2)
-    p2=p3-u1*d
-    v3=array(cp1)-p3
-    u3=v3/norm(v3)
-    cp2=p2-u3*r2 if option==0 else p2+u3*r2
-    v4=array(cp1)-cp2
-    u4=v4/norm(v4)
-    p4=cp2-u4*r2
-    p2,p4=translate(tr,axis_rot(n2,[p2,p4],-theta))
-    return arc_2p_3d(n1,p2,p4,r2,cw=cw,s=s)
+    a=line
+    b=cir
+    n1,incpt=best_fit_plane(b)
+    n1=uv(n1)
+    c=rot_sec2xy_plane(a+b)
+    d=c32(c)
+    e=d[:2]
+    f=d[2:]
+    a1=fillet_line_circle_internal(e,f,r,o,s)
+    n2=uv(cross(n1,[0,0,-1]))
+    theta=r2d(arccos(a_(n1)@a_([0,0,-1])))
+    g,h,a2=[axis_rot_1(p,n2,f[0],-theta) for p in [e,f,a1]]
+    d1=a_(b[0])-a_(h[0])
+    i,j,a3=[translate(d1,p) for p in [g,h,a2]]
+    return a3
 
 
 
-def fillet_line_circle_3d(l1,c1,r2,cw=-1,option=0,s=50):
+def fillet_line_circle_3d(line,cir,r=1,o=1,s=20):
     '''
-    function to draw a fillet between a line and a circle in 3d space.
-    line and circle should be in the same plane
-    option can be '0' or '1' to flip the fillet from one side to another
-    's' is the number of segments in the arc
+    creates fillet between a line and an arc in 3d space.
+    fillet is created external
+    The line and arc should lie in same plane
+    'r' is the radius of the fillet
+    'o' is option of fillet, means which side of the line and arc it should be created.
+    the value of 'o' can be set from 1 to 4, as there could be only 4 sides a fillet can be created
+    's' is the number of segments in the fillet
     '''
-    tr=array(l1+c1).mean(0)
-    l1=translate(-tr,l1)
-    c1=translate(-tr,c1)
-    n1=nv(c1)
-    n1=n1/norm(n1)
-    n2=cross(n1,[0,0,-1])
-    theta=r2d(arccos(n1@[0,0,-1]))
-    l1=c3t2(axis_rot(n2,l1,theta))
-    c1=c3t2(axis_rot(n2,c1,theta))
-    
-    v1=array(l1[1])-array(l1[0])
-    u1=v1/norm(v1)
-    cp1=cp_arc(c1)
-    v2=array(cp1)-array(l1[0])
-    u2=v2/norm(v2)
-    l_1=norm(cross(v1,v2))/norm(v1)
-    p3=array(l1[0])+u1*(u1@v2)
-    r1=r_arc(c1)
-    d=sqrt((r1+r2)**2-(l_1+r2)**2) if option==0 else sqrt((r1+r2)**2-(l_1-r2)**2)
-    p2=p3-u1*d
-    v3=array(cp1)-p3
-    u3=v3/norm(v3)
-    cp2=p2-u3*r2 if option==0 else p2+u3*r2
-    v4=array(cp1)-cp2
-    u4=v4/norm(v4)
-    p4=cp2+u4*r2
-    return translate(tr,axis_rot(n2,arc_2p(p2,p4,r2,cw=cw,s=s),-theta))
+    a=line
+    b=cir
+    n1,incpt=best_fit_plane(b)
+    n1=uv(n1)
+    c=rot_sec2xy_plane(a+b)
+    d=c32(c)
+    e=d[:2]
+    f=d[2:]
+    a1=fillet_line_circle(e,f,r,o,s)
+    n2=uv(cross(n1,[0,0,-1]))
+    theta=r2d(arccos(a_(n1)@a_([0,0,-1])))
+    g,h,a2=[axis_rot_1(p,n2,f[0],-theta) for p in [e,f,a1]]
+    d1=a_(b[0])-a_(h[0])
+    i,j,a3=[translate(d1,p) for p in [g,h,a2]]
+    return a3
 
 def mirror_line(p1,n1,loc):
     '''
