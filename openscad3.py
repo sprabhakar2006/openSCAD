@@ -8354,3 +8354,26 @@ def i_p2dv(p0,p1,p2,p3):
     b=p2-p0
     t=einsum('ijk,ik->ij',a,b)[:,0]
     return p0+einsum('ij,i->ij',v1,t)
+
+def extend_line3d(line,sec):
+    '''
+    same as function extend_line, but for 3d
+    '''
+    l1=sec
+    l2=line
+    l3=l1+l2
+    n1,incpt=best_fit_plane(l3)
+    n1=uv(n1)
+    n2=[0,0,-1]
+    n3=cross(n1,n2)
+    theta=r2d(arccos(a_(n1)@a_(n2)))
+    l4=c32(rot_sec2xy_plane(l3))
+    l5=l4[:len(l1)]
+    l6=l4[len(l1):]
+    l7=extend_line(l6,l5)
+    l8=c23(l5+l7)
+    d1=a_(l1[0])-a_(l8[0])
+    l8=translate(d1,axis_rot_1(l8,n3,l8[0],-theta))
+    l9=l8[:len(l1)]
+    l10=l8[len(l1):]
+    return l10
