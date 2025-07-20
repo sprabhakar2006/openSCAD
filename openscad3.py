@@ -8425,3 +8425,13 @@ def bezier_closed(pl,s=100,p=10):
     b=bezier(a[-n-1:]+a[:n],n+int(n/2))
     c=a[n:-n]+b
     return c
+
+def ilo(il,s1,s2,r):
+    '''
+    intersection line offset
+    '''
+    a=i_p_p(s2,il,.5)
+    b=surface_offset([il,a],r)[0]
+    v1=line_as_unit_vector([il[0],a[0]])
+    c=plos(cpo(cpo(s1)+[cpo(s1)[0]]),b,v1,0)
+    return c
