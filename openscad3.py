@@ -5946,28 +5946,63 @@ def psos_v(s2,s3,v1,dist=100000,unidirection=0):
     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
     return px
 
-def psos_v_1(s2,s3,v1,vx,dist=100000,unidirection=0):
+# def psos_v_1(s2,s3,v1,vx,dist=100000,unidirection=0):
+#     '''
+#     project a surface on to another without loosing the original points
+#     surface 's3' will be projected on surface 's2'
+#     'v1' is vector for projection. this is a focal vector
+#     'vx' is a vector to define plane through which each vector works for projecting
+#     from where the rays are emitted for projection
+#     '''
+#     p0=a_(s3).reshape(-1,3)
+#     f=faces_surface(len(s2),len(s2[0]))
+#     v=a_(s2).reshape(-1,3)
+#     tri=v[f]
+#     p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
+    
+#     px=[]
+#     for i in range(len(p0)):
+#         v4=ppplane([v1],vx,p0[i])[0]
+#         n1=a_([uv(v4-p0[i])]*len(p2))
+#         v2,v3=p3-p2,p4-p2
+#         iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
+#         im=inv(iim)
+
+#         t=(im@(p2-a_(p0[i])[None,:])[:,:,None]).reshape(-1,3)
+#         t1,t2,t3=t[:,0],t[:,1],t[:,2]
+#         if unidirection==0:
+#             dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+#         elif unidirection==1:
+#             dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+
+#         if dec.any()==1 and norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
+#             px.append(a_(p0[i])+a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
+#         elif dec.any()==0 or norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])>dist:
+#             px.append(p0[i])
+    
+#     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
+#     return px
+
+def psos_v_1(s2,s3,l1,dist=100000,unidirection=0):
     '''
     project a surface on to another without loosing the original points
     surface 's3' will be projected on surface 's2'
-    'v1' is vector for projection. this is a focal vector
-    'vx' is a vector to define plane through which each vector works for projecting
-    from where the rays are emitted for projection
+    'l1' is a line for projection
     '''
     p0=a_(s3).reshape(-1,3)
     f=faces_surface(len(s2),len(s2[0]))
     v=a_(s2).reshape(-1,3)
     tri=v[f]
     p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
-    
+    p1=a_([vcost1(l1,p) for p in p0])
+    v1=p1-p0
     px=[]
     for i in range(len(p0)):
-        v4=ppplane([v1],vx,p0[i])[0]
-        n1=a_([uv(v4-p0[i])]*len(p2))
+        n1=a_([uv(v1[i])]*len(p2))
         v2,v3=p3-p2,p4-p2
         iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
         im=inv(iim)
-
+        # im.shape,p0[198].shape
         t=(im@(p2-a_(p0[i])[None,:])[:,:,None]).reshape(-1,3)
         t1,t2,t3=t[:,0],t[:,1],t[:,2]
         if unidirection==0:
@@ -6842,15 +6877,13 @@ def plos_v_2(s2,l1,v1,dist=100000,unidirection=0):
     '''
     return psos_v_2(s2,[l1],v1,dist=dist,unidirection=unidirection)[0]
 
-def plos_v_1(s2,l1,v1,vx,dist=100000,unidirection=0):
+def plos_v_1(s2,l1,l2,dist=100000,unidirection=0):
     '''
     project a line on to a surface without loosing the original points
     line 'l1' will be projected on surface 's2'
-    'v1' is vector for projection. this is a focal vector
-    'vx' is a vector to define plane through which each vector works for projecting
-    from where the rays are emitted for projection
+    'l2' is the line from where the rays are emitting to project  
     '''
-    return psos_v_1(s2,[l1],v1,vx,dist=dist,unidirection=unidirection)[0]
+    return psos_v_1(s2,[l1],l2,dist=dist,unidirection=unidirection)[0]
 
 
 def plos_v(s2,l1,v1,dist=100000,unidirection=0):
@@ -8426,12 +8459,39 @@ def bezier_closed(pl,s=100,p=10):
     c=a[n:-n]+b
     return c
 
-def ilo(il,s1,s2,r):
+def ilo(il,s1,s2,r,t=1):
     '''
     intersection line offset
+    type "t" can be set to 1,2 or 3
+    il: intersection line between 2 surfaces s1 and s2
+    s1: surface which is intersected
+    s2: surface which intersects the surface s1
+    r: distance to offset the intersecting line
     '''
     a=i_p_p(s2,il,.5)
+    v1=i_p_n(il,s1)
+    v2=i_p_t(il)
+    v3=il+cross(v2,v1)*r
     b=surface_offset([il,a],r)[0]
-    v1=line_as_unit_vector([il[0],a[0]])
-    c=plos(cpo(cpo(s1)+[cpo(s1)[0]]),b,v1,0)
+    v4=line_as_unit_vector([il[0],a[0]])
+    v5=concatenate(s2).mean(0)
+    if t==1:
+        c=plos(c_(s1),b,v4,0)
+    elif t==2:
+        c=plos_v_2(c_(s1),v3,v1,unidirection=0)
+    elif t==3:
+        c=plos_v(c_(s1),v3,v5,unidirection=0)
     return c
+
+def c_(sol):
+    '''
+    close loop a solid
+    '''
+    return cpo(cpo(sol)+[cpo(sol)[0]])
+
+def union(a=[],n=3,pitch=.5,closed_loop=1):
+    '''
+    creating a union of various individual elements
+    '''
+   sx=homogenise(a,pitch=pitch,closed_loop=closed_loop)
+   return concave_hull(sx,n)
