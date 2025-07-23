@@ -5995,7 +5995,7 @@ def psos_v_1(s2,s3,l1,dist=100000,unidirection=0):
     tri=v[f]
     p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
     p1=a_([vcost1(l1,p) for p in p0])
-    v1=p1-p0
+    v1=p0-p1
     px=[]
     for i in range(len(p0)):
         n1=a_([uv(v1[i])]*len(p2))
@@ -7900,7 +7900,7 @@ def s_int1_3d(sec1):
     p2=a[:,1][:,0]
     p3=a[:,1][:,1]
     v1=a_(rot('z.00001',p1-p0))
-    v2=p3-p2
+    v2=a_(rot('x.00001',p3-p2))
     iim=a_([v1[:,:2],-v2[:,:2]]).transpose(1,0,2).transpose(0,2,1)
     im=inv(iim)
     p=(p2-p0)[:,:2]
@@ -8495,3 +8495,45 @@ def union(a=[],n=3,pitch=.5,closed_loop=1):
     '''
     sx=homogenise(a,pitch=pitch,closed_loop=closed_loop)
     return concave_hull(sx,n)
+
+def fillet_2spheres(sp1,sp2,r,s1=20,s2=50):
+    '''
+    create a fillet between 2 spheres
+    r is the radius of the fillet
+    s1 and s2 are the number of sections in the fillet 
+    and number of points in each section
+    '''
+    cp1=cp_cir_3d( cpo(sp1)[0])
+    cp2=cp_cir_3d( cpo(sp2)[0])
+    l1=[cp1,cp2]
+    u1=line_as_unit_vector(l1)
+    u2=[0,0,-1]
+    u3=cross(u1,u2)
+    u4=cross(u1,u3)
+    c1=translate(cp1,sec2vector(u4,circle(.5)))
+    c2=translate(cp2,sec2vector(u4,circle(.5)))
+    c1=plos_v_1(sp1,c1,point_vector(cp1,u4))
+    c2=plos_v_1(sp2,c2,point_vector(cp2,u4))
+    
+    a1=two_cir_tarc3d(c1,c2,r,s=s1)
+    f1=cpo([ axis_rot_1(a1,u1,cp1,i)  for i in linspace(0,360,s2+1)[:-1]])
+    return f1
+
+def two_cir_tarc3d(c1,c2,r,side=0,s=50):
+    '''
+    it is similar to function two_cir_tarc but in 3d coordinates.
+    both the circles should lie in the same plane
+    '''
+    n1,intcpt=best_fit_plane(c1)
+    n1=uv(n1)
+    u1=[0,0,-1]
+    u2=cross(n1,u1)
+    theta=r2d(arccos(a_(n1)@a_(u1)))
+    c3=c1+c2
+    c4=c32(rot_sec2xy_plane(c3))
+    c5,c6=c4[:len(c1)],c4[len(c1):]
+    a1=two_cir_tarc(c5,c6,r,side,s)
+    tr1=a_(c3[0])-a_(c23(c4)[0])
+    a2=translate(tr1,a1)
+    a3=axis_rot_1(a2,u2,c3[0],-theta)
+    return a3
