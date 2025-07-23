@@ -8493,5 +8493,5 @@ def union(a=[],n=3,pitch=.5,closed_loop=1):
     '''
     creating a union of various individual elements
     '''
-   sx=homogenise(a,pitch=pitch,closed_loop=closed_loop)
-   return concave_hull(sx,n)
+    sx=homogenise(a,pitch=pitch,closed_loop=closed_loop)
+    return concave_hull(sx,n)
