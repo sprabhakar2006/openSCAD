@@ -8202,11 +8202,31 @@ def s_int1_3d(sec1):
     return i_p1
 
 def sec_start_pos(sec,n=0):
+    """
+    function to change the starting position/ point of a closed loop section.
+    'n' can be any number between 0 to length of sec
+    """
     return sec[n:]+sec[:n]
 
 def lines_fillets_solid(l1,l2,l3,l4,l5,s=20,o=1):
     """
-    convert 5 lines to solid for removing sharp edges from a shape
+convert 5 lines to solid for removing sharp edges from a shape
+example:
+sol=linear_extrude(circle(20),10)
+l1=offset_3d(sol[0],-5)
+l2=sol[0]
+l3=mid_line(sol[0],sol[-1])
+l4=sol[-1]
+l5=offset_3d(sol[-1],-5)
+f1=lines_fillets_solid(l1,l2,l3,l4,l5,s=20,o=5)
+f1=f1+[f1[0]]
+fileopen(f'''
+color("blue") for(p={[l1,l2,l3,l4,l5]}) p_line3dc(p,.3);
+difference(){{
+{swp(sol)}
+#{swp_c(f1)}
+}}
+''')
     """
     f1=cpo(cpo(convert_3lines2fillet(l1,l3,l2,s))[:-1])
     f2=cpo(cpo(convert_3lines2fillet(l3,l5,l4,s))[:-1])
@@ -8418,7 +8438,8 @@ polyhedron(v1,[f1],convexity=10);
 def i_p2d(l1,l2):
     """
     function to calculate the intersection point between 2 lines in 2d space
-    e.g. i_p2d(l1=[[0,0],[1,4]],l2=[[10,0],[7,2]]) =>  [1.42857, 5.71429]
+    example:
+    i_p2d(l1=[[0,0],[1,4]],l2=[[10,0],[7,2]]) =>  [1.42857, 5.71429]
     """
     l1,l2=array([l1,l2])
     v1=l1[1]-l1[0]
@@ -8493,7 +8514,7 @@ def tctpf(r1,r2,cp1,cp2): #2 circle tangent point full (both the sides)
     cir2=circle(5,[15,6])
     sec=tctpf(r1=10,r2=5,cp1=[0,0],cp2=[15,6])
     
-    refer file "example of various functions" for application
+    
     """
     cp1,cp2=array([cp1,cp2])
     v1=cp2-cp1,
@@ -8709,47 +8730,74 @@ def vcost2(line,point):
             p5=px
     return p5
 
-def path_offset3d(line,d=1,nv=[]):
-    """
-    same as function path_offset, but for 3d
-    in case normal vector is known use parameter 'nv' to define the same
-    """
-    l1=line
+# def path_offset3d(line,d=1,nv=[]):
+#     """
+#     same as function path_offset, but for 3d
+#     in case normal vector is known use parameter 'nv' to define the same
+#     """
+#     l1=line
     
-    n1,incpt=best_fit_plane(l1)
-    n1=uv(n1) if nv==[] else uv(nv)
-    n2=[0,0,-1]
-    n3=cross(n1,n2)
-    theta=r2d(arccos(a_(n1)@a_(n2)))
-    l2=c32(rot_sec2xy_plane(l1))
-    l3=path_offset_n(l2,d)
-    l4=c23(l3)
-    d1=a_(l1[0])-a_(l4[0])
-    l5=translate(d1,axis_rot_1(l4,n3,l4[0],-theta))
-    return l5
+#     n1,incpt=best_fit_plane(l1)
+#     n1=uv(n1) if nv==[] else uv(nv)
+#     n2=[0,0,-1]
+#     n3=cross(n1,n2)
+#     theta=r2d(arccos(a_(n1)@a_(n2)))
+#     l2=c32(rot_sec2xy_plane(l1))
+#     l3=path_offset(l2,d)
+#     l4=c23(l3)
+#     d1=a_(l1[0])-a_(l4[0])
+#     l5=translate(d1,axis_rot_1(l4,n3,l4[0],-theta))
+#     return l5
 
-def bezier_closed(pl,s=100,p=10):
+def path_offset3d(path,d=1,nv=[]):
     """
-    bezier closed loop
-    pl: points list
-    s: number of segments required in the bezier path
-    p: what percent of points in the bezier segments to be considered for end points looping.
-    default of 10 should work in most of the cases
+function to offset a 3d path. path has to be in the same plane
+Incase the normal vector 'nv' is known can be specified
+example:
+a=cr3dt([[0,0,0],[10,0,0],[0,10,3],[-5,7,5],[-15,-1,-10]])
+pl1=plane([1,1,20],[100,100],[0,0,10])
+b=plos(pl1,a,[1,1,20],unidirection=0)
+c=path_offset3d(b,1)
+fileopen(f'''
+%{swp_surf(pl1)}
+//color("blue") p_line3d({a},.3);
+color("magenta") p_line3d({b},.3);
+color("cyan") p_line3d({c},.3);
+''')    
     """
-    a=bezier(pl,s)
-    n=int(s*p/100)
-    b=bezier(a[-n-1:]+a[:n],n+int(n/2))
-    c=a[n:-n]+b
-    return c
+    b=path
+    n1=uv(best_fit_plane(b)[0]) if nv==[] else nv
+    n2=[0,0,-1]
+    n3=uv(cross(n1,n2))
+    theta=r2d(arccos(a_(n1)@a_(n2)))
+    b1=rot_sec2xy_plane(b)
+    b2=c32(b1)
+    tr1=a_(b)[0]-a_(c23(b2))[0]
+    b3=path_offset(b2,d)
+    b4=axis_rot_1(c23(b3),n3,c23(b2)[0],-theta)
+    b5=translate(tr1,b4)
+    return b5
+
 
 def ilo(il,s1,s2,r,t=1):
     """
-    intersection line offset
-    type "t" can be set to 1,2 or 3
-    il: intersection line between 2 surfaces s1 and s2
-    s1: surface which is intersected
-    s2: surface which intersects the surface s1
-    r: distance to offset the intersecting line
+intersection line offset
+type "t" can be set to 1,2 or 3
+il: intersection line between 2 surfaces s1 and s2
+s1: surface which is intersected
+s2: surface which intersects the surface s1
+r: distance to offset the intersecting line
+example:
+s1=sphere(20)
+c1=rot('y45',cylinder(r=5,h=50))
+l1=ip_sol2sol(s1,c1)
+l2=ilo(l1,s1,c1,-3,1)
+fileopen(f'''
+%{swp(s1)}
+%{swp(c1)}
+color("blue") p_line3dc({l1},.3);
+color("magenta") p_line3dc({l2},.3);
+''')
     """
     a=i_p_p(s2,il,.5)
     v1=i_p_n(il,s1)
@@ -8768,23 +8816,48 @@ def ilo(il,s1,s2,r,t=1):
 
 def c_(sol):
     """
-    close loop a solid
+close loop a solid. In the example below the ends of the surface are closed by applying the function
+example:
+c1=cylinder(r=10,h=50,s=10)
+c2=translate([40,0,0],c1)
+c2=c_(c2)
+fileopen(f'''
+{swp_surf(c1)}
+{swp_surf(c2)}
+''')
     """
     return cpo(cpo(sol)+[cpo(sol)[0]])
 
 def union(a=[],n=3,pitch=.5,closed_loop=1):
     """
-    creating a union of various individual elements
+creating a union of various individual elements
+example:
+c1=circle(20,[15,0])
+c1,c2,c3,c4=[ rot2d(i,c1) for i in linspace(0,360,5)[:-1]]
+c4=union([c1,c2,c3,c4],5,1)
+fileopen(f'''
+color("blue",.2) for(p={[c1,c2,c3,c4]}) p_line3dc(p,.3);
+color("magenta") p_line3dc({c4},.32);
+''')
     """
     sx=homogenise(a,pitch=pitch,closed_loop=closed_loop)
     return concave_hull(sx,n)
 
 def fillet_2spheres(sp1,sp2,r,s1=20,s2=50):
     """
-    create a fillet between 2 spheres
-    r is the radius of the fillet
-    s1 and s2 are the number of sections in the fillet 
-    and number of points in each section
+create a fillet between 2 spheres
+r is the radius of the fillet
+s1 and s2 are the number of sections in the fillet 
+and number of points in each section
+example:
+s1=sphere(10)
+s2=sphere(7,[15,15,0])
+f1=fillet_2spheres(s1,s2,7,s1=10,s2=40)
+fileopen(f'''
+{swp(s1)}
+{swp(s2)}
+{swp(f1)}
+''')
     """
     cp1=cp_cir_3d( cpo(sp1)[0])
     cp2=cp_cir_3d( cpo(sp2)[0])
@@ -8824,10 +8897,21 @@ def two_cir_tarc3d(c1,c2,r,side=0,s=50):
 def bezier_c(sec,s=30):
     """
     approximates a bezier closed loop
+example:
+a=cr3dt([[0,0,0],[10,0,0],[0,10,3],[-5,7,5],[-15,-1,-10]])
+a=m_points1(a,3)
+b=bezier_c(a,100)
+fileopen(f'''
+// control points
+color("blue") for(p={[a]}) points(p,.3);
+color("blue",.2) p_line3dc({a},.2);
+// bezier closed
+color("magenta") for(p={[b]}) p_line3d(p,.2);
+''')
     """
     a=sec
     b=[mid_point(bezier(sec_start_pos(a,i),s)) for i in range(len(a))]
-    c=bspline_closed(b,3,s)
+    c=equidistant_pathc(bspline_closed(b,3,s),s)
     return c
 
 def rationalise_sec(sec):
