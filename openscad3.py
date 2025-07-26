@@ -8820,3 +8820,22 @@ def two_cir_tarc3d(c1,c2,r,side=0,s=50):
     a2=translate(tr1,a1)
     a3=axis_rot_1(a2,u2,c3[0],-theta)
     return a3
+
+def bezier_c(sec,s=30):
+    """
+    approximates a bezier closed loop
+    """
+    a=sec
+    b=[mid_point(bezier(sec_start_pos(a,i),s)) for i in range(len(a))]
+    c=bspline_closed(b,3,s)
+    return c
+
+def rationalise_sec(sec):
+    """
+    removes all the points which are in straight line in a closed loop section or polyline
+    """
+    a=rationalise_path(sec)
+    if pol(a[-1],[a[-2],a[0]]):
+        return a[:-1]
+    else:
+        return a
