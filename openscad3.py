@@ -6,7 +6,7 @@ from scipy.spatial import cKDTree, Delaunay
 # import pandas as pd
 import sympy
 import math
-# from skimage import measure
+from skimage import measure
 # from stl import mesh
 
 def arc(radius=0,start_angle=0,end_angle=0,cp=[0,0],s=20):
@@ -7153,43 +7153,121 @@ def surface_correction_after_offset_open(surf_original,surf_off,dist=1):
 
 def plos_v_2(s2,l1,v1,dist=100000,unidirection=0):
     """
-    project a line on to a surface without loosing the original points
-    line 'l1' will be projected on surface 's2'
-    'v1' are the vectors for projection. v1 are the list of vectors
+project a line on to a surface without loosing the original points
+line 'l1' will be projected on surface 's2'
+'v1' are the vectors for projection. v1 are the list of vectors
+example:
+l1=cr3dt([[-10,-5,0,5],[0,10,0,5],[20,0,0,5],[0,-10,0,5],[0,0,10,5],[0,10,0,5],
+         [-20,0,0,5],[0,-10,0,5]],20)
+l1=homogenise(l1,1,1)
+l2=scl3dc(l1,.7)
+v1=lines2vectors(cpo([l2,l1]))
+s1=sphere(15)
+l3=plos_v_2(c_(s1),l1,v1,unidirection=1)
+l4=cpo([l2,l3])
+fileopen(f'''
+%{swp(s1)}
+//original line
+color("blue") p_line3d({l1},.3);
+// projected line
+color("magenta") p_line3d({l3},.3);
+//source of light
+color("cyan") p_line3d({l2},.2);
+// rays for projection
+color("grey") for(p={l4}) p_line3d(p,.05);
+''')
     """
     return psos_v_2(s2,[l1],v1,dist=dist,unidirection=unidirection)[0]
 
 def plos_v_1(s2,l1,l2,dist=100000,unidirection=0):
     """
-    project a line on to a surface without loosing the original points
-    line 'l1' will be projected on surface 's2'
-    'l2' is the line from where the rays are emitting to project  
+project a line on to a surface without loosing the original points
+line 'l1' will be projected on surface 's2'
+'l2' is the line from where the rays are emitting to project  
+example:
+s1=sphere(10)
+l1=m_points1_o(point_vector([0,1,0],[5,5,0]),10)
+l2=point_vector([0,-5,-2],[5,0,0])
+l3=plos_v_1(s1,l1,l2)
+x1=[ vcost1(l2,p) for p in l1]
+fileopen(f'''
+%{swp(c_(s1))}
+// line to project
+color("blue") p_line3d({l1},.2);
+// light source
+color("cyan") p_line3d({l2},.2);
+// projected line
+color("magenta") p_line3d({l3},.2);
+//rays of projection
+color("grey") for(p={cpo([x1,l3])}) p_line3d(p,.03);
+''')
     """
     return psos_v_1(s2,[l1],l2,dist=dist,unidirection=unidirection)[0]
 
 
 def plos_v(s2,l1,v1,dist=100000,unidirection=0):
     """
-    project a line on to a surface without loosing the original points
-    line 'l1' will be projected on surface 's2'
-    'v1' is vector for projection. this is a focal vector 
-    from where the rays are emitted for projection
+project a line on to a surface without loosing the original points
+line 'l1' will be projected on surface 's2'
+'v1' is vector for projection. this is a focal vector 
+from where the rays are emitted for projection
+example:
+s1=sphere(10)
+l1=m_points1_o(point_vector([0,1,0],[5,5,0]),10)
+v1=[0,0,-5]
+l2=plos_v(s1,l1,v1)
+fileopen(f'''
+%{swp(c_(s1))}
+color("blue") p_line3d({l1},.2);
+color("cyan") p_line3d({l2},.2);
+color("magenta") points({[v1]},.5);
+//rays of projection
+color("grey") for(p={l2}) p_line3d([{v1},p],.03);
+''')
     """
     return psos_v(s2,[l1],v1,dist=dist,unidirection=unidirection)[0]
 
 def lines2vectors(lines):
     """
-    convert lines to vectors
+convert lines to vectors
+example:
+c1=circle(10)
+l1=lines2vectors(seg(c1))
+fileopen(f'''
+color("blue") p_line3d({c1},.2);
+color("cyan") for(p={l1})p_line3d([[0,0],p],.02);
+''')
     """
     return [line_as_axis(p) for p in lines]
 
 def mirror_point(pnt,n1,loc):
     """
-    function to mirror a point 'pnt' defined by mirroring plane 'n1' passing through intercept 'loc'
+function to mirror a point 'pnt' defined by mirroring plane 'n1' passing through intercept 'loc'
+example:
+p0=[10,5,5]
+p1=mirror_point(p0,n1=[0,1,0],loc=[0,0,0])
+p2=mirror_point(p0,n1=[1,0,0],loc=[0,0,0])
+p3=mirror_point(p0,n1=[0,0,1],loc=[0,0,0])
+fileopen(f'''
+color("blue") points({[p0]},.5);
+color("cyan") points({[p1]},.5);
+color("magenta") points({[p2]},.5);
+color("grey") points({[p3]},.5);
+''')
     """
     return mirror_line([pnt],n1,loc)[0]
 
 def corner_radius3d(pnts,s=5): # Corner radius 3d where 'pnts' are the list of points with 4th coordinate in each point is radius 'rds' and 's' is number of segments for each arc
+    """
+Corner radius 3d where 'pnts' are the list of points with 4th coordinate in each point is radius and 's' is number of segments for each radial arc
+example:
+# cr3d is the short name of this function
+l1=cr3d([[0,0,0,5],[0,10,0,5],[20,10,0,5],[20,0,0,5],[20,0,10,5],[20,10,10,5],
+         [0,10,10,5],[0,0,10,5]],20)
+fileopen(f'''
+color("blue") p_line3d({l1},.3);
+''')
+    """
     rds=[pnts[i][3] if len(pnts[i])==4 else 0 for i in range(len(pnts))]
     pnts=[pnts[i][:3] for i in range(len(pnts))]
     c=[]
@@ -7212,12 +7290,18 @@ def corner_radius3d(pnts,s=5): # Corner radius 3d where 'pnts' are the list of p
 
 cr3d=corner_radius3d
 
-
-
 def twoCircleCrossTangent(c1,c2,cw=-1): # two circle cross tangent
     """
-    function to draw cross tangent between 2 circles
-    refer to the file "example of various functions " for application examples
+function to draw cross tangent between 2 circles
+example:
+cir1=circle(10)
+cir2=circle(5,[15,6])
+p0=twoCircleCrossTangent(cir1,cir2)
+fileopen(f'''
+color("blue") for(p={[cir1,cir2]}) p_line3d(p,.3);
+color("magenta") points({p0},.5);
+%color("cyan",.2) p_line3d({p0},.3);
+''')
     """
     r1=r_arc(c1)
     r2=r_arc(c2)
@@ -7268,15 +7352,18 @@ two_circle_cross_tangent=twoCircleCrossTangent
 
 def twoCircleTangentPoints(c1,c2,side=0): #2 circle tangent point full (both the sides)
     """
-    function to draw tangent line joining 2 circles 'c1' and 'c2'.
-    this works counter-clockwise
-    This function draws tangent line on both the sides
-    example:
-    cir1=circle(10)
-    cir2=circle(5,[15,6])
-    sec=twoCircleTangentPoints(cir1,cir2)
-    
-    refer file "example of various functions" for application
+function to draw tangent line joining 2 circles 'c1' and 'c2'.
+this works counter-clockwise
+This function draws tangent line on both the sides
+example:
+cir1=circle(10)
+cir2=circle(5,[15,6])
+p0=twoCircleTangentPoints(cir1,cir2)
+fileopen(f'''
+color("blue") for(p={[cir1,cir2]}) p_line3d(p,.3);
+color("magenta") points({p0},.5);
+%color("cyan",.2) p_line3d({p0},.3);
+''')
     """
     r1=r_arc(c1)
     r2=r_arc(c2)
@@ -7299,10 +7386,10 @@ two_circle_tangent=twoCircleTangentPoints
 
 def pts3(pl):
     """
-    this functionis required for 3d turtle movement and works with function 'corner_radius3d'
-    example:
-    a=pts3([[0,0,0],[10,7,5,5],[0,0,20,5],[0,10,0]]) => 
-    [[0, 0, 0, 0], [10, 7, 5, 5], [10, 7, 25, 5], [10, 17, 25, 0]]
+this functionis required for 3d turtle movement and works with function 'corner_radius3d'
+example:
+a=pts3([[0,0,0],[10,7,5,5],[0,0,20,5],[0,10,0]]) => 
+[[0, 0, 0, 0], [10, 7, 5, 5], [10, 7, 25, 5], [10, 17, 25, 0]]
     """
     a=pl
     b=[p if len(p)==4 else p+[0] for p in a]
@@ -7312,46 +7399,22 @@ def pts3(pl):
 
 def line_as_vector(line):
     """
-    convert a line to vector
+convert a line to vector
+example:
+line_as_vector([[0,0],[10,0]]) => [10,0]
     """
     return line_as_axis(line)
 
 def line_as_unit_vector(line):
     """
-    convert a line to unit vector
+convert a line to unit vector
+example:
+line_as_unit_vector([[0,0],[10,0]]) => [1.0,0.0]
     """
     v1=line_as_vector(line)
 
     return l_(v1/norm(v1))
 
-def h_line_on_surface(surf,y=0):
-    """
-    draws horizontal lines on the surface at defined 'y' intercept
-    """
-    c=surf
-    d=a_([seg(p) for p in c]).reshape(-1,2,3)
-    e=a_([d[:,0,1],d[:,1,1]]).transpose(1,0)
-    l1=arange(len(d))[a_([e.min(1)<=y,e.max(1)>y]).transpose(1,0).all(1)]
-    t1=(y-e[l1][:,0])/(e[l1][:,1]-e[l1][:,0])
-    p1=l_(einsum('ij,i->ij',d[l1][:,0],(1-t1))+einsum('ij,i->ij',d[l1][:,1],t1))
-    if len(p1)>1:
-        p2=lexico(p1,[0,1,2],[1,1,1])
-        return p2
-    else:
-        return []
-
-def convert_surface_to_fill_all_holes(surf,number_of_lines=100,
-                                      number_of_points_in_each_line=50):
-    """
-    convert a solid made through function prism to surface with parallel lines
-    """
-    min_y=a_(surf).reshape(-1,3)[:,1].min()
-    max_y=a_(surf).reshape(-1,3)[:,1].max()
-    a=[ equidistant_path(h_line_on_surface(surf,i),number_of_points_in_each_line-1) 
-       for i in linspace(min_y+.001,max_y-.001,number_of_lines)
-       if h_line_on_surface_1(surf,i)!=[]]
-    
-    return a
 
 def derivative2d(line):
     b=seg(line)[:-1]
@@ -7371,7 +7434,15 @@ def derivative3d(line):
 
 def points_to_meshes(pnts,voxel_size=.1,iso_level_percentile=2,flip=0):
     """
-    create triangle meshes from a list of points using marching cube method
+create triangle meshes from a list of points using marching cube method
+example:
+# for this to work library "skimage" needs to be imported
+from skimage import measure
+l1=c23(circle(5))
+fileopen(f'''
+color("blue") p_line3d({l1},.3);
+{points_to_meshes(l1,.5,10)}
+''')
     """
     pnts=a_(pnts)
     mins=min(pnts,axis=0)-3*voxel_size
@@ -7454,7 +7525,15 @@ def ip_sol2sol_each_line(sol1,sol2,n=0):
 
 def grid2d(pnts,resolution=1,offset=0):
     """
-    creates a grid of points to cover a 2d shape
+creates a grid of points to cover a 2d shape
+example:
+l1=circle(5)
+l2=grid2d(l1,1,offset=2)
+fileopen(f'''
+color("blue") p_line3d({l1},.3);
+color("magenta") points({l2},.1);
+//%color("cyan",.2) p_line3d({l2},.05);
+''')
     """
     ss=resolution
     m1=a_(pnts).min(axis=0)-offset
@@ -7473,7 +7552,9 @@ def grid2d(pnts,resolution=1,offset=0):
 
 def ang_v(v):
     """
-    finds angle of a vector
+finds angle of a vector
+example:
+ang_v([4,4]) => 45.0
     """
     return ang(v[0],v[1])
 
@@ -7483,7 +7564,14 @@ def sterguss(n):
 
 def h_lines(sec,n=10,o=.1):
     """
-    horizontal lines are drawn covering the bounding box of a sketch
+horizontal lines are drawn covering the bounding box of a sketch
+example:
+l1=circle(5)
+l2=h_lines(l1,n=10)
+fileopen(f'''
+color("blue") p_line3d({l1},.3);
+color("magenta") for(p={l2}) p_line3d(p,.1);
+''')
     """
     m1=a_(sec).min(axis=0)+[-o,o]
     m2=a_(sec).max(axis=0)+[o,-o]
@@ -7494,7 +7582,14 @@ def h_lines(sec,n=10,o=.1):
 
 def h_lines_sec(sec,n=10,o=.1):
     """
-    horizontal lines are drawn covering the closed loop secton
+horizontal lines are drawn covering the closed loop secton
+example:
+l1=circle(5)
+l2=h_lines_sec(l1,n=10)
+fileopen(f'''
+color("blue") p_line3d({l1},.3);
+color("magenta") for(p={l2}) p_line3d(p,.1);
+''')
     """
     d=rot2d(.001,h_lines(sec,n,o))
     e=l_(a_(s_int1(d+seg(sec))).round(4))
@@ -7508,7 +7603,14 @@ def h_lines_sec(sec,n=10,o=.1):
 
 def v_lines(sec,n=10,o=.1):
     """
-    verticle lines are drawn covering the bounding box of a sketch
+verticle lines are drawn covering the bounding box of a sketch
+example:
+l1=circle(5)
+l2=v_lines(l1,n=10)
+fileopen(f'''
+color("blue") p_line3d({l1},.3);
+color("magenta") for(p={l2}) p_line3d(p,.1);
+''')
     """
     m1=a_(sec).min(axis=0)+[o,-o]
     m2=a_(sec).max(axis=0)+[-o,o]
@@ -7519,7 +7621,14 @@ def v_lines(sec,n=10,o=.1):
 
 def v_lines_sec(sec,n=10,o=.1):
     """
-    verticle lines are drawn to fill the closed section
+verticle lines are drawn to fill the closed section
+example:
+l1=cr2dt([[0,0,2],[10,0,2],[0,10,2],[-10,0,2]],10)
+l2=v_lines_sec(l1,n=10)
+fileopen(f'''
+color("blue") p_line3d({l1},.3);
+color("magenta") for(p={l2}) p_line3d(p,.1);
+''')
     """
     d=rot2d(-.001,v_lines(sec,n,o))
     e=l_(a_(s_int1(d+seg(sec))).round(4))
@@ -7533,12 +7642,15 @@ def v_lines_sec(sec,n=10,o=.1):
 
 def corner_radius_with_turtle(sec,s=20):
     """
-    function to create section with corner radiuses. e.g. 
-    following code has 3 points at [0,0],[10,0] and [7,15] and radiuses of 0.5,2 and 1 respectively,
-    s=5 represent the number of segments at each corner radius.
-    sec=corner_radius(pl=[[0,0,.5],[10,0,2],[7,15,1]],s=5)
-    
-    refer file "example of various functions" for application
+function to create section with corner radiuses.
+s represent the number of segments at each corner radius.
+control points can be given as turtle movement e.g. [[0,0],[10,0],[0,10]] means the polyline starts at [0,0] and then moves 10 units in x-direction and then moves 10 units in y-direction
+example:
+# cr2dt is the short name of this function. below is square with rounded corners with radius 2 mm at each corner
+l1=cr2dt([[0,0,2],[10,0,2],[0,10,2],[-10,0,2]],10)
+fileopen(f'''
+color("blue") p_line3d({l1},.3);
+''')
     """
     sec=pts1(sec)
     r_l=array(sec)[:,2].tolist()
@@ -7635,6 +7747,16 @@ def corner_radius_with_turtle(sec,s=20):
 cr2dt=corner_radius_with_turtle
 
 def corner_radius3d_with_turtle(pnts,s=5): # Corner radius 3d where 'pnts' are the list of points with 4th coordinate in each point is radius 'rds' and 's' is number of segments for each arc
+    """
+    Corner radius 3d where 'pnts' are the list of points with 4th coordinate in each point is radius and 's' is number of segments for each radial arc
+example:
+# cr3dt is the short name of this function
+l1=cr3dt([[0,0,0,5],[0,10,0,5],[20,0,0,5],[0,-10,0,5],[0,0,10,5],[0,10,0,5],
+         [-20,0,0,5],[0,-10,0,5]],20)
+fileopen(f'''
+color("blue") p_line3d({l1},.3);
+''')
+    """
     pnts=pts3(pnts)
     rds=[pnts[i][3] if len(pnts[i])==4 else 0 for i in range(len(pnts))]
     pnts=[pnts[i][:3] for i in range(len(pnts))]
