@@ -6,7 +6,7 @@ from scipy.spatial import cKDTree, Delaunay
 # import pandas as pd
 import sympy
 import math
-from skimage import measure
+#from skimage import measure
 # from stl import mesh
 
 def arc(radius=0,start_angle=0,end_angle=0,cp=[0,0],s=20):
@@ -7007,7 +7007,17 @@ def surface_split(sol,v1):
 
 def surface_reshape_with_2lines_and_pnt(l1,l2,pnt,s=20):
     """
-    reshape a surface with a point 'pnt'
+reshape a surface with a point 'pnt'
+example:
+l1=rot('x90',arc_2p([0,0],[50,0],50,s=50))
+l2=translate([0,50,0],rot('z30',l1))
+p0=[25,25,-5]
+surf1=surface_reshape_with_2lines_and_pnt(l1,l2,p0,50)
+fileopen(f'''
+color("blue") for(p={[l1,l2]}) p_line3d(p,.3);
+{swp_surf(surf1)}
+color("magenta") points({[p0]},1);
+''')
     """
     p0,p1=l1[cKDTree(l1).query(pnt)[1]],l2[cKDTree(l1).query(pnt)[1]]
     l3=[p0,pnt,p1]
@@ -7058,7 +7068,13 @@ def perpendicularProjectionOfPointOnLine(p0,l1):
 
 def switch_orientation(sol1):
     """
-    switch the orientation of the solid
+switch the orientation of the solid
+example:
+sol=cylinder(r=10,h=20)
+sol1=switch_orientation(sol)
+fileopen(f'''
+{swp_surf(sol1)}
+''')
     """
     if len(sol1[0])%2==1:
         sol1=[equidistant_path(p,len(sol1[0])) for p in sol1]
@@ -7094,6 +7110,22 @@ def i_line_fillet_closed(intersection_line,solid_1,solid_2,distance_1=1,distance
 def mid_line(l1,l2):
     """
     draw a line in center of 2 lines 'l1' and 'l2'
+example:
+# complex case study
+l1=cr3dt([[-10,-5,0,5],[0,10,0,5],[20,0,0,5],[0,-10,0,5],[0,0,10,5],[0,10,0,5],
+         [-20,0,0,5],[0,-10,0,5]],20)
+l1=homogenise(l1,1,1)
+l2=point_vector([0,10,5],[1,0,0])
+l2=[vcost1(l2,p) for p in l1]
+l3=mid_line(l1,l2)
+fileopen(f'''
+//original line
+color("blue") p_line3d({l1},.3);
+// line 2
+color("magenta") p_line3d({l2},.3);
+//mid line
+color("cyan") p_line3d({l3},.2);
+''')
     """
     return [mid_point(p) for p in cpo([l1,l2])]
 
