@@ -11,15 +11,15 @@ import math
 
 def arc(radius=0,start_angle=0,end_angle=0,cp=[0,0],s=20):
     """
-    function for calculating 2d arc
-    'cp': center point of the arc
-    's': number of segments in the arc
+function for calculating 2d arc
+'cp': center point of the arc
+'s': number of segments in the arc
 
-    example:
-    a1=arc(radius=10,start_angle=180,end_angle=270,cp=[10,10],s=20)
-    fileopen(f'''
-    color("blue") p_line3d({a1},.3);
-    ''')
+example:
+a1=arc(radius=10,start_angle=180,end_angle=270,cp=[10,10],s=20)
+fileopen(f'''
+color("blue") p_line3d({a1},.3);
+''')
     """
     cp=array(cp)
     r=linspace(start_angle,end_angle,s+1)
@@ -30,10 +30,10 @@ def arc(radius=0,start_angle=0,end_angle=0,cp=[0,0],s=20):
 
 def pts(p):
     """
-    calculates the cumulative sum of 2d list of points 'p'
-    example:
-    pts([[0,0],[4,0],[2,3],[5,-8]]) will produce following output
-    [[0, 0], [4, 0], [6, 3], [11, -5]]
+calculates the cumulative sum of 2d list of points 'p'
+example:
+pts([[0,0],[4,0],[2,3],[5,-8]]) will produce following output
+[[0, 0], [4, 0], [6, 3], [11, -5]]
     """
     return array(p)[:,0:2].cumsum(axis=0).tolist()
 
@@ -42,16 +42,16 @@ turtle2d=pts
 
 def pts1(p):
     """
-    'p' is a list of points
-    function calculates the cumulative sum of x,y values in the list while z value remains the same.
-    this is mainly used in function corner_radius(pl,s).
-    example:
-    a=pts1([[0,0,1],[10,0,1],[0,5,1],[-10,0,1]])
-    # if used with function corner_radius(pl,s)
-    b=corner_radius(a,5) # This is a rounded rectangle of dim 10 x 5 with corner radius of 1 at each corner
-    fileopen(f'''
-    color("blue") p_line3dc({b},.2);
-    ''')
+'p' is a list of points
+function calculates the cumulative sum of x,y values in the list while z value remains the same.
+this is mainly used in function corner_radius(pl,s).
+example:
+a=pts1([[0,0,1],[10,0,1],[0,5,1],[-10,0,1]])
+# if used with function corner_radius(pl,s)
+b=corner_radius(a,5) # This is a rounded rectangle of dim 10 x 5 with corner radius of 1 at each corner
+fileopen(f'''
+color("blue") p_line3dc({b},.2);
+''')
     """
     
     p=[[a[0],a[1],0] if len(a)==2 else a for a in p]
@@ -63,11 +63,11 @@ def pts1(p):
     
 def cw(sec):
     """
-    function to identify if an enclosed section is clockwise(cw) or counterclockwise(ccw)
-    this returns 1 if section is clockwise and -1 if it is counterclockwise
-    example:
-    cw([[0,0],[10,0],[5,5]]) => -1
-    cw([[0,0],[10,0],[5,-5]]) => 1
+function to identify if an enclosed section is clockwise(cw) or counterclockwise(ccw)
+this returns 1 if section is clockwise and -1 if it is counterclockwise
+example:
+cw([[0,0],[10,0],[5,5]]) => -1
+cw([[0,0],[10,0],[5,-5]]) => 1
     """
     sec=remove_extra_points(sec)
     sec=rot2d(0.001,sec)
@@ -106,10 +106,10 @@ check_orientation=cw
 
 def cwv(sec):
     """
-    function to identify whether each point in a section is clockwise or counter clockwise. 
-    cw(sec)==1 means clockwise and -1 means counterclockwise. 
-    example:
-    cwv(pts([[0,0],[4,0],[0,4],[2,0],[0,2],[-6,0]])) => [-1, -1, 1, -1, -1, -1]
+function to identify whether each point in a section is clockwise or counter clockwise. 
+cw(sec)==1 means clockwise and -1 means counterclockwise. 
+example:
+cwv(pts([[0,0],[4,0],[0,4],[2,0],[0,2],[-6,0]])) => [-1, -1, 1, -1, -1, -1]
     """
     p=sec
     p0=[p[-1]]+p[:-1]
@@ -142,23 +142,23 @@ function to calculate angle of a 2d vector starting from origin and end point wi
 
 def flip(sec):
     """
-    function to flip the sequence of a list or a list of points
-    example:
-    list=[1,2,3,4,5]
-    flipped_list=flip(list) => [5, 4, 3, 2, 1]
-    
-    list=[[1,2,3],[4,5,6],[7,8,9]]
-    flipped_list=flip(list) => [[7, 8, 9], [4, 5, 6], [1, 2, 3]]
+function to flip the sequence of a list or a list of points
+example:
+list=[1,2,3,4,5]
+flipped_list=flip(list) => [5, 4, 3, 2, 1]
+
+list=[[1,2,3],[4,5,6],[7,8,9]]
+flipped_list=flip(list) => [[7, 8, 9], [4, 5, 6], [1, 2, 3]]
     """
     return sec[::-1]
     
 
 def max_r(sec):
     """
-    function calculates the maximum radius in a given closed section
-    example:
-    sec=cr_c(pts1([[0,0,.2],[8,3,3],[5,7,1],[-8,0,2],[-5,20,1]]),20)
-    max_r(sec) => 3.0
+function calculates the maximum radius in a given closed section
+example:
+sec=cr_c(pts1([[0,0,.2],[8,3,3],[5,7,1],[-8,0,2],[-5,20,1]]),20)
+max_r(sec) => 3.0
     
     """
     c=[]
@@ -196,13 +196,13 @@ def offset_l(l,d):
 
 def seg(sec):
     """
-    function to create a segment from a list of points or a list
-    example:
-    list=[1,2,3,4,5,6]
-    seg(list)=> [[1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 1]]
-    
-    list=[[1,2,3],[4,5,6],[7,8,9]]
-    seg(list) => [[[1, 2, 3], [4, 5, 6]], [[4, 5, 6], [7, 8, 9]], [[7, 8, 9], [1, 2, 3]]]
+function to create a segment from a list of points or a list
+example:
+list=[1,2,3,4,5,6]
+seg(list)=> [[1, 2], [2, 3], [3, 4], [4, 5], [5, 6], [6, 1]]
+
+list=[[1,2,3],[4,5,6],[7,8,9]]
+seg(list) => [[[1, 2, 3], [4, 5, 6]], [[4, 5, 6], [7, 8, 9]], [[7, 8, 9], [1, 2, 3]]]
     """
     c=[]
     for i in range(len(sec)):
@@ -216,7 +216,7 @@ def seg(sec):
 
 def offset_segv(sec,d):
     """
-    function makes the segments of the original section and offset each segment by a distance 'd'
+function makes the segments of the original section and offset each segment by a distance 'd'
     
     """
     s=sec
@@ -230,16 +230,16 @@ def offset_segv(sec,d):
 
 def offset_points(sec,r):
     """
-    function to calculate offset of a list of 2d points
-    in defining sections, providing corner radius is a must
-    Not an important function to study
+function to calculate offset of a list of 2d points
+in defining sections, providing corner radius is a must
+Not an important function to study
     """
     return array(offset_segv(sec,r))[:,0].tolist()
 
 
 def offset_seg_cw(sec,r):
     """
-    function offsets the segment only when the point is clockwise
+function offsets the segment only when the point is clockwise
     
     """
     c=[]
@@ -261,13 +261,13 @@ def offset_seg_cw(sec,r):
 
 def remove_extra_points(points_list):
     """
-    function removes all the duplicates from a 
-    example:
-    list=[9,5,1,2,3,4,5,2,4,6,9]
-    remove_extra_points(list) => [9, 5, 1, 2, 3, 4, 6]
-    
-    list=[[7,8,9],[1,2,3],[10,11,12],[4,5,6],[7,8,9],[10,11,12]]
-    remove_extra_points(list) => [[7, 8, 9], [1, 2, 3], [10, 11, 12], [4, 5, 6]]
+function removes all the duplicates from a 
+example:
+list=[9,5,1,2,3,4,5,2,4,6,9]
+remove_extra_points(list) => [9, 5, 1, 2, 3, 4, 6]
+
+list=[[7,8,9],[1,2,3],[10,11,12],[4,5,6],[7,8,9],[10,11,12]]
+remove_extra_points(list) => [[7, 8, 9], [1, 2, 3], [10, 11, 12], [4, 5, 6]]
     """
     return array(points_list)[sort(unique(points_list,axis=0,return_index=True)[1])].tolist()
 
@@ -277,14 +277,14 @@ remove_duplicates = remove_extra_points
 
 def list_r(sec):
     """
-    function list the corner radiuses of a given section (only where the radius is specified)
-    example:
-    sec=corner_radius(pts1([[0,0,.1],[7,5,2],[5,7,3],[-5,7,5],[-7,5,5]]),5)
-    list_r(sec) => 
-    array([0.   , 0.1  , 0.1  , 0.1  , 0.1  , 0.   , 0.   , 2.   , 2.   ,
-       2.   , 2.   , 0.   , 0.   , 3.   , 3.   , 3.   , 3.   , 0.   ,
-       0.   , 4.077, 4.077, 4.077, 4.077, 4.077, 4.077, 4.077, 4.077,
-       4.077, 0.   , 0.   ])
+function list the corner radiuses of a given section (only where the radius is specified)
+example:
+sec=corner_radius(pts1([[0,0,.1],[7,5,2],[5,7,3],[-5,7,5],[-7,5,5]]),5)
+list_r(sec) => 
+array([0.   , 0.1  , 0.1  , 0.1  , 0.1  , 0.   , 0.   , 2.   , 2.   ,
+   2.   , 2.   , 0.   , 0.   , 3.   , 3.   , 3.   , 3.   , 0.   ,
+   0.   , 4.077, 4.077, 4.077, 4.077, 4.077, 4.077, 4.077, 4.077,
+   4.077, 0.   , 0.   ])
     """
     pi_2minus=sec[-2:]+sec[:-2]
     pi_minus=[sec[-1]]+sec[:-1]
@@ -318,14 +318,14 @@ def list_r(sec):
 
 def list_ra(sec):
     """
-    calculates list of radiuses for all the points of a given section
-    example:
-    sec=corner_radius(pts1([[0,0,.1],[7,5,2],[5,7,3],[-5,7,5],[-7,5,5]]),5)
-    list_ra(sec) =>
-    array([  0.,   0.,   0.,   0.,   0.,  19., 124.,   2.,   2.,   2.,   2.,
-        95.,  28.,   3.,   3.,   3.,   3.,  26.,  92.,   4.,   4.,   4.,
-         4.,   4.,   4.,   4.,   4.,   4.,  40.,   8.])
-    
+calculates list of radiuses for all the points of a given section
+example:
+sec=corner_radius(pts1([[0,0,.1],[7,5,2],[5,7,3],[-5,7,5],[-7,5,5]]),5)
+list_ra(sec) =>
+array([  0.,   0.,   0.,   0.,   0.,  19., 124.,   2.,   2.,   2.,   2.,
+    95.,  28.,   3.,   3.,   3.,   3.,  26.,  92.,   4.,   4.,   4.,
+     4.,   4.,   4.,   4.,   4.,   4.,  40.,   8.])
+
     """
     pi_2minus=sec[-2:]+sec[:-2]
     pi_minus=[sec[-1]]+sec[:-1]
@@ -361,15 +361,15 @@ list_radiuses=list_ra
     
 def rm(theta):
     """
-    function to rotate a vector by "theta" degrees e.g. try following code:
-    example:
-    line=[[0,0],[5,0]]
-    line1=array(line)@rm(30)
-    line1=line1.tolist()
-    fileopen(f'''
-    color("blue") p_line3d({line},.2);
-    color("magenta") p_line3d({line1},.2);
-    ''')
+function to rotate a vector by "theta" degrees e.g. try following code:
+example:
+line=[[0,0],[5,0]]
+line1=array(line)@rm(30)
+line1=line1.tolist()
+fileopen(f'''
+color("blue") p_line3d({line},.2);
+color("magenta") p_line3d({line1},.2);
+''')
     """
     
     pi=3.141592653589793
@@ -377,10 +377,10 @@ def rm(theta):
 
 def max_rv(sec):
     """
-    function calculates the maximum radius in a given closed section
-    example:
-    sec=corner_radius(pts1([[0,0,.2],[8,3,3],[5,7,1],[-8,0,2],[-5,20,1]]),20)
-    max_rv(sec) => 3.0
+function calculates the maximum radius in a given closed section
+example:
+sec=corner_radius(pts1([[0,0,.2],[8,3,3],[5,7,1],[-8,0,2],[-5,20,1]]),20)
+max_rv(sec) => 3.0
     
     """
     pi_2minus=sec[-2:]+sec[:-2]
@@ -414,10 +414,10 @@ def max_rv(sec):
 
 def r_3p(p):
     """
-    function calculates radius of the circle drawn with 3 points 'p1','p2','p3'
-    example:
-    p1,p2,p3=[3,0],[0,0],[0,3]
-    radius=r_3p([p1,p2,p3]) => 2.1213203435596424
+function calculates radius of the circle drawn with 3 points 'p1','p2','p3'
+example:
+p1,p2,p3=[3,0],[0,0],[0,3]
+radius=r_3p([p1,p2,p3]) => 2.1213203435596424
     """
     p4=add(p[0],divide(subtract(p[1],p[0]),2)).tolist()
     p5=add(p[1],divide(subtract(p[2],p[1]),2)).tolist()
@@ -436,9 +436,9 @@ radius_3points=r_3p
 
 def s_int(sec1):
     """
-    calulates the self intersection points of a list of line segments 's'
-    it also picks the points in case the 2 lines are just connected at 1 point and are not crossing
-     function s_int1 is applicable in most of the calculations
+calulates the self intersection points of a list of line segments 's'
+it also picks the points in case the 2 lines are just connected at 1 point and are not crossing
+ function s_int1 is applicable in most of the calculations
     """
     n=len(sec1)
     a=array(sec1)[comb_list(n)]
@@ -473,31 +473,31 @@ def r_3pv(p1,p2,p3):
 
 def sort_points(sec,list1):
     """
-    function picks the nearest point of a section from a reference section and matches the length of points for the 2 compared sections
-    example:
-    sec=circle(10)
-    sec1=corner_radius(pts1([[-2.5,-2.5,1],[5,0,1],[0,5,1],[-5,0,1]]))
-    sec2=sort_points(sec,sec1)
-    sec3=cpo([sec2,sec])
-    fileopen(f'''
-    p_line({sec},.2);
-    p_line({sec2},.2);
-    color("blue") for(p={sec3})p_line(p,.1);
-        ''')
+function picks the nearest point of a section from a reference section and matches the length of points for the 2 compared sections
+example:
+sec=circle(10)
+sec1=corner_radius(pts1([[-2.5,-2.5,1],[5,0,1],[0,5,1],[-5,0,1]]))
+sec2=sort_points(sec,sec1)
+sec3=cpo([sec2,sec])
+fileopen(f'''
+p_line({sec},.2);
+p_line({sec2},.2);
+color("blue") for(p={sec3})p_line(p,.1);
+    ''')
     """
     return array(list1)[cKDTree(list1).query(sec)[1]].tolist()
             
 
 def m_points(sec,pitch=1):
     """
-    multiple points within straight lines of a closed section 'sec' with equal segment length 'pitch' in the straight line segments
-    example:
-    l1=[[0,0],[10,0],[10,10],[0,10]]
-    l2=translate_2d([20,0],m_points(l1,pitch=1))
-    fileopen(f'''
-    color("blue") points({l1},.2);
-    color("magenta") points({l2},.2);
-    ''')
+multiple points within straight lines of a closed section 'sec' with equal segment length 'pitch' in the straight line segments
+example:
+l1=[[0,0],[10,0],[10,10],[0,10]]
+l2=translate_2d([20,0],m_points(l1,pitch=1))
+fileopen(f'''
+color("blue") points({l1},.2);
+color("magenta") points({l2},.2);
+''')
     """
     sec1=[]
     for p in seg(sec):
@@ -509,13 +509,13 @@ def m_points(sec,pitch=1):
 
 def m_points_o(sec,pitch=1):
     """
-    multiple points within straight lines of a open section 'sec' with equal segment length 'pitch' in the straight line segments
-    l1=[[0,0],[10,0],[10,10],[0,10]]
-    l2=translate_2d([20,0],m_points_o(l1,pitch=1))
-    fileopen(f'''
-    color("blue") points({l1},.2);
-    color("magenta") points({l2},.2);
-    ''')
+multiple points within straight lines of a open section 'sec' with equal segment length 'pitch' in the straight line segments
+l1=[[0,0],[10,0],[10,10],[0,10]]
+l2=translate_2d([20,0],m_points_o(l1,pitch=1))
+fileopen(f'''
+color("blue") points({l1},.2);
+color("magenta") points({l2},.2);
+''')
     """
     sec1=[]
     for p in seg(sec)[:-1]:
@@ -526,10 +526,10 @@ def m_points_o(sec,pitch=1):
 
 def ls(line,n):
     """
-    function to draw number of points 'n' in a line 'line'
-    example:
-    line=[[0,0],[10,0]]
-    line1=ls(line,5) => [[0.0, 0.0], [2.0, 0.0], [4.0, 0.0], [6.0, 0.0], [8.0, 0.0], [10.0, 0.0]]
+function to draw number of points 'n' in a line 'line'
+example:
+line=[[0,0],[10,0]]
+line1=ls(line,5) => [[0.0, 0.0], [2.0, 0.0], [4.0, 0.0], [6.0, 0.0], [8.0, 0.0], [10.0, 0.0]]
     """
     p0,p1=array(line)
     v1=p1-p0
@@ -538,10 +538,10 @@ def ls(line,n):
 
 def l_len(l):
     """
-    calculates length of a line 'l'
-    example:
-    line=[[0,0],[10,0]]
-    l_len(line) =>10
+calculates length of a line 'l'
+example:
+line=[[0,0],[10,0]]
+l_len(line) =>10
     """
     p0,p1=array(l[0]),array(l[1])
     v=p1-p0
@@ -553,24 +553,24 @@ line_length=l_len
     
 def arc_2p(p1,p2,r,cw=1,s=20):
     """
-    arc with 2 points 'p1,p2' with radius 'r' and with orientation clockwise (1) or counterclock wise(-1)
-    example:
-    p1=[4,0]
-    p2=[0,4]
-    arc1=arc_2p(p1,p2,3,1,20)
-    arc2=arc_2p(p1,p2,3,-1,20)
-    fileopen(f'''
-    // arc clockwise
-    color("blue")
-    p_line3d({arc1},.1);
+arc with 2 points 'p1,p2' with radius 'r' and with orientation clockwise (1) or counterclock wise(-1)
+example:
+p1=[4,0]
+p2=[0,4]
+arc1=arc_2p(p1,p2,3,1,20)
+arc2=arc_2p(p1,p2,3,-1,20)
+fileopen(f'''
+// arc clockwise
+color("blue")
+p_line3d({arc1},.1);
+
+// arc counter clockwise
+color("magenta")
+p_line3d({arc2},.1);
+
+color("cyan")points({[p1,p2]},.3);
     
-    // arc counter clockwise
-    color("magenta")
-    p_line3d({arc2},.1);
-    
-    color("cyan")points({[p1,p2]},.3);
-        
-    ''')
+''')
     """
     p1,p2=array([p1,p2])
     p3=p1+(p2-p1)/2
@@ -588,24 +588,23 @@ arc_2points_short=arc_2p
     
 def arc_long_2p(p1,p2,r,cw=1,s=20):
     """
-    arc long with 2 points 'p1,p2' with radius 'r' and with orientation clockwise (1) or counterclock wise(-1)
-    example:
-    p1=[4,0]
-    p2=[0,4]
-    arc1=arc_long_2p(p1,p2,3,1,20)
-    arc2=arc_long_2p(p1,p2,3,-1,20)
-    fileopen(f'''
-    // arc clockwise
-    color("blue")
-    p_line3d({arc1},.1);
-    
-    // arc counter clockwise
-    color("magenta")
-    p_line3d({arc2},.1);
-    
-    color("cyan")points({[p1,p2]},.3);
-        
-    ''')
+arc long with 2 points 'p1,p2' with radius 'r' and with orientation clockwise (1) or counterclock wise(-1)
+example:
+p1=[4,0]
+p2=[0,4]
+arc1=arc_long_2p(p1,p2,3,1,20)
+arc2=arc_long_2p(p1,p2,3,-1,20)
+fileopen(f'''
+// arc clockwise
+color("blue")
+p_line3d({arc1},.1);
+
+// arc counter clockwise
+color("magenta")
+p_line3d({arc2},.1);
+
+color("cyan")points({[p1,p2]},.3);
+''')
     """
     p1,p2=array([p1,p2])
     p3=p1+(p2-p1)/2
@@ -623,18 +622,18 @@ arc_2points_long=arc_long_2p
     
 def cir_2p(p1,p2,r,cw=1,s=20):
     """
-    circle with 2 points 'p1,p2' with radius 'r' and with orientation clockwise (1) or counterclock wise(-1)
-    example:
-    p1=[5,2]
-    p2=[7,8]
-    r=10
-    c1=cir_2p(p1,p2,r,cw=-1,s=50)
-    cp1=cp_arc(c1)
-    fileopen(f'''
-    color("cyan")points({[p1,p2]},.5);
-    color("blue")p_line3dc({c1},.1);
-    color("magenta")points({[cp1]},.5);
-    ''')
+circle with 2 points 'p1,p2' with radius 'r' and with orientation clockwise (1) or counterclock wise(-1)
+example:
+p1=[5,2]
+p2=[7,8]
+r=10
+c1=cir_2p(p1,p2,r,cw=-1,s=50)
+cp1=cp_arc(c1)
+fileopen(f'''
+color("cyan")points({[p1,p2]},.5);
+color("blue")p_line3dc({c1},.1);
+color("magenta")points({[cp1]},.5);
+''')
     """
     p1,p2=array([p1,p2])
     p3=p1+(p2-p1)/2
@@ -653,19 +652,19 @@ circle_2points=cir_2p
 
 def arc_2p_cp(p1,p2,r,cw=-1):
     """
-    center point of an arc with 2 points 'p1,p2' with radius 'r' and with orientation clockwise (1) or counterclock wise(-1).
-    example:
-    p1=[2,0]
-    p2=[0,2]
-    arc1=arc_2p(p1,p2,r=2,cw=1,s=20)
-    cp1=arc_2p_cp(p1,p2,r=2,cw=1)
-     
-    fileopen(f'''
-    // arc clockwise with center point of the arc
-    color("blue")
-    {{p_line3d({arc1},.05);
-    points({[cp1]},.2);}}
-    ''') 
+center point of an arc with 2 points 'p1,p2' with radius 'r' and with orientation clockwise (1) or counterclock wise(-1).
+example:
+p1=[2,0]
+p2=[0,2]
+arc1=arc_2p(p1,p2,r=2,cw=1,s=20)
+cp1=arc_2p_cp(p1,p2,r=2,cw=1)
+ 
+fileopen(f'''
+// arc clockwise with center point of the arc
+color("blue")
+{{p_line3d({arc1},.05);
+points({[cp1]},.2);}}
+''') 
     """
     p1,p2=array([p1,p2])
     p3=p1+(p2-p1)/2
@@ -680,7 +679,7 @@ center_arc_2points=arc_2p_cp
     
 def offset_2(sec,r):
     """
-    calculates offset for a section 'sec' by amount 'r'
+calculates offset for a section 'sec' by amount 'r'
     """
 
     if convex(sec):
@@ -729,34 +728,34 @@ use prism function instead of this
 
 def translate(p,sec):#translates a prism or section by [x,y,z] distance
     """
-    function to translate a group of points "sec" by "p" distance defined in [x,y,z].
-    example:
-    sec=corner_radius([[0,0,.5],[10,0,2],[7,15,1]],5)
-    sec1=translate(p=[10,5,3],sec=sec)
-    fileopen(f'''
-    color("blue")p_line3dc({sec},.1); 
-    color("magenta")p_line3dc({sec1},.1);
-    ''') 
+function to translate a group of points "sec" by "p" distance defined in [x,y,z].
+example:
+sec=corner_radius([[0,0,.5],[10,0,2],[7,15,1]],5)
+sec1=translate(p=[10,5,3],sec=sec)
+fileopen(f'''
+color("blue")p_line3dc({sec},.1); 
+color("magenta")p_line3dc({sec1},.1);
+''') 
     """
     return (array(c2t3(sec))+c2t3(p)).tolist()
 
 def translate_2d(p,sec):#translates a 2d section by [x,y] distance
     """
-    function to translate a group of points "sec" by "p" distance defined in [x,y].
-    example:
-    sec=corner_radius([[0,0,.5],[10,0,2],[7,15,1]],5)
-    sec1=translate_2d(p=[10,5],sec=sec)
-    fileopen(f'''
-    color("blue")p_line3dc({sec},.1); 
-    color("magenta")p_line3dc({sec1},.1);
-    ''') 
+function to translate a group of points "sec" by "p" distance defined in [x,y].
+example:
+sec=corner_radius([[0,0,.5],[10,0,2],[7,15,1]],5)
+sec1=translate_2d(p=[10,5],sec=sec)
+fileopen(f'''
+color("blue")p_line3dc({sec},.1); 
+color("magenta")p_line3dc({sec1},.1);
+''') 
     """
     return c3t2((array(c2t3(sec))+c2t3(p)))
 
     
 def offset_points_cw(sec,r):
     """
-    function to offset only those points which are clockwise 
+function to offset only those points which are clockwise 
     """
     s=seg(sec)
     c=[]
@@ -772,7 +771,7 @@ def offset_points_cw(sec,r):
 
 def offset_points_ccw(sec,r):
     """
-    function to offset only those points which are counter clockwise
+function to offset only those points which are counter clockwise
     """
     s=seg(sec)
     c=[]
@@ -788,14 +787,14 @@ def offset_points_ccw(sec,r):
 
 def cytz(path):# converts 'y' points to 'z' points in a 2d list of points
     """
-    function to convert the y co-ordinates to z co-ordinates e.g.[x,y]=>[x,0,y]. 2d to 3d coordinate system
-    example:
-    a=circle(20)
-    b=cytz(a)
-    fileopen(f'''
-    color("blue") p_line3dc({a},.3);
-    color("magenta") p_line3dc({b},.3);
-    ''')
+function to convert the y co-ordinates to z co-ordinates e.g.[x,y]=>[x,0,y]. 2d to 3d coordinate system
+example:
+a=circle(20)
+b=cytz(a)
+fileopen(f'''
+color("blue") p_line3dc({a},.3);
+color("magenta") p_line3dc({b},.3);
+''')
     """
     return [[p[0],0,p[1]] for p in path]
 
@@ -803,8 +802,8 @@ convert_y_to_z_coordinate=cytz
 
 def surf_extrude(sec,path):# extrudes an open section 'sec' to a 'path' to create surface
     """
-    function to make surface with a polyline 2d sketch and a 3d path
-    use path_extrude_open instead of this
+function to make surface with a polyline 2d sketch and a 3d path
+use path_extrude_open instead of this
     """
     p0=path
     p1=p0[1:]+[p0[0]]
@@ -825,13 +824,13 @@ def surf_extrude(sec,path):# extrudes an open section 'sec' to a 'path' to creat
 
 def cpo(prism): # changes the orientation of points of a prism
     """
-    function to change the orientation of the points of the prism
-    a=sphere(20,s=20)
-    b=cpo(sphere(20,[45,0,0],s=20))
-    fileopen(f'''
-    color("blue") for(p={a}) p_line3dc(p,.3);
-    color("magenta") for(p={b}) p_line3d(p,.3);
-    ''')
+function to change the orientation of the points of the prism
+a=sphere(20,s=20)
+b=cpo(sphere(20,[45,0,0],s=20))
+fileopen(f'''
+color("blue") for(p={a}) p_line3dc(p,.3);
+color("magenta") for(p={b}) p_line3d(p,.3);
+''')
     """
     return swapaxes(array(prism),0,1).tolist()
 
@@ -839,10 +838,10 @@ change_prism_points_orientation=cpo
 
 def c2t3(p):# converts 2d list to 3d
     """
-    function to convert 2d to 3d, it just adds the z-coordinate to the points list 
-    example:
-    list=c2t3([[1,2],[3,4],[6,7]])
-    output=> [[1, 2, 0], [3, 4, 0], [6, 7, 0]]
+function to convert 2d to 3d, it just adds the z-coordinate to the points list 
+example:
+list=c2t3([[1,2],[3,4],[6,7]])
+output=> [[1, 2, 0], [3, 4, 0], [6, 7, 0]]
     """
     return (array(p)@[[1,0,0],[0,1,0]]).tolist() if array(p).shape[-1]==2 else array(p).tolist()
 
@@ -850,10 +849,10 @@ convert2d_to_3d=c2t3
     
 def c3t2(a): # converts 3d list to 2d list 
     """
-    function to convert 3d to 2d, it just removes the z-coordinate from the points list 
-    example:
-    list=c3t2([[1,2,3],[3,4,5],[6,7,8]])
-    output=> [[1, 2], [3, 4], [6, 7]]
+function to convert 3d to 2d, it just removes the z-coordinate from the points list 
+example:
+list=c3t2([[1,2,3],[3,4,5],[6,7,8]])
+output=> [[1, 2], [3, 4], [6, 7]]
     """
     return (array(a)@[[1,0],[0,1],[0,0]]).tolist() if array(a).shape[-1]==3 else array(a).tolist()
 
@@ -861,10 +860,10 @@ convert3d_to_2d=c3t2
 
 def nv(p):# normal vector to the plane 'p' with atleast 3 known points
     """
-    given 3 points ['p1','p2',p3] function calculates unit normal vector
-    example:
-    p1,p2,p3=[1,0,0],[0,10,0],[-5,0,0]
-    nv([p1,p2,p3]) => [0.0, 0.0, -1.0]
+given 3 points ['p1','p2',p3] function calculates unit normal vector
+example:
+p1,p2,p3=[1,0,0],[0,10,0],[-5,0,0]
+nv([p1,p2,p3]) => [0.0, 0.0, -1.0]
     """
     l1=len(p)
     p0,p1,p2=array(translate([0,0,0],[p[0],p[int(l1/3)],p[int(l1*2/3)]]))
@@ -874,10 +873,10 @@ def nv(p):# normal vector to the plane 'p' with atleast 3 known points
     
 def nv1(p):# normal vector to the plane 'p' with atleast 3 known points
     """
-    given 3 points ['p1','p2',p3] function calculates normal vector
-    example:
-    p1,p2,p3=[1,0,0],[0,10,0],[-5,0,0]
-    nv1([p1,p2,p3]) => [0.0, 0.0, -60.0]
+given 3 points ['p1','p2',p3] function calculates normal vector
+example:
+p1,p2,p3=[1,0,0],[0,10,0],[-5,0,0]
+nv1([p1,p2,p3]) => [0.0, 0.0, -60.0]
     """
     l1=len(p)
     p0,p1,p2=array(translate([0,0,0],[p[0],p[int(l1/3)],p[int(l1*2/3)]]))
@@ -886,15 +885,15 @@ def nv1(p):# normal vector to the plane 'p' with atleast 3 known points
 
 def fillet_3p_3d(p0,p1,p2,r,s):# fillet with 3 known points 'p0,p1,p2' in 3d space. 'r' is the radius of fillet and 's' is the number of segments in the fillet
     """
-    function to create fillet given 3 points 'p1','p2','p3' 
-    r: radius of the fillet
-    s: number of segments in the fillet
-    example:
-    p1,p2,p3=[[3,0,0],[0,0,0],[0,3,3]]
-    fillet=fillet_3p_3d(p1,p2,p3,3,10)
-    fileopen(f'''
-    color("blue")p_line3dc({fillet},.05);
-    color("cyan")points({[p1,p2,p3]},.2);
+function to create fillet given 3 points 'p1','p2','p3' 
+r: radius of the fillet
+s: number of segments in the fillet
+example:
+p1,p2,p3=[[3,0,0],[0,0,0],[0,3,3]]
+fillet=fillet_3p_3d(p1,p2,p3,3,10)
+fileopen(f'''
+color("blue")p_line3dc({fillet},.05);
+color("cyan")points({[p1,p2,p3]},.2);
     ''')
     """
     p0,p1,p2=array(translate([0,0,0],[p0,p1,p2]))
@@ -912,9 +911,9 @@ def fillet_3p_3d(p0,p1,p2,r,s):# fillet with 3 known points 'p0,p1,p2' in 3d spa
 
 def fillet_3p_3d_cp(p0,p1,p2,r):# center point 'cp' of the fillet with 3 known points 'p0,p1,p2' in 3d space. 'r' is the radius of fillet
     """
-    function to find the center point of the fillet created by given 3 points 'p1','p2','p3' 
-    r: radius of the fillet
-    use function cp_cir_3d instead of this
+function to find the center point of the fillet created by given 3 points 'p1','p2','p3' 
+r: radius of the fillet
+use function cp_cir_3d instead of this
     """
     p0,p1,p2=array(translate([0,0,0],[p0,p1,p2]))
     n=array(nv([p0,p1,p2]))
@@ -929,14 +928,14 @@ def fillet_3p_3d_cp(p0,p1,p2,r):# center point 'cp' of the fillet with 3 known p
 
 def arc_3p_3d(points,s=20):
     """
-    draws an arc through the 3 points list
-    's' is the number of segments of the circle
-    example:
-    p1,p2,p3=[[3,0,0],[0,1,0],[5,3,2]]
-    arc1=arc_3p_3d([p1,p2,p3],50)
-    fileopen(f'''
-    color("magenta")p_line3d({arc1},.05);
-    color("blue")points({[p1,p2,p3]},.2);
+draws an arc through the 3 points list
+'s' is the number of segments of the circle
+example:
+p1,p2,p3=[[3,0,0],[0,1,0],[5,3,2]]
+arc1=arc_3p_3d([p1,p2,p3],50)
+fileopen(f'''
+color("magenta")p_line3d({arc1},.05);
+color("blue")points({[p1,p2,p3]},.2);
     ''')
     """
     n1=array(nv(points))+[.000001,.000001,0]
@@ -954,11 +953,11 @@ arc_3points_3d=arc_3p_3d
 
 def r_3p_3d(points):
     """
-    calculates the radius of circle made by 3 points in 3d space
-    example:
-    p1,p2,p3=[[3,0,0],[0,1,0],[5,3,2]]
-    arc1=arc_3p_3d([p1,p2,p3],50)
-    r_3p_3d(arc1) => 2.95147084082169
+calculates the radius of circle made by 3 points in 3d space
+example:
+p1,p2,p3=[[3,0,0],[0,1,0],[5,3,2]]
+arc1=arc_3p_3d([p1,p2,p3],50)
+r_3p_3d(arc1) => 2.95147084082169
     """
     n1=array(nv(points))+[.000001,.000001,0]
     a1=cross(n1,[0,0,-1])
@@ -974,15 +973,15 @@ radius_arc_3p_3d=r_3p_3d
 
 def scl2d(sec,sl):# scale the 2d section 'sec' by a scaling factor 'sl'. this places the scaled section in the bottom center of the original section
     """
-    function to scale a 2d section by an amount "sl" which has to be >0 (keeps the y-coordinates same). 
-    following code scales the section by 0.7 (70% of the original shape)
-    example:
-    sec=corner_radius([[0,0,.5],[10,0,2],[7,15,1]],5)
-    sec1=scl2d(sec,.7)
-    fileopen(f'''
-    color("blue") for(p={[sec]}) p_line3dc(p,.3);
-    color("magenta") for(p={[sec1]}) p_line3dc(p,.3);
-    ''')
+function to scale a 2d section by an amount "sl" which has to be >0 (keeps the y-coordinates same). 
+following code scales the section by 0.7 (70% of the original shape)
+example:
+sec=corner_radius([[0,0,.5],[10,0,2],[7,15,1]],5)
+sec1=scl2d(sec,.7)
+fileopen(f'''
+color("blue") for(p={[sec]}) p_line3dc(p,.3);
+color("magenta") for(p={[sec1]}) p_line3dc(p,.3);
+''')
     """
     s1=array(translate([0,0,0],sec))
     cp=array(s1).mean(axis=0)
@@ -996,15 +995,15 @@ scale2d=scl2d
     
 def scl2d_c(sec,sl):# scale the 2d section 'sec' with scaling factor 'sl'. this places the scaled section in the center of original section or the center of both original and scaled section remains the same.
     """
-    function to scale a 2d section by an amount "sl" which has to be >0 (keeps the revised section in center). 
-    following code scales the section by 0.7 (70% of the original shape)
-    example:
-    sec=corner_radius([[0,0,.5],[10,0,2],[7,15,1]],5)
-    sec1=scl2d_c(sec,.7)
-    fileopen(f'''
-    color("blue") for(p={[sec]}) p_line3dc(p,.3);
-    color("magenta") for(p={[sec1]}) p_line3dc(p,.3);
-    ''')
+function to scale a 2d section by an amount "sl" which has to be >0 (keeps the revised section in center). 
+following code scales the section by 0.7 (70% of the original shape)
+example:
+sec=corner_radius([[0,0,.5],[10,0,2],[7,15,1]],5)
+sec1=scl2d_c(sec,.7)
+fileopen(f'''
+color("blue") for(p={[sec]}) p_line3dc(p,.3);
+color("magenta") for(p={[sec1]}) p_line3dc(p,.3);
+''')
     """
     s1=array(translate([0,0,0],sec))
     cp=array(s1).mean(axis=0)
@@ -1015,19 +1014,19 @@ scale2d_centered=scl2d_c
 
 def scl3d(p,s):# scale 3d prism 'p' with scaling factor 's'. This places the scaled prism at the same bottom of the original prism
     """
-    function to scale a 3d prism keeping the base z-coordinate same. 
-    takes 2 arguments "p" to scale and the scaling factor "s". 
-    scale factor can take any real number negative values will scale the prism and turn the prism upside down.
-    try the following code to understand better:
-    example:
-    sec=circle(10);
-    path=corner_radius(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5)
-    sol=prism(sec,path)
-    sol1=scl3d(sol,.7)
-    fileopen(f'''
-    %{swp(sol)}
-    {swp(sol1)}
-    ''')
+function to scale a 3d prism keeping the base z-coordinate same. 
+takes 2 arguments "p" to scale and the scaling factor "s". 
+scale factor can take any real number negative values will scale the prism and turn the prism upside down.
+try the following code to understand better:
+example:
+sec=circle(10);
+path=corner_radius(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5)
+sol=prism(sec,path)
+sol1=scl3d(sol,.7)
+fileopen(f'''
+%{swp(sol)}
+{swp(sol1)}
+''')
     """
     p=array(p)
     cp=p.reshape(-1,3).mean(axis=0)
@@ -1041,19 +1040,19 @@ scale3d=scl3d
 
 def scl3dc(p,s):# scale a 3d prism 'p' with scaling factor 's'. This places the scaled prism in the center of the original prism or the center of both the prism is same
     """
-     function to scale a 3d prism keeping the prism centered. takes 2 arguments "p" to scale and 
-     the scaling factor "s". 
-     scale factor can take any real number negative values will scale the prism and turn the prism upside down.
-     try the following code to understand better:
-    example:
-    sec=circle(10);
-    path=corner_radius(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5)
-    sol=prism(sec,path)
-    sol1=scl3dc(sol,.7)
-    fileopen(f'''
-    %{swp(sol)}
-    {swp(sol1)}
-    ''')
+function to scale a 3d prism keeping the prism centered. takes 2 arguments "p" to scale and 
+ the scaling factor "s". 
+scale factor can take any real number negative values will scale the prism and turn the prism upside down.
+try the following code to understand better:
+example:
+sec=circle(10);
+path=corner_radius(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5)
+sol=prism(sec,path)
+sol1=scl3dc(sol,.7)
+fileopen(f'''
+%{swp(sol)}
+{swp(sol1)}
+''')
     """
     p=array(p)
     cp=p.reshape(-1,3).mean(axis=0)
@@ -1064,18 +1063,18 @@ scale3d_centered=scl3dc
     
 def m_points1(sec,s,d=.25):# multiple points with in the straight lines in the closed section 'sec'. 's' is the number of segments between each straight line
     """
-    adds 's' number of points in each straight line segment of a section 'sec'
-    'd' is the minimum segment length where multipe points to be added
-    example:
-    s1=square(10);
-    s2=translate_2d([12,0,0],m_points1(s1,10))
-    fileopen(f'''
-    color("blue",.2) p_line3dc({s1},.3);
-    color("magenta") points({s1},.3);
-    
-    color("blue",.2) p_line3dc({s2},.3);
-    color("magenta") points({s2},.3);
-    ''')
+adds 's' number of points in each straight line segment of a section 'sec'
+'d' is the minimum segment length where multipe points to be added
+example:
+s1=square(10);
+s2=translate_2d([12,0,0],m_points1(s1,10))
+fileopen(f'''
+color("blue",.2) p_line3dc({s1},.3);
+color("magenta") points({s1},.3);
+
+color("blue",.2) p_line3dc({s2},.3);
+color("magenta") points({s2},.3);
+''')
     """
     c=[]
     for i in range(len(sec)):
@@ -1091,18 +1090,18 @@ divide_each_segment_of_closed_loop=m_points1
 
 def m_points1_o(sec,s,d=.25):# multiple points with in the straight lines in the open section 'sec'. 's' is the number of segments between each straight line
     """
-    adds 's' number of points in each straight line segment of an open loop section 'sec'
-    'd' is the minimum segment length where multipe points to be added
-    example:
-    s1=square(10);
-    s2=translate_2d([12,0,0],m_points1_o(s1,10))
-    fileopen(f'''
-    color("blue",.2) p_line3d({s1},.3);
-    color("magenta") points({s1},.3);
-    
-    color("blue",.2) p_line3d({s2},.3);
-    color("magenta") points({s2},.3);
-    ''')
+adds 's' number of points in each straight line segment of an open loop section 'sec'
+'d' is the minimum segment length where multipe points to be added
+example:
+s1=square(10);
+s2=translate_2d([12,0,0],m_points1_o(s1,10))
+fileopen(f'''
+color("blue",.2) p_line3d({s1},.3);
+color("magenta") points({s1},.3);
+
+color("blue",.2) p_line3d({s2},.3);
+color("magenta") points({s2},.3);
+''')
     """
     c=[]
     for i in range(len(sec)-1):
@@ -1137,37 +1136,37 @@ def ibsap(sec,pnt):# intersection between section and a point. used to find whet
 
 def circle(r,cp=[0,0],s=50): # circle with radius r and center point cp, s is the number of segments in the circle
     """
-    function for creating points in circle with radius "r", center point "cp" and number of segments "s" 
+function for creating points in circle with radius "r", center point "cp" and number of segments "s" 
     """
     return array([ [cp[0]+r*cos(i*pi/180),cp[1]+r*sin(i*pi/180)] for i in linspace(0,360,s)][0:-1]).tolist()
 
     
 def linear_extrude(sec,h=1,a=0,steps=1):
     """
-    function to linear extrude a section where
-    sec: section to extrude
-    h: height of the extrusion
-    a: angle of twist while extruding
-    steps: number of steps in each angular extrusion
-    example:
-    sec=corner_radius(pts1([[-5,-2.5,1],[10,0,1],[0,5,1],[-10,0,1]]),20)
-    sol=linear_extrude(sec,h=50,a=360,steps=200)
-    fileopen(f'''
-    color("magenta") for(p={sol})p_line3dc(p,.05,1);
-    {swp(sol)} 
-    ''')
+function to linear extrude a section where
+sec: section to extrude
+h: height of the extrusion
+a: angle of twist while extruding
+steps: number of steps in each angular extrusion
+example:
+sec=corner_radius(pts1([[-5,-2.5,1],[10,0,1],[0,5,1],[-10,0,1]]),20)
+sol=linear_extrude(sec,h=50,a=360,steps=200)
+fileopen(f'''
+color("magenta") for(p={sol})p_line3dc(p,.05,1);
+{swp(sol)} 
+''')
     """
     s=2 if a==0 else steps
     return [translate([0,0,h*i if a==0 else h/a*i],rot(f"z{0 if a==0 else i}",sec)) for i in linspace(0,1 if a==0 else a,s)]
 
 def cylinder(r1=1,r2=1,h=1,s=50,r=0,d=0,d1=0,d2=0,center=False):
     """
-    function for making a cylinder
-    r1 or r: radius of circle at the bottom
-    r2 or r: radius of circle at the top
-    d1 or d: diameter of circle at the bottom
-    d2 or d: diameter of circle at the top
-    h: height of the cylinder
+function for making a cylinder
+r1 or r: radius of circle at the bottom
+r2 or r: radius of circle at the top
+d1 or d: diameter of circle at the bottom
+d2 or d: diameter of circle at the top
+h: height of the cylinder
     """
     ra=r if r>0 else d/2 if d>0 else d1/2 if d1>0 else r1
     rb=r if r>0 else d/2 if d>0 else d2/2 if d2>0 else r2
@@ -1181,14 +1180,14 @@ def cylinder(r1=1,r2=1,h=1,s=50,r=0,d=0,d1=0,d2=0,center=False):
 
 def square(s=0,r=0,seg=10,center=False):
     """
-    function to draw a square
-    example:
-    s1=square(10);
-    s2=translate_2d([12,0],square([10,5]))
-    fileopen(f'''
-    color("blue",.2) p_line3dc({s1},.3);
-    color("blue",.2) p_line3dc({s2},.3);
-    ''')
+function to draw a square
+example:
+s1=square(10);
+s2=translate_2d([12,0],square([10,5]))
+fileopen(f'''
+color("blue",.2) p_line3dc({s1},.3);
+color("blue",.2) p_line3dc({s2},.3);
+''')
     """
     m= s if type(s)==int or type(s)==float else s[0]
     n= s if type(s)==int or type(s)==float else s[1]
@@ -1201,16 +1200,16 @@ def square(s=0,r=0,seg=10,center=False):
 
 def rsz3d(prism,rsz):
     """
-    function to resize a 'prism' to dimensions 'rsz'
-    bottom left corner of both the prisms would be same
-    example:
-    sec=corner_radius(pts1([[0,0,1],[10,0,1],[0,5,1],[-10,0,1]]),5)
-    sol=translate([-5,0,0],linear_extrude(sec,10))
-    sol1=rsz3d(sol,[5,6,7])
-    fileopen(f'''
-    %{swp(sol)}
-    {swp(sol1)} 
-    ''') 
+function to resize a 'prism' to dimensions 'rsz'
+bottom left corner of both the prisms would be same
+example:
+sec=corner_radius(pts1([[0,0,1],[10,0,1],[0,5,1],[-10,0,1]]),5)
+sol=translate([-5,0,0],linear_extrude(sec,10))
+sol1=rsz3d(sol,[5,6,7])
+fileopen(f'''
+%{swp(sol)}
+{swp(sol1)} 
+''') 
     """
     prism1=array(prism).reshape(-1,3)
     max_x=prism1[:,0].max()
@@ -1234,16 +1233,16 @@ resize_solid=rsz3d
 
 def rsz3dc(prism,rsz):
     """
-    function to resize a 'prism' to dimensions 'rsz'
-    resized prism will be placed in the center of the original prism or center point of both the prisms will be same
-    example:
-    sec=corner_radius(pts1([[0,0,1],[10,0,1],[0,5,1],[-10,0,1]]),5)
-    sol=translate([-5,0,0],linear_extrude(sec,10))
-    sol1=rsz3dc(sol,[5,6,7])
-    fileopen(f'''
-    %{swp(sol)}
-    {swp(sol1)} 
-    ''') 
+function to resize a 'prism' to dimensions 'rsz'
+resized prism will be placed in the center of the original prism or center point of both the prisms will be same
+example:
+sec=corner_radius(pts1([[0,0,1],[10,0,1],[0,5,1],[-10,0,1]]),5)
+sol=translate([-5,0,0],linear_extrude(sec,10))
+sol1=rsz3dc(sol,[5,6,7])
+fileopen(f'''
+%{swp(sol)}
+{swp(sol1)} 
+''') 
     """
     prism1=array(prism).reshape(-1,3)
     max_x=prism1[:,0].max()
@@ -1266,11 +1265,11 @@ resize_solid_centered=rsz3dc
 
 def bb(prism):
     """
-    function to find the bounding box dimensions of a prism
-    example:
-    s1=square(10);
-    sol=linear_extrude(s1,10)
-    bb(sol) => [10.0, 10.0, 10.0]
+function to find the bounding box dimensions of a prism
+example:
+s1=square(10);
+sol=linear_extrude(s1,10)
+bb(sol) => [10.0, 10.0, 10.0]
     """
     prism1=array(prism).reshape(-1,3)
     max_x=prism1[:,0].max()
@@ -1285,14 +1284,14 @@ bounding_box_3d=bb
 
 def cube(size=1,center=False):
     """
-    function to draw cube with size 'size'
-    example:
-    sol1=cube(10)
-    sol2=translate([12,0,0],cube([10,5,3]))
-    fileopen(f'''
-    {swp(sol1)}
-    {swp(sol2)}
-    ''')
+function to draw cube with size 'size'
+example:
+sol1=cube(10)
+sol2=translate([12,0,0],cube([10,5,3]))
+fileopen(f'''
+{swp(sol1)}
+{swp(sol2)}
+''')
     """
     if type(size)==list:
         i,j,k=size[0],size[1],size[2]
@@ -1314,8 +1313,8 @@ def cube(size=1,center=False):
 
 def sphere(r=0,cp=[0,0,0],s=50):
    """
-   function to draw sphere with radius 'r' , center point 'cp' and number of segments 's'
-   example:
+function to draw sphere with radius 'r' , center point 'cp' and number of segments 's'
+example:
 sol1=sphere(10)
 fileopen(f'''
 {swp(sol1)}
@@ -1328,9 +1327,9 @@ fileopen(f'''
 
 def rsz2d(sec,rsz):
     """
-    function to resize a 2d section to dimensions 'rsz'
-    resized section will be placed on bottom center of the original section
-    example:
+function to resize a 2d section to dimensions 'rsz'
+resized section will be placed on bottom center of the original section
+example:
 s1=square(10)
 s2=rsz2d(s1,[5,5])
 fileopen(f'''
@@ -1352,8 +1351,8 @@ resize2d=rsz2d
 
 def rsz2dc(sec,rsz):
     """
-    function to resize a 2d section to dimensions 'rsz'
-    resized section will be placed in center of the original section
+function to resize a 2d section to dimensions 'rsz'
+resized section will be placed in center of the original section
 s1=square(10)
 s2=rsz2dc(s1,[5,5])
 fileopen(f'''
@@ -1376,9 +1375,9 @@ resize2d_centered=rsz2dc
 
 def ip(sol1,sol2):
     """
-    function to calculate intersection point between two 3d prisms. 
-    "sol1" is the 3d object which is intersected with "sol2".
-    use function ip_sol2sol instead of this
+function to calculate intersection point between two 3d prisms. 
+"sol1" is the 3d object which is intersected with "sol2".
+use function ip_sol2sol instead of this
     """
     line=array([ seg(p)[:-1] for p in cpo(sol2)])
     v,f1=vnf2(sol1)
@@ -1400,9 +1399,9 @@ def ip(sol1,sol2):
 
 def s_int1(sec1):
     """
-    calulates the self intersection points of a list of line segments 's'
-    it picks the intersection points only if the 2 lines are crossing each other
-    example:
+calulates the self intersection points of a list of line segments 's'
+it picks the intersection points only if the 2 lines are crossing each other
+example:
 sec=[[0,0],[10,0],[10,15]]
 sec1=offset_segv(sec,-2)
 p0=s_int1(sec1)
@@ -1432,8 +1431,9 @@ color("magenta") points({p0},.5);
 
     
 def self_intersections(sec1):
-    """self intersections based on Bentley-Ottmann line sweep
-    avoid using this, use s_int1 instead
+    """
+self intersections based on Bentley-Ottmann line sweep
+avoid using this, use s_int1 instead
     """
     sec2=lexicographic_seg_sort_xy(sec1)
     s,s1,b=[],[],[]
@@ -1453,9 +1453,9 @@ def self_intersections(sec1):
 
 def comb(n,i): 
     """
-    calculates number of possible combinations for "n" items with "i" selected items
-    example:
-    comb(8,2) => 28
+calculates number of possible combinations for "n" items with "i" selected items
+example:
+comb(8,2) => 28
     """
     return int(math.factorial(n)/(math.factorial(i)*math.factorial(n-i)))
 
@@ -1463,8 +1463,8 @@ combinations=comb
 
 def bezier(pl,s=20):
     """
-    bezier curve defined by points 'pl' and number of segments 's'
-    example:
+bezier curve defined by points 'pl' and number of segments 's'
+example:
 sec=[[0,0],[10,0],[10,15],[20,10]]
 sec1=bezier(sec,20)
 fileopen(f'''
@@ -1487,8 +1487,8 @@ color("cyan",.2) for(p={[sec1]}) p_line3d(p,.3);
 
 def arc_3d(v=[0,0,1],r=1,theta1=0,theta2=360,cw=-1,s=50):
     """
-    3d arc defined by normal vector 'v', radius 'r1', start angle 'theta1', 
-    end angle 'theta2' , clockwise(1) or counter clockwise(-1) and number of segments 's'
+3d arc defined by normal vector 'v', radius 'r1', start angle 'theta1', 
+end angle 'theta2' , clockwise(1) or counter clockwise(-1) and number of segments 's'
 example:
 v1=[1,2,2]
 a1=arc_3d(v=v1,r=5,theta1=0,theta2=270,cw=-1,s=50)
@@ -1523,7 +1523,7 @@ color("magenta",.2) p_line3d({point_vector([0,0,0],v1)},.3);
 
 def l_cir_ip(line,cir):
     """
-    line circle intersection point
+line circle intersection point
 example:
 c1=circle(10)
 l1=point_vector([-5,-5],[3,2])
@@ -1554,7 +1554,7 @@ line_circle_ip=l_cir_ip
     
 def s_pnt(pnt): # starting point for calculating convex hull (bottom left point)
     """
-    starting point for calculating convex hull (bottom left point)
+starting point for calculating convex hull (bottom left point)
     """
     pnt=array(pnt)
     c1=pnt[:,1]==pnt[:,1].min()
@@ -1572,7 +1572,7 @@ def n_pnt(pnt,sp,an):
 
 def c_hull(pnt): # convex hull for an array of points
     """
-    function to calculate convex hull for a list of points 'pnt'
+function to calculate convex hull for a list of points 'pnt'
     """
     c=[]
     np=n_pnt(pnt,s_pnt(pnt),0)
@@ -1585,13 +1585,13 @@ def c_hull(pnt): # convex hull for an array of points
 
 def convex(sec):
     """
-    function to check whether a section is convex or not
-    example:
-    sec1=corner_radius(pts1([[0,0,.2],[8,3,3],[5,7,1],[-8,0,2],[-5,20,1]]),20)
-    sec2=corner_radius(pts1([[0,0,.1],[7,5,2],[5,7,3],[-5,7,5],[-7,5,5]]),20)
-    convex(sec1),convex(sec2) => (False, True)
-    
-    refer file "example of various functions" for application example
+function to check whether a section is convex or not
+example:
+sec1=corner_radius(pts1([[0,0,.2],[8,3,3],[5,7,1],[-8,0,2],[-5,20,1]]),20)
+sec2=corner_radius(pts1([[0,0,.1],[7,5,2],[5,7,3],[-5,7,5],[-7,5,5]]),20)
+convex(sec1),convex(sec2) => (False, True)
+
+refer file "example of various functions" for application example
     """
     sec= c3t2(sec) if array(sec).shape[-1]==3 else sec
     return (array(cwv(sec))==-1).all()|(array(cwv(sec))==1).all()
@@ -1631,7 +1631,7 @@ circle_to_point_tangent=cir_p_t
 
 def p_cir_t(p,cir): # point to circle tangent line (point should be outside the circle)
     """
-    point to circle tangent line (point should be outside the circle)
+point to circle tangent line (point should be outside the circle)
 example:
 c1=circle(10)
 p0=[15,15]
@@ -1660,8 +1660,8 @@ point_to_circle_tangent=p_cir_t
 
 def v_sec_extrude(sec,path,o):
     """
-    extrude a section 'sec' through a path 'path' 
-    section will vary from start to end such that at the end the section will be offset by 'o' distance
+extrude a section 'sec' through a path 'path' 
+section will vary from start to end such that at the end the section will be offset by 'o' distance
 example:
 sec=corner_radius(pts1([[0,0,1],[10,0,1],[0,5,1],[-10,0,1]]),10)
 path=helix(20,15,1,5)
@@ -1686,9 +1686,9 @@ fileopen(f'''
 
 def two_cir_tarc(c1,c2,r,side=0,s=50): #two circle tangent arc
     """
-    function draws a arc which is tangent to 2 circles 'c1' and 'c2'    's' is the number of segments of the tangent arc
-    'r' is the radius of the tangent arc 
-    'side' there are 2 sides of the circles where the arc could be created defined by '0' and '1'
+function draws a arc which is tangent to 2 circles 'c1' and 'c2'    's' is the number of segments of the tangent arc
+'r' is the radius of the tangent arc 
+'side' there are 2 sides of the circles where the arc could be created defined by '0' and '1'
 example:
 c1=circle(10,[20,10])
 c2=circle(10)
@@ -1702,11 +1702,11 @@ color("cyan") for(p={[a2]}) p_line3d(p,.3);
     """
     def filleto_2cir(r1,r2,c1,c2,r,s=50): # fillet between 2 circles with radius 'r1' and 'r2' and center points 'c1' and 'c2' and 'r' is the radius of the fillet. This is an open fillet where first or the second fillet can be called based on requirement
         """
-        function to draw the fillet radius "r" between the 2 circle with radiuses "r1" and "r2" centered at "c1" and "c2" respectively.
-        This function gives an additional flexibility for drawing fillet only one side. e.g 
-        fillet=filleto_2cir(r1=10,r2=10,c1=[0,0],c2=[20,0],r=10)
-        fillet[0] will calculate fillet on one side
-        refer to the file "example of various functions" to see the application
+function to draw the fillet radius "r" between the 2 circle with radiuses "r1" and "r2" centered at "c1" and "c2" respectively.
+This function gives an additional flexibility for drawing fillet only one side. e.g 
+fillet=filleto_2cir(r1=10,r2=10,c1=[0,0],c2=[20,0],r=10)
+fillet[0] will calculate fillet on one side
+refer to the file "example of various functions" to see the application
         """
         
         c1,c2=array([c1,c2])
@@ -1782,8 +1782,8 @@ two_circles_tangent_arc=two_cir_tarc
 
 def arc_3p(p1,p2,p3,s=30):
     """ 
-    function to draw arc with 3 known points 'p1','p2','p3' 
-    's' is the number of segments of the arc
+function to draw arc with 3 known points 'p1','p2','p3' 
+'s' is the number of segments of the arc
 example:
 p0,p1,p2=[[0,0],[10,0],[3,7]]
 a1=arc_3p(p0,p1,p2)
@@ -1791,8 +1791,6 @@ fileopen(f'''
 color("blue",.2) for(p={[a1]}) p_line3d(p,.3);
 color("magenta") points({[p0,p1,p2]},.5);
 ''')
-    
-    
     """
     p1,p2,p3=array([p1,p2,p3])
     p4=p1+(p2-p1)/2
@@ -1818,8 +1816,8 @@ arc_3points=arc_3p
 
 def cir_3p(p1,p2,p3,s=30):
     """ 
-    function to draw circle with 3 known points 'p1','p2','p3' 
-    's' is the number of segments of the circle
+function to draw circle with 3 known points 'p1','p2','p3' 
+'s' is the number of segments of the circle
 example:
 p0,p1,p2=[[0,0],[10,0],[3,7]]
 a1=cir_3p(p0,p1,p2)
@@ -1827,8 +1825,6 @@ fileopen(f'''
 color("blue",.2) for(p={[a1]}) p_line3d(p,.3);
 color("magenta") points({[p0,p1,p2]},.5);
 ''')
-    
-    
     """
     p1,p2,p3=array([p1,p2,p3])
     p4=p1+(p2-p1)/2
@@ -1848,7 +1844,7 @@ circle_with_3points=cir_3p
 
 def cp_3p(p1,p2,p3):
     """
-    function to calculate center point of a circle created from 3 known points 'p1','p2','p3'
+function to calculate center point of a circle created from 3 known points 'p1','p2','p3'
 example:
 p0,p1,p2=[[0,0],[10,0],[3,7]]
 a1=cir_3p(p0,p1,p2)
@@ -1874,10 +1870,10 @@ center_circle_3points=cp_3p
 
 def ip_surf(surf2,surf1):
     """
-     function to calculate intersection point between two 3d prisms or between surface and solid. 
-     "surf2" is the 3d object which is intersected with "surf1".
- try below code for better understanding:
- example:
+function to calculate intersection point between two 3d prisms or between surface and solid. 
+ "surf2" is the 3d object which is intersected with "surf1".
+try below code for better understanding:
+example:
 sec=circle(10)
 path=corner_radius(pts1([[2,0],[-2,0,2],[0,10,3],[-9.9,0]]),5)
 p1=prism(sec,path)
@@ -1944,7 +1940,7 @@ def next_point(points,s_p):
 
 def exclude_points(list1,list_to_exclude):
     """
-    exclude a list of points from a defined list
+exclude a list of points from a defined list
 example:
 sec=circle(10)
 path=corner_radius(pts1([[2,0],[-2,0,2],[0,10,3],[-9.9,0]]),5)
@@ -2854,8 +2850,6 @@ def sec2vector1(v1,sec):
     theta_z=ang(v1[0],v1[1])
     return rot(f'x90z-90y{-theta_y}z{theta_z}',sec)
     return (sec@xrot(90)@zrot(-90)@yrot(-theta_y)@zrot(theta_z)).tolist()
-
-    
 
 
 def cut_plane(nv=[0,0,1],size=[5,5],thickness=10,trns1=0,trns2=0,trns3=0,theta=[0,0,0]): #oriented solid
