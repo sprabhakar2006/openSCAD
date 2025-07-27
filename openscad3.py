@@ -7660,8 +7660,21 @@ cr3dt=corner_radius3d_with_turtle
 
 def trim_sec_ip(sec,p0,p1,side=0,dist=.1):
     """
-    trim any closed loop section given 2 points (p0,p1) on the sec
-    dist: points can be approximately with in a defined distance "dist" from the section 
+trim any closed loop section given 2 points (p0,p1) on the sec
+dist: points can be approximately with in a defined distance "dist" from the section 
+example:
+c1=circle(10)
+l1=point_vector([0,0],[15,10])
+l2=rot2d(100,l1)
+p0,p1=s_int1([l1,l2]+seg(c1))
+l3=trim_sec_ip(c1,p0,p1)
+fileopen(f'''
+color("blue") p_line3d({c1},.2);
+color("cyan") p_line3d({l1},.2);
+color("grey") p_line3d({l2},.2);
+color("green") points({[p0,p1]},.5);
+color("magenta") p_line3d({l3},.3);
+''')
     """
     sec=sec+[sec[0]]
     c2=lineFromPointToPointOnLine(sec,p0,p1,dist) if side==0 else lineFromPointToPointOnLine(sec,p1,p0,dist)
@@ -7695,8 +7708,15 @@ def homogenise_points(a=[],pitch=1,closed_loop=0):
 
 def homogenise(a=[],pitch=1,closed_loop=0):
     """
-    refer function homogenise_points
-    In addition to the function homogenise_points, it mixes all the points together in one level.
+refer function homogenise_points
+In addition to the function homogenise_points, it mixes all the points together in one level.
+example:
+c1=circle(10,[5,0])
+c2=[rot2d(i,c1) for i in linspace(0,360,5)[:-1]]
+c3=homogenise(c2,pitch=1,closed_loop=1)
+fileopen(f'''
+color("blue") points({c3},.2);
+''')
     """
     try:
         if len(a_(a).shape)==2:
@@ -7773,9 +7793,27 @@ def concave_hull(points,n=3,engaging_angle=270):
 
 def fillet_line_circle(l1,c1,r=1,o=1,s=10):
     """
-    fillet between a line and a circle
-    'o' is option which can be set from 1 to 4 for fillets in 4 different direction.
-    's' is the number of segments of the fillet
+fillet between a line and a circle
+'o' is option which can be set from 1 to 4 for fillets in 4 different direction.
+'s' is the number of segments of the fillet
+example:
+h=15
+line=[[-10,h],[30,h]]
+cir1=circle(10,[10,10])
+r2=5
+s=20
+fillet1=fillet_line_circle(line,cir1,r2,1)
+fillet2=fillet_line_circle(line,cir1,r2,2)
+fillet3=fillet_line_circle(line,cir1,r2,3)
+fillet4=fillet_line_circle(line,cir1,r2,4)
+fileopen(f'''
+color("blue",.1)p_line({line},.3);
+color("violet",.2)p_line({cir1},.3);
+color("cyan")p_lineo({fillet1},.3);
+color("blue")p_lineo({fillet2},.3);
+color("magenta")p_lineo({fillet3},.3);
+color("green")p_lineo({fillet4},.3);
+''')
     """
     def vcost1(l1,p0):
         """
@@ -7813,9 +7851,27 @@ def fillet_line_circle(l1,c1,r=1,o=1,s=10):
 
 def fillet_line_circle_internal(l1,c1,r=1,o=1,s=10):
     """
-    fillet between a line and a circle. This is inside the circle fillet
-    'o' is option which can be set from 1 to 4 for fillets in 4 different direction.
-    's' is the number of segments of the fillet
+fillet between a line and a circle. This is inside the circle fillet
+'o' is option which can be set from 1 to 4 for fillets in 4 different direction.
+'s' is the number of segments of the fillet
+example:
+h=15
+line=[[-10,h],[30,h]]
+cir1=circle(10,[10,10])
+r2=5
+s=20
+fillet5=fillet_line_circle_internal(line,cir1,1,1)
+fillet6=fillet_line_circle_internal(line,cir1,r2,2)
+fillet7=fillet_line_circle_internal(line,cir1,1,3)
+fillet8=fillet_line_circle_internal(line,cir1,r2,4)
+fileopen(f'''
+color("blue",.1)p_line({line},.3);
+color("violet",.2)p_line({cir1},.3);
+color("blue")p_lineo({fillet5},.3);
+color("magenta")p_lineo({fillet6},.3);
+color("cyan")p_lineo({fillet7},.3);
+color("green")p_lineo({fillet8},.3);
+''')
     """
     def vcost1(l1,p0):
             """
@@ -7854,7 +7910,19 @@ def fillet_line_circle_internal(l1,c1,r=1,o=1,s=10):
 
 def extend_line(line,sec):
     """
-    extend a line to an intersecting section
+extend a line to an intersecting section
+example:
+c1=circle(10)
+l1=point_vector([-10,-5],[10,0])
+l2=extend_line(l1,c1)
+txt1=label_linear(l1,"original line",3,text_size=.5)
+txt2=label_linear(l2,"extended line",-3, text_size=.5)
+fileopen(f'''
+color("blue") for(p={[c1]}) p_line3d(p,.3);
+%color("cyan",.2) p_line3d({l1},.3);
+color("magenta") p_line3d({l2},.1);
+{txt1}{txt2}
+''')
     """
     l1=line[-2:]
     v1=line_as_unit_vector(l1)
@@ -7874,8 +7942,18 @@ def extend_line(line,sec):
 
 def line_multi_sections_ip(line,sections=[]):
     """
-    intersection points between line and multiple sections.
-    intersection points sorted w.r.t. distance from the line's starting point
+intersection points between line and multiple sections.
+intersection points sorted w.r.t. distance from the line's starting point
+example:
+c1=circle(10)
+c2=[translate_2d([i,0,0],c1) for i in linspace(0,60,5)]
+l1=point_vector([-10,-5],[80,0])
+p0=line_multi_sections_ip(l1,c2)
+fileopen(f'''
+color("blue") for(p={c2}) p_line3d(p,.3);
+color("cyan") p_line3d({l1},.3);
+color("magenta") points({p0},.5);
+''')
     """
     l1=line[-2:]
     s1=l_(concatenate([seg(p) for p in sections]))
@@ -7899,7 +7977,14 @@ def line_multi_sections_ip(line,sections=[]):
 
 def dim_radial(a1,cross_hair_size=2,text_color="blue",text_size=1,line_color="blue",arc_color="magenta",outside=0):
     """
-    radial dimensions with defined arc or circle 'a1'
+radial dimensions with defined arc or circle 'a1'
+example:
+c1=circle(10)
+txt1=dim_radial(c1)
+fileopen(f'''
+color("blue") for(p={[c1]}) p_line3d(p,.1);
+{txt1}
+''')
     """
     def point_vector(point,vector):
         """
@@ -7937,7 +8022,15 @@ def dim_radial(a1,cross_hair_size=2,text_color="blue",text_size=1,line_color="bl
 
 def dim_angular(l1,l2,text_color="blue",text_size=1,line_color="blue",arc_color="magenta"):
     """
-    angular dimension between 2 lines 'l1' and 'l2'
+angular dimension between 2 lines 'l1' and 'l2'
+example:
+p0,p1,p2=[[10,0],[0,0],rot2d(120,[10,0])]
+txt1=dim_angular([p0,p1],[p1,p2])
+fileopen(f'''
+color("blue") for(p={[[p0,p1,p2]]}) p_line3d(p,.1);
+color("magenta") for(p={[[p0,p1,p2]]}) points(p,.3);
+{txt1}
+''')
     """
     l1,l2=c23([l1,l2])
     tc=text_color
@@ -7965,7 +8058,18 @@ def dim_angular(l1,l2,text_color="blue",text_size=1,line_color="blue",arc_color=
 
 def vcost1(l1,p0):
     """
-    finds the projection of the point 'p0' on line 'l1'
+finds the projection of the point 'p0' on line 'l1'
+example:
+l1=helix(10,10,5,20)
+l2=point_vector([0,0,0],[0,0,1])
+p0=[ vcost1(l2,p) for p in l1]
+l3=cpo([l1,p0])
+fileopen(f'''
+color("blue") points({l1},.3);
+color("magenta") points({p0},.3);
+color("cyan") p_line3d({l2},.3);
+color("grey") for(p={l3}) p_line3d(p,.1);
+''')
     """
     v1=a_(l1[1])-a_(l1[0])
     u1=v1/norm(v1)
@@ -7976,7 +8080,14 @@ def vcost1(l1,p0):
 
 def dim_linear(l1,gap=2,cross_hair_size=2,text_color="blue",text_size=1,line_color="blue"):
     """
-    linear dimensions with defined line l1
+linear dimensions with defined line l1
+example:
+l1=point_vector([-5,-5],[10,4])
+txt1=dim_linear(l1)
+fileopen(f'''
+color("blue") for(p={[l1]}) p_line3d(p,.3);
+{txt1}
+''')
     """
     def point_vector(point,vector):
         """
@@ -8010,24 +8121,49 @@ def dim_linear(l1,gap=2,cross_hair_size=2,text_color="blue",text_size=1,line_col
     return txt
 
 def point_vector(point,vector):
-        """
-        draw a line by defining a point and vector
-        """
-        p0=a_(point)
-        v0=a_(vector)
-        p1=p0+v0
-        return l_(a_([p0,p1]))
+    """
+draw a line by defining a point and vector
+example:
+a line [[10,0],[10,10]] can be defined as point_vector(point=[10,0],vector=[0,10])
+    """
+    p0=a_(point)
+    v0=a_(vector)
+    p1=p0+v0
+    return l_(a_([p0,p1]))
 
 def wrap_surface_around_path(surf,path):
     """
-    wrap a surface around a specified 3d path
+wrap a surface around a specified 3d path
+example:
+c1=translate_2d([0,20.1],circle(20))
+s1=h_lines_sec(c1,100)
+path=rot('y90',circle(40.2/(2*pi)+.2))
+c2=wrap_around(c1,path)
+s2=[wrap_around(p,path) for p in s1]
+fileopen(f'''
+color("blue") p_line3d({c1},.2);
+color("cyan") p_line3d({path},.2);
+color("magenta") p_line3d({c2},.2);
+
+color("blue") for(p={s1}) p_line3d(p,.1,1);
+color("magenta") for(p={s2}) p_line3d(p,.1,1);
+''')
     """
     surf=translate([0,.001,0],surf)
     return [ wrap_around(p,path) for p in surf]
 
 def s_int1_first(sec1):
     """
-    similar to 's_int1' function but only calculates intersection with the first segment with all the other segment
+similar to 's_int1' function but only calculates intersection with the first segment with all the other segment
+example:
+l1=point_vector([-20,-20],[50,40])
+c1=circle(20)
+p0=s_int1_first([l1]+seg(c1))
+fileopen(f'''
+color("blue") for(p={[l1]}) p_line3d(p,.3);
+color("cyan") p_line3d({c1},.3);
+color("magenta") points({p0},.5);
+''')
     """
     n=len(sec1)
     a=array(sec1)[comb_list(n)[comb_list(n)[:,0]==0]]
@@ -8048,7 +8184,21 @@ def s_int1_first(sec1):
     return i_p1
 
 def points_projection_on_line_within(line,points):
-    
+    """
+finds the perpendicular projection of points on a line.
+only those points will be projected which are within the bounds of the line.
+example:
+a=helix(10,10,5,20)
+l1=point_vector([0,0,10],[0,0,30])
+b=points_projection_on_line_within(l1,a)
+l2=[[p,vcost_within(l1,p)] for p in a if vcost_within(l1,p)!=[]]
+fileopen(f'''
+color("blue") for(p={[a]}) points(p,.3);
+color("cyan") p_line3d({l1},.1);
+color("magenta") for(p={[b]}) points(p,.2);
+color("grey") for(p={l2}) p_line3d(p,.1);
+''')
+    """
     def vcost_within(l1,p0):
         """
         finds the projection of the point 'p0' on line 'l1'.
