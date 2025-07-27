@@ -8124,8 +8124,17 @@ def sort_seg_on_line_length(segments):
 
 def ang3points(p0,p1,p2):
     """
-    angle of 3 consecutive points p0,p1,p2
-    function shows the angle p0p1p2
+angle of 3 consecutive points p0,p1,p2
+function shows the angle p0p1p2 only in 2d coordinate system
+example:
+p0,p1,p2=[[10,0],[0,0],rot2d(120,[10,0])]
+txt1=dim_angular([p0,p1],[p1,p2])
+fileopen(f'''
+color("blue") for(p={[[p0,p1,p2]]}) p_line3d(p,.1);
+color("magenta") for(p={[[p0,p1,p2]]}) points(p,.3);
+{txt1}
+''')
+ang3points(p0,p1,p2)
     """
     if cw([p0,p1,p2])==1:
        a1= ang_2lineccw(p1,p0,p2)
@@ -8135,7 +8144,16 @@ def ang3points(p0,p1,p2):
 
 def fit_pline2line(polyline,line):
     """
-    fit a polyline between 2 defined points or a line
+fit a polyline between 2 defined points or a line
+example:
+l1=turtle3d([[0,10,0],[0,0,20]])
+l2=sinewave(50,3,2,50)
+l3=fit_pline2line(l2,l1)
+fileopen(f'''
+color("blue") for(p={[l1]}) p_line3d(p,.1);
+color("magenta") for(p={[l2]}) p_line3d(p,.3);
+color("cyan") for(p={[l3]}) p_line3d(p,.3);
+''')
     """
     def pline2length(line,length):
         a=line
@@ -8159,12 +8177,29 @@ def fit_pline2line(polyline,line):
 
 def surface_from_4_lines(l1,l2,l3,l4):
     """
-    create a surface by 4 lines enclosure
-    s1 is the number of segments in l1 and l2 (which are opposite to each other)
-    s2 is the number of segments in l3 and l4 (which are opposite to each other)
+create a surface by 4 lines enclosure
+l1 and l2 are opposite side
+l3 and l4 are opposite side
+l1 and l3 starts from the same point
+l2 and l4 ends at the same point
+example:
+l1=rot('x90',arc_2p([0,0],[100,0],100,s=100))
+l2=translate([0,100,0],rot('z30',l1))
+l3=rot('x90',sinewave(100,4,2,100))
+l3=fit_pline2line(l3,[l1[0],l2[0]])
+l4=rot('x90',cosinewave(100,4,2,100))
+l4=fit_pline2line(l4,[l1[-1],l2[-1]])
+surf1=surface_from_4_lines(l1,l2,l3,l4)
+txt1=label_linear([l1[0],l1[-1]],"L1",10,text_size=3)
+txt2=label_linear([l2[0],l2[-1]],"L2",-10,text_size=3)
+txt3=label_linear([l3[0],l3[-1]],"L3",-10,text_size=3)
+txt4=label_linear([l4[0],l4[-1]],"L4",10,text_size=3)
+fileopen(f'''
+color("blue") for(p={[l1,l2,l3,l4]}) p_line3d(p,.3);
+{txt1}{txt2}{txt3}{txt4}
+%{swp_surf(surf1)}
+''')
     """
-    # l1,l2=[equidistant_path(p,s1) for p in [l1,l2]]
-    # l3,l4=[equidistant_path(p,s2) for p in [l3,l4]]
     l2=path2path1(l1,l2)
     l4=path2path1(l3,l4)
     s1=slice_sol([l1,l2],len(l3)-1)
@@ -8220,10 +8255,16 @@ l4=sol[-1]
 l5=offset_3d(sol[-1],-5)
 f1=lines_fillets_solid(l1,l2,l3,l4,l5,s=20,o=5)
 f1=f1+[f1[0]]
+txt1=label_radial(l1,"L1",text_size=2)
+txt2=label_radial(l2[10:],"L2",text_size=2)
+txt3=label_radial(l3[20:],"L3",text_size=2)
+txt4=label_radial(l4[30:],"L4",text_size=2)
+txt5=label_radial(l5[40:],"L5",text_size=2)
 fileopen(f'''
 color("blue") for(p={[l1,l2,l3,l4,l5]}) p_line3dc(p,.3);
+{txt1}{txt2}{txt3}{txt4}{txt5}
 difference(){{
-{swp(sol)}
+//{swp(sol)}
 #{swp_c(f1)}
 }}
 ''')
@@ -8923,3 +8964,77 @@ def rationalise_sec(sec):
         return a[:-1]
     else:
         return a
+
+def label_linear(l1,s1,gap=2,text_color="blue",text_size=1,line_color="blue"):
+    """
+    label linear elements with defined line l1
+    """
+    def point_vector(point,vector):
+        """
+        draw a line by defining a point and vector
+        """
+        p0=a_(point)
+        v0=a_(vector)
+        p1=p0+v0
+        return l_(a_([p0,p1]))
+    l1=c23(l1)
+    p0=l1[0]
+    vector=line_as_axis(l1)
+    l1=point_vector(p0,vector)
+    # chs=cross_hair_size
+    tc=text_color
+    ts=text_size
+    lc=line_color
+    pl1=plane(vector,[gap,gap],l1[0])
+    l2=[mid_point(pl1[0]),mid_point(pl1[1])]
+    l3=mid_line(pl1[0],pl1[1])
+    p0=l3[0]
+    p1=translate(vector,p0)
+    # pl1=plane(vector,[chs,chs],p0)
+    # l2=[mid_point(pl1[0]),mid_point(pl1[1])]
+    # l3=mid_line(pl1[0],pl1[1])
+    # l4,l5=translate(vector,[l2,l3])
+    p2=mid_point([p0,p1])
+    txt=f"""
+    color("{lc}")for(p={[[p0,p1]]})p_line3d(p,.1);
+    color("{tc}")translate({p2})linear_extrude(.2)text("{s1}",{ts});"""
+    return txt
+
+
+def label_radial(a1,s1,text_color="blue",text_size=1,line_color="blue",arc_color="magenta",outside=0):
+    """
+    label radial element with defined arc or circle 'a1'
+    """
+    def point_vector(point,vector):
+        """
+        draw a line by defining a point and vector
+        """
+        p0=a_(point)
+        v0=a_(vector)
+        p1=p0+v0
+        return l_(a_([p0,p1]))
+    a1=c23(a1)
+    c1=center_circle3d(a1)
+    p0=mid_point(a1)
+    vector=line_as_vector([c1,p0])
+    l1=point_vector(c1,vector)
+    # chs=cross_hair_size
+    tc=text_color
+    ts=text_size
+    lc=line_color
+    ac=arc_color
+    # pl1=plane(line_as_axis(l1),[chs,chs],l1[0])
+    # l2=[mid_point(pl1[0]),mid_point(pl1[1])]
+    # l3=mid_line(pl1[0],pl1[1])
+    # l4,l5=translate(vector,[l2,l3])
+    if outside==1:
+        l1=mirror_line(l1,vector,[l4[0]])
+        l2,l3=mirror_line(l2,vector,l4[0]),mirror_line(l3,vector,l4[0])
+        
+    p0=mid_point(l1)
+    
+    txt=f"""
+    color("{ac}") p_line3d({a1},.1);
+    color("{lc}")for(p={[l1]})p_line3d(p,.1);
+    color("{tc}")translate({p0})linear_extrude(.2)text("{s1}",{ts});"""
+    return txt
