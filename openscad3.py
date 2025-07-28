@@ -1960,6 +1960,17 @@ color("magenta") points({ip1},.2);
     return a_(list1)[~(lb==la[:,None]).all(2).any(1)].tolist()
     
 def exclude_seg(list,list_to_exclude):
+    """
+similar like exclude_points. This function excludes segments from a segment list
+example:
+a=cr2dt([[0,0],[10,0],[0,10],[-5,5],[-5,-5]])
+b=round(seg(a),3)
+c=round(seg(a)[2:4],3)
+exclude_seg(b,c) => 
+[[[0.0, 0.0], [10.0, 0.0]],
+[[10.0, 0.0], [10.0, 10.0]],
+[[-0.0, 10.0], [0.0, 0.0]]]
+    """
     return array(list)[~ (array(list)==array(list_to_exclude)[:,None]).all(2).all(2).transpose(1,0).any(1)].tolist()
 
         
@@ -2012,9 +2023,17 @@ color("magenta")points({pies1(sec,points)},.2);
 
 def r_sec(r1,r2,cp1,cp2,s=20):
     """
-    creates a rounded section around a line defined by points 'cp1' and 'cp2'
-    radius around 'cp1' is 'r1' and radius around 'cp2' is 'r2'
-    
+creates a rounded section around a line defined by points 'cp1' and 'cp2'
+radius around 'cp1' is 'r1' and radius around 'cp2' is 'r2'
+example:
+line=[[1,2],[5,-6]]
+r1,r2=5,1
+sec1=r_sec(r1,r2,line[0],line[1])
+fileopen(f'''
+color("blue")p_line3dc({sec1},.1);
+color("magenta")p_line3d({line},.1);
+color("cyan")points({line},.2);
+''')
     """
     sec=tctpf(r2,r1,cp2,cp1)
     a1=arc_long_2p(sec[1],sec[2],r1,-1,s=s) if r1>r2 else arc_2p(sec[1],sec[2],r1,-1,s=s)
@@ -2025,8 +2044,13 @@ def r_sec(r1,r2,cp1,cp2,s=20):
 
 def cs1(sec,d):
     """
-    creates a cleaning section for removing excess points for offseting a section 'sec' with offset distance 'd'
-    
+creates a cleaning section for removing excess points for offseting a section 'sec' with offset distance 'd'
+example:
+sec=corner_radius(pts1([[0,0,1],[8,3,3],[5,7,1],[-8,0,2],[-5,20,1]]),10)
+fileopen(f'''
+color("blue")p_line({sec},.1); 
+color("magenta")for(p={cs1(sec,-2)})p_line(p,.08); 
+''')
     """
     r=abs(d)
     a=seg(sec)
@@ -2042,11 +2066,9 @@ def cs2(sec,d):
 
 def swp(bead2):
     """
-    function to render various 3d shapes
-    example:
-    swp(cylinder(d=10,h=20)) will render a cylinder with dia 10 and height 20
-    refer to the file "example of various functions " for application examples
-    
+function to render various 3d shapes
+example:
+swp(cylinder(d=10,h=20)) will render a cylinder with dia 10 and height 20
     """
     n1=arange(len(bead2[0])).tolist()
     n2=array([[[[(j+1)+i*len(bead2[0]),j+i*len(bead2[0]),j+(i+1)*len(bead2[0])],[(j+1)+i*len(bead2[0]),j+(i+1)*len(bead2[0]),(j+1)+(i+1)*len(bead2[0])]] \
@@ -2063,9 +2085,14 @@ poly_h=swp
 
 def swp_c(bead2):
     """
-    function to render various polyhedron with closed loop shapes e.g. fillets
-    refer to the file "example of various functions " for application examples
-    
+function to render various polyhedron with closed loop shapes e.g. fillets
+example:
+sec=circle(5)
+path=c23(circle(20))
+sol=path_extrude_closed(sec,path)
+fileopen(f'''
+{swp_c(sol)}
+''')
     """
     n1=arange(len(bead2[0])).tolist()
     n2=array([[[[(j+1)+i*len(bead2[0]),j+i*len(bead2[0]),j+(i+1)*len(bead2[0])],[(j+1)+i*len(bead2[0]),j+(i+1)*len(bead2[0]),(j+1)+(i+1)*len(bead2[0])]] \
@@ -2081,9 +2108,29 @@ poly_h_closed_loop=swp_c
     
 def mesh_vf(bead2):
     """
-    function to render various polyhedron with closed loop shapes e.g. fillets
-    refer to the file "example of various functions " for application examples
-    
+finds the vertices and faces of a solid
+example:
+sec=square(10)
+sol=linear_extrude(sec,10)
+v,f=mesh_vf(sol) # 'v' are vertices and 'f' are faces
+v,f =>
+(array([[ 0.,  0.,  0.],
+        [10.,  0.,  0.],
+        [10., 10.,  0.],
+        [ 0., 10.,  0.],
+        [ 0.,  0., 10.],
+        [10.,  0., 10.],
+        [10., 10., 10.],
+        [ 0., 10., 10.]]),
+ array([[1, 0, 4],
+        [1, 4, 5],
+        [2, 1, 5],
+        [2, 5, 6],
+        [3, 2, 6],
+        [3, 6, 7],
+        [0, 3, 7],
+        [0, 7, 4]]))
+
     """
     n1=arange(len(bead2[0])).tolist()
     n2=array([[[[(j+1)+i*len(bead2[0]),j+i*len(bead2[0]),j+(i+1)*len(bead2[0])],[(j+1)+i*len(bead2[0]),j+(i+1)*len(bead2[0]),(j+1)+(i+1)*len(bead2[0])]] \
@@ -2096,10 +2143,15 @@ def mesh_vf(bead2):
 
 def swp_prism_h(prism_big,prism_small):
     """
-    
-    creats a hollow prism with 2 similar prisms (1 big and 1 smaller)
-    
-    refer the file "example of various functions" for application example
+creats a hollow prism with 2 similar prisms (1 big and 1 smaller)
+example:
+sec=square(10)
+sol=linear_extrude(sec,10)
+sol1=offset_sol(sol,-1)
+sol2=swp_prism_h(sol,sol1)
+fileopen(f'''
+{swp_c(sol2)}
+''')
     """
     
     p1=prism_big
@@ -2112,9 +2164,15 @@ create_tubular_solids=swp_prism_h
 
 def surf_base(surf,h=0):
     """
-    creates a solid from any surface, 'h' is the height of the base of the surface
-    refer the file "example of various functions" for application example
-    
+creates a solid from any surface, 'h' is the height of the base of the surface
+example:
+sec2=corner_radius(pts1([[-25,0],[10,5,5],[10,-3,10],[10,5,5],[10,-8,7],[10,1]]),10)  
+path2=cytz(corner_radius(pts1([[-35,5,0],[10,8,20],[20,-5,10],[20,8,20],[10,-9,20],[10,1,0]]),10))
+surf2=path_extrude_open(sec2,path2)
+sol=surf_base(surf2,0)
+fileopen(f'''
+{swp(sol)}
+''') 
     """
     s=cpo(surf)
     s1=translate([0,0,h],c2t3(c3t2([flip(p) for p in s])))
@@ -2128,26 +2186,36 @@ def surf_base(surf,h=0):
 
 def helix(radius=10,pitch=10, number_of_coils=1, step_angle=1):
     """
-    creates a helix with radius, pitch and number of coils parameters
-    
-    refer to file "example of various functions" for application example
-    
+creates a helix with radius, pitch and number of coils parameters
+example:
+a=helix(radius=10,pitch=10,number_of_coils=5,step_angle=5)
+fileopen(f'''
+color("blue") p_line3d({a},.5);
+''')
     """
     return l_(a_([[radius*cos(d2r(i)),radius*sin(d2r(i)),i/360*pitch] for i in arange(0,360*number_of_coils,step_angle)]))
 
-
-
-
 def multiple_sec_extrude(path_points=[],radiuses_list=[],sections_list=[],option=0,s=10):
     """
-    explanation of the function 'multiple_sec_extrude'
-    path_points: are the points at which sections needs to be placed,
-    radiuses: radius required at each path_point. this can be '0' in case no radius required in the path
-    sections_list= list of sections required at each path_points. same section can be provided for various path_points as well
-    option: can be '0' in case the number of points in each section do not match or '1' in case number of points for each section are same
-    s: in case value of radiuses is provided 's' is the number of segments in that path curve
-    
-    refer to file "example of various functions" for application example
+explanation of the function 'multiple_sec_extrude'
+path_points: are the points at which sections needs to be placed,
+radiuses: radius required at each path_point. this can be '0' in case no radius required in the path
+sections_list= list of sections required at each path_points. same section can be provided for various path_points as well
+option: can be '0' in case the number of points in each section do not match or '1' in case number of points for each section are same
+s: in case value of radiuses is provided 's' is the number of segments in that path curve
+example:
+sec1=circle(10)
+sec2=square(5,True)
+sec3=corner_radius(pts1([[-3.5,-2.5,2.49],[7,0,2.49],[0,5,2.49],[-7,0,2.49]]))
+sections=[sec1,sec2,sec3,sec1,sec3]
+path=array([[0,0,0],[20,2,5],[-7,25,3],[5,10,30],[-30,15,3]]).cumsum(0)
+r=[0,5,7,12,0]
+sol=multiple_sec_extrude(path,r,sections,0,20)
+sol=cpo([ bezier(p,200)  for p in cpo(sol)])
+fileopen(f'''
+//color("blue")for(p={multiple_sec_extrude(path,r,sections,0,20)})p_line3dc(p,.1);
+{swp(sol)}
+    ''')
     """
     p=array(path_points)
     r=radiuses_list
