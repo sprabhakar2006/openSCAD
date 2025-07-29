@@ -2527,12 +2527,13 @@ def d2r(d):
     converts degrees to radians
     
     """
-    return radians(d)
+    return l_(radians(d))
+    
 def r2d(r):
     """
     converts radians to degrees
     """
-    return rad2deg(r)
+    return l_(rad2deg(r))
     
 
 
@@ -2653,7 +2654,14 @@ color("magenta") p_line3d({c2},.3);
     sol2=[sec1]+[sec3]
     return sol2
     
-    
+
+# def sec2vector(v1,sec):
+#     vx=uv(best_fit_plane(sec)[0])
+#     v1=uv(a_(v1)+[0.0001,.0001,0])
+#     v2=uv(cross(vx,v1))
+#     theta=r2d(arccos(a_(vx)@a_(v1)))
+#     b=axis_rot_1(sec,v2,sec[0],-theta)
+#     return b
     
 def sec2vector(v1=[1,0,0],sec=[]):
     """
@@ -2982,18 +2990,20 @@ def sol2vector(v1=[],sol=[],loc=[0,0,0]):
     
 def ip_sol2line(sol,line):# when line has more than 2 points
     """
-    function to calculate intersection point between a 3d solid and a line. 
-     "sol" is the 3d object which is intersected with a "line".
-     try below code for better understanding:
-    sec=circle(10)
-    path=cr(pts1([[-10+.1,0],[12,0],[-2,0,2],[0,10,3],[-10,0]]),5)
-    sol=prism(sec,path)
-
-    line=[[0,0,-1],[20,20,10]]
-
-    ip1=ip_sol2line(sol,line)
-    
-    refer to file "example of various functions" for application
+function to calculate intersection point between a 3d solid and a line. 
+ "sol" is the 3d object which is intersected with a "line".
+ try below code for better understanding:
+example:
+sec=circle(10)
+path=cr2d(pts1([[-10+.1,0],[12,0],[-2,0,2],[0,10,3],[-10,0]]),5)
+sol=prism(sec,path)
+line=[[0,0,-1],[20,20,10]]
+ip1=ip_sol2line(sol,line)
+fileopen(f'''
+color("blue") p_line3d({line},.2);
+color("magenta") points({ip1},.5);
+%{swp(sol)}
+''')
     """
 
 
@@ -3028,8 +3038,18 @@ def ip_sol2line(sol,line):# when line has more than 2 points
 
 def align_sol(sol,ang=10):
     """
-    function to straighten the twists in the path_extruded sections for better alignments
-    refer to the file "example of various functions.ipynb" for application examples
+function to straighten the twists in the path_extruded sections for better alignments
+example:
+l1=c23(square(4))
+c1=translate([2,2,5],circle(5,s=5))
+sol=[l1,c1]
+sol1=align_sol(sol,ang=1)
+fileopen(f'''
+//original solid
+{swp(sol)}
+// aligned solid
+translate([10,0,0]) {swp(sol1)}
+''')
     """
     sol1=[sol[0]]
     for i in range(1,len(sol)):
@@ -3039,10 +3059,10 @@ def align_sol(sol,ang=10):
 
 def extrude_sol2path(sec,path1,path2):
     """
-    extrude a solid to a different path
-    "sec" and "path1" defines the original solid
-    "path2" defines the path where the shape of the original solid to be extruded
-    refer file "example of various functions.ipynb" for application example
+extrude a solid to a different path
+"sec" and "path1" defines the original solid
+"path2" defines the path where the shape of the original solid to be extruded
+use function sol2path instead
     """
     min_l=array([l_len(p) for p in seg(path1)[:-1]]).min()
     path1=m_points_o(path1,min_l)
@@ -3060,16 +3080,6 @@ def ip_normal_sol2line(sol,line):
     """
     function to find the normal from intersection points between a 3d solid and a line. 
      "sol" is the 3d object which is intersected with a "line".
-     try below code for better understanding:
-    sec=circle(10)
-    path=cr(pts1([[-10+.1,0],[12,0],[-2,0,2],[0,10,3],[-10,0]]),5)
-    sol=prism(sec,path)
-
-    line=[[0,0,-1],[20,20,10]]
-
-    ip1=ip_normal_sol2line(sol,line)
-    
-    refer to file "example of various functions" for application
     """
 
 
@@ -3133,8 +3143,21 @@ def vnf1(surf):
     
 def equidistant_path(path,s=10,pitch=[]):
     """
-    divides a path in to equally spaced points
-    refer file 'example of various functions.ipynb' for application examples
+divides a path in to equally spaced points
+example:
+l1=c23(square(20))
+l2=equidistant_path(l1,20)
+fileopen(f'''
+//original line
+color("blue",.2) p_line3d({l1},.3);
+color("cyan") points({l1},1);
+// equidistant_path line
+
+translate([30,0,0]) {{
+color("magenta",.2) p_line3d({l2},.3);
+color("cyan") points({l2},1);
+}}
+''')
     """
     s= l_lenv_o(path)/pitch if a_(pitch).size>0 else s
     v=[p[1]-p[0] for p in array(seg(path)[:-1])]
@@ -3155,8 +3178,21 @@ def equidistant_path(path,s=10,pitch=[]):
 
 def equidistant_pathc(path,s=10,pitch=[]):
     """
-    divides a closed path in to equally spaced points
-    refer file 'example of various functions.ipynb' for application examples
+divides a closed path in to equally spaced points
+example:
+l1=c23(square(20))
+l2=equidistant_pathc(l1,20)
+fileopen(f'''
+//original line
+color("blue",.2) p_line3dc({l1},.3);
+color("cyan") points({l1},1);
+// equidistant_path line
+
+translate([30,0,0]) {{
+color("magenta",.2) p_line3dc({l2},.3);
+color("cyan") points({l2},1);
+}}
+''')
     """
     s= l_lenv(path)/pitch if a_(pitch).size>0 else s
     v=[p[1]-p[0] for p in array(seg(path))]
@@ -3179,7 +3215,40 @@ def equidistant_pathc(path,s=10,pitch=[]):
     
 def ang_2lineccw(p0,p1,p2):
     """
-    ccw angle of the line p0p2 from base line p0p1
+ccw angle of the line p0p2 from base line p0p1
+example:
+p0=[0,0]
+p1=[5,2]
+p2=[7,8]
+txt1=dim_angular([p0,p1],[p1,p2],text_size=.5)
+txt2=dim_angular([p1,p0],[p0,p2],text_size=.5)
+fileopen(f'''
+
+// case 1: counter-clockwise angle between line p1p0 and p1p2 is 229.76 degrees
+color("blue")points({[p0,p1,p2]},.2);
+color("cyan")p_line3d({[p0,p1,p2]},.1);
+color("magenta")translate([0,-.5]){{
+translate({p0})text("p0",.5);
+translate({p1})text("p1",.5);
+translate({p2})text("p2",.5);
+}}
+{txt1}
+// case 2: counter-clockwise angle between line p0p1 and p0p2 is 27.01 degrees
+
+translate([10,0,0]){{
+color("blue")points({[p0,p1,p2]},.2);
+color("cyan")p_line3d({[p1,p0,p2]},.1);
+
+color("magenta")translate([0,-.5]){{
+translate({p0})text("p0",.5);
+translate({p1})text("p1",.5);
+translate({p2})text("p2",.5);
+}}
+{txt2}
+}}
+
+''')
+ang_2lineccw(p1,p0,p2),ang_2lineccw(p0,p1,p2)
     """
     p0,p1,p2=array([p0,p1,p2])
     v1,v2=p1-p0,p2-p0
@@ -3190,7 +3259,34 @@ def ang_2lineccw(p0,p1,p2):
 
 def ang_2linecw(p0,p1,p2):
     """
-    cw angle of the line p0p2 from the base line p0p1
+cw angle of the line p0p2 from the base line p0p1
+example:
+p0=[0,0]
+p1=[5,2]
+p2=[7,8]
+fileopen(f'''
+// case 1: clockwise angle between line p1p0 and p1p2 is 130.23 degrees
+color("blue")points({[p0,p1,p2]},.2);
+color("cyan")p_line3d({[p0,p1,p2]},.1);
+color("magenta")translate([0,-.5]){{
+translate({p0})text("p0",.5);
+translate({p1})text("p1",.5);
+translate({p2})text("p2",.5);
+}}
+
+// case 2: clockwise angle between line p0p1 and p0p2 is 332.98 degrees
+translate([10,0,0]){{
+color("blue")points({[p0,p1,p2]},.2);
+color("cyan")p_line3d({[p1,p0,p2]},.1);
+
+color("magenta")translate([0,-.5]){{
+translate({p0})text("p0",.5);
+translate({p1})text("p1",.5);
+translate({p2})text("p2",.5);
+}}
+}}
+''')
+l_(ang_2linecw(p1,p0,p2)),l_(ang_2linecw(p0,p1,p2))
     """
     p0,p1,p2=array([p0,p1,p2])
     v1,v2=p1-p0,p2-p0
@@ -3200,7 +3296,7 @@ def ang_2linecw(p0,p1,p2):
 
 def l_lenv(l):
     """
-    calculates sum of lengths of all the segments in a line 'l' considering the section is closed
+calculates sum of lengths of all the segments in a line 'l' considering the section is closed
     """
     return l_(array([l_len(p) for p in seg(l)]).sum())
 
@@ -3224,7 +3320,19 @@ def a_3seg(s):
 
 def offset_sol(sol,d,type=1):
     """
-    function to calculate offset of a 3d object by distance 'd'
+function to calculate offset of a 3d object by distance 'd'
+example:
+c1=cylinder(r=10,h=40)
+c2=offset_sol(c1,-3)
+c3=offset_sol(c1,3)
+fileopen(f'''
+//original cylinder
+color("blue",.2) swp_c({c1});
+// offset inwards by 3mm
+color("magenta",.2) swp_c({c2});
+// offset outwards 3mm
+color("cyan",.2) swp_c({c3});
+''')
     """
     
     sol=[offset_3d(p,d,type) for p in sol]
@@ -3233,6 +3341,19 @@ def offset_sol(sol,d,type=1):
 
 
 def ip_sol2sol(sol1,sol2,n=0):
+    """
+function finds the intersection point between 2 solids
+example:
+s1=sphere(20)
+c1=cylinder(r=5,h=50)
+l1=ip_sol2sol(s1,c1)
+fileopen(f'''
+%{swp(s1)}
+%{swp(c1)}
+color("blue") points({l1},.3);
+''')
+    
+    """
     line=array([ seg(p)[:-1] for p in cpo(sol2)])
     v,f1=vnf2(sol1)
     tri=array(v)[array(f1)]
@@ -3256,6 +3377,20 @@ def ip_sol2sol(sol1,sol2,n=0):
     return [p[n] for p in c if p!=[]]
 
 def ip_surf2sol(sol1,sol2,n=0):
+    """
+intersection points between surface to surface or surface to solid
+example:
+l0=translate([-25,0,0],rot('x90',cosinewave(50,3,2,100)))
+s1=surface_line_vector(l0,[0,50,0],1)
+l1=translate([-10,0,-10],sinewave(20,2,2,50))
+s2=surface_line_vector(l1,[5,5,50])
+l1=ip_surf2sol(s1,s2)
+fileopen(f'''
+%{swp_surf(s1)}
+%{swp_surf(s2)}
+color("blue") points({l1},.3);
+''')
+    """
     line=array([ seg(p)[:-1] for p in cpo(sol2)])
     v,f1=vnf1(sol1)
     tri=array(v)[array(f1)]
@@ -3379,6 +3514,7 @@ def cir_3p_3d(points,s=20):
     draws a circle through the 3 points list
     's' is the number of segments of the circle
     """
+    points=rot('x.0001',points)
     n1=array(nv(points))
     a1=cross(n1,[0,0,-1])
     t1=r2d(arccos(n1@[0,0,-1]))
