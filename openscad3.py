@@ -2572,9 +2572,15 @@ color("blue") for(p={[l1,l2,l3]}) p_line3d(p,.3);
     
 def min_d_points(sec,min_d=.1):
     """ 
-    rationalises the number points in a section based on the minimum distance between 2 points
-    i.e. all the points which are less than the defined minimum distance "min_d" will be omitted from the section "sec" 
-    
+rationalises the number points in a section based on the minimum distance between 2 points
+i.e. all the points which are less than the defined minimum distance "min_d" will be omitted from the section "sec" 
+example:
+l1=circle(10,s=100)
+l2=translate_2d([25,0],min_d_points(l1,min_d=5))
+l3=translate_2d([50,0],homogenise(l1,pitch=5,closed_loop=1))
+fileopen(f'''
+color("blue") for(p={[l1,l2,l3]}) points(p,.3);
+''')
     """
     b=sec[0]
     c=[sec[0]]
@@ -2586,6 +2592,18 @@ def min_d_points(sec,min_d=.1):
     return c
     
 def wrap_around(sec,path):
+    """
+function to wrap a line or section around a 3d path. This only works with path in y-direction and section/ polyline strictly in +y quadrants
+example:
+c1=translate([0,20.1,0],circle(20))
+path=rot('y90',circle(40.2/(2*pi)+.2))
+c2=wrap_around(c1,path)
+fileopen(f'''
+color("blue") p_line3d({c1},.2);
+color("cyan") p_line3d({path},.2);
+color("magenta") p_line3d({c2},.2);
+''')    
+    """
     line1=array(sec) if array(sec).shape[-1]==3 else array(c2t3(sec))
     c_dist_path=array([0]+[l_len(p) for p in seg(path)[:-1]]).cumsum()
     v1_path=array([array(p[0])-array(p[1]) for p in seg(path)[:-1]])
@@ -2613,9 +2631,18 @@ wrap_section_around_path=wrap_around
     
 def align_sec(sec1,sec2,ang=10):
     """
-    function to align 2 3d sections to obtain the non twisted optimised solid
-    ang: is the resolution for the angle of rotation, 1 degree will have much higher resolution and hence will take longer to compute
-    refer file "examples of various functions" for application examples
+function to align 2 3d sections to obtain the non twisted optimised solid
+ang: is the resolution for the angle of rotation, 1 degree will have much higher resolution and hence will take longer to compute
+example:
+l1=c23(square(4))
+c1=translate([2,2,5],circle(5,s=5))
+c2=align_sec(l1,c1,ang=1)[1]
+fileopen(f'''
+//original lines
+color("blue") for(p={[l1,c1]}) p_line3d(p,.3);
+// aligned section
+color("magenta") p_line3d({c2},.3);
+''')
     """
     nv1=nv(sec2)
     cp1=array(sec2).mean(0)
@@ -2630,8 +2657,20 @@ def align_sec(sec1,sec2,ang=10):
     
 def sec2vector(v1=[1,0,0],sec=[]):
     """
-    function to align a section 'sec' with a vector 'v1'
-    refer file "example of various function" for application examples
+function to align a section 'sec' with a vector 'v1'
+example:
+l1=c23(square(4))
+v1=[1,-1,0.5]
+l2=sec2vector(v1,l1)
+l3=vector2line(v1,5)
+fileopen(f'''
+//original section
+color("blue") for(p={[l1]}) p_line3dc(p,.3);
+// vector to align section
+color("magenta") p_line3d({l3},.3);
+//aligned sec
+color("cyan") p_line3dc({l2},.3);
+''')
     """
     vz=[0,0,-1]
     vz,v1=array([vz,v1])
@@ -2651,7 +2690,20 @@ align_a_section_to_vector=sec2vector
     
 def sec2vector1(v1,sec):
     """
-    same as sec2vector but simpler method
+same as sec2vector but simpler method
+example:
+l1=c23(square(4))
+v1=[1,-1,0.5]
+l2=sec2vector1(v1,l1)
+l3=vector2line(v1,5)
+fileopen(f'''
+//original section
+color("blue") for(p={[l1]}) p_line3dc(p,.3);
+// vector to align section
+color("magenta") p_line3d({l3},.3);
+//aligned sec
+color("cyan") p_line3dc({l2},.3);
+''')
     """
     theta_y=ang((v1[0]**2+v1[1]**2)**.5,v1[2])
     theta_z=ang(v1[0],v1[1])
@@ -2661,13 +2713,13 @@ def sec2vector1(v1,sec):
 
 def cut_plane(nv=[0,0,1],size=[5,5],thickness=10,trns1=0,trns2=0,trns3=0,theta=[0,0,0]): #oriented solid
     """
-    function for defining a solid (cutting plane) oriented as per the defined normal vector
-    nv: normal vector for defining plane orientation of the section
-    thickness: thickness or height of the cutting plane
-    trns1: translate the solid in the direction of normal vector 'nv'
-    trns2: translate the solid in the direction 'right' to the normal vector 'nv'
-    trns3: translate the solid in the direction 'up' to the normal vector 'nv'
-    '-ve' values given to the trns1,trns2,trns3 will translate the solid in the reverse direction 
+function for defining a solid (cutting plane) oriented as per the defined normal vector
+nv: normal vector for defining plane orientation of the section
+thickness: thickness or height of the cutting plane
+trns1: translate the solid in the direction of normal vector 'nv'
+trns2: translate the solid in the direction 'right' to the normal vector 'nv'
+trns3: translate the solid in the direction 'up' to the normal vector 'nv'
+'-ve' values given to the trns1,trns2,trns3 will translate the solid in the reverse direction
     """
     sec=square(size,center=True)
     plane1=sec2vector(nv,sec)
@@ -2689,8 +2741,23 @@ def cut_plane(nv=[0,0,1],size=[5,5],thickness=10,trns1=0,trns2=0,trns3=0,theta=[
     
 def slice_sol(sol,n=10):
     """
-    function to slice a solid with 'n' intermediate steps.
-    this creats n steps for each turn in sol
+function to slice a solid with 'n' intermediate steps.
+this creats n steps for each turn in sol
+example:
+l1=c23(square(4))
+l2=translate([0,0,5],circle(5,[2,2],s=5))
+l3=translate([0,0,10],l1)
+sol=[l1,l2,l3]
+sol1=translate([10,0,0],sol)
+sol1=slice_sol(sol1,10)
+fileopen(f'''
+// original solid
+color("blue") for(p={sol}) p_line3dc(p,.1);
+{swp(sol)}
+// sliced solid
+color("magenta") for(p={sol1}) p_line3dc(p,.1);
+{swp(sol1)}
+''')
     """
     a=cpo(sol)
     sol1=[[ls(p,n)+[p[1]] for p in seg(a[i])[:-1]] for i in range(len(a))]
@@ -2701,15 +2768,40 @@ def slice_sol(sol,n=10):
 
 def slice_sol_1(sol_1,n=10):
     """
-    function to slice a solid with 'n' intermediate steps
+function to slice a solid with 'n' intermediate steps
+example:
+l1=c23(square(4))
+l2=translate([0,0,5],circle(5,[2,2],s=5))
+l3=translate([0,0,10],l1)
+sol=[l1,l2,l3]
+sol1=translate([10,0,0],sol)
+sol1=slice_sol_1(sol1,10)
+fileopen(f'''
+// original solid
+color("blue") for(p={sol}) p_line3dc(p,.1);
+{swp(sol)}
+// sliced solid
+color("magenta") for(p={sol1}) p_line3dc(p,.1);
+{swp(sol1)}
+''')
     """
     return cpo([equidistant_path(p,n) for p in cpo(sol_1)])
 
     
 def cp_arc(arc1):
     """
-    function returns the center point of a given circle or arc
-    
+function returns the center point of a given circle or arc
+example:
+a1=circle(10,[5,6])
+cp1=cp_arc(a1)
+fileopen(f'''
+// arc
+color("blue") for(p={[a1]}) p_line3dc(p,.1);
+
+// center point calculated
+color("magenta") points({[cp1]},.3);
+''')
+cp1 # calculated center point
     """
     n=int(len(arc1)/360*120)
     p0=arc1[0]
@@ -2721,29 +2813,50 @@ center_arc=cp_arc
     
 def r_arc(arc1):
     """
-    function returns the radius of a given circle or arc
-    
+function returns the radius of a given circle or arc
+example:
+a1=circle(10,[5,6])
+r1=r_arc(a1)
+txt1=dim_radial(a1[:5])
+fileopen(f'''
+// arc
+color("blue") for(p={[a1]}) p_line3dc(p,.1);
+// calculated radius
+{txt1}
+''')
+r1 # calculated radius
     """
     n=int(len(arc1)/360*120)
     p0=arc1[0]
     p1=arc1[n]
     p2=arc1[n*2]
-    return r_3p([p0,p1,p2])
+    return l_(r_3p([p0,p1,p2]))
 
 radius_arc2d=r_arc
     
 
 def o_solid(nv=[0,0,1],sec=[],thickness=10,trns1=0,trns2=0,trns3=0, theta=[0,0,0]): #oriented solid
     """
-    function for defining a solid with any defined section. solid gets oriented as per the defined normal vector
-    nv: normal vector for defining plane orientation of the section
-    sec: cross section of the solid
-    thickness: thickness or height of the solid
-    trns1: translate the solid in the direction of normal vector 'nv'
-    trns2: translate the solid in the direction 'right' to the normal vector 'nv'
-    trns3: translate the solid in the direction 'up' to the normal vector 'nv'
-    '-ve' values given to the trns1,trns2,trns3 will translate the solid in the reverse direction 
-    theta: rotate the section around axis  fox example if nv is [1,0,0] or x-axis, the sequence of rotation will be x, y ,z axis
+function for defining a solid with any defined section. solid gets oriented as per the defined normal vector
+nv: normal vector for defining plane orientation of the section
+sec: cross section of the solid
+thickness: thickness or height of the solid
+trns1: translate the solid in the direction of normal vector 'nv'
+trns2: translate the solid in the direction 'right' to the normal vector 'nv'
+trns3: translate the solid in the direction 'up' to the normal vector 'nv'
+'-ve' values given to the trns1,trns2,trns3 will translate the solid in the reverse direction 
+theta: rotate the section around axis  fox example if nv is [1,0,0] or x-axis, the sequence of rotation will be x, y ,z axis
+example:
+sol=o_solid(nv=[1,0,0],sec=circle(2.5),thickness=20,trns1=-5,trns2=10,trns3=20)
+l1=turtle3d([[0,0,20],[-5,0,0],[0,-10,0],[0.001,0,-20]])
+txt1=dim_linear(l1[:2])
+txt2=dim_linear(l1[1:3])
+txt3=dim_linear(l1[2:4])
+fileopen(f'''
+// oriented_solid
+{swp(sol)}
+{txt1}{txt2}{txt3}
+''')
     """
     plane1=sec2vector(nv,sec)
     v1=array(nv)
@@ -2766,7 +2879,7 @@ oriented_solid=o_solid
 
 def ppesec(p0,sec): #point's projection on an enclosed 3d section
     """
-    function to find projected points of a given point list 'p0' on a 3d sec which is on 1 plane
+function to find projected points of a given point list 'p0' on a 3d sec which is on 1 plane
 """
     
     v1=array(nv(sec))
@@ -2787,12 +2900,12 @@ def ppesec(p0,sec): #point's projection on an enclosed 3d section
 
 def ppplane(p0,v1,loc):#point's projection on a plane
     """
-    function to find projected points of a given list of points 'p0' on a plane defined by normal'v1' and location 'loc'
-    example:
-    p0=[20,0,0]
-    v1=[2,3,4]
-    loc=[0,10,0]
-    ppplane([p0],v1,loc) => [19.310359216374945, -1.034461175437585, -1.3792815672501133]
+function to find projected points of a given list of points 'p0' on a plane defined by normal'v1' and location 'loc'
+example:
+p0=[20,0,0]
+v1=[2,3,4]
+loc=[0,10,0]
+ppplane([p0],v1,loc) => [19.310359216374945, -1.034461175437585, -1.3792815672501133]
     
     """
     p0=array(p0)
@@ -2811,9 +2924,14 @@ def ppplane(p0,v1,loc):#point's projection on a plane
 
 def honeycomb(r,n1,n2):
     """
-    function to draw a honeycomb structure with radius 'r' 
-    n1: number of hexagons in 1 layer
-    n2: number of layers
+function to draw a honeycomb structure with radius 'r' 
+n1: number of hexagons in 1 layer
+n2: number of layers
+example:
+l1=honeycomb(5,3,2)
+fileopen(f'''
+color("blue") for(p={l1}) p_line3dc(p,.2);
+''')
     """
     cir1=circle(r,s=7)
     cir2=c3t2(rot('z30',cir1))
@@ -2831,9 +2949,17 @@ def honeycomb(r,n1,n2):
     
 def path_extrude2msec(sec_list,path):
     """
-    function to extrude multiple sections 'sec_list' along an open path 'path'
-    number of sections in the 'sec_list' >= len(path)
-    refer to file "example of various functions" for application example
+function to extrude multiple sections 'sec_list' along an open path 'path'
+number of sections in the 'sec_list' >= len(path)
+example:
+sec=square(4)
+p1=cr2dt([[0,0],[2,0],[3,0],[-6,0]])
+sec_list=c32(prism(sec,p1))
+path=cr3dt([[0,0,0],[20,0,0],[0,0,20],[30,0,0]])
+sol=path_extrude2msec(sec_list,path)
+fileopen(f'''
+{swp(sol)}
+''')
     """
     p1=path[:-1]
     p2=path[1:]
