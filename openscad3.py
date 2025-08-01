@@ -2655,13 +2655,15 @@ color("magenta") p_line3d({c2},.3);
     return sol2
     
 
-# def sec2vector(v1,sec):
-#     vx=uv(best_fit_plane(sec)[0])
-#     v1=uv(a_(v1)+[0.0001,.0001,0])
-#     v2=uv(cross(vx,v1))
-#     theta=r2d(arccos(a_(vx)@a_(v1)))
-#     b=axis_rot_1(sec,v2,sec[0],-theta)
-#     return b
+def s2v(v1,sec):
+    sec=rot('x90z-90',sec)
+    vx=[1,0,0]
+    v2=uv(c23(v1[:2]))
+    theta1=ang_v(v1[:2])
+    theta2=r2d(arccos(a_(v2)@a_(v1)))
+    ax1=cross(v2,v1)
+    b=axis_rot(ax1,rot(f'z{theta1}',sec),theta2)
+    return b
     
 def sec2vector(v1=[1,0,0],sec=[]):
     """
@@ -2682,7 +2684,7 @@ color("cyan") p_line3dc({l2},.3);
     """
     vz=[0,0,-1]
     vz,v1=array([vz,v1])
-
+    v1=v1+[.0001,.0001,0]
     nvzv1=cross(vz,v1)
     u1=v1/norm(v1)
     theta=r2d(arccos(u1@vz))
@@ -3297,6 +3299,8 @@ l_(ang_2linecw(p1,p0,p2)),l_(ang_2linecw(p0,p1,p2))
 def l_lenv(l):
     """
 calculates sum of lengths of all the segments in a line 'l' considering the section is closed
+example:
+l_lenv(square(5)) => 20.0
     """
     return l_(array([l_len(p) for p in seg(l)]).sum())
 
@@ -3305,6 +3309,8 @@ length_closed_section=l_lenv
 def l_lenv_o(l):
     """
     calculates sum of lengths of all the segments in a line 'l' considering the section is open
+example:
+l_lenv_o(square(5)) => 15.0
     """
     return l_(array([l_len(p) for p in seg(l)[:-1]]).sum())
 
@@ -3312,9 +3318,11 @@ length_open_section=l_lenv_o
 
 def a_3seg(s):
     """
-    area of the triangle enclosed with in 3 vertices 's'
+area of the triangle enclosed with in 3 vertices 's'
+example:
+a_3seg([[0,0,0],[10,0,0],[0,0,10]]) => 50.0
     """
-    return norm(cross(array(s[1])-array(s[0]),array(s[2])-array(s[0])))/2
+    return l_(norm(cross(array(s[1])-array(s[0]),array(s[2])-array(s[0])))/2)
 
 
 
@@ -3440,8 +3448,15 @@ def vnf2(bead2):
     
 def convex_hull(pnts):
     """
-    calculates convex hull for a list of points 'sec'
-    
+calculates convex hull for a list of points 'sec'
+example:
+a=translate_2d([10,-5],square(10))
+b=circle(10)
+c=convex_hull(a+b)
+fileopen(f'''
+color("blue") for(p={[a,b]}) p_line3dc(p,.2);
+color("magenta") p_line3dc({c},.21);
+''')
     """
     pnts=remove_extra_points(pnts)
     p_x=[]
@@ -3468,7 +3483,17 @@ def convex_hull(pnts):
 
 def lexicographic_sort_xy(p):
     """
-    function sorts the points list 'p' first with x and then with y smallest to largest 
+function sorts the points list 'p' first with x and then with y smallest to largest 
+example:
+a=random.random(50)*(20-5)+5
+b=random.random(50)*(30-10)+10
+p=array([a.round(1),b.round(1)]).transpose(1,0)
+fileopen(f'''
+p2={lexicographic_sort_xy(p)};
+color("blue")for(i=[0:len(p2)-1])translate(p2[i])text(str(i),.3);
+p_lineo(p2,.05);
+color("magenta")points(p2,.2);
+    ''')
     """
     p=array(p)
     p1=p[p[:,0].argsort()]
@@ -3479,7 +3504,17 @@ def lexicographic_sort_xy(p):
 
 def lexicographic_sort_yx(p):
     """
-    function sorts the points list 'p' first with y and then with x smallest to largest 
+function sorts the points list 'p' first with y and then with x smallest to largest 
+example:
+a=random.random(50)*(20-5)+5
+b=random.random(50)*(30-10)+10
+p=array([a.round(1),b.round(1)]).transpose(1,0)
+fileopen(f'''
+p2={lexicographic_sort_yx(p)};
+color("blue")for(i=[0:len(p2)-1])translate(p2[i])text(str(i),.3);
+p_lineo(p2,.05);
+color("magenta")points(p2,.2);
+    ''')
     """
     p=array(p)
     p1=p[p[:,1].argsort()]
@@ -3489,6 +3524,21 @@ def lexicographic_sort_yx(p):
     return p2
     
 def lexicographic_seg_sort_xy(sec1):
+    """
+sorts segments in lexicographic order
+see the animation below
+example:
+a=offset_segv(circle(10,s=5),2)
+b=lexicographic_seg_sort_xy(a)
+for i in range(12):
+    c=b[i%4]
+    fileopen(f'''
+    color("blue") for(p={a}) p_line3dc(p,.2);
+    color("magenta") p_line3d({c},.5);
+    ''')
+    time.sleep(1)
+    
+    """
 
     a=lexicographic_sort_xy(array(sec1)[:,0])
     sec2=[[[p1,p2] if p1[0]<p2[0] else [p2,p1] for (p1,p2) in sec1 if (p2==p) or (p1==p)] for p in a]
@@ -3499,7 +3549,14 @@ def lexicographic_seg_sort_xy(sec1):
 
 def rationalise_path(path):
     """
-    removes all the points which are in straight line
+removes all the points which are in straight line
+example:
+a=m_points1_o(square(10),10)
+b=translate([15,0], rationalise_path(a))
+fileopen(f'''
+color("blue") for(p={[a]}) points(p,.5);
+color("magenta") points({b},.5);
+''')
     """
     a=seg(path)[:-1]
     b=[line_as_unit_vector(p) for p in a]
@@ -3511,8 +3568,15 @@ def rationalise_path(path):
 
 def cir_3p_3d(points,s=20):
     """
-    draws a circle through the 3 points list
-    's' is the number of segments of the circle
+draws a circle through the 3 points list
+'s' is the number of segments of the circle
+example:
+a=[[0,0,0],[10,0,0],[2,5,4]]
+b=cir_3p_3d(a,s=50)
+fileopen(f'''
+color("blue") for(p={[a]}) points(p,.5);
+color("magenta") p_line3dc({b},.2);
+''')
     """
     points=rot('x.0001',points)
     n1=array(nv(points))
@@ -3530,7 +3594,15 @@ circle_3points_3d=cir_3p_3d
 
 def cp_cir_3d(cir):
     """
-    center point of circle with atleast 3 known list of 'points' in 3d space
+center point of circle with atleast 3 known list of 'points' in 3d space
+a=[[0,0,0],[10,0,0],[2,5,4]]
+b=cir_3p_3d(a,s=50)
+c=cp_cir_3d(b)
+fileopen(f'''
+color("blue") for(p={[a]}) points(p,.5);
+color("magenta") p_line3dc({b},.2);
+color("cyan") points({[c]},.5);
+''')
     """
     n1=array(nv(cir))
     a1=cross(n1,[0.0000001,0.0000001,-1])
@@ -3624,6 +3696,18 @@ def orthos_along_path(path,scale=1):
 
 
 def l_sec_ip(line,sec):
+    """
+calculates the intersection point between a line and a closed loop section
+example:
+a=square(10)
+b=point_vector([-5,-5],[4,8])
+c=l_sec_ip(b,a)
+fileopen(f'''
+color("blue") p_line3dc({a},.2);
+color("magenta") p_line3dc({b},.2);
+color("cyan") points({c},.5);
+''')
+    """
     l1=array(line)
     s1=array(seg(sec))
     v1=l1[1]-l1[0]
@@ -3648,6 +3732,10 @@ line_section_ip=l_sec_ip
 
 
 def l_sec_ip_3d(sec,line):
+    """
+    same as function l_sec_ip but for 3d coordinates.
+    line ans section should be in the same plane
+    """
     n1=array(nv(sec))
     a1=cross(n1,[0,0,-1])
     t1=r2d(arccos(n1@[0,0,-1]))
@@ -3736,8 +3824,8 @@ def faces_3(l,m):
 
 def prism_center(sol):
     """
-    calculates the center of the prism or solid object, may not be the mean.
-    This calculates the center of the bounding box for a solid.
+calculates the center of the prism or solid object, may not be the mean.
+This calculates the center of the bounding box for a solid.
     
     """
     x_max=array(sol)[:,:,0].max()
@@ -3755,8 +3843,19 @@ def prism_center(sol):
     
 def align_sol_1(sol):
     """
-    function to straighten the twists in the path_extruded sections for better alignments
-    refer to the file "example of various functions.ipynb" for application examples
+function to straighten the twists in the path_extruded sections for better alignments
+example:
+example:
+a=circle(5)
+b=rot('x90',circle(20))
+c=path_extrude_closed(a,b)
+d=translate([70,0,0],align_sol_1(c))
+fileopen(f'''
+// misaligned solid
+{swp_c(c)}
+// aligned solid
+{swp_c(d)}
+''')
     """
     sol1=[sol[0]]
     for i in range(1,len(sol)):
@@ -3767,7 +3866,6 @@ def align_sol_1(sol):
 def align_sec_1(sec1,sec2):
     """
     function to align 2 3d sections to obtain the non twisted optimised solid
-    refer file "examples of various functions" for application examples
     """
     
     area1=[ norm(array(sec2[i:]+sec2[:i])-array(sec1),axis=1).sum() for i in range(len(sec2)) ]
@@ -3858,11 +3956,20 @@ def i_p_n(px,sol1):
 
 def arc_2p_3d(n1,p0,p1,r,cw=1,s=20):
     """
-    draws an arc through 2 points 
-    n1: normal vector to define plane on which the arc will be drawn
-    r: radius of the arc
-    cw: '1' stands for clockwise and '-1'stands for counter-clockwise
-    's' is the number of segments of the circle
+draws an arc through 2 points 
+n1: normal vector to define plane on which the arc will be drawn
+r: radius of the arc
+cw: '1' stands for clockwise and '-1'stands for counter-clockwise
+'s' is the number of segments of the circle
+example:
+n1=[0,1,0]
+p0,p1=[[0,0,0],[10,0,0]]
+a=arc_2p_3d(n1,p0,p1,r=8,cw=1,s=50)
+fileopen(f'''
+color("blue") p_line3d({a},.2);
+color("magenta") p_line3d({vector2line(n1,5)},.2);
+%{swp_surf(plane(n1,[25,25]))}
+''')
     """
     n1=array(n1)
     a1=cross(n1,[0,0,-1])+[.000001,.0000001,0]
@@ -3876,11 +3983,20 @@ def arc_2p_3d(n1,p0,p1,r,cw=1,s=20):
 
 def arc_long_2p_3d(n1,p0,p1,r,cw=1,s=20):
     """
-    draws a long arc through 2 points 
-    n1: normal vector to define plane on which the arc will be drawn
-    r: radius of the arc
-    cw: '1' stands for clockwise and '-1'stands for counter-clockwise
-    's' is the number of segments of the circle
+draws a long arc through 2 points 
+n1: normal vector to define plane on which the arc will be drawn
+r: radius of the arc
+cw: '1' stands for clockwise and '-1'stands for counter-clockwise
+'s' is the number of segments of the circle
+example:
+n1=[0,1,0]
+p0,p1=[[0,0,0],[10,0,0]]
+a=arc_long_2p_3d(n1,p1,p0,r=8,cw=1,s=50)
+fileopen(f'''
+color("blue") p_line3d({a},.2);
+color("magenta") p_line3d({vector2line(n1,5)},.2);
+%{swp_surf(plane(n1,[25,25]))}
+''')
     """
     n1=array(n1)
     a1=cross(n1,[0,0,-1])
@@ -3894,10 +4010,11 @@ def arc_long_2p_3d(n1,p0,p1,r,cw=1,s=20):
     
 def arc_2p_3d_cp(n1,p0,p1,r,cw=1):
     """
-    calculates the center point of the circle drawn through 2 points 
-    n1: normal vector to define plane on which the arc/ circle drawn
-    r: radius of the arc/ circle
-    cw: '1' stands for clockwise and '-1'stands for counter-clockwise
+calculates the center point of the circle drawn through 2 points 
+n1: normal vector to define plane on which the arc/ circle drawn
+r: radius of the arc/ circle
+cw: '1' stands for clockwise and '-1'stands for counter-clockwise
+use function cp_cir_3d instead
     """
     n1=array(n1)
     a1=cross(n1,[0,0,-1])
@@ -3912,8 +4029,21 @@ def arc_2p_3d_cp(n1,p0,p1,r,cw=1):
     
 def axis_rot_1(sol,ax1,loc1,theta):
     """
-    rotate a solid on any pivot point 'loc1' with axis of rotation 'ax1' by an angle 'theta'
-    
+rotate a solid on any pivot point 'loc1' with axis of rotation 'ax1' by an angle 'theta'
+example:
+c1=cylinder(r=5,h=20)
+ax1=[1,1,0]
+loc=[0,0,20]
+l1=line2length(point_vector(loc,ax1),10)
+c2=axis_rot_1(c1,ax1,loc,-90)
+fileopen(f'''
+//axis to rotate
+color("magenta") p_line3d({l1},.3);
+//original cylinder
+%{swp(c1)}
+//rotated cylinder
+color("blue",.5){swp(c2)}
+''')
     """
     s_1=len(array(sol).shape)
     c1=array(sol).mean(0) if s_1==2 else array(prism_center(sol))
@@ -3930,8 +4060,17 @@ def axis_rot_1(sol,ax1,loc1,theta):
     
 def path2path1(path1,path):
     """
-    function to match the points of path1 with path
-    i.e. path1 is independent variable and path is dependent variable
+function to match the points of path1 with path
+i.e. path1 is independent variable and path is dependent variable
+example:
+p1=c23(cr2dt([[-5,-5,2],[10,0,2],[0,10,2],[-10,0,2]],10))
+p2=translate([0,0,10],cr2dt([[-5,-5],[10,0],[0,10]]))
+p2=path2path1(p1,p2)
+fileopen(f'''
+color("blue",.2) p_line3d({p1},.2);
+color("magenta",.2) p_line3d({p2},.2);
+color("cyan") for(p={[p1,p2]}) points(p,.4);
+''')
     """
     v=[p[1]-p[0] for p in array(seg(path)[:-1])]
     l=[l_len(p) for p in seg(path)[:-1]]
@@ -3954,8 +4093,17 @@ match_points_of_a_path_to_reference_path_open=path2path1
     
 def path2path1_closed(path1,path):
     """
-    function to match the points of path1 with path. Both the paths are closed loop
-    i.e. path1 is independent variable and path is dependent variable
+function to match the points of path1 with path. Both the paths are closed loop
+i.e. path1 is independent variable and path is dependent variable
+example:
+p1=c23(cr2dt([[-5,-5,2],[10,0,2],[0,10,2],[-10,0,2]],10))
+p2=translate([0,0,10],circle(5))
+p2=path2path1_closed(p1,p2)
+fileopen(f'''
+color("blue",.2) p_line3dc({p1},.2);
+color("magenta",.2) p_line3dc({p2},.2);
+color("cyan") for(p={[p1,p2]}) points(p,.4);
+''')
     """
     v=[p[1]-p[0] for p in array(seg(path))]
     l=[l_len(p) for p in seg(path)]
@@ -3978,7 +4126,27 @@ match_points_of_a_path_to_reference_path_closed=path2path1_closed
 
 def ip_triangle(ip,sol1):
     """
-    function to find the triangles on the solid 'sol1' where the intersection points list 'ip' lies
+function to find the triangles on the solid 'sol1' where the intersection points list 'ip' lies
+example:
+sec=pts([[0,0],[5,0],[0,5],[-5,0]])
+sec=m_points1(sec,7)
+path=corner_radius(pts1([[-2.49,0],[2.49,0,0.25],[0,5,0.25],[-2.49,0]]),10)
+sol1=prism(sec,path)
+v1=[2,0,8]
+sec1=axis_rot([0,0,1],circle(1.5,s=100),90)
+sol2=o_solid(v1,sec1,10,-1.5,-2.5,0)
+p1=ip_sol2sol(sol1,sol2)
+p2=ip_sol2sol(sol1,sol2,-1)
+p3=flip(p1)+p2
+tri_1=ip_triangle(p3,sol1)
+fileopen(f'''
+%{swp(sol1)}
+%{swp(sol2)}
+// intersection points
+color("magenta")points({p3},.05);
+// triangles where the intersection points fall
+color("blue")for(p={tri_1})p_line3dc(p,.04,rec=1);
+''')
     """
     v,f1=vnf2(sol1)
     tri=array(v)[array(f1)]
@@ -4009,8 +4177,36 @@ def ip_triangle(ip,sol1):
 
 def o_3d(i_p,sol,r,o=0,f=1,closed=0):
     """
-    function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset.
-    for closed loop path set closed=1
+function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset.
+for closed loop path set closed=1
+example:
+sec=pts([[0,0],[5,0],[0,5],[-5,0]])
+sec=m_points1(sec,7)
+path=corner_radius(pts1([[-2.49,0],[2.49,0,0.25],[0,5,0.25],[-2.49,0]]),10)
+sol1=prism(sec,path)
+v1=[2,0,8]
+sec1=axis_rot([0,0,1],circle(1.5,s=100),90)
+sol2=o_solid(v1,sec1,10,-1.5,-2.5,0)
+p1=ip_sol2sol(sol1,sol2)
+p2=ip_sol2sol(sol1,sol2,-1)
+p3=flip(p1)+p2
+tri_1=ip_triangle(p3,sol1)
+p4=o_3d(p3,sol1,-.5)
+p5=o_3d(p3,sol2,.5)
+
+fileopen(f'''
+%{swp(sol1)}
+%{swp(sol2)}
+// intersection points
+color("magenta")points({p3},.05);
+color("magenta") p_line3dc({p3},.03);
+// offset 3d of intersection points on sol1
+color("cyan") points({p4},.05);
+color("cyan") p_line3dc({p4},.03);
+// offset 3d of intersection points on sol2
+color("green") points({p5},.05);
+color("green") p_line3dc({p5},.03);
+''')
     """
     a=i_p_n(i_p,sol)
     if closed==0:
@@ -4030,12 +4226,40 @@ offset_intersection_line_on_solid=o_3d
 
 def o_3d_rev(i_p,sol,r,o=0,closed=0,type=0,dist=0,vx=[],edges_closed=1,cg=0):
     """
-    function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset.
-    for closed loop path set closed=1
-    o: set '1' to shift the line on other side
-    type: set '1' if prism_center lies outside the solid. type can also be set to '2'.
-    for using type=2, refer function definition psos_v_1 and also checkout the video explanation
-    prism_center is the center of the bounding box of the solid
+function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset.
+for closed loop path set closed=1
+o: set '1' to shift the line on other side
+type: set '1' if prism_center lies outside the solid. type can also be set to '2'.
+for using type=2, refer function definition psos_v_1 and also checkout the video explanation
+prism_center is the center of the bounding box of the solid
+example:
+sec=pts([[0,0],[5,0],[0,5],[-5,0]])
+sec=m_points1(sec,7)
+path=corner_radius(pts1([[-2.49,0],[2.49,0,0.25],[0,5,0.25],[-2.49,0]]),10)
+sol1=prism(sec,path)
+v1=[2,0,8]
+sec1=axis_rot([0,0,1],circle(1.5,s=100),90)
+sol2=o_solid(v1,sec1,10,-1.5,-2.5,0)
+p1=ip_sol2sol(sol1,sol2)
+p2=ip_sol2sol(sol1,sol2,-1)
+p3=flip(p1)+p2
+tri_1=ip_triangle(p3,sol1)
+p4=o_3d_rev(p3,sol1,-.5)
+p5=o_3d_rev(p3,sol2,.5)
+
+fileopen(f'''
+%{swp(sol1)}
+%{swp(sol2)}
+// intersection points
+color("magenta")points({p3},.05);
+color("magenta") p_line3dc({p3},.03);
+// offset 3d of intersection points on sol1
+color("cyan") points({p4},.05);
+color("cyan") p_line3dc({p4},.03);
+// offset 3d of intersection points on sol2
+color("green") points({p5},.05);
+color("green") p_line3dc({p5},.03);
+''')
     """
     if edges_closed==1:
         sol=cpo(cpo(sol)+[cpo(sol)[0]])
@@ -4068,8 +4292,23 @@ offset_intersection_line_on_solid_rev=o_3d_rev
 
 def o_3d_surf(i_p,sol,r,o=0,f=1,closed=0):
     """
-    function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset
-    for closed loop path, set closed=1
+function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset
+for closed loop path, set closed=1
+example:
+l1=rot('x90',sinewave(50,3,2,50))
+l2=rot('x90z90',cosinewave(50,3,2,50))
+s1=surface_from_2_waves(l1,l2,2)
+c1=translate([0,0,-10],linear_extrude(circle(5,[25,25]),30))
+l3=ip_surf2sol(s1,c1)
+l4=o_3d_surf(l3,s1,-3)
+l5=o_3d(l3,c_(c1),3)
+fileopen(f'''
+%{swp_surf(s1)}
+%{swp(c1)}
+color("blue") p_line3dc({l3},.3);
+color("magenta") p_line3dc({l4},.3);
+color("cyan") p_line3dc({l5},.3);
+''')
     """
     a=i_p_n_surf(i_p,sol)
     if closed==0:
@@ -4212,10 +4451,33 @@ def ip_random(sol1,sol2):
     return i_p.tolist()
     
 def ellipse(a,b,s=50):
+    """
+function to form ellipse
+example:
+l1=ellipse(a=20,b=10,s=100)
+fileopen(f'''
+color("blue") p_line3dc({l1},.3);
+''')
+    """
     return l_([[a*cos(d2r(i)),b*sin(d2r(i))]  for i in linspace(0,360,s)[:-1]])
     
 
 def sol2path(sol,path):
+    """
+function to extrude a solid to path
+example:
+sec=circle(5)
+path1=corner_radius(pts1([[-3,0],[3,0,3],[0,15,2],[-2,5,3],[2,5,2],[0,20,3],[-3,0]]),10)
+path1=equidistant_path(path1,200)
+sol=prism(sec,path1)
+path=bspline_open(cr3dt([[10,0,0,0],[10,15,10,8],[0,0,15,6],[20,0,0,0]],20),2,50)
+sol2=sol2path(sol,path)
+fileopen(f'''
+%{swp(sol)}
+%{swp(sol2)}
+color("cyan")p_line3d({path},.5);
+''')
+    """
     sol1=c3t2(sol)
     zpath=[[0,0,p[0][2]] for p in sol]
     path2=path2path1(zpath,path)
@@ -4225,6 +4487,17 @@ def sol2path(sol,path):
 extrude_a_solid_to_defined_path=sol2path
 
 def comb_list(n):
+    """
+finds the combination in pairs e.g. there are 4 teams, how many matches should be played so that everyone plays with everyone else.
+example:
+comb_list(4) => 
+array([[0, 1],
+       [0, 2],
+       [0, 3],
+       [1, 2],
+       [1, 3],
+       [2, 3]])
+    """
     n=arange(n)
     a=array([n]*len(n)).transpose(1,0)
     b=array([n]*len(n))
@@ -4234,9 +4507,9 @@ def comb_list(n):
 
 def ip_nv_sol2sol(sol1,sol2):
     """
-    function finds the intersection point and the normal vector to that intersection point between 2 solids
-    sol1: solid on who's surface intersection points needs to be found
-    sol2: solid which intersects sol1
+function finds the intersection point and the normal vector to that intersection point between 2 solids
+sol1: solid on who's surface intersection points needs to be found
+sol2: solid which intersects sol1
     
     """
     line=array([ seg(p)[:-1] for p in cpo(sol2)])
@@ -4268,12 +4541,15 @@ def ip_nv_sol2sol(sol1,sol2):
 
 def corner_radius(sec,s=20):
     """
-    function to create section with corner radiuses. e.g. 
-    following code has 3 points at [0,0],[10,0] and [7,15] and radiuses of 0.5,2 and 1 respectively,
-    s=5 represent the number of segments at each corner radius.
-    sec=corner_radius(pl=[[0,0,.5],[10,0,2],[7,15,1]],s=5)
+function to create section with corner radiuses. e.g. 
+following code has 3 points at [0,0],[10,0] and [7,15] and radiuses of 0.5,2 and 1 respectively,
+s=5 represent the number of segments at each corner radius.
+example:
+sec1=corner_radius(sec=[[0,0,.5],[10,0,2],[7,15,1]],s=5)
+fileopen(f'''
+color("blue") p_line3dc({sec1},.3);
+''')
     
-    refer file "example of various functions" for application
     """
     r_l=[0 if len(p)==2 else p[2] for p in sec]
     sec=[ [p[0],p[1]] for p in sec]
@@ -4370,7 +4646,14 @@ cr2d=corner_radius
 
 def surround(path,r,s=20):
     """
-    function to surround a path to create a rounded section
+function to surround a path to create a rounded section
+example:
+sec1=corner_radius(sec=[[0,0,.5],[10,0,2],[7,15,1]],s=5)
+l1=surround(homogenise(sec1,.25),.5)
+fileopen(f'''
+color("blue") p_line3d({sec1},.3);
+color("magenta") p_line3dc({l1},.3);
+''')
     
     """
     a=path_offset_n(path,r)
@@ -4445,13 +4728,15 @@ def zrot(theta):
 
 def surface_from_2_waves(p0,p1,amplitude=1):
     """
-    function to draw surface based on 2 waves perpendicular to each other.
-    waves are multiplied
-
-    example:
-    p0=rot('x90',[[i,sin(d2r(360/70*i*2))]  for i in arange(0,71)])
-    p1=rot('x90z90',[[i,sin(d2r(360/70*i*2))]  for i in arange(0,71)])
-    surf=surface_from_2_waves(p0,p1,2)
+function to draw surface based on 2 waves perpendicular to each other.
+waves are multiplied
+example:
+l1=rot('x90',sinewave(50,3,2,50))
+l2=rot('x90z90',cosinewave(50,3,2,50))
+s1=surface_from_2_waves(l1,l2,2)
+fileopen(f'''
+{swp_surf(s1)}
+''')
     """
     p2=array([[[i[0],j[1],(i@j)]  for j in array(p1)]  for i in array(p0)])
     a=p2[:,:,2].max()
@@ -4460,13 +4745,16 @@ def surface_from_2_waves(p0,p1,amplitude=1):
 
 def surface_from_2_waves_add(p0,p1,amplitude=1):
     """
-    function to draw surface based on 2 waves perpendicular to each other.
-    waves are added
+function to draw surface based on 2 waves perpendicular to each other.
+waves are added
 
-    example:
-    p0=rot(f'x90',[[i,sin(d2r(360/70*i*2))]  for i in arange(0,71)])
-    p1=rot(f'x90z90',[[i,sin(d2r(360/70*i*2))]  for i in arange(0,71)])
-    surf=surface_from_2_waves_add(p0,p1,2)
+example:
+l1=rot('x90',sinewave(50,3,2,50))
+l2=rot('x90z90',cosinewave(50,3,2,50))
+s1=surface_from_2_waves_add(l1,l2,2)
+fileopen(f'''
+{swp_surf(s1)}
+''')
     """
     p2=array([[[i[0],j[1],i[2]+j[2]]  for j in array(p1)]  for i in array(p0)])
     a=p2[:,:,2].max()
@@ -4475,13 +4763,15 @@ def surface_from_2_waves_add(p0,p1,amplitude=1):
 
 def surface_from_2_waves_min(p0,p1,amplitude=1):
     """
-    function to draw surface based on 2 waves perpendicular to each other.
-    maximum point in the 2 waves will be considered
-
-    example:
-    p0=rot(f'x90',[[i,sin(d2r(360/70*i*2))]  for i in arange(0,71)])
-    p1=rot(f'x90z90',[[i,sin(d2r(360/70*i*2))]  for i in arange(0,71)])
-    surf=surface_from_2_waves_min(p0,p1,2)
+function to draw surface based on 2 waves perpendicular to each other.
+maximum point in the 2 waves will be considered
+example:
+l1=rot('x90',sinewave(50,3,2,50))
+l2=rot('x90z90',cosinewave(50,3,2,50))
+s1=surface_from_2_waves_min(l1,l2,2)
+fileopen(f'''
+{swp_surf(s1)}
+''')
     """
     p2=array([[[i[0],j[1],a_([i[2],j[2]]).min()]  for j in array(p1)]  for i in array(p0)])
     a=p2[:,:,2].max()
@@ -4490,13 +4780,15 @@ def surface_from_2_waves_min(p0,p1,amplitude=1):
 
 def surface_from_2_waves_max(p0,p1,amplitude=1):
     """
-    function to draw surface based on 2 waves perpendicular to each other.
-    maximum point in the 2 waves will be considered
-
-    example:
-    p0=rot(f'x90',[[i,sin(d2r(360/70*i*2))]  for i in arange(0,71)])
-    p1=rot(f'x90z90',[[i,sin(d2r(360/70*i*2))]  for i in arange(0,71)])
-    surf=surface_from_2_waves_max(p0,p1,2)
+function to draw surface based on 2 waves perpendicular to each other.
+maximum point in the 2 waves will be considered
+example:
+l1=rot('x90',sinewave(50,3,2,50))
+l2=rot('x90z90',cosinewave(50,3,2,50))
+s1=surface_from_2_waves_max(l1,l2,2)
+fileopen(f'''
+{swp_surf(s1)}
+''')
     """
     p2=array([[[i[0],j[1],max([i[2],j[2]])]  for j in array(p1)]  for i in array(p0)])
     a=p2[:,:,2].max()
@@ -4505,13 +4797,15 @@ def surface_from_2_waves_max(p0,p1,amplitude=1):
 
 def surface_from_2_waves_norm(p0,p1,amplitude=1):
     """
-    function to draw surface based on 2 waves perpendicular to each other.
-    norm of the 2 waves will be considered
-
-    example:
-    p0=rot(f'x90',[[i,sin(d2r(360/70*i*2))]  for i in arange(0,71)])
-    p1=rot(f'x90z90',[[i,sin(d2r(360/70*i*2))]  for i in arange(0,71)])
-    surf=surface_from_2_waves_norm(p0,p1,2)
+function to draw surface based on 2 waves perpendicular to each other.
+norm of the 2 waves will be considered
+example:
+l1=rot('x90',sinewave(50,3,2,50))
+l2=rot('x90z90',cosinewave(50,3,2,50))
+s1=surface_from_2_waves_norm(l1,l2,2)
+fileopen(f'''
+{swp_surf(s1)}
+''')
     """
     p2=array([[[i[0],j[1],norm([i[2],j[2]])]  for j in array(p1)]  for i in array(p0)])
     a=p2[:,:,2].max()
@@ -4521,10 +4815,19 @@ def surface_from_2_waves_norm(p0,p1,amplitude=1):
 
 def fillet_intersection_lines(l1,l2,r,s=10):
     """
-    function calculates the fillet at intersection between 2 lines
-    'l1' and 'l2'
-    r: radius of fillet
-    s: segments of fillet
+function calculates the fillet at intersection between 2 lines
+'l1' and 'l2'
+r: radius of fillet
+s: segments of fillet
+example:
+l1=point_vector([-5,-5],[10,10])
+l2=point_vector([-5,20],[10,-10])
+l3=fillet_intersection_lines(l1,l2,r=3)
+fileopen(f'''
+color("blue") p_line3d({l1},.3);
+color("cyan") p_line3d({l2},.3);
+color("magenta") p_line3d({l3},.3);
+''')
     """
     p0=i_p2d(l1,l2)
     l2=l2 if l_(a_(p0).round(4))!=l_(a_(l2[0]).round(4)) else flip(l2)
