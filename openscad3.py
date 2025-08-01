@@ -4848,11 +4848,21 @@ color("magenta") p_line3d({l3},.3);
     
 def cir_line_tangent(c1,l1,side=0):
     """
-    function to draw a line tangent to a circle
-    c1 is circle
-    l1 is line
-    side=0, draws tangent at one side and 1 draws tangent on the other side
-    
+function to draw a line tangent to a circle
+c1 is circle
+l1 is line
+side=0, draws tangent at one side and 1 draws tangent on the other side
+example:
+c1=circle(10,[-30,0])
+l1=point_vector([0,0],[10,3])
+l2=cir_line_tangent(c1,l1,side=0)
+l3=cir_line_tangent(c1,l1,side=1)
+fileopen(f'''
+color("blue") p_line3d({c1},.3);
+color("cyan") p_line3d({l1},.3);
+color("magenta") p_line3d({l2},.3);
+color("grey") p_line3d({l3},.3);
+''')
     """
     r=r_arc(c1)
     cp=cp_arc(c1)
@@ -4866,11 +4876,16 @@ def cir_line_tangent(c1,l1,side=0):
 
 def spiral_poly(r=1,d=.3,n=4,t=100):
     """
-    create a spiral polygon
-    r: initial length of the line
-    d: increment length every iteration
-    n: number of sides of the polygon
-    t: number of turns
+create a spiral polygon
+r: initial length of the line
+d: increment length every iteration
+n: number of sides of the polygon
+t: number of turns
+example:
+l1=spiral_poly(r=1,d=.2,n=5,t=100)
+fileopen(f'''
+color("blue") p_line3d({l1},.3);
+''')
     """
     theta=360/n
     sec=[[r,0]]
@@ -4884,7 +4899,7 @@ def spiral_poly(r=1,d=.3,n=4,t=100):
 
 def equate_points(sec,sec1):
     """
-    function to make the points in 2 sections equal without changing the location of points
+function to make the points in 2 sections equal without changing the location of points
     """
     c=array(sec1).shape[-1]
     b=array(sec).shape[-1]
@@ -4896,9 +4911,6 @@ def equate_points(sec,sec1):
 def pies2(sec,pnts):
     """
     function to find 3d points 'pnts' which are inside an enclosed 2d section 'sec'
-    refer to the file "example of various functions " for application examples
-    
-    
     """
     pnts=rev_pnts(sec,pnts)
     if pnts!=[]:
@@ -4922,8 +4934,13 @@ def pies2(sec,pnts):
 
 def sinewave(l,n,a,p):
     """
-    creates a sinewave with length 'l', number of cycles 'n'
-    amplitude 'a' and number of points 'p'
+creates a sinewave with length 'l', number of cycles 'n'
+amplitude 'a' and number of points 'p'
+example:
+l1=sinewave(l=50,n=3,a=2,p=50)
+fileopen(f'''
+color("blue") p_line3d({l1},.3);
+''')
     """
 
     w1=[[i,a*sin(d2r(n*i*360/l))]  for i in linspace(0,l,p)]
@@ -4931,8 +4948,12 @@ def sinewave(l,n,a,p):
 
 def cosinewave(l,n,a,p):
     """
-    creates a cosinewave with length 'l', number of cycles 'n'
-    amplitude 'a' and number of points 'p'
+creates a cosinewave with length 'l', number of cycles 'n'
+amplitude 'a' and number of points 'p'
+l1=cosinewave(l=50,n=3,a=2,p=50)
+fileopen(f'''
+color("blue") p_line3d({l1},.3);
+''')
     """
 
     w1=[[i,a*cos(d2r(n*i*360/l))]  for i in linspace(0,l,p)]
@@ -4948,59 +4969,98 @@ def mod(a,b):
 
 def e_wave(l=50,a=1,w=0.1,t=100):
     """
-    create a graph of exponential function a*e^-(wt) where
-    w: omega
-    t: time steps
-    a: amplitude
-    l: length of time
-    
+create a graph of exponential function a*e^-(wt) where
+w: omega
+t: time steps
+a: amplitude
+l: length of time
+example:
+l1=e_wave(l=20,a=10,w=.2,t=100)
+fileopen(f'''
+color("blue") p_line3d({l1},.3);
+''')
     """
     return l_([[i,a*exp(-i*w)]  for i in linspace(0,l,t)])
 
 def waves_2d_multiply(w1,w2,a=1):
     """
-    multiply 2 waves 'w1' and 'w2' and amplitude of the resultant wave is set to 'a'
+multiply 2 waves 'w1' and 'w2' and amplitude of the resultant wave is set to 'a'
+example:
+l1=e_wave(l=20,a=10,w=.2,t=100)
+l2=sinewave(20,3,2,100)
+l3=waves_2d_multiply(l1,l2,10)
+fileopen(f'''
+color("blue") p_line3d({l3},.3);
+''')
     """
     w3=[ [w1[i][0],(w1[i][1]*w2[i][1]) ] for i in range(len(w1))]
     a_max=array(w3)[:,1].max()
     w3=[ [p[0],p[1]/a_max*a ] for p in w3]
-    return w3
+    return l_(a_(w3))
 
 def waves_2d_add(w1,w2,a=1):
     """
-    add 2 waves 'w1' and 'w2' and amplitude of the resultant wave is set to 'a'
+add 2 waves 'w1' and 'w2' and amplitude of the resultant wave is set to 'a'
+example:
+l1=e_wave(l=20,a=10,w=.2,t=100)
+l2=sinewave(20,3,2,100)
+l3=waves_2d_add(l1,l2,10)
+fileopen(f'''
+color("blue") p_line3d({l3},.3);
+''')
     """
     w3=[ [w1[i][0],(w1[i][1]+w2[i][1]) ] for i in range(len(w1))]
     a_max=array(w3)[:,1].max()
     w3=[ [p[0],p[1]/a_max*a ] for p in w3]
-    return w3
+    return l_(a_(w3))
 
 def waves_2d_max(w1,w2,a=1):
     """
-    max of 2 waves 'w1' and 'w2' and amplitude of the resultant wave is set to 'a'
+max of 2 waves 'w1' and 'w2' and amplitude of the resultant wave is set to 'a'
+example:
+l1=e_wave(l=20,a=10,w=.2,t=100)
+l2=sinewave(20,3,2,100)
+l3=waves_2d_max(l1,l2,10)
+fileopen(f'''
+color("blue") p_line3d({l3},.3);
+''')
     """
-    w3=[ [w1[i][0],max(w1[i][1],w2[i][1]) ] for i in range(len(w1))]
+    w3=[ [w1[i][0],a_([w1[i][1],w2[i][1]]).max() ] for i in range(len(w1))]
     a_max=array(w3)[:,1].max()
     w3=[ [p[0],p[1]/a_max*a ] for p in w3]
-    return w3
+    return l_(a_(w3))
 
 def waves_2d_min(w1,w2,a=1):
     """
-    min of 2 waves 'w1' and 'w2' and amplitude of the resultant wave is set to 'a'
+min of 2 waves 'w1' and 'w2' and amplitude of the resultant wave is set to 'a'
+example:
+l1=e_wave(l=20,a=10,w=.2,t=100)
+l2=sinewave(20,3,2,100)
+l3=waves_2d_min(l1,l2,10)
+fileopen(f'''
+color("blue") p_line3d({l3},.3);
+''')
     """
-    w3=[ [w1[i][0],min(w1[i][1],w2[i][1]) ] for i in range(len(w1))]
+    w3=[ [w1[i][0],a_([w1[i][1],w2[i][1]]).min() ] for i in range(len(w1))]
     a_max=array(w3)[:,1].max()
     w3=[ [p[0],p[1]/a_max*a ] for p in w3]
-    return w3
+    return l_(a_(w3))
 
 def waves_2d_norm(w1,w2,a=1):
     """
-    norm 2 waves 'w1' and 'w2' and amplitude of the resultant wave is set to 'a'
+norm 2 waves 'w1' and 'w2' and amplitude of the resultant wave is set to 'a'
+example:
+l1=e_wave(l=20,a=10,w=.2,t=100)
+l2=sinewave(20,3,2,100)
+l3=waves_2d_norm(l1,l2,10)
+fileopen(f'''
+color("blue") p_line3d({l3},.3);
+''')
     """
     w3=[ [w1[i][0],norm([w1[i][1],w2[i][1]]) ] for i in range(len(w1))]
     a_max=array(w3)[:,1].max()
     w3=[ [p[0],p[1]/a_max*a ] for p in w3]
-    return w3
+    return l_(a_(w3))
 
 def fit_curve2d(curve,pnt):
     """
@@ -5024,7 +5084,19 @@ def fit_curve2d(curve,pnt):
 
 def extrude_wave2path(w1,c1):
     """
-    function to extrude a wave 'w1' to any defined path 'c1'
+function to extrude a wave 'w1' to any defined path 'c1'
+example:
+l1=c23(sinewave(50,5,4,100))
+p1=c23(arc(5,0,360,s=99))
+l2=extrude_wave2path(l1,p1)
+fileopen(f'''
+// wave
+color("magenta",.2) p_line3d({l1},.2);
+//path
+color("cyan",.2) p_line3d({p1},.2);
+// final extruded sketch
+color("blue") p_line3dc({l2},.3);
+''')
     """
     w2=[[0,p[1],p[2]] for p in w1]
     c2=array(c1)
@@ -5060,8 +5132,17 @@ def x_fit(curve,pnt):
 
 def convert_3lines2surface(l1,l2,l3,s=50):
     """
-    convert 3 lines to surface
-    's' is the number of segments on each surface line
+convert 3 lines to surface
+'s' is the number of segments on each surface line
+example:
+l1=translate([10,0,0],rot('x90y-90',sinewave(100,3,2,100)))
+l2,l3=[rot(f'z{i}',point_vector([10,0,0],[0,0,100])) for i in [-90,90]]
+s1=convert_3lines2surface(l2,l1,l3)
+fileopen(f'''
+color("blue") for(p={[l1,l2,l3]}) p_line3d(p,.3);
+color("magenta",.2) for(p={s1}) p_line3d(p,.3);
+{swp_surf(s1)}
+''')
     """
     l1=path2path1(l2,l1)
     l3=path2path1(l2,l3)
@@ -5081,7 +5162,18 @@ def convert_lines2surface_spline(lines,s=50):
 
 def SurfaceFrom3LinesInDifferentPlanes(l1,l2,l3,s1=20,s2=20):
     """
-    create surface with 3 lines in different plane.
+create surface with 3 lines in different plane.
+example:
+l1=rot('x90',arc_2p([0,0],[50,0],40))
+l2=translate([0,30,0],rot('z20',l1))
+l3=rot('x45',sinewave(50,3,2,50))
+l3=fit_pline2line(l3,[l1[0],l2[0]])
+s1=SurfaceFrom3LinesInDifferentPlanes(l1,l2,l3,50,50)
+fileopen(f'''
+color("blue") for(p={[l1,l2,l3]}) p_line3d(p,.3);
+color("magenta",.2) for(p={s1}) p_line3d(p,.3);
+{swp_surf(s1)}
+''')
     
     """
     l1=equidistant_path(l1,s1)
@@ -5094,6 +5186,20 @@ def SurfaceFrom3LinesInDifferentPlanes(l1,l2,l3,s1=20,s2=20):
     return surf_1
 
 def mid_point(w1):
+    """
+finds the mid point of a line or polyline
+example:
+l1=[[0,0],[10,0]]
+p0=mid_point(l1)
+l2=translate_2d([0,5],square(10))
+p1=mid_point(l2)
+fileopen(f'''
+color("blue") p_line3d({l1},.3);
+color("magenta") points({[p0]},.5);
+color("cyan") p_line3d({l2},.3);
+color("brown") points({[p1]},.5);
+''')
+    """
     return equidistant_path(w1,2)[1]
 
 
@@ -5185,6 +5291,18 @@ def faces_surface(l,m):
 
 
 def surface_offset(surf,d=1):
+    """
+calculates an offset surface by distance 'd'
+example:
+l1=rot('x90',sinewave(20,1,2,40))
+l2=rot('x90z90',sinewave(20,2,2,40))
+s1=surface_from_2_waves(l1,l2,2)
+s2=surface_offset(s1,1)
+fileopen(f'''
+{swp_surf(s1)}
+color("cyan"){swp_surf(s2)}
+''')
+    """
     f=faces_surface(len(surf),len(surf[0]))
     v=a_(surf).reshape(-1,3)
     tri=v[f]
@@ -5208,7 +5326,16 @@ def swp_surf(surf_1):
 
 def surface_thicken(surf_1,d=1):
     """
-    thicken the surface by amount 'd'
+thicken the surface by amount 'd'
+example:
+sec2=corner_radius(pts1([[-25,0],[10,5,5],[10,-3,10],[10,5,5],[10,-8,7],[10,1]]),10)  
+path2=cytz(corner_radius(pts1([[-35,5,0],[10,8,20],[20,-5,10],[20,8,20],[10,-9,20],[10,1,0]]),10))
+surf2=path_extrude_open(sec2,path2)
+surf3=surface_thicken(surf2,-1)
+fileopen(f'''
+{swp(surf3)}
+//color("blue")for(p={surf3})p_line3dc(p,.1,rec=1);
+''') 
     """
     surf_2=surface_offset(surf_1,d)
     sol=[surf_1[i]+flip(surf_2[i])  for i in range(len(surf_1))]
@@ -5216,7 +5343,15 @@ def surface_thicken(surf_1,d=1):
 
 def surface_thicken_1(surf,d=1):
     """
-    function same as surface_thicken but with different orientation
+function same as surface_thicken but with different orientation
+example:
+sec1=circle(10)
+path=corner_radius(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5)
+sol=prism(sec1,path)
+sol2=surface_thicken_1(sol,1)
+fileopen(f'''
+{swp_c(sol2)} 
+''') 
     """
     a=surface_offset(surf,d)
     b=swp_prism_h(surf,a) if d<0 else swp_prism_h(a,surf)
@@ -5277,7 +5412,14 @@ def boundary_edges_surf(surf):
 
 def extend_arc2d(a,theta=0,s=20,both=0):
     """
-    extend a 2d arc by theta degrees
+extend a 2d arc by theta degrees
+example:
+l1=arc_2p([0,0],[10,0],5)
+l2=extend_arc2d(l1,90,s=50)
+fileopen(f'''
+color("blue",.2) p_line3d({l1},.3);
+color("magenta") p_line3d({l2},.28);
+''')
     """
     p1,p2=array([a[0],a[-1]])
     r=r_arc(a)
@@ -5292,7 +5434,14 @@ def extend_arc2d(a,theta=0,s=20,both=0):
 
 def extend_arc3d(a,theta=0,s=20,both=0):
     """
-    extend a 3d arc by theta degrees
+extend a 3d arc by theta degrees
+example:
+l1=arc_2p_3d([0,1,-.3],[0,0,0],[10,0,0],5)
+l2=extend_arc3d(l1,90,s=50)
+fileopen(f'''
+color("blue",.2) p_line3d({l1},.3);
+color("magenta") p_line3d({l2},.28);
+''')
     """
     n1=array(nv(a))
     p0,p1=array([a[0],a[-1]])
@@ -5356,9 +5505,38 @@ def arc_with_start_pt_and_cp(start_point=[],center_point=[],theta=90,segments=30
 
 def fillet_line_circle(l1,c1,r2,cw=-1,option=0,s=50):
     """
-    function to draw a fillet between a line and a circle
-    option can be '0' or '1' to flip the fillet from one side to another
-    's' is the number of segments in the arc
+function to draw a fillet between a line and a circle
+option can be '0' or '1' to flip the fillet from one side to another
+'s' is the number of segments in the arc
+example:
+h=15
+line=[[-10,h],[30,h]]
+cir1=circle(10,[10,10])
+r2=5
+s=20
+fillet1=fillet_line_circle(line,cir1,r2,1)
+fillet2=fillet_line_circle(line,cir1,r2,2)
+fillet3=fillet_line_circle(line,cir1,r2,3)
+fillet4=fillet_line_circle(line,cir1,r2,4)
+fillet5=fillet_line_circle_internal(line,cir1,1,1)
+fillet6=fillet_line_circle_internal(line,cir1,r2,2)
+fillet7=fillet_line_circle_internal(line,cir1,1,3)
+fillet8=fillet_line_circle_internal(line,cir1,r2,4)
+
+fileopen(f'''
+ 
+color("blue",.1)p_line({line},.3);
+color("violet",.2)p_line({cir1},.3);
+color("cyan")p_lineo({fillet1},.3);
+color("blue")p_lineo({fillet2},.3);
+color("magenta")p_lineo({fillet3},.3);
+color("green")p_lineo({fillet4},.3);
+color("blue")p_lineo({fillet5},.3);
+color("magenta")p_lineo({fillet6},.3);
+color("cyan")p_lineo({fillet7},.3);
+color("green")p_lineo({fillet8},.3);
+
+''')
     """
     v1=array(l1[1])-array(l1[0])
     u1=v1/norm(v1)
@@ -5411,13 +5589,42 @@ def fillet_intersection_lines_3d(l1,l2,r,s=10):
 
 def fillet_line_circle_internal_3d(line,cir,r=1,o=1,s=20):
     """
-    creates fillet between a line and an arc in 3d space.
-    fillet is created internal
-    The line and arc should lie in same plane
-    'r' is the radius of the fillet
-    'o' is option of fillet, means which side of the line and arc it should be created.
-    the value of 'o' can be set from 1 to 4, as there could be only 4 sides a fillet can be created
-    's' is the number of segments in the fillet
+creates fillet between a line and an arc in 3d space.
+fillet is created internal
+The line and arc should lie in same plane
+'r' is the radius of the fillet
+'o' is option of fillet, means which side of the line and arc it should be created.
+the value of 'o' can be set from 1 to 4, as there could be only 4 sides a fillet can be created
+'s' is the number of segments in the fillet
+example:
+h=15
+line=[[-10,h],[30,h]]
+cir1=circle(10,[10,10])
+r2=5
+s=20
+fillet1=fillet_line_circle(line,cir1,r2,1)
+fillet2=fillet_line_circle(line,cir1,r2,2)
+fillet3=fillet_line_circle(line,cir1,r2,3)
+fillet4=fillet_line_circle(line,cir1,r2,4)
+fillet5=fillet_line_circle_internal(line,cir1,1,1)
+fillet6=fillet_line_circle_internal(line,cir1,r2,2)
+fillet7=fillet_line_circle_internal(line,cir1,1,3)
+fillet8=fillet_line_circle_internal(line,cir1,r2,4)
+
+fileopen(f'''
+ 
+color("blue",.1)p_line({line},.3);
+color("violet",.2)p_line({cir1},.3);
+color("cyan")p_lineo({fillet1},.3);
+color("blue")p_lineo({fillet2},.3);
+color("magenta")p_lineo({fillet3},.3);
+color("green")p_lineo({fillet4},.3);
+color("blue")p_lineo({fillet5},.3);
+color("magenta")p_lineo({fillet6},.3);
+color("cyan")p_lineo({fillet7},.3);
+color("green")p_lineo({fillet8},.3);
+
+''')
     """
     a=line
     b=cir
@@ -5439,13 +5646,13 @@ def fillet_line_circle_internal_3d(line,cir,r=1,o=1,s=20):
 
 def fillet_line_circle_3d(line,cir,r=1,o=1,s=20):
     """
-    creates fillet between a line and an arc in 3d space.
-    fillet is created external
-    The line and arc should lie in same plane
-    'r' is the radius of the fillet
-    'o' is option of fillet, means which side of the line and arc it should be created.
-    the value of 'o' can be set from 1 to 4, as there could be only 4 sides a fillet can be created
-    's' is the number of segments in the fillet
+creates fillet between a line and an arc in 3d space.
+fillet is created external
+The line and arc should lie in same plane
+'r' is the radius of the fillet
+'o' is option of fillet, means which side of the line and arc it should be created.
+the value of 'o' can be set from 1 to 4, as there could be only 4 sides a fillet can be created
+'s' is the number of segments in the fillet
     """
     a=line
     b=cir
@@ -5465,7 +5672,20 @@ def fillet_line_circle_3d(line,cir,r=1,o=1,s=20):
 
 def mirror_line(p1,n1,loc):
     """
-    function to mirror the points list 'p0' defined by mirroring plane 'n1' with location 'loc'
+function to mirror the points list 'p0' defined by mirroring plane 'n1' with location 'loc'
+example:
+l1=circle(5,[10,10])
+mirroring_plane=[1,1,0]
+passing_through_point=[0,0,0]
+pl1=plane(mirroring_plane,size=[50,50],intercept=passing_through_point)
+l2=mirror_line(l1,mirroring_plane,passing_through_point)
+fileopen(f'''
+//original line
+color("blue") p_line3d({l1},.3);
+// mirrored along defined plane
+color("magenta") p_line3d({l2},.28);
+%{swp_surf(pl1)}
+''')
     """
     p0=c23(p1)
     a=ppplane(p0,n1,loc)
@@ -7258,6 +7478,22 @@ def smoothening_by_subdivison_surf(sol,iterations=4,o=[0,0]):
     return sol
 
 def wrap_x(l1,path):
+    """
+same as function wrap_around but in x-direction
+example:
+    c1=circle(10,[10.1,0],s=100)
+p1=rot('x90',sinewave(25,3,1,100))
+c2=wrap_x(c1,p1)
+fileopen(f'''
+// original section
+color("magenta",.2) p_line3d({c1},.2);
+//path
+color("cyan",.2) p_line3d({p1},.2);
+// section wrapped over path
+color("blue") p_line3dc({c2},.3);
+''')
+    
+    """
     
     l2=[l_len(p) for p in seg(path)[:-1]]
     l2=a_([0]+l_(a_(l2).cumsum()))
