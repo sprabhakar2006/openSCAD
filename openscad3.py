@@ -10278,7 +10278,7 @@ def label_linear(l1,s1,gap=2,text_color="blue",text_size=1,line_color="blue"):
     return txt
 
 
-def label_radial(a1,s1,text_color="blue",text_size=1,line_color="blue",arc_color="magenta",outside=0):
+def label_radial(a1,s1,text_color="blue",text_size=1,cross_hair_size=1,line_color="blue",arc_color="magenta",outside=0):
     """
     label radial element with defined arc or circle 'a1'
     """
@@ -10295,15 +10295,15 @@ def label_radial(a1,s1,text_color="blue",text_size=1,line_color="blue",arc_color
     p0=mid_point(a1)
     vector=line_as_vector([c1,p0])
     l1=point_vector(c1,vector)
-    # chs=cross_hair_size
+    chs=cross_hair_size
     tc=text_color
     ts=text_size
     lc=line_color
     ac=arc_color
-    # pl1=plane(line_as_axis(l1),[chs,chs],l1[0])
-    # l2=[mid_point(pl1[0]),mid_point(pl1[1])]
-    # l3=mid_line(pl1[0],pl1[1])
-    # l4,l5=translate(vector,[l2,l3])
+    pl1=plane(line_as_axis(l1),[chs,chs],l1[0])
+    l2=[mid_point(pl1[0]),mid_point(pl1[1])]
+    l3=mid_line(pl1[0],pl1[1])
+    l4,l5=translate(vector,[l2,l3])
     if outside==1:
         l1=mirror_line(l1,vector,[l4[0]])
         l2,l3=mirror_line(l2,vector,l4[0]),mirror_line(l3,vector,l4[0])
