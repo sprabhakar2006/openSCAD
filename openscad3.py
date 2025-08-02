@@ -6998,7 +6998,16 @@ c32([[0,0,0],[10,0,0]]) => [[0, 0], [10, 0]]
 
 def prism2cpo(s1):
     """
-    change the orientation of the surface to rectangular
+change the orientation of points on the prism in such a way that all the open holes if any are plugged
+example:
+c1=circle(10)
+p1=cr2dt([[3,0],[-3,0,3],[0,6,2],[-2,0]])
+sol=prism(c1,p1)
+sol1=translate([40,0,0],prism2cpo(sol))
+fileopen(f'''
+{swp_c(sol)}
+{swp_c(sol1)}
+''')
     """
     s2=[cpo(s1)[i]+flip(cpo(s1)[-(i+1)]) for i in range(int(len(s1[0])/2))]
     a=[mid_point([s2[0][i],s2[0][-(i+1)]]) for i in range(int(len(s2[0])/2))]
@@ -7012,12 +7021,28 @@ def prism2cpo(s1):
 
 def psos(s2,s3,v1,dist=100000,unidirection=1):
     """
-    project a surface on to another without loosing the original points
-    surface 's3' will be projected on surface 's2'
-    'v1' is vector for projection
-    'dist' is the maximum distance through which projection can happen
-    unidirection: if the projection is to be in both direction set parameter
-    unidirection to '1' else to '0'
+project a surface on to another without loosing the original points
+surface 's3' will be projected on surface 's2'
+'v1' is vector for projection
+'dist' is the maximum distance through which projection can happen
+unidirection: if the projection is to be in both direction set parameter
+unidirection to '1' else to '0'
+example:
+s1=sphere(20)
+s2=c23(a_(grid2d(circle(10),2)).reshape(11,11,2))
+v1=[1,0,1]
+s3=psos(c_(s1),s2,v1)
+
+fileopen(f'''
+//surface to project upon
+%{swp(s1)}
+// surface to project
+{swp_surf(s2)}
+//projected surface
+color("cyan"){swp_surf(s3)}
+// vector to project the surface
+color("blue") p_line3d({vector2line(v1,10)},.3);
+''')
     """
     p0=a_(s3).reshape(-1,3)
     f=faces_surface(len(s2),len(s2[0]))
@@ -7048,10 +7073,26 @@ def psos(s2,s3,v1,dist=100000,unidirection=1):
 
 def psos_v(s2,s3,v1,dist=100000,unidirection=0):
     """
-    project a surface on to another without loosing the original points
-    surface 's3' will be projected on surface 's2'
-    'v1' is vector for projection. this is a focal vector 
-    from where the rays are emitted for projection
+project a surface on to another without loosing the original points
+surface 's3' will be projected on surface 's2'
+'v1' is vector for projection. this is a focal vector 
+from where the rays are emitted for projection
+example:
+s1=sphere(20)
+s2=c23(a_(grid2d(circle(10),2)).reshape(11,11,2))
+v1=[1,0,1]
+s3=psos(c_(s1),s2,v1)
+
+fileopen(f'''
+//surface to project upon
+%{swp(s1)}
+// surface to project
+{swp_surf(s2)}
+//projected surface
+color("cyan"){swp_surf(s3)}
+// vector to project the surface
+color("blue") p_line3d({vector2line(v1,10)},.3);
+''')
     """
     p0=a_(s3).reshape(-1,3)
     f=faces_surface(len(s2),len(s2[0]))
@@ -7120,9 +7161,29 @@ def psos_v(s2,s3,v1,dist=100000,unidirection=0):
 
 def psos_v_1(s2,s3,l1,dist=100000,unidirection=0):
     """
-    project a surface on to another without loosing the original points
-    surface 's3' will be projected on surface 's2'
-    'l1' is a line for projection
+project a surface on to another without loosing the original points
+surface 's3' will be projected on surface 's2'
+'l1' is a line for projection
+example:
+s1=sphere(20)
+s2=c23(a_(grid2d(circle(10),2)).reshape(11,11,2))
+l1=point_vector([-10,0,-10],[20,0,0]) # point from where the rays are emitting for projection
+s3=psos_v_1(c_(s1),s2,l1,unidirection=1)
+gd=a_(s3).reshape(-1,3)
+vx=[vcost1(l1,p) for p in gd]
+vx=cpo([vx,gd])
+fileopen(f'''
+//surface to project upon
+%{swp(s1)}
+// surface to project
+{swp_surf(s2)}
+//projected surface
+color("cyan"){swp_surf(s3)}
+// rays projecting out of source
+color("blue") for(p={vx}) p_line3d(p,.03);
+//light source
+color("magenta") p_line3d({l1},.5);
+''')
     """
     p0=a_(s3).reshape(-1,3)
     f=faces_surface(len(s2),len(s2[0]))
@@ -7204,9 +7265,9 @@ def surface_normals(surf,direction=1):
 
 def psos_n(s2,s3,direction=1,dist=100000):
     """
-    project a surface on to another without loosing the original points
-    surface 's3' will be projected on surface 's2'
-    the projection is based on the normal to the surface s3 and the direction of normals can be changed from '1' to '-1'
+project a surface on to another without loosing the original points
+surface 's3' will be projected on surface 's2'
+the projection is based on the normal to the surface s3 and the direction of normals can be changed from '1' to '-1'
     """
     p0=a_(s3).reshape(-1,3)
     f=faces_surface(len(s2),len(s2[0]))
@@ -7235,9 +7296,9 @@ def psos_n(s2,s3,direction=1,dist=100000):
 
 def psos_n_b(s2,s3,dist=100000):
     """
-    project a surface on to another without loosing the original points
-    surface 's3' will be projected on surface 's2'
-    the projection is based on the normal to the surface s3 and the direction of normals can be changed from '1' to '-1'
+project a surface on to another without loosing the original points
+surface 's3' will be projected on surface 's2'
+the projection is based on the normal to the surface s3 and the direction of normals can be changed from '1' to '-1'
     """
     p0=a_(s3).reshape(-1,3)
     f=faces_surface(len(s2),len(s2[0]))
@@ -7274,12 +7335,20 @@ def cog(sol):
 
 def interpolation_bspline_closed(p0,s=50,f=3.425):
     """
-    Interpolates through points
-    p0: original points
-    s: number of points in the resultant curve
-    f: factor of smoothness, lower values may result in too wavyness and larger values
-    are as good as connecting points in straight line
-    
+Interpolates through points
+p0: original points
+s: number of points in the resultant curve
+f: factor of smoothness, lower values may result in too wavyness and larger values
+are as good as connecting points in straight line
+example:
+l1=cr2dt([[0,0],[10,0],[-3,7],[15,-5],[0,10],[-10,10],[-15,-5]])
+# l2=interpolation_bspline_open(l1,50)
+l3=interpolation_bspline_closed(l1,50)
+fileopen(f'''
+color("blue") points({l1},.5);
+//color("magenta") p_line3d({l2},.2);
+color("cyan") p_line3d({l3},.2);
+''')
     """
     p2=[ mid_point(p) for p in seg(p0)]
     l1=[ l_len(p)/f for p in seg(p0)]
@@ -7296,11 +7365,20 @@ def interpolation_bspline_closed(p0,s=50,f=3.425):
 
 def interpolation_bspline_open(p0,s=50,f=3.425):
     """
-    Interpolates through points
-    p0: original points
-    s: number of points in the resultant curve
-    f: factor of smoothness, lower values may result in too wavyness and larger values
-    are as good as connecting points in straight line
+Interpolates through points
+p0: original points
+s: number of points in the resultant curve
+f: factor of smoothness, lower values may result in too wavyness and larger values
+are as good as connecting points in straight line
+example:
+l1=cr2dt([[0,0],[10,0],[-3,7],[15,-5],[0,10],[-10,10],[-15,-5]])
+l2=interpolation_bspline_open(l1,50)
+#l3=interpolation_bspline_closed(l1,50)
+fileopen(f'''
+color("blue") points({l1},.5);
+color("magenta") p_line3d({l2},.2);
+//color("cyan") p_line3d({l3},.2);
+''')
     
     """
     p2=[ mid_point(p) for p in seg(p0)[:-1]]
@@ -7317,9 +7395,22 @@ def interpolation_bspline_open(p0,s=50,f=3.425):
 
 def interpolation_surface_open(pl,f1=3.425,f2=3.425,s1=100,s2=100):
     """
-    draws bspline interpolation surface from 2 control points list 'pl1' and 'pl2'
-    'f1' and 'f2' are factors of smoothness in 2 directions 
-    s1 and s2: number of points in 2 direction in the resultant curve
+draws bspline interpolation surface from 2 control points list 'pl1' and 'pl2'
+'f1' and 'f2' are factors of smoothness in 2 directions 
+s1 and s2: number of points in 2 direction in the resultant curve
+example:
+l1=cr2dt([[0,0],[10,0],[3,10],[10,0],[3,-10],[10,0],[3,10],[10,0],[3,-10],[10,0]])
+l1=rot('x90',l1)
+l2=rot('z90',l1)
+s1=surface_from_2_waves(l1,l2,10)
+s2=interpolation_surface_open(s1,f1=10,f2=10,s1=50,s2=50)
+fileopen(f'''
+color("magenta") p_line3d({l1},.3);
+color("blue") p_line3d({l2},.3);
+//color("orange") for(p={s1}) p_line3d(p,.1);
+//{swp_surf(s1)}
+{swp_surf(s2)}
+''')
     """
     p1=[interpolation_bspline_open(p,s1,f1) for p in pl]
     p2=cpo([interpolation_bspline_open(p,s2,f2) for p in cpo(p1)])
@@ -7327,8 +7418,21 @@ def interpolation_surface_open(pl,f1=3.425,f2=3.425,s1=100,s2=100):
 
 def bezier_surface(pl,s1=100,s2=100):
     """
-    draws bezier surface from control points list 'pl'
-    s1 and s2: number of points in the resultant curve in 2 direction
+draws bezier surface from control points list 'pl'
+s1 and s2: number of points in the resultant curve in 2 direction
+example:
+l1=cr2dt([[0,0],[10,0],[3,10],[10,0],[3,-10],[10,0],[3,10],[10,0],[3,-10],[10,0]])
+l1=m_points1_o(rot('x90',l1),10)
+l2=m_points1_o(rot('z90',l1),10)
+s1=surface_from_2_waves(l1,l2,10)
+s2=bezier_surface(s1,s1=50,s2=50)
+fileopen(f'''
+color("magenta") p_line3d({l1},.3);
+color("blue") p_line3d({l2},.3);
+//color("orange") for(p={s1}) p_line3d(p,.1);
+//{swp_surf(s1)}
+{swp_surf(s2)}
+''')
     """
     p1=[bezier(p,s1) for p in pl]
     p2=cpo([bezier(p,s2) for p in cpo(p1)])
@@ -7368,7 +7472,7 @@ def il_fillet_surf(il,surf1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,f=1)
 
 def line2length(l1,length=1):
     """
-    change the length of a line to the parameter distance 'length' keeping the initial point same
+change the length of a line to the parameter distance 'length' keeping the initial point same
     """
     v1=a_(l1[1])-a_(l1[0])
     u1=v1/norm(v1)
