@@ -5768,8 +5768,15 @@ def surface_normal(s1,length=1):
 
 def surface_line_vector(line=[[0,0,0],[10,0,0]],vector=[0,0,1],both_sides=0):
     """
-    draw a surface base on a line and a vector.
-    if surface is required both sides of the line, both_sides option should be marked as '1' else default for only one side is '0'
+draw a surface base on a line and a vector.
+if surface is required both sides of the line, both_sides option should be marked as '1' else default for only one side is '0'
+example:
+l1=rot('x90',sinewave(50,3,2,50))
+s1=surface_line_vector(line=l1,vector=[0,20,0],both_sides=1)
+fileopen(f'''
+color("blue") p_line3d({l1},.3);
+%{swp_surf(s1)}
+''')
     """
     l_1=translate(array(vector),line)
     l_2=translate(-array(vector),line) if both_sides==1 else line
@@ -5778,15 +5785,37 @@ def surface_line_vector(line=[[0,0,0],[10,0,0]],vector=[0,0,1],both_sides=0):
 
 def mirror_surface(surf_1,n1,loc=[0,0,0]):
     """
-    function to mirror a solid or surface base on a mirroring plane given by vector 'n1'
-    passing through a point 'loc'
+function to mirror a solid or surface base on a mirroring plane given by vector 'n1'
+passing through a point 'loc'
+example:
+l1=rot('x90',sinewave(50,3,2,50))
+s1=surface_line_vector(line=l1,vector=[0,20,0],both_sides=1)
+s2=mirror_surface(s1,[1,1,0],[0,-30,0])
+fileopen(f'''
+color("blue") p_line3d({l1},.3);
+// original surface
+color("blue",.3){swp_surf(s1)}
+//mirrored surface
+color("cyan",.3){swp_surf(s2)}
+// mirroring plane
+%{swp_surf(plane([1,1,0],[100,100],[0,-30,0]))}
+''')
     """
     surf_1_1=[mirror_line(surf_1[i],n1,loc) for i in range(len(surf_1))]
     return surf_1_1
 
 def solid_from_2surfaces(surf_1,surf_2):
     """
-    function to make a solid from 2 surfaces 
+function to make a solid from 2 surfaces 
+example:
+l1=rot('x90',sinewave(20,1,2,40))
+l2=rot('x90z90',sinewave(20,2,2,40))
+s1=surface_from_2_waves(l1,l2,1)
+s2=surface_offset(s1,1)
+sol=solid_from_2surfaces(s1,s2)
+fileopen(f'''
+{swp(sol)}
+''')
     """
     sol=[surf_1[i]+flip(surf_2[i]) for i in range(len(surf_1))]
     # sol=cpo(sol)
@@ -5794,15 +5823,14 @@ def solid_from_2surfaces(surf_1,surf_2):
 
 def sec2surface(surf_1,s=1):
     """
-    function to convert a closed polygon to lines
-    e.g.
-    a=c2t3(circle(10))
-    b=sec2surface(a)
-    
-    a and b can be visualised by following commands
-    color("blue")p_line3d({a},.2,1);
-    color("magenta")for(p={b})p_line3d(p,.2,1);
-    {swp_surf(b)}
+function to convert a closed polygon to lines
+example:
+a=c2t3(circle(10))
+b=sec2surface(a)
+fileopen(f'''
+color("blue")p_line3d({a},.2,1);
+color("magenta")for(p={b})p_line3d(p,.2,1);
+{swp_surf(b)}''')
     """
     return [equidistant_path([surf_1[i],surf_1[-i-1]] ,s)
             for i in range(int(len(surf_1)/2))]
@@ -5811,8 +5839,20 @@ def sec2surface(surf_1,s=1):
 
 def rot_sec2xy_plane(sec):
     """
-    function to rotate any section open or closed parallel to x-y plane
-    
+function to rotate any section open or closed parallel to x-y plane
+example:
+a=cylinder(r=10,h=50,s=100)
+s1=surface_line_vector([[-20,-20,5],[-20,20,5]],[40,0,30])
+l1=ip_sol2sol(s1,a)
+l2=rot_sec2xy_plane(l1)
+fileopen(f'''
+%{swp(a)}
+%{swp_surf(s1)}
+//original line
+color("blue") p_line3dc({l1},.3);
+// line rotated parallel to x-y plane
+color("magenta") p_line3dc({l2},.3);
+''')
     """
     # n1=nv(sec)
     n1=uv(best_fit_plane(sec)[0])
@@ -5857,7 +5897,15 @@ def surround_3d(path,r,s=20):
 
 def plane(nv,size=[100,100],intercept=[0,0,0]):
     """
-    plane defined by normal vector 'nv' with size as defined
+plane defined by normal vector 'nv' with size as defined
+example:
+n1=[1,1,0] # normal vector to define plane
+pl1=plane(nv=n1,size=[100,100],intercept=[0,0,0])
+l1=vector2line(n1,30)
+fileopen(f'''
+%{swp_surf(pl1)}
+color("blue") p_line3d({l1},.5);
+''')
     """
     d1,d2=(size/2,size/2) if array(size).shape==() else (size[0]/2,size[1]/2)
     n1=array(nv)/norm(nv)
@@ -5886,9 +5934,21 @@ def align_sec_2(sec1):
 
 def s_int1_list(sec1):
     """
-    calulates the self intersection list numbers of segment lists 'sec1'
-    it picks the intersection points only if the 2 lines are crossing each other
-
+calulates the self intersection list numbers of segment lists 'sec1'
+it picks the intersection points only if the 2 lines are crossing each other
+example:
+a=circle(10,s=7)
+b=point_vector([-10,-10],[20,5])
+segments=seg(b)[:-1]+seg(a)
+n=s_int1_list(segments)
+p0=s_int1(segments)
+tx=[label_linear(segments[i],f's-{i}') for i in range(len(segments))]
+fileopen(f'''
+color("blue") for(p={[a,b]}) p_line3dc(p,.3);
+color("magenta") points({p0},1);
+{tx[0]}{tx[1]}{tx[2]}{tx[3]}{tx[4]}{tx[5]}{tx[6]}
+''')
+n # list of paired segment numbers where intersection is observed
     """
     n=len(sec1)
     a=array(sec1)[comb_list(n)]
@@ -5953,11 +6013,33 @@ def exclude_numbers(a,b):
     return a[~(a[:,None]==b[None,:]).any(1)]
 
 def subset(b,a):
-    return (array(b)[:,None]==array(a)[None,:]).any(1).all()
+    """
+returns True if 'b' is subset of 'a'
+example:
+a=arange(10)
+b=arange(10)[2:-2]
+subset(b,a)
+    """
+    return l_((array(b)[:,None]==array(a)[None,:]).any(1).all())
 
 def points_inside_offset_surround_list(sec,sec2,r):
     """
-    finds all the points list, in a list of points 'sec2' which are inside the offset surround of an enclosed section 'sec'
+finds all the points list, in a list of points 'sec2' which are inside the offset surround of an enclosed section 'sec'
+example:
+sec=corner_radius(pts1([[0,0,1],[7,5,2],[5,7,3],[-5,7,2],[-7,5,3]]),10)
+a=(random.random(5000)*(30-0)+(-10))
+b=(random.random(5000)*(30-0)+(-5))
+c=array([a,b]).transpose(1,0).tolist()
+r=3
+sec2=cs1(sec,r-.01)
+p_0=points_inside_offset_surround(sec,c,r-.01)
+fileopen(f'''
+    color("blue")p_line3dc({sec},.1,1);
+    color("cyan")points({c},.2);
+    color("green",.1)for(p={sec2})p_line3dc(p,.1,1);
+    color("magenta")points({p_0},.2);
+    
+    ''')
     """
     sec2=array(sec2)
     clean=cs1(sec,abs(r))
@@ -6016,7 +6098,16 @@ def vertices(sol_1):
 
 def coil(r1,r2,n1=1):
     """
-    function to draw a coil with initial radius 'r1', final_radius 'r2' and numbe of coils 'n1'
+function to draw a coil with initial radius 'r1', final_radius 'r2' and numbe of coils 'n1'
+example:
+coil=array([i/360*array([cos(d2r(i)),sin(d2r(i)),-1]) for i in linspace(0,3600,720)]).tolist()
+cyl1=translate([0,0,-10],cylinder(r1=10,r2=0.1,h=10))
+fileopen(f'''
+translate([0,0,10]){{  
+color("blue")p_line3d({coil},.05);
+%{swp(cyl1)}
+}}
+    ''')
     """
     r_l=[i for i in linspace(r1,r2,360*n1)]
     theta_1=[i for i in linspace(0,360*n1,360*n1)]
@@ -6025,9 +6116,21 @@ def coil(r1,r2,n1=1):
 
 def corner_n_radius_list(p0,r_l,n=10):
     """
-    corner list 'p0' and radius list 'r_l' will create a smothened section
-    'n' is the number of segments in each filleted corner
-    
+corner list 'p0' and radius list 'r_l' will create a smothened section
+'n' is the number of segments in each filleted corner
+example:
+sec=[[0,0],[10,0],[10,10],[0,10]]
+r_l=[1,2,3,4]
+sec=corner_n_radius_list(sec,r_l,10)
+txt1=dim_radial(sec[2:8],.2,'magenta',.5)
+txt2=dim_radial(sec[15:20],.2,'magenta',.5)
+txt3=dim_radial(sec[25:30],.2,'magenta',.5)
+txt4=dim_radial(sec[35:40],.2,'magenta',.5)
+
+fileopen(f'''
+color("blue") p_line3dc({sec},.3);
+{txt1}{txt2}{txt3}{txt4}
+''')
     """
     # r_l=[.01 if i==0 else i for i in r_l]
     p1=seg(p0)
@@ -6039,9 +6142,21 @@ def corner_n_radius_list(p0,r_l,n=10):
 
 def corner_n_radius_list_3d(p0,r_l,n=10):
     """
-    corner list 'p0' and radius list 'r_l' will create a smothened 3d path or closed section
-    'n' is the number of segments in each filleted corner
-    
+corner list 'p0' and radius list 'r_l' will create a smothened 3d path or closed section
+'n' is the number of segments in each filleted corner
+example:
+sec=[[0,0,0],[10,0,0],[10,10,3],[0,10,0]]
+r_l=[1,2,3,4]
+sec=corner_n_radius_list_3d(sec,r_l,10)
+txt1=dim_radial(sec[2:8],.2,'magenta',.5)
+txt2=dim_radial(sec[12:20],.2,'magenta',.5)
+txt3=dim_radial(sec[22:30],.2,'magenta',.5)
+txt4=dim_radial(sec[32:40],.2,'magenta',.5)
+
+fileopen(f'''
+color("blue") p_line3dc({sec},.3);
+{txt1}{txt2}{txt3}{txt4}
+''')
     """
 
     p1=[p0[-1]]+p0[:-1]
@@ -6062,9 +6177,17 @@ def corner_n_radius_list_3d(p0,r_l,n=10):
 
 def path_extrude_closed(sec_1,path,twist=0):
     """
-    function to extrude a closed section to a closed path
-    twist=0 for simple path extrudes
-    set twist=1 for complex path extrudes
+function to extrude a closed section to a closed path
+twist=0 for simple path extrudes
+set twist=1 for complex path extrudes
+example:
+sec=corner_radius(pts1([[0,0,.2],[3,0,.2],[0,2,1.49],[-3,0,1.49]]),10)
+path=c2t3(circle(10))
+sol=path_extrude_closed(sec,path)
+fileopen(f'''
+{swp_c(sol)}
+color("blue")p_line3d({path},.1);
+    ''')
     """
     if twist==0:
         p1=path
@@ -6099,7 +6222,15 @@ def path_extrude_closed(sec_1,path,twist=0):
 
 def path_extrude_open(sec_1,path,twist=0):
     """
-    function to extrude a closed section to an open path
+function to extrude a closed section to an open path
+example:
+sec=corner_radius(pts1([[0,0,.2],[3,0,.2],[0,2,1],[-3,0,1]]),10)
+path=helix(10,2.5,4,5.01)
+sol=path_extrude_open(sec,path)
+fileopen(f'''
+{swp(sol)}
+color("blue")p_line3d({path},.1);
+    ''')
     """
     if twist==0:
         p1=path[:-1]
@@ -6134,6 +6265,18 @@ def path_extrude_open(sec_1,path,twist=0):
         return sol_5
 
 def offset(sec,r,type=1):
+    """
+function to offset a 2d closed loop section by distance 'r'
+type 1 nad type 2 are 2 different types of offsets available and can be tried optionally if one type fails to perform. In most of the cases default type 1 should work
+example:
+sec=corner_radius(pts1([[-15,0,2.4],[0,15,3],[30,0,3],[0,-15,2.4],[5,0,2.4],[0,20,7],[-40,0,7],[0,-20,2.4]]),15)
+os=linspace(-2.5,50,50)
+sec1=[offset(sec,i) for i in os] #
+fileopen(f'''
+color("magenta")for(p={sec1})p_line3dc(p,.1,1);
+color("blue")p_line3dc({sec},.1,1);
+''') 
+    """
     if type==1:
         return offset_1(sec,r)
     elif type==2:
@@ -6141,10 +6284,10 @@ def offset(sec,r,type=1):
 
 def sort_random_points(l_1,n_1,k=3):
     """
-    function to arrange random points in order
-    l_1: list of random points in space
-    n_1: is the normal vector to a plane from which all the points can be distinctly seen
-    k: is a factor which can have values >2 , default is 2, if the result is not satisfactory the values can be changed to see if the result is better. It has to be an integer
+function to arrange random points in order
+l_1: list of random points in space
+n_1: is the normal vector to a plane from which all the points can be distinctly seen
+k: is a factor which can have values >2 , default is 2, if the result is not satisfactory the values can be changed to see if the result is better. It has to be an integer
     
     """
     avg_1=array(l_1).mean(0).tolist()
@@ -6153,7 +6296,6 @@ def sort_random_points(l_1,n_1,k=3):
     l_5=concave_hull(l_4,k)
     l_6=array(l_1)[cKDTree(l_4).query(l_5)[1]].tolist()
     return l_6
-
 
 def t_vec(path):
     """
@@ -6186,25 +6328,6 @@ def swp_sec(sec):
     
     return f'polyhedron({sec},{[n1]},convexity=10);'
 
-def surface_4_lines_enclosed(l_1,l_2,l_3,l_4,n1,n2,s=20,ext=20):
-    """
-    Use function surface_from_4_lines instead of this
-    
-    create a surface with 4 line
-    l_1 and l_2 are 2 opposite lines
-    l_3 and l_4 are other 2 opposite lines
-    n1 is length of the surface for lines l_1 and l_2 in the direction normal to the arc l1 / l2required
-    e.g. it can be [0,30,0] meaning line l_1 is extended 30 mm in y-direction to create a surface
-    n2 is the normal for projection of lines cpo([l_3,l_4]) on to surfaces earlier created
-    s is the number of slices in the cpo([l_3,l_4])
-    ext is the extension required for the lines l1/ l2, in most of the cases it is not required to be changed
-    """
-    s_1=surface_line_vector(extend_arc3d(l_1,ext,both=1),array(n1)*100,1)
-    s_2=surface_line_vector(extend_arc3d(l_2,ext,both=1),array(n1)*100,1)
-    s_3=slice_sol([l_3,l_4],s)
-    s_4=slice_surfaces(s_1,s_2,len(l_3)-1)
-    s_5=[project_line_on_surface(cpo(s_3)[i],s_4[i],n2)  for i in range(len(cpo(s_3)))]
-    return [l_3]+cpo(s_5)[1:-1]+[l_4]
 
 def arc_with_start_pt_and_cp_3d(n1,start_point=[],center_point=[],theta=90,segments=30):
     """
@@ -6219,11 +6342,21 @@ def arc_with_start_pt_and_cp_3d(n1,start_point=[],center_point=[],theta=90,segme
 
 def offset_3d(sec,d,type_of_offset=1):
     """
-    offsets an enclosed section in 3d space, in case the section is in 1 plane
-    sec: section in 3d space
-    d: offset distance -ve sign means inner offset and +ve sign is outer offset
-    refer to the file"example of various functions" for application examples
-    type_of_offset: offset type default is '1' in case of any issue in offset, try with '2'
+offsets an enclosed section in 3d space, in case the section is in 1 plane
+sec: section in 3d space
+d: offset distance -ve sign means inner offset and +ve sign is outer offset
+refer to the file"example of various functions" for application examples
+type_of_offset: offset type default is '1' in case of any issue in offset, try with '2'
+example:
+sec=corner_radius(pts1([[3,2,1],[8,3,3],[5,7,1],[-8,0,2],[-5,20,1]]),30)
+sec1=o_solid([2,3,5],sec,1,10)[0]
+sec2=offset_3d(sec1,-2)
+fileopen(f'''
+//original section
+color("blue")p_line3dc({sec1},.1);
+//offset section
+color("magenta")p_line3dc({sec2},.1);
+''')
     """
     sec1=rot_sec2xy_plane(sec)
     sec2=c32(sec1)
@@ -6270,7 +6403,18 @@ def pol(p1,l1):
 
 def i_p_p(surf_1,i_p_l,d=1.):
     """
-    function to project the intersection point on the cutting lines based on the distance 'r'
+function to project the intersection point on the cutting lines based on the distance 'r'
+example:
+a=cylinder(r=10,h=50,s=100)
+b=plane([-1,0,1],[100,100],[0,0,15])
+l1=ip_sol2sol(b,a)
+l2=i_p_p(a,l1,5)
+fileopen(f'''
+%{swp_surf(b)}
+%{swp(a)}
+color("blue") p_line3dc({l1},.3);
+color("magenta") p_line3dc({l2},.3);
+''')
     """
     surf_1=cpo(surf_1) if d>0. else(cpo(flip(surf_1)))
     r_ipl=[]
@@ -6293,7 +6437,20 @@ def i_p_p(surf_1,i_p_l,d=1.):
 
 def best_fit_plane(pnts):
     """
-    returns a best fit plane approximation and intercept
+returns a best fit plane approximation and intercept
+example:
+a=cylinder(r=10,h=50,s=100)
+b=plane([-1,0,1],[100,100],[0,0,15])
+l1=ip_sol2sol(b,a)
+l2=i_p_p(a,l1,5)
+n1,intcpt=best_fit_plane(l2)
+pl1=plane(n1,[100,100],intcpt)
+fileopen(f'''
+//best fit plane
+%{swp_surf(pl1)}
+color("magenta") p_line3dc({l2},.3);
+color("blue") p_line3d({vector2line(n1,10,intcpt)},.5);
+''')
     """
     pnts=axis_rot_o([1,1,0],pnts,.00001)
     x2=(a_(pnts)[:,0]**2).sum()
@@ -6312,7 +6469,7 @@ def best_fit_plane(pnts):
 
 def path_extrude_over_multiple_sec_open(sec_1,path,twist=0):
     """
-    function to extrude multiple closed sections to an open path
+function to extrude multiple closed sections to an open path
     """
     if twist==0:
         p1=path[:-1]
@@ -6390,8 +6547,16 @@ def s_p(p_l): # starting point
 
 def sec2surface_1(sec1,s=1):
     """
-    create an aligned surface from a section 'sec1'
-    considers the min sum method
+create an aligned surface from a section 'sec1'
+considers the min sum method
+example:
+a=cr2dt([[0,0,2],[10,0,2],[0,10,2],[-10,0,2]],11)
+s1=sec2surface_1(a)
+fileopen(f'''
+color("magenta") p_line3dc({a},.1);
+color("blue") for(p={s1}) p_line3d(p,.05,1);
+{swp_surf(c23(s1))}
+''')
     """
     sec2=[sec2surface(sec1[i:]+sec1[:i],s) for i in range(len(sec1))]
     sec2=[sum([l_len(p1) for p1 in p]) for p in sec2]
@@ -6401,8 +6566,16 @@ def sec2surface_1(sec1,s=1):
 
 def sec2surface_2(sec1,s=1):
     """
-    create an aligned surface from a section 'sec1'
-    considers the max sum method
+create an aligned surface from a section 'sec1'
+considers the max sum method
+example:
+a=cr2dt([[0,0,2],[10,0,2],[0,10,2],[-10,0,2]],11)
+s1=sec2surface_2(a)
+fileopen(f'''
+color("magenta") p_line3dc({a},.1);
+color("blue") for(p={s1}) p_line3d(p,.05,1);
+{swp_surf(c23(s1))}
+''')
     """
     sec2=[sec2surface(sec1[i:]+sec1[:i],s) for i in range(len(sec1))]
     sec2=[sum([l_len(p1) for p1 in p]) for p in sec2]
@@ -6413,6 +6586,8 @@ def sec2surface_2(sec1,s=1):
 def vector2length(v,l=10):
     """
     draw a defined vector to length 'l'
+    example:
+    vector2length([1,0,0],10) => [10.0,0.0,0.0]
     """
     u=array(v)/norm(v)
     v1=(u*l).tolist()
@@ -6420,10 +6595,20 @@ def vector2length(v,l=10):
 
 def tangent_on_cir_from_pnt(c,p,l=1,side=0):
     """
-    function to draw a tangent on a circle 'c' from any given
-    point 'p' on the circle. length of the tangent 'l'
-    side can be set to either '0' or '1' to draw tangents in
-    2 different directions
+function to draw a tangent on a circle 'c' from any given
+point 'p' on the circle. length of the tangent 'l'
+side can be set to either '0' or '1' to draw tangents in
+2 different directions
+example:
+a=circle(20)
+b=tangent_on_cir_from_pnt(a,a[10],15)
+c=tangent_on_cir_from_pnt(a,a[10],15,side=1)
+fileopen(f'''
+color("magenta") p_line3dc({a},.3);
+color("blue") p_line3d({b},.3);
+color("orange") p_line3d({c},.3);
+color("cyan") points({[a[10]]},1);
+''')
     """
     v1=array(p)-array(cp_arc(c))
     theta1=r2d(arctan(l/norm(v1)))
@@ -6480,11 +6665,11 @@ def convert_to_triangles_surface(surf):
 
 def lexico(pnts=[],seq=[0,1,2],ord=[1,1,1]):
     """
-    lexicographic ordering of a points list
-    seq: defines the seduence in which the points needs to be ordered
-    e.g. [0,1,2] means first on x then on y and lastly on z coordinates
-    order: means asceding or descending order '1' means ascending and '-1' means descending order
-    e.g. [1,1,1] means all the coordinates should be in ascending order
+lexicographic ordering of a points list
+seq: defines the seduence in which the points needs to be ordered
+e.g. [0,1,2] means first on x then on y and lastly on z coordinates
+order: means asceding or descending order '1' means ascending and '-1' means descending order
+e.g. [1,1,1] means all the coordinates should be in ascending order
     """
     if len(pnts[0])==2:        
         return sorted(pnts,key=lambda x:(ord[0]*x[seq[0]],ord[1]*x[seq[1]]))
@@ -6501,7 +6686,7 @@ def fillet_3points(p1,p2,p3,s=10):
 
 def surface2sec(surf):
     """
-    reverse of sec2surface_1 function
+reverse of sec2surface_1 function
     """
     a,b,c=array(surf).transpose(1,0,2).shape
     d=l_(array(surf).transpose(1,0,2))
@@ -6511,9 +6696,18 @@ def surface2sec(surf):
 
 def bspline_open(pl,deg=3,s=100):
     """
-    draws bspline curve for control points list 'pl'
-    degree of curve 'deg' which should lie 0<=deg<len(p0)
-    s: number of points in the resultant curve
+draws bspline curve for control points list 'pl'
+degree of curve 'deg' which should lie 0<=deg<len(p0)
+s: number of points in the resultant curve
+example:
+p0=pts2([[0,0,0],[10,-2,2],[0,10,3],[5,-3,-6],[-5,5,1],[0,7,-2],[0,0,5]])
+c1=bezier(p0,100)
+s1=bspline_open(p0,2,100)
+fileopen(f'''
+color("blue")points({p0},.5);
+color("cyan")p_line3d({c1},.05,rec=1);
+color("green")p_line3d({s1},.05,rec=1);
+''')
     """
     def t(i,k,n):
         return 0 if i<=k else i-k if (i>k and i<=n) else n-k+1
@@ -6542,9 +6736,18 @@ def bspline_open(pl,deg=3,s=100):
 
 def bspline_closed(pl,deg=3,s=100):
     """
-    draws bspline closed loop curve for control points list 'pl'
-    degree of curve 'deg' which should lie 0<=deg<len(p0)
-    s: number of points in the resultant curve
+draws bspline closed loop curve for control points list 'pl'
+degree of curve 'deg' which should lie 0<=deg<len(p0)
+s: number of points in the resultant curve
+example:
+px=pts2([[0,0,0],[5,2,3],[5,8,5],[-15,-3,1],[-3,5,-5],[3,5,6],[-13,-10,10]])
+# b=bspline_open(px,2,100)
+c=bspline_closed(px,2,100)
+fileopen(f'''
+color("blue")points({px},.5);
+color("cyan")p_line3d({px},.1);
+color("blue")p_line3d({c},.1);
+''')
     """
     def t(i,k,n):
         return i-k if i<=k else i-k if (i>k and i<=n) else i-k
@@ -6576,12 +6779,25 @@ def bspline_closed(pl,deg=3,s=100):
 
 def bspline_surface(pl,deg1=3,deg2=3,s1=100,s2=100,a=[1,1]):
     """
-    draws bspline surface from 2 control points list 'pl1' and 'pl2'
-    degree of curves are 'deg1' and 'deg2' in 2 directions 
-    which should lie 0<=deg1<len(pl[0]) for 'deg1' and
-    0<=deg2<=len(pl) for 'deg2'
-    s: number of points in the resultant curve
-    a: if a[0]==1 means set 1st shape of the surface to closed else to open and similarly for a[1]. open here means function bspline_open and closed means bspline_closed
+draws bspline surface from 2 control points list 'pl1' and 'pl2'
+degree of curves are 'deg1' and 'deg2' in 2 directions 
+which should lie 0<=deg1<len(pl[0]) for 'deg1' and
+0<=deg2<=len(pl) for 'deg2'
+s: number of points in the resultant curve
+a: if a[0]==1 means set 1st shape of the surface to closed else to open and similarly for a[1]. open here means function bspline_open and closed means bspline_closed
+example:
+l1=cr2dt([[0,0],[10,0],[0,10],[10,0],[0,-10],[10,0],[0,10],[10,0],[0,-10],[10,0]])
+l1=rot('x90',l1)
+l2=rot('z90',l1)
+s1=surface_from_2_waves(l1,l2,10)
+s2=bspline_surface(s1,deg1=3,deg2=3,s1=50,s2=50,a=[0,0])
+fileopen(f'''
+color("magenta") p_line3d({l1},.3);
+color("blue") p_line3d({l2},.3);
+//color("orange") for(p={s1}) p_line3d(p,.1);
+//{swp_surf(s1)}
+{swp_surf(s2)}
+''')
     """
     p1=[bspline_closed(p,deg1,s1) if a[0]==1 else bspline_open(p,deg1,s1) for p in pl]
     p2=cpo([bspline_closed(p,deg2,s2) if a[1]==1 else bspline_open(p,deg2,s2) for p in cpo(p1)])
@@ -6766,13 +6982,17 @@ def i_p_n_surf(px,sol1):
 
 def c23(pl):
     """
-    convert a points list from 2d to 3d coordinate system
+convert a points list from 2d to 3d coordinate system
+example:
+c23([[0,0],[10,0]]) => [[0, 0, 0], [10, 0, 0]]
     """
     return c2t3(pl)
 
 def c32(pl):
     """
-    convert a points list from 3d to 2d coordinate system
+convert a points list from 3d to 2d coordinate system
+example:
+c32([[0,0,0],[10,0,0]]) => [[0, 0], [10, 0]]
     """
     return c3t2(pl)
 
@@ -9992,5 +10212,5 @@ def label_radial(a1,s1,text_color="blue",text_size=1,line_color="blue",arc_color
     color("{tc}")translate({p0})linear_extrude(.2)text("{s1}",{ts});"""
     return txt
 
-def vector2line(v1,length=1):
-    return point_vector([0,0,0],a_(c23(v1))*length)
+def vector2line(v1,length=1,intercept=[0,0,0]):
+    return translate(intercept,point_vector([0,0,0],a_(c23(v1))*length))
