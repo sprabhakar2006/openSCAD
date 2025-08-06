@@ -4,7 +4,7 @@ from numpy.linalg import *
 import time
 from scipy.spatial import cKDTree, Delaunay
 # import pandas as pd
-import sympy
+import sympy as sp
 import math
 #from skimage import measure
 # from stl import mesh
@@ -10319,51 +10319,32 @@ def label_radial(a1,s1,text_color="blue",text_size=1,cross_hair_size=1,line_colo
 def vector2line(v1,length=1,intercept=[0,0,0]):
     return translate(intercept,point_vector([0,0,0],a_(c23(v1))*length))
 
-def two_cir_tarc_internal(c1,c2,r=1,side=0,s=20):
+def two_cir_tarc_internal(c1,c2,r,s=20):
     """
-Creates a smoothening arc between 2 intersecting arcs. This resultant arc is internal type
+function to draw an internal arc between 2 intersecting circles or arcs
 example:
 c1=circle(10)
 c2=circle(8,[13,-4])
-a1=two_cir_tarc_internal(c2,c1,3,20)
+a1=two_cir_tarc_internal(c1,c2,r=2,s=20)
+a2=two_cir_tarc_internal(c2,c1,r=1,s=20)
 fileopen(f'''
-color("blue") for(p={[c1,c2]}) p_line3d(p,.1);
-color("magenta") p_line3d({a1},.2);
+color("blue") for(p={[c1,c2]}) p_line3dc(p,.1);
+color("magenta") p_line3d({a1},.1);
+color("cyan") p_line3d({a2},.1);
 ''')
     """
-    cp1=cp_arc(c1)
-    cp2=cp_arc(c2)
-    r1=r_arc(c1)
-    r2=r_arc(c2)
-    l1=[cp1,cp2]
-    p1=movePointOnLine(l1,cp1,r1)
-    p0=movePointOnLine(flip(l1),cp2,r2)
-    d0=(r1**2-r2**2+l_len(l1)**2)/(2*l_len(l1))
-    p2=movePointOnLine(l1,cp1,d0)
-    v1=rot2d(90,line_as_unit_vector([p0,p1]))
-    l2=[cp1,p2]
-    d1=sqrt(r1**2-l_len(l2)**2)
-    p3=point_vector(p2,vector2length(v1,d1))[-1]
-    # p4=point_vector(p2,vector2length(v1,4.45))[-1]
-    l3=[p2,p3]
-    x,ra,d=sympy.symbols('x ra d')
-    a=(ra**2-x**2)**(1/2)
-    y=a-d
-    e1=y.subs([(d,l_len([p2,cp2])),(ra,r2)])
-    e2=y.subs([(d,l_len([p2,cp1])),(ra,r1)])
-    if side==0:
-        o=a_(sympy.solve(e1+e2-r,x)[-1]).astype(float64)
-    elif side==1:
-        o=a_(sympy.solve(e1+e2-r,x)[0]).astype(float64)
-    # for z0 in ['x','ra','d']:
-    #     del globals()[z0]
-    l4=path_offset(l1,-a_(o))
-    p5=s_int1([l4]+seg(c2))[0]
-    p6=s_int1_first([l4]+seg(c1))[0]
-    l5=tangent_on_cir_from_pnt(c1,p6,r)
-    l6=tangent_on_cir_from_pnt(c2,p5,r,1)
-    l7=c32(axis_rot_1(l5,[0,0,1],p6,90))
-    l8=c32(axis_rot_1(l6,[0,0,1],p5,90))
-    p7=i_p2d(l7,l8)
-    c3=fillet_intersection_lines(l5,l6,l_len([p6,p7]),s)
-    return c3
+    def i_r_c(r1,r2,l):
+        a,b,c,d=sp.symbols('a b c d')
+        e1=a**2-d**2-b**2+(c-d)**2
+        return l_(a_(sp.solve(e1.subs([(a,r1),(b,r2),(c,l)]),d)).astype(float64).max())
+    r1,r2,p0,p1=r_arc(c1),r_arc(c2),cp_arc(c1),cp_arc(c2)
+    l1=[p0,p1]
+    l=l_len(l1)
+    d=i_r_c(r1-r,r2-r,l)
+    h=sqrt((r1-r)**2-d**2)
+    theta1=r2d(arctan(h/d))
+    theta2=r2d(arctan(h/(l-d)))
+    u1=a_(line_as_unit_vector(l1))
+    p2=c32(axis_rot_1([p0+u1*r1],[0,0,1],p0,theta1)[0])
+    p3=c32(axis_rot_1([p1-u1*r2],[0,0,1],p1,-theta2)[0])
+    return arc_2p(p2,p3,r,-1,s)
