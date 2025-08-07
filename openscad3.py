@@ -10333,18 +10333,17 @@ color("magenta") p_line3d({a1},.1);
 color("cyan") p_line3d({a2},.1);
 ''')
     """
-    def i_r_c(r1,r2,l):
-        a,b,c,d=sp.symbols('a b c d')
-        e1=a**2-d**2-b**2+(c-d)**2
-        return l_(a_(sp.solve(e1.subs([(a,r1),(b,r2),(c,l)]),d)).astype(float64).max())
+    # a,b,c,d=sp.symbols('a b c d') # where a=r1,b=r2,c=l
+    # e1=a**2-d**2-b**2+(c-d)**2
+    # sp.solve(e1,d) # to find equation for d
     r1,r2,p0,p1=r_arc(c1),r_arc(c2),cp_arc(c1),cp_arc(c2)
     l1=[p0,p1]
     l=l_len(l1)
-    d=i_r_c(r1-r,r2-r,l)
+    d=((r1-r)**2-(r2-r)**2+l**2)/(2*l)
     h=sqrt((r1-r)**2-d**2)
     theta1=r2d(arctan(h/d))
     theta2=r2d(arctan(h/(l-d)))
     u1=a_(line_as_unit_vector(l1))
-    p2=c32(axis_rot_1([p0+u1*r1],[0,0,1],p0,theta1)[0])
-    p3=c32(axis_rot_1([p1-u1*r2],[0,0,1],p1,-theta2)[0])
+    p2=c32(axis_rot_1([p0+sign(theta1)*u1*r1],[0,0,1],p0,theta1)[0])
+    p3=c32(axis_rot_1([p1-sign(theta2)*u1*r2],[0,0,1],p1,-theta2)[0])
     return arc_2p(p2,p3,r,-1,s)
