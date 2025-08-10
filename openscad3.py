@@ -4813,7 +4813,7 @@ fileopen(f'''
     return p2
 
 
-def fillet_intersection_lines(l1,l2,r,s=10):
+def fillet_intersection_lines(l1,l2,r,s=10,side=0):
     """
 function calculates the fillet at intersection between 2 lines
 'l1' and 'l2'
@@ -4830,8 +4830,13 @@ color("magenta") p_line3d({l3},.3);
 ''')
     """
     p0=i_p2d(l1,l2)
+    p1=l1[a_([norm([p0,p]) for p in l1]).argsort()[-1]]
+    p2=l2[a_([norm([p0,p]) for p in l2]).argsort()[-1]]
+    p_l=[p1,p0,p2] if cw([p1,p0,p2])==-1 else [p2,p0,p1]
+    l1=[mid_point([p_l[1],p_l[0]]),p_l[0]]
+    l2=[mid_point([p_l[1],p_l[2]]),p_l[2]]
+    
     l2=l2 if l_(a_(p0).round(4))!=l_(a_(l2[0]).round(4)) else flip(l2)
-
     
     clock=cw([l1[0],p0,l2[0]])
     a1=ang_2lineccw(p0,l1[0],l2[0]) if clock==1 else \
@@ -4841,9 +4846,14 @@ color("magenta") p_line3d({l3},.3);
     v1=array(l1[0])-array(p0)
     v2=array(l2[0])-array(p0)
     u1,u2=v1/norm(v1),v2/norm(v2)
-    p1=array(p0)+u1*l_1
-    p2=array(p0)+u2*l_1
-    arc_1=arc_2p(p1,p2,r,clock,s)
+    if side==0:
+        p1=array(p0)+u1*l_1
+        p2=array(p0)+u2*l_1
+        arc_1=arc_2p(p1,p2,r,clock,s)
+    elif side==1:
+        p1=array(p0)-u1*l_1
+        p2=array(p0)-u2*l_1
+        arc_1=arc_2p(p1,p2,r,clock,s)
     return arc_1
     
 def cir_line_tangent(c1,l1,side=0):
@@ -5556,36 +5566,43 @@ color("green")p_lineo({fillet8},.3);
     p4=cp2+u4*r2
     return arc_2p(p2,p4,r2,cw=cw,s=s)
 
-def fillet_intersection_lines_3d(l1,l2,r,s=10):
+def fillet_intersection_lines_3d(l1,l2,r,s=10,side=0):
     """
-    function calculates the fillet at intersection between 2 3d lines in 1 plane
-    'l1' and 'l2'
-    r: radius of fillet
-    s: segments of fillet
+function calculates the fillet at intersection between 2 3d lines in 1 plane
+'l1' and 'l2'
+r: radius of fillet
+s: segments of fillet
+example:
+l1=point_vector([-12,0,0],[5,0,5])
+l2=flip(point_vector([0,-12,0],[0,5,5]))
+f1=fillet_intersection_lines_3d(l1,l2,5,20)
+fileopen(f'''
+color("blue") p_line3d({l1},.3);
+color("cyan") p_line3d({l2},.3);
+color("magenta") p_line3d({f1},.2);
+''')
     """
-    l1=array(l1)
-    l2=array(l2)
-    
-    n1=nv(remove_extra_points(array([l1[0],l1[1],l2[0],l2[1]]).round(5))[:3])
-    n1=n1/norm(n1)
-    n2=cross(n1,[0,0,-1])
-    theta=r2d(arccos(n1@[0,0,-1]))
-    l1,l2=c3t2(axis_rot(n2,[l1,l2],theta))
-    p0=i_p2d(l1,l2)
-    l2=l2 if l_(a_(p0).round(4))!=l_(a_(l2[0]).round(4)) else flip(l2)
-
-    clock=cw([l1[0],p0,l2[0]])
-    a1=ang_2lineccw(p0,l1[0],l2[0]) if clock==1 else \
-    ang_2linecw(p0,l1[0],l2[0])
-    a2=180-a1
-    l_1=r*tan(d2r(a2/2))
-    v1=array(l1[0])-array(p0)
-    v2=array(l2[0])-array(p0)
-    u1,u2=v1/norm(v1),v2/norm(v2)
-    p1=array(p0)+u1*l_1
-    p2=array(p0)+u2*l_1
-    arc_1=arc_2p(p1,p2,r,clock,s)
-    return axis_rot(n2,arc_1,-theta)
+    p0=i_p3d(l1,l2)
+    p1=l1[a_([norm([p0,p]) for p in l1]).argsort()[-1]]
+    p2=l2[a_([norm([p0,p]) for p in l2]).argsort()[-1]]
+    sec=[p1,p0,p2]
+    sec1=rot_sec2xy_plane(sec)
+    sec2=c32(sec1)
+    l1=[sec2[0],sec2[1]]
+    l2=[sec2[1],sec2[2]]
+    sec3=fillet_intersection_lines(l1,l2,r,s,side)
+    a=a_(sec[0])
+    b=a_(c23(c32(sec)[0]))
+    v1=uv(best_fit_plane(sec)[0])
+    if (l_(a_(v1).round(4))==[0,0,-1]) | (l_(a_(v1).round(4))==[0,0,1]):
+        sec5=translate(a-b,sec3)
+    else:
+        v2=[0,0,-1]
+        theta=l_(r2d(arccos(a_(v1)@v2)))
+        ax_1=cross(v1,v2)
+        sec4=axis_rot_1(c23(sec3),ax_1,c23(sec2)[0],-theta)
+        sec5=translate(a-b,sec4)
+    return sec5
 
 def fillet_line_circle_internal_3d(line,cir,r=1,o=1,s=20):
     """
@@ -10347,3 +10364,31 @@ color("cyan") p_line3d({a2},.1);
     p2=c32(axis_rot_1([p0+sign(theta1)*u1*r1],[0,0,1],p0,theta1)[0])
     p3=c32(axis_rot_1([p1-sign(theta2)*u1*r2],[0,0,1],p1,-theta2)[0])
     return arc_2p(p2,p3,r,-1,s)
+
+def i_p3d(l1,l2):
+    """
+    find intersection point (if exists) between 2 lines in 3d 
+    """
+    sec1=[l1,l2]
+    n=len(sec1)
+    a=array(sec1)[comb_list(n)]
+    p0=a[:,0][:,0]
+    p1=a[:,0][:,1]
+    p2=a[:,1][:,0]
+    p3=a[:,1][:,1]
+    v1=a_(rot('z.00001',p1-p0))
+    v2=a_(rot('x.00001',p3-p2))
+    iim=a_([v1[:,:2],-v2[:,:2]]).transpose(1,0,2).transpose(0,2,1)
+    im=inv(iim)
+    p=(p2-p0)[:,:2]
+    t=einsum('ijk,ik->ij',im,p)
+    
+    iim1=a_([v1[:,1:],-v2[:,1:]]).transpose(1,0,2).transpose(0,2,1)
+    im1=inv(iim1)
+    px=(p2-p0)[:,1:]
+    t1=einsum('ijk,ik->ij',im1,px)
+    
+    i_p1=p0+einsum('ij,i->ij',v1,t[:,0])
+    i_p2=p0+einsum('ij,i->ij',v1,t1[:,0])
+    i_p1=l_(i_p1[0]) if l_(i_p1.round(4))==l_(i_p2.round(4)) else []
+    return i_p1
