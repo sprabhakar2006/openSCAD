@@ -10392,3 +10392,21 @@ def i_p3d(l1,l2):
     i_p2=p0+einsum('ij,i->ij',v1,t1[:,0])
     i_p1=l_(i_p1[0]) if l_(i_p1.round(4))==l_(i_p2.round(4)) else []
     return i_p1
+
+def concave_hull_3d(pnts,n=3,engaging_angle=270):
+    # pnts=rot('y.001',pnts)
+    sec1=rot_sec2xy_plane(pnts)
+    sec2=c32(sec1)
+    sec3=concave_hull(sec2,n=n,engaging_angle=engaging_angle)
+    a=a_(pnts[0])
+    b=a_(c23(c32(pnts)[0]))
+    v1=uv(best_fit_plane(pnts)[0])
+    if (l_(a_(v1).round(4))==[0,0,-1]) | (l_(a_(v1).round(4))==[0,0,1]):
+        sec5=translate(a-b,sec3)
+    else:
+        v2=[0,0,-1]
+        theta=l_(r2d(arccos(a_(v1)@v2)))
+        ax_1=cross(v1,v2)
+        sec4=axis_rot_1(c23(sec3),ax_1,c23(sec2)[0],-theta)
+        sec5=translate(a-b,sec4)
+    return sec5
