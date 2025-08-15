@@ -6693,13 +6693,23 @@ e.g. [1,1,1] means all the coordinates should be in ascending order
     elif len(pnts[0])==3:
         return sorted(pnts,key=lambda x:(ord[0]*x[seq[0]],ord[1]*x[seq[1]],ord[2]*x[seq[2]]))
 
-def fillet_3points(p1,p2,p3,s=10):
-    """
-    creates a fillet with 3 defined points
-    """
-    l2=[p1,(p1+p2)/2,((p1+p2)/2+(p2+p3)/2)/2,(p2+p3)/2,p3]
-    arc1=bezier(l2,s)
-    return arc1
+def fillet3points(sec,r=1,s=20):
+    '''
+    fillet from a list of 3 points
+    sec: list of 3 points
+    r: radius
+    s: number of segments in the fillet
+    '''
+    p0=seg(sec)
+    l1=p0[0]
+    l2=p0[1]
+    l3=path_offset(l1,abs(r)) if cw(sec)==1 else path_offset(l1,-abs(r))
+    l4=path_offset(l2,abs(r)) if cw(sec)==1 else path_offset(l2,-abs(r))
+    px=i_p2d(l3,l4)
+    px1=vcost1(l1,px)
+    px2=vcost1(l2,px)
+    a1=arc_2p(px1,px2,r,cw(sec),s)
+    return a1
 
 def surface2sec(surf):
     """
@@ -10410,3 +10420,35 @@ def concave_hull_3d(pnts,n=3,engaging_angle=270):
         sec4=axis_rot_1(c23(sec3),ax_1,c23(sec2)[0],-theta)
         sec5=translate(a-b,sec4)
     return sec5
+
+def unordered_ip(sol1,sol2):
+    '''
+    intersection points between 2 solids or surfaces
+    points are not ordered
+    '''
+    a=sol1
+    b=sol2
+    v,f1=vnf1(b)
+    x=concatenate([seg(p) for p in f1]).min(1)
+    y=concatenate([seg(p) for p in f1]).max(1)
+    c=remove_duplicates(a_([x,y]).transpose(1,0))
+    l1=a_(v)[c]
+    la=l1[:,0]
+    lb=l1[:,1]
+    lab=lb-la
+    v,f1=vnf1(a)
+    tr=a_(v)[f1]
+    p0,p1,p2=tr[:,0],tr[:,1],tr[:,2]
+    p01=p1-p0
+    p02=p2-p0
+    # la+lab*t1=p0+p0p1*t2+p0p2*t3
+    # lab*t1-p0p1*t2-p0p2*t3=p0-la
+    t=einsum('jk,ijk->ij',cross(p01,p02),(la[:,None]-p0[None,:]))/ \
+    einsum('ik,jk->ij',(-lab),cross(p01,p02))
+    u=einsum('ijk,ijk->ij',cross(p02[None,:],-lab[:,None]),(la[:,None]-p0[None,:]))/ \
+    einsum('ik,jk->ij',(-lab),cross(p01,p02))
+    v=einsum('ijk,ijk->ij',cross(-lab[:,None],p01[None,:]),(la[:,None]-p0[None,:]))/ \
+    einsum('ik,jk->ij',(-lab),cross(p01,p02))
+    condition=(t>=0)&(t<=1)&(u>=0)&(u<=1)&(v>=0)&(v<=1)&(u+v<1)
+    l2=l_((la[:,None]+lab[:,None]*t[:,:,None])[condition])
+    return l2
