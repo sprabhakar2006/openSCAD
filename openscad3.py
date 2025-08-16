@@ -2,11 +2,11 @@ from numpy import *
 from numpy.linalg import *
 # import matplotlib.pyplot as plt
 import time
-from scipy.spatial import cKDTree, Delaunay
+from scipy.spatial import cKDTree, Delaunay, ConvexHull
 # import pandas as pd
 import sympy as sp
 import math
-#from skimage import measure
+from skimage import measure
 # from stl import mesh
 
 def arc(radius=0,start_angle=0,end_angle=0,cp=[0,0],s=20):
@@ -10421,34 +10421,89 @@ def concave_hull_3d(pnts,n=3,engaging_angle=270):
         sec5=translate(a-b,sec4)
     return sec5
 
-def unordered_ip(sol1,sol2):
+def convex_hull_3d(pnts):
+    # pnts=rot('y.001',pnts)
+    sec1=rot_sec2xy_plane(pnts)
+    sec2=c32(sec1)
+    sec3=convex_hull(sec2)
+    a=a_(pnts[0])
+    b=a_(c23(c32(pnts)[0]))
+    v1=uv(best_fit_plane(pnts)[0])
+    if (l_(a_(v1).round(4))==[0,0,-1]) | (l_(a_(v1).round(4))==[0,0,1]):
+        sec5=translate(a-b,sec3)
+    else:
+        v2=[0,0,-1]
+        theta=l_(r2d(arccos(a_(v1)@v2)))
+        ax_1=cross(v1,v2)
+        sec4=axis_rot_1(c23(sec3),ax_1,c23(sec2)[0],-theta)
+        sec5=translate(a-b,sec4)
+    return sec5
+
+def ip_unsorted(sol1,sol2):
     '''
-    intersection points between 2 solids or surfaces
-    points are not ordered
+    calculates the maximum number of intersection points between 2 solids in random order
     '''
-    a=sol1
-    b=sol2
-    v,f1=vnf1(b)
-    x=concatenate([seg(p) for p in f1]).min(1)
-    y=concatenate([seg(p) for p in f1]).max(1)
-    c=remove_duplicates(a_([x,y]).transpose(1,0))
-    l1=a_(v)[c]
-    la=l1[:,0]
-    lb=l1[:,1]
-    lab=lb-la
-    v,f1=vnf1(a)
-    tr=a_(v)[f1]
-    p0,p1,p2=tr[:,0],tr[:,1],tr[:,2]
-    p01=p1-p0
-    p02=p2-p0
-    # la+lab*t1=p0+p0p1*t2+p0p2*t3
-    # lab*t1-p0p1*t2-p0p2*t3=p0-la
-    t=einsum('jk,ijk->ij',cross(p01,p02),(la[:,None]-p0[None,:]))/ \
-    einsum('ik,jk->ij',(-lab),cross(p01,p02))
-    u=einsum('ijk,ijk->ij',cross(p02[None,:],-lab[:,None]),(la[:,None]-p0[None,:]))/ \
-    einsum('ik,jk->ij',(-lab),cross(p01,p02))
-    v=einsum('ijk,ijk->ij',cross(-lab[:,None],p01[None,:]),(la[:,None]-p0[None,:]))/ \
-    einsum('ik,jk->ij',(-lab),cross(p01,p02))
-    condition=(t>=0)&(t<=1)&(u>=0)&(u<=1)&(v>=0)&(v<=1)&(u+v<1)
-    l2=l_((la[:,None]+lab[:,None]*t[:,:,None])[condition])
-    return l2
+    def unordered_ip(sol1,sol2):
+        a=sol1
+        b=sol2
+        v,f1=vnf1(b)
+        x=concatenate([seg(p) for p in f1]).min(1)
+        y=concatenate([seg(p) for p in f1]).max(1)
+        c=remove_duplicates(a_([x,y]).transpose(1,0))
+        l1=a_(v)[c]
+        la=l1[:,0]
+        lb=l1[:,1]
+        lab=lb-la
+        v,f1=vnf1(a)
+        tr=a_(v)[f1]
+        p0,p1,p2=tr[:,0],tr[:,1],tr[:,2]
+        p01=p1-p0
+        p02=p2-p0
+        # la+lab*t1=p0+p0p1*t2+p0p2*t3
+        # lab*t1-p0p1*t2-p0p2*t3=p0-la
+        t=einsum('jk,ijk->ij',cross(p01,p02),(la[:,None]-p0[None,:]))/ \
+        einsum('ik,jk->ij',(-lab),cross(p01,p02))
+        u=einsum('ijk,ijk->ij',cross(p02[None,:],-lab[:,None]),(la[:,None]-p0[None,:]))/ \
+        einsum('ik,jk->ij',(-lab),cross(p01,p02))
+        v=einsum('ijk,ijk->ij',cross(-lab[:,None],p01[None,:]),(la[:,None]-p0[None,:]))/ \
+        einsum('ik,jk->ij',(-lab),cross(p01,p02))
+        condition=(t>=0)&(t<=1)&(u>=0)&(u<=1)&(v>=0)&(v<=1)&(u+v<1)
+        l2=l_((la[:,None]+lab[:,None]*t[:,:,None])[condition])
+        return l2
+    
+    a=unordered_ip(sol1,sol2)
+    b=unordered_ip(sol2,sol1)
+    return a+b
+
+def xyc(pnts):
+    '''
+    makes z-coordinate 0 of the 3d points list
+    '''
+    s1=a_(pnts).shape
+    s2=a_(pnts).reshape(-1,s1[-1])
+    a=s2[:,0]
+    b=s2[:,1]
+    c=zeros(len(s2))
+    return l_(a_([a,b,c]).transpose(1,0).reshape(s1))
+
+def xzc(pnts):
+    '''
+    makes y-coordinate 0 of the 3d points list
+    '''
+    s1=a_(pnts).shape
+    s2=a_(pnts).reshape(-1,s1[-1])
+    a=s2[:,0]
+    b=zeros(len(s2))
+    c=s2[:,2]
+    return l_(a_([a,b,c]).transpose(1,0).reshape(s1))
+
+def yzc(pnts):
+    '''
+    makes x-coordinate 0 of the 3d points list
+    '''
+    s1=a_(pnts).shape
+    s2=a_(pnts).reshape(-1,s1[-1])
+    a=zeros(len(s2))
+    b=s2[:,1]
+    c=s2[:,2]
+    return l_(a_([a,b,c]).transpose(1,0).reshape(s1))
