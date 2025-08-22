@@ -1,12 +1,11 @@
 from numpy import *
 from numpy.linalg import *
-# import matplotlib.pyplot as plt
 import time
 from scipy.spatial import cKDTree, Delaunay, ConvexHull
-# import pandas as pd
 import sympy as sp
 import math
 from skimage import measure
+import open3d as o3d
 # from stl import mesh
 
 def arc(radius=0,start_angle=0,end_angle=0,cp=[0,0],s=20):
@@ -17,7 +16,7 @@ function for calculating 2d arc
 
 example:
 a1=arc(radius=10,start_angle=180,end_angle=270,cp=[10,10],s=20)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({a1},.3);
 ''')
     """
@@ -49,7 +48,7 @@ example:
 a=pts1([[0,0,1],[10,0,1],[0,5,1],[-10,0,1]])
 # if used with function corner_radius(pl,s)
 b=corner_radius(a,5) # This is a rounded rectangle of dim 10 x 5 with corner radius of 1 at each corner
-fileopen(f'''
+fo(f'''
 color("blue") p_line3dc({b},.2);
 ''')
     """
@@ -366,7 +365,7 @@ example:
 line=[[0,0],[5,0]]
 line1=array(line)@rm(30)
 line1=line1.tolist()
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({line},.2);
 color("magenta") p_line3d({line1},.2);
 ''')
@@ -479,7 +478,7 @@ sec=circle(10)
 sec1=corner_radius(pts1([[-2.5,-2.5,1],[5,0,1],[0,5,1],[-5,0,1]]))
 sec2=sort_points(sec,sec1)
 sec3=cpo([sec2,sec])
-fileopen(f'''
+fo(f'''
 p_line({sec},.2);
 p_line({sec2},.2);
 color("blue") for(p={sec3})p_line(p,.1);
@@ -494,7 +493,7 @@ multiple points within straight lines of a closed section 'sec' with equal segme
 example:
 l1=[[0,0],[10,0],[10,10],[0,10]]
 l2=translate_2d([20,0],m_points(l1,pitch=1))
-fileopen(f'''
+fo(f'''
 color("blue") points({l1},.2);
 color("magenta") points({l2},.2);
 ''')
@@ -512,7 +511,7 @@ def m_points_o(sec,pitch=1):
 multiple points within straight lines of a open section 'sec' with equal segment length 'pitch' in the straight line segments
 l1=[[0,0],[10,0],[10,10],[0,10]]
 l2=translate_2d([20,0],m_points_o(l1,pitch=1))
-fileopen(f'''
+fo(f'''
 color("blue") points({l1},.2);
 color("magenta") points({l2},.2);
 ''')
@@ -559,7 +558,7 @@ p1=[4,0]
 p2=[0,4]
 arc1=arc_2p(p1,p2,3,1,20)
 arc2=arc_2p(p1,p2,3,-1,20)
-fileopen(f'''
+fo(f'''
 // arc clockwise
 color("blue")
 p_line3d({arc1},.1);
@@ -594,7 +593,7 @@ p1=[4,0]
 p2=[0,4]
 arc1=arc_long_2p(p1,p2,3,1,20)
 arc2=arc_long_2p(p1,p2,3,-1,20)
-fileopen(f'''
+fo(f'''
 // arc clockwise
 color("blue")
 p_line3d({arc1},.1);
@@ -629,7 +628,7 @@ p2=[7,8]
 r=10
 c1=cir_2p(p1,p2,r,cw=-1,s=50)
 cp1=cp_arc(c1)
-fileopen(f'''
+fo(f'''
 color("cyan")points({[p1,p2]},.5);
 color("blue")p_line3dc({c1},.1);
 color("magenta")points({[cp1]},.5);
@@ -659,7 +658,7 @@ p2=[0,2]
 arc1=arc_2p(p1,p2,r=2,cw=1,s=20)
 cp1=arc_2p_cp(p1,p2,r=2,cw=1)
  
-fileopen(f'''
+fo(f'''
 // arc clockwise with center point of the arc
 color("blue")
 {{p_line3d({arc1},.05);
@@ -706,7 +705,7 @@ example:
 sec=corner_radius(pts1([[-15,0,2.4],[0,15,3],[30,0,3],[0,-15,2.4],[5,0,2.4],[0,20,7],[-40,0,7],[0,-20,2.4]]),10)
 path=corner_radius(pts1([[2,0],[-2,0,2],[0,7,2],[-2,0]]),10)
 sol=prism(sec,path)
-fileopen(f'''
+fo(f'''
 {swp(sol)}
 ''') 
     """
@@ -732,7 +731,7 @@ function to translate a group of points "sec" by "p" distance defined in [x,y,z]
 example:
 sec=corner_radius([[0,0,.5],[10,0,2],[7,15,1]],5)
 sec1=translate(p=[10,5,3],sec=sec)
-fileopen(f'''
+fo(f'''
 color("blue")p_line3dc({sec},.1); 
 color("magenta")p_line3dc({sec1},.1);
 ''') 
@@ -745,7 +744,7 @@ function to translate a group of points "sec" by "p" distance defined in [x,y].
 example:
 sec=corner_radius([[0,0,.5],[10,0,2],[7,15,1]],5)
 sec1=translate_2d(p=[10,5],sec=sec)
-fileopen(f'''
+fo(f'''
 color("blue")p_line3dc({sec},.1); 
 color("magenta")p_line3dc({sec1},.1);
 ''') 
@@ -791,7 +790,7 @@ function to convert the y co-ordinates to z co-ordinates e.g.[x,y]=>[x,0,y]. 2d 
 example:
 a=circle(20)
 b=cytz(a)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3dc({a},.3);
 color("magenta") p_line3dc({b},.3);
 ''')
@@ -827,7 +826,7 @@ def cpo(prism): # changes the orientation of points of a prism
 function to change the orientation of the points of the prism
 a=sphere(20,s=20)
 b=cpo(sphere(20,[45,0,0],s=20))
-fileopen(f'''
+fo(f'''
 color("blue") for(p={a}) p_line3dc(p,.3);
 color("magenta") for(p={b}) p_line3d(p,.3);
 ''')
@@ -891,7 +890,7 @@ s: number of segments in the fillet
 example:
 p1,p2,p3=[[3,0,0],[0,0,0],[0,3,3]]
 fillet=fillet_3p_3d(p1,p2,p3,3,10)
-fileopen(f'''
+fo(f'''
 color("blue")p_line3dc({fillet},.05);
 color("cyan")points({[p1,p2,p3]},.2);
     ''')
@@ -933,7 +932,7 @@ draws an arc through the 3 points list
 example:
 p1,p2,p3=[[3,0,0],[0,1,0],[5,3,2]]
 arc1=arc_3p_3d([p1,p2,p3],50)
-fileopen(f'''
+fo(f'''
 color("magenta")p_line3d({arc1},.05);
 color("blue")points({[p1,p2,p3]},.2);
     ''')
@@ -978,7 +977,7 @@ following code scales the section by 0.7 (70% of the original shape)
 example:
 sec=corner_radius([[0,0,.5],[10,0,2],[7,15,1]],5)
 sec1=scl2d(sec,.7)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[sec]}) p_line3dc(p,.3);
 color("magenta") for(p={[sec1]}) p_line3dc(p,.3);
 ''')
@@ -1000,7 +999,7 @@ following code scales the section by 0.7 (70% of the original shape)
 example:
 sec=corner_radius([[0,0,.5],[10,0,2],[7,15,1]],5)
 sec1=scl2d_c(sec,.7)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[sec]}) p_line3dc(p,.3);
 color("magenta") for(p={[sec1]}) p_line3dc(p,.3);
 ''')
@@ -1023,7 +1022,7 @@ sec=circle(10);
 path=corner_radius(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5)
 sol=prism(sec,path)
 sol1=scl3d(sol,.7)
-fileopen(f'''
+fo(f'''
 %{swp(sol)}
 {swp(sol1)}
 ''')
@@ -1049,7 +1048,7 @@ sec=circle(10);
 path=corner_radius(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5)
 sol=prism(sec,path)
 sol1=scl3dc(sol,.7)
-fileopen(f'''
+fo(f'''
 %{swp(sol)}
 {swp(sol1)}
 ''')
@@ -1068,7 +1067,7 @@ adds 's' number of points in each straight line segment of a section 'sec'
 example:
 s1=square(10);
 s2=translate_2d([12,0,0],m_points1(s1,10))
-fileopen(f'''
+fo(f'''
 color("blue",.2) p_line3dc({s1},.3);
 color("magenta") points({s1},.3);
 
@@ -1095,7 +1094,7 @@ adds 's' number of points in each straight line segment of an open loop section 
 example:
 s1=square(10);
 s2=translate_2d([12,0,0],m_points1_o(s1,10))
-fileopen(f'''
+fo(f'''
 color("blue",.2) p_line3d({s1},.3);
 color("magenta") points({s1},.3);
 
@@ -1151,7 +1150,7 @@ steps: number of steps in each angular extrusion
 example:
 sec=corner_radius(pts1([[-5,-2.5,1],[10,0,1],[0,5,1],[-10,0,1]]),20)
 sol=linear_extrude(sec,h=50,a=360,steps=200)
-fileopen(f'''
+fo(f'''
 color("magenta") for(p={sol})p_line3dc(p,.05,1);
 {swp(sol)} 
 ''')
@@ -1184,7 +1183,7 @@ function to draw a square
 example:
 s1=square(10);
 s2=translate_2d([12,0],square([10,5]))
-fileopen(f'''
+fo(f'''
 color("blue",.2) p_line3dc({s1},.3);
 color("blue",.2) p_line3dc({s2},.3);
 ''')
@@ -1206,7 +1205,7 @@ example:
 sec=corner_radius(pts1([[0,0,1],[10,0,1],[0,5,1],[-10,0,1]]),5)
 sol=translate([-5,0,0],linear_extrude(sec,10))
 sol1=rsz3d(sol,[5,6,7])
-fileopen(f'''
+fo(f'''
 %{swp(sol)}
 {swp(sol1)} 
 ''') 
@@ -1239,7 +1238,7 @@ example:
 sec=corner_radius(pts1([[0,0,1],[10,0,1],[0,5,1],[-10,0,1]]),5)
 sol=translate([-5,0,0],linear_extrude(sec,10))
 sol1=rsz3dc(sol,[5,6,7])
-fileopen(f'''
+fo(f'''
 %{swp(sol)}
 {swp(sol1)} 
 ''') 
@@ -1288,7 +1287,7 @@ function to draw cube with size 'size'
 example:
 sol1=cube(10)
 sol2=translate([12,0,0],cube([10,5,3]))
-fileopen(f'''
+fo(f'''
 {swp(sol1)}
 {swp(sol2)}
 ''')
@@ -1316,7 +1315,7 @@ def sphere(r=0,cp=[0,0,0],s=50):
 function to draw sphere with radius 'r' , center point 'cp' and number of segments 's'
 example:
 sol1=sphere(10)
-fileopen(f'''
+fo(f'''
 {swp(sol1)}
 ''')
    """
@@ -1332,7 +1331,7 @@ resized section will be placed on bottom center of the original section
 example:
 s1=square(10)
 s2=rsz2d(s1,[5,5])
-fileopen(f'''
+fo(f'''
 color("blue",.2) p_line3dc({s1},.3);
 color("magenta",.2) p_line3dc({s2},.3);
 ''')
@@ -1355,7 +1354,7 @@ function to resize a 2d section to dimensions 'rsz'
 resized section will be placed in center of the original section
 s1=square(10)
 s2=rsz2dc(s1,[5,5])
-fileopen(f'''
+fo(f'''
 color("blue",.2) p_line3dc({s1},.3);
 color("magenta",.2) p_line3dc({s2},.3);
 ''')
@@ -1405,7 +1404,7 @@ example:
 sec=[[0,0],[10,0],[10,15]]
 sec1=offset_segv(sec,-2)
 p0=s_int1(sec1)
-fileopen(f'''
+fo(f'''
 color("blue",.2) for(p={[sec]}) p_line3dc(p,.3);
 color("cyan",.2) for(p={sec1}) p_line3dc(p,.3);
 color("magenta") points({p0},.5);
@@ -1467,7 +1466,7 @@ bezier curve defined by points 'pl' and number of segments 's'
 example:
 sec=[[0,0],[10,0],[10,15],[20,10]]
 sec1=bezier(sec,20)
-fileopen(f'''
+fo(f'''
 color("blue",.2) for(p={[sec]}) p_line3d(p,.3);
 color("cyan",.2) for(p={[sec1]}) p_line3d(p,.3);
 ''')
@@ -1492,7 +1491,7 @@ end angle 'theta2' , clockwise(1) or counter clockwise(-1) and number of segment
 example:
 v1=[1,2,2]
 a1=arc_3d(v=v1,r=5,theta1=0,theta2=270,cw=-1,s=50)
-fileopen(f'''
+fo(f'''
 color("blue",.2) for(p={[a1]}) p_line3d(p,.3);
 color("magenta",.2) p_line3d({point_vector([0,0,0],v1)},.3);
 ''')
@@ -1528,7 +1527,7 @@ example:
 c1=circle(10)
 l1=point_vector([-5,-5],[3,2])
 p0=l_cir_ip(l1,c1)
-fileopen(f'''
+fo(f'''
 color("blue",.2) for(p={[c1,l1]}) p_line3d(p,.3);
 color("magenta") points({p0},.5);
 ''')
@@ -1607,7 +1606,7 @@ example:
 c1=circle(10)
 p0=[15,15]
 p1=cir_p_t(c1,p0)
-fileopen(f'''
+fo(f'''
 color("blue",.2) for(p={[c1]}) p_line3d(p,.3);
 color("magenta") points({[p0,p1]},.5);
 color("cyan",.2) p_line3d({[p1,p0]},.3);
@@ -1636,7 +1635,7 @@ example:
 c1=circle(10)
 p0=[15,15]
 p1=p_cir_t(p0,c1)
-fileopen(f'''
+fo(f'''
 color("blue",.2) for(p={[c1]}) p_line3d(p,.3);
 color("magenta") points({[p0,p1]},.5);
 color("cyan",.2) p_line3d({[p0,p1]},.3);
@@ -1666,7 +1665,7 @@ example:
 sec=corner_radius(pts1([[0,0,1],[10,0,1],[0,5,1],[-10,0,1]]),10)
 path=helix(20,15,1,5)
 sol=v_sec_extrude(sec,path,-2)
-fileopen(f'''
+fo(f'''
 {swp(sol)}
     ''')
     """
@@ -1694,7 +1693,7 @@ c1=circle(10,[20,10])
 c2=circle(10)
 a1=two_cir_tarc(c1,c2,5)
 a2=two_cir_tarc(c2,c1,5)
-fileopen(f'''
+fo(f'''
 color("blue",.2) for(p={[c1,c2]}) p_line3d(p,.3);
 color("magenta") for(p={[a1]}) p_line3d(p,.3);
 color("cyan") for(p={[a2]}) p_line3d(p,.3);
@@ -1787,7 +1786,7 @@ function to draw arc with 3 known points 'p1','p2','p3'
 example:
 p0,p1,p2=[[0,0],[10,0],[3,7]]
 a1=arc_3p(p0,p1,p2)
-fileopen(f'''
+fo(f'''
 color("blue",.2) for(p={[a1]}) p_line3d(p,.3);
 color("magenta") points({[p0,p1,p2]},.5);
 ''')
@@ -1821,7 +1820,7 @@ function to draw circle with 3 known points 'p1','p2','p3'
 example:
 p0,p1,p2=[[0,0],[10,0],[3,7]]
 a1=cir_3p(p0,p1,p2)
-fileopen(f'''
+fo(f'''
 color("blue",.2) for(p={[a1]}) p_line3d(p,.3);
 color("magenta") points({[p0,p1,p2]},.5);
 ''')
@@ -1849,7 +1848,7 @@ example:
 p0,p1,p2=[[0,0],[10,0],[3,7]]
 a1=cir_3p(p0,p1,p2)
 c1=cp_3p(p0,p1,p2)
-fileopen(f'''
+fo(f'''
 color("blue",.2) for(p={[a1]}) p_line3d(p,.3);
 color("magenta") points({[p0,p1,p2,c1]},.5);
 ''')
@@ -1878,7 +1877,7 @@ sec=circle(10)
 path=corner_radius(pts1([[2,0],[-2,0,2],[0,10,3],[-9.9,0]]),5)
 p1=prism(sec,path)
 p2=rot("y40",cylinder(r=3,h=15,s=30))
-fileopen(f'''
+fo(f'''
 %swp({p1});
 %swp({p2});
 ip={ip_surf(c_(p1),p2)};
@@ -1949,7 +1948,7 @@ p2=rot("y40",cylinder(r=3,h=15,s=30))
 ip1=ip_surf(c_(p1),p2)
 ip2=ip1[:4] # points to exclude
 ip3=exclude_points(ip1,ip2)
-fileopen(f'''
+fo(f'''
 //original points list 
 color("magenta") points({ip1},.2);
 //excluded points list
@@ -1995,7 +1994,7 @@ b=random.random(10000)*(25-(-2))+(-2)
 points=array([a,b]).transpose(1,0).tolist()
 sec=corner_radius(pts1([[2,1,.1],[7,5,2],[5,7,3],[-5,7,2],[-7,5,3]]),20)
 # sec=corner_radius(pts1([[8,0],[11,10,10],[0,10,5],[-10,0,5],[-1,-6,0.3],[-1,6,5],[-10,0,5],[0,-10,10]]))
-fileopen(f'''
+fo(f'''
 color("blue") p_line({sec},.05);
 points({points},.2);
 color("magenta")points({pies1(sec,points)},.2);
@@ -2029,7 +2028,7 @@ example:
 line=[[1,2],[5,-6]]
 r1,r2=5,1
 sec1=r_sec(r1,r2,line[0],line[1])
-fileopen(f'''
+fo(f'''
 color("blue")p_line3dc({sec1},.1);
 color("magenta")p_line3d({line},.1);
 color("cyan")points({line},.2);
@@ -2047,7 +2046,7 @@ def cs1(sec,d):
 creates a cleaning section for removing excess points for offseting a section 'sec' with offset distance 'd'
 example:
 sec=corner_radius(pts1([[0,0,1],[8,3,3],[5,7,1],[-8,0,2],[-5,20,1]]),10)
-fileopen(f'''
+fo(f'''
 color("blue")p_line({sec},.1); 
 color("magenta")for(p={cs1(sec,-2)})p_line(p,.08); 
 ''')
@@ -2090,7 +2089,7 @@ example:
 sec=circle(5)
 path=c23(circle(20))
 sol=path_extrude_closed(sec,path)
-fileopen(f'''
+fo(f'''
 {swp_c(sol)}
 ''')
     """
@@ -2149,7 +2148,7 @@ sec=square(10)
 sol=linear_extrude(sec,10)
 sol1=offset_sol(sol,-1)
 sol2=swp_prism_h(sol,sol1)
-fileopen(f'''
+fo(f'''
 {swp_c(sol2)}
 ''')
     """
@@ -2170,7 +2169,7 @@ sec2=corner_radius(pts1([[-25,0],[10,5,5],[10,-3,10],[10,5,5],[10,-8,7],[10,1]])
 path2=cytz(corner_radius(pts1([[-35,5,0],[10,8,20],[20,-5,10],[20,8,20],[10,-9,20],[10,1,0]]),10))
 surf2=path_extrude_open(sec2,path2)
 sol=surf_base(surf2,0)
-fileopen(f'''
+fo(f'''
 {swp(sol)}
 ''') 
     """
@@ -2189,7 +2188,7 @@ def helix(radius=10,pitch=10, number_of_coils=1, step_angle=1):
 creates a helix with radius, pitch and number of coils parameters
 example:
 a=helix(radius=10,pitch=10,number_of_coils=5,step_angle=5)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({a},.5);
 ''')
     """
@@ -2212,7 +2211,7 @@ path=array([[0,0,0],[20,2,5],[-7,25,3],[5,10,30],[-30,15,3]]).cumsum(0)
 r=[0,5,7,12,0]
 sol=multiple_sec_extrude(path,r,sections,0,20)
 sol=cpo([ bezier(p,200)  for p in cpo(sol)])
-fileopen(f'''
+fo(f'''
 //color("blue")for(p={multiple_sec_extrude(path,r,sections,0,20)})p_line3dc(p,.1);
 {swp(sol)}
     ''')
@@ -2280,7 +2279,7 @@ path=corner_radius(pts1([[-5,0],[5,0,2],[-1,10,2],[5,0]]),20)
 # path=circle(10)
 # path=corner_radius(pts1([[0,0],[10,0,.1],[-10,5,.1],[-10,-5]]),20)
 path1=path_offset(path,r)
-fileopen(f'''
+fo(f'''
 // orginal path
 color("blue")p_lineo({path},.1);
 //offset path
@@ -2402,7 +2401,7 @@ example:
 cyl=linear_extrude(circle(5,s=31),10)
 cyl1=translate([15,0,0],c2ro(cyl,1))
 cyl2=translate([30,0,0],cpo(c2ro(cyl,5)))
-fileopen(f'''
+fo(f'''
 color("blue")for(p={cyl})p_line3dc(p,.05);
 color("blue")for(p={cyl1})p_line3dc(p,.05);
 color("blue")for(p={cyl2})p_line3d(p,.05);
@@ -2425,7 +2424,7 @@ path=[[0,0,1],[0,5,10],[10,3,20]]
 pts2(path)=> [[0, 0, 1], [0, 5, 11], [10, 8, 31]]
 example:
 a=turtle3d([[0,0,0],[10,0,0],[0,0,10],[0,10,0],[-10,0,0],[0,-10,0]])
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({a},.5);
 ''')
     """
@@ -2440,7 +2439,7 @@ example:
 c1=cylinder(r=5,h=20)
 c2=axis_rot([1,1,0],c1,90)
 l1=vector2line([1,1,0],10)
-fileopen(f'''
+fo(f'''
 //axis to rotate
 color("magenta") p_line3d({l1},.3);
 //original cylinder
@@ -2465,7 +2464,7 @@ in case 1 does not work use 2 instead
 example:
 c1=cylinder(r=5,h=20)
 e1=end_cap(c1,1)
-fileopen(f'''
+fo(f'''
 difference(){{
 {swp(c1)}
 for(p={e1}) swp_c(p);
@@ -2498,7 +2497,7 @@ example:
 s1=linear_extrude(square(20,center=True),20)
 c1=cylinder(r=5,h=20)
 e1=end_cap_1(c1,2)
-fileopen(f'''
+fo(f'''
 difference(){{
 {swp(s1)}
 {swp(c1)}
@@ -2548,7 +2547,7 @@ l2=path_offset(l1,-5)
 l3=translate([0,0,5],l1)
 l1,l2=c23([l1,l2])
 f1=convert_3lines2fillet(l2,l3,l1)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[l1,l2,l3]}) p_line3d(p,.3);
 {swp_c(f1)}
 ''') 
@@ -2579,7 +2578,7 @@ example:
 l1=circle(10,s=100)
 l2=translate_2d([25,0],min_d_points(l1,min_d=5))
 l3=translate_2d([50,0],homogenise(l1,pitch=5,closed_loop=1))
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[l1,l2,l3]}) points(p,.3);
 ''')
     """
@@ -2599,7 +2598,7 @@ example:
 c1=translate([0,20.1,0],circle(20))
 path=rot('y90',circle(40.2/(2*pi)+.2))
 c2=wrap_around(c1,path)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({c1},.2);
 color("cyan") p_line3d({path},.2);
 color("magenta") p_line3d({c2},.2);
@@ -2638,7 +2637,7 @@ example:
 l1=c23(square(4))
 c1=translate([2,2,5],circle(5,s=5))
 c2=align_sec(l1,c1,ang=1)[1]
-fileopen(f'''
+fo(f'''
 //original lines
 color("blue") for(p={[l1,c1]}) p_line3d(p,.3);
 // aligned section
@@ -2673,7 +2672,7 @@ l1=c23(square(4))
 v1=[1,-1,0.5]
 l2=sec2vector(v1,l1)
 l3=vector2line(v1,5)
-fileopen(f'''
+fo(f'''
 //original section
 color("blue") for(p={[l1]}) p_line3dc(p,.3);
 // vector to align section
@@ -2706,7 +2705,7 @@ l1=c23(square(4))
 v1=[1,-1,0.5]
 l2=sec2vector1(v1,l1)
 l3=vector2line(v1,5)
-fileopen(f'''
+fo(f'''
 //original section
 color("blue") for(p={[l1]}) p_line3dc(p,.3);
 // vector to align section
@@ -2760,7 +2759,7 @@ l3=translate([0,0,10],l1)
 sol=[l1,l2,l3]
 sol1=translate([10,0,0],sol)
 sol1=slice_sol(sol1,10)
-fileopen(f'''
+fo(f'''
 // original solid
 color("blue") for(p={sol}) p_line3dc(p,.1);
 {swp(sol)}
@@ -2786,7 +2785,7 @@ l3=translate([0,0,10],l1)
 sol=[l1,l2,l3]
 sol1=translate([10,0,0],sol)
 sol1=slice_sol_1(sol1,10)
-fileopen(f'''
+fo(f'''
 // original solid
 color("blue") for(p={sol}) p_line3dc(p,.1);
 {swp(sol)}
@@ -2804,7 +2803,7 @@ function returns the center point of a given circle or arc
 example:
 a1=circle(10,[5,6])
 cp1=cp_arc(a1)
-fileopen(f'''
+fo(f'''
 // arc
 color("blue") for(p={[a1]}) p_line3dc(p,.1);
 
@@ -2828,7 +2827,7 @@ example:
 a1=circle(10,[5,6])
 r1=r_arc(a1)
 txt1=dim_radial(a1[:5])
-fileopen(f'''
+fo(f'''
 // arc
 color("blue") for(p={[a1]}) p_line3dc(p,.1);
 // calculated radius
@@ -2862,7 +2861,7 @@ l1=turtle3d([[0,0,20],[-5,0,0],[0,-10,0],[0.001,0,-20]])
 txt1=dim_linear(l1[:2])
 txt2=dim_linear(l1[1:3])
 txt3=dim_linear(l1[2:4])
-fileopen(f'''
+fo(f'''
 // oriented_solid
 {swp(sol)}
 {txt1}{txt2}{txt3}
@@ -2939,7 +2938,7 @@ n1: number of hexagons in 1 layer
 n2: number of layers
 example:
 l1=honeycomb(5,3,2)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={l1}) p_line3dc(p,.2);
 ''')
     """
@@ -2967,7 +2966,7 @@ p1=cr2dt([[0,0],[2,0],[3,0],[-6,0]])
 sec_list=c32(prism(sec,p1))
 path=cr3dt([[0,0,0],[20,0,0],[0,0,20],[30,0,0]])
 sol=path_extrude2msec(sec_list,path)
-fileopen(f'''
+fo(f'''
 {swp(sol)}
 ''')
     """
@@ -3001,7 +3000,7 @@ path=cr2d(pts1([[-10+.1,0],[12,0],[-2,0,2],[0,10,3],[-10,0]]),5)
 sol=prism(sec,path)
 line=[[0,0,-1],[20,20,10]]
 ip1=ip_sol2line(sol,line)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({line},.2);
 color("magenta") points({ip1},.5);
 %{swp(sol)}
@@ -3046,7 +3045,7 @@ l1=c23(square(4))
 c1=translate([2,2,5],circle(5,s=5))
 sol=[l1,c1]
 sol1=align_sol(sol,ang=1)
-fileopen(f'''
+fo(f'''
 //original solid
 {swp(sol)}
 // aligned solid
@@ -3149,7 +3148,7 @@ divides a path in to equally spaced points
 example:
 l1=c23(square(20))
 l2=equidistant_path(l1,20)
-fileopen(f'''
+fo(f'''
 //original line
 color("blue",.2) p_line3d({l1},.3);
 color("cyan") points({l1},1);
@@ -3184,7 +3183,7 @@ divides a closed path in to equally spaced points
 example:
 l1=c23(square(20))
 l2=equidistant_pathc(l1,20)
-fileopen(f'''
+fo(f'''
 //original line
 color("blue",.2) p_line3dc({l1},.3);
 color("cyan") points({l1},1);
@@ -3224,7 +3223,7 @@ p1=[5,2]
 p2=[7,8]
 txt1=dim_angular([p0,p1],[p1,p2],text_size=.5)
 txt2=dim_angular([p1,p0],[p0,p2],text_size=.5)
-fileopen(f'''
+fo(f'''
 
 // case 1: counter-clockwise angle between line p1p0 and p1p2 is 229.76 degrees
 color("blue")points({[p0,p1,p2]},.2);
@@ -3266,7 +3265,7 @@ example:
 p0=[0,0]
 p1=[5,2]
 p2=[7,8]
-fileopen(f'''
+fo(f'''
 // case 1: clockwise angle between line p1p0 and p1p2 is 130.23 degrees
 color("blue")points({[p0,p1,p2]},.2);
 color("cyan")p_line3d({[p0,p1,p2]},.1);
@@ -3333,7 +3332,7 @@ example:
 c1=cylinder(r=10,h=40)
 c2=offset_sol(c1,-3)
 c3=offset_sol(c1,3)
-fileopen(f'''
+fo(f'''
 //original cylinder
 color("blue",.2) swp_c({c1});
 // offset inwards by 3mm
@@ -3355,7 +3354,7 @@ example:
 s1=sphere(20)
 c1=cylinder(r=5,h=50)
 l1=ip_sol2sol(s1,c1)
-fileopen(f'''
+fo(f'''
 %{swp(s1)}
 %{swp(c1)}
 color("blue") points({l1},.3);
@@ -3393,7 +3392,7 @@ s1=surface_line_vector(l0,[0,50,0],1)
 l1=translate([-10,0,-10],sinewave(20,2,2,50))
 s2=surface_line_vector(l1,[5,5,50])
 l1=ip_surf2sol(s1,s2)
-fileopen(f'''
+fo(f'''
 %{swp_surf(s1)}
 %{swp_surf(s2)}
 color("blue") points({l1},.3);
@@ -3453,7 +3452,7 @@ example:
 a=translate_2d([10,-5],square(10))
 b=circle(10)
 c=convex_hull(a+b)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[a,b]}) p_line3dc(p,.2);
 color("magenta") p_line3dc({c},.21);
 ''')
@@ -3488,7 +3487,7 @@ example:
 a=random.random(50)*(20-5)+5
 b=random.random(50)*(30-10)+10
 p=array([a.round(1),b.round(1)]).transpose(1,0)
-fileopen(f'''
+fo(f'''
 p2={lexicographic_sort_xy(p)};
 color("blue")for(i=[0:len(p2)-1])translate(p2[i])text(str(i),.3);
 p_lineo(p2,.05);
@@ -3509,7 +3508,7 @@ example:
 a=random.random(50)*(20-5)+5
 b=random.random(50)*(30-10)+10
 p=array([a.round(1),b.round(1)]).transpose(1,0)
-fileopen(f'''
+fo(f'''
 p2={lexicographic_sort_yx(p)};
 color("blue")for(i=[0:len(p2)-1])translate(p2[i])text(str(i),.3);
 p_lineo(p2,.05);
@@ -3532,7 +3531,7 @@ a=offset_segv(circle(10,s=5),2)
 b=lexicographic_seg_sort_xy(a)
 for i in range(12):
     c=b[i%4]
-    fileopen(f'''
+    fo(f'''
     color("blue") for(p={a}) p_line3dc(p,.2);
     color("magenta") p_line3d({c},.5);
     ''')
@@ -3553,7 +3552,7 @@ removes all the points which are in straight line
 example:
 a=m_points1_o(square(10),10)
 b=translate([15,0], rationalise_path(a))
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[a]}) points(p,.5);
 color("magenta") points({b},.5);
 ''')
@@ -3573,7 +3572,7 @@ draws a circle through the 3 points list
 example:
 a=[[0,0,0],[10,0,0],[2,5,4]]
 b=cir_3p_3d(a,s=50)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[a]}) points(p,.5);
 color("magenta") p_line3dc({b},.2);
 ''')
@@ -3598,7 +3597,7 @@ center point of circle with atleast 3 known list of 'points' in 3d space
 a=[[0,0,0],[10,0,0],[2,5,4]]
 b=cir_3p_3d(a,s=50)
 c=cp_cir_3d(b)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[a]}) points(p,.5);
 color("magenta") p_line3dc({b},.2);
 color("cyan") points({[c]},.5);
@@ -3702,7 +3701,7 @@ example:
 a=square(10)
 b=point_vector([-5,-5],[4,8])
 c=l_sec_ip(b,a)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3dc({a},.2);
 color("magenta") p_line3dc({b},.2);
 color("cyan") points({c},.5);
@@ -3850,7 +3849,7 @@ a=circle(5)
 b=rot('x90',circle(20))
 c=path_extrude_closed(a,b)
 d=translate([70,0,0],align_sol_1(c))
-fileopen(f'''
+fo(f'''
 // misaligned solid
 {swp_c(c)}
 // aligned solid
@@ -3883,7 +3882,7 @@ l1=c23(circle(10))
 l2=offset_3d(l1,3)
 l3=translate([0,0,3],l1)
 f1=convert_3lines2fillet_closed(l2,l3,l1)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[l1,l2,l3]}) p_line3d(p,.3);
 {swp_c(f1)}
 ''')
@@ -3965,7 +3964,7 @@ example:
 n1=[0,1,0]
 p0,p1=[[0,0,0],[10,0,0]]
 a=arc_2p_3d(n1,p0,p1,r=8,cw=1,s=50)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({a},.2);
 color("magenta") p_line3d({vector2line(n1,5)},.2);
 %{swp_surf(plane(n1,[25,25]))}
@@ -3992,7 +3991,7 @@ example:
 n1=[0,1,0]
 p0,p1=[[0,0,0],[10,0,0]]
 a=arc_long_2p_3d(n1,p1,p0,r=8,cw=1,s=50)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({a},.2);
 color("magenta") p_line3d({vector2line(n1,5)},.2);
 %{swp_surf(plane(n1,[25,25]))}
@@ -4036,7 +4035,7 @@ ax1=[1,1,0]
 loc=[0,0,20]
 l1=line2length(point_vector(loc,ax1),10)
 c2=axis_rot_1(c1,ax1,loc,-90)
-fileopen(f'''
+fo(f'''
 //axis to rotate
 color("magenta") p_line3d({l1},.3);
 //original cylinder
@@ -4066,7 +4065,7 @@ example:
 p1=c23(cr2dt([[-5,-5,2],[10,0,2],[0,10,2],[-10,0,2]],10))
 p2=translate([0,0,10],cr2dt([[-5,-5],[10,0],[0,10]]))
 p2=path2path1(p1,p2)
-fileopen(f'''
+fo(f'''
 color("blue",.2) p_line3d({p1},.2);
 color("magenta",.2) p_line3d({p2},.2);
 color("cyan") for(p={[p1,p2]}) points(p,.4);
@@ -4099,7 +4098,7 @@ example:
 p1=c23(cr2dt([[-5,-5,2],[10,0,2],[0,10,2],[-10,0,2]],10))
 p2=translate([0,0,10],circle(5))
 p2=path2path1_closed(p1,p2)
-fileopen(f'''
+fo(f'''
 color("blue",.2) p_line3dc({p1},.2);
 color("magenta",.2) p_line3dc({p2},.2);
 color("cyan") for(p={[p1,p2]}) points(p,.4);
@@ -4139,7 +4138,7 @@ p1=ip_sol2sol(sol1,sol2)
 p2=ip_sol2sol(sol1,sol2,-1)
 p3=flip(p1)+p2
 tri_1=ip_triangle(p3,sol1)
-fileopen(f'''
+fo(f'''
 %{swp(sol1)}
 %{swp(sol2)}
 // intersection points
@@ -4168,7 +4167,7 @@ color("blue")for(p={tri_1})p_line3dc(p,.04,rec=1);
     t=x[:,:,0]
     u=x[:,:,1]
     v=x[:,:,2]
-    decision=(t>=-0.01)&(t<=1)&(u>=-0.01)&(u<=1)&(v>=-0.01)&(v<=1)&((u+v)<=1)
+    decision=(t>=-0.05)&(t<=1.05)&(u>=-0.05)&(u<=1.05)&(v>=-0.05)&(v<=1.05)&((u+v)<=1.05)
     tri_1=array([tri[decision[i]][0] for i in range(len(ip))]).tolist()
 
     return tri_1
@@ -4194,7 +4193,7 @@ tri_1=ip_triangle(p3,sol1)
 p4=o_3d(p3,sol1,-.5)
 p5=o_3d(p3,sol2,.5)
 
-fileopen(f'''
+fo(f'''
 %{swp(sol1)}
 %{swp(sol2)}
 // intersection points
@@ -4247,7 +4246,7 @@ tri_1=ip_triangle(p3,sol1)
 p4=o_3d_rev(p3,sol1,-.5)
 p5=o_3d_rev(p3,sol2,.5)
 
-fileopen(f'''
+fo(f'''
 %{swp(sol1)}
 %{swp(sol2)}
 // intersection points
@@ -4302,7 +4301,7 @@ c1=translate([0,0,-10],linear_extrude(circle(5,[25,25]),30))
 l3=ip_surf2sol(s1,c1)
 l4=o_3d_surf(l3,s1,-3)
 l5=o_3d(l3,c_(c1),3)
-fileopen(f'''
+fo(f'''
 %{swp_surf(s1)}
 %{swp(c1)}
 color("blue") p_line3dc({l3},.3);
@@ -4339,7 +4338,7 @@ s1=sphere(20)
 l1=translate([-10,0,0],sinewave(20,2,2,50))
 s2=surface_line_vector(l1,[5,5,50])
 f1=ip_fillet(s1,s2,2,2)
-fileopen(f'''
+fo(f'''
 %{swp(s1)}
 %{swp_surf(s2)}
 {swp(f1)}
@@ -4363,7 +4362,7 @@ example:
 s1=sphere(20)
 c1=rot('y45',cylinder(r=5,h=50,s=50))
 f1=ip_fillet_closed(s1,c1,-2,2)
-fileopen(f'''
+fo(f'''
 {swp(s1)}
 {swp(c1)}
 {swp_c(f1)}
@@ -4389,7 +4388,7 @@ s1=surface_line_vector(l0,[0,50,0],1)
 l1=translate([-10,0,-10],sinewave(20,2,2,50))
 s2=surface_line_vector(l1,[5,5,50])
 f1=ip_fillet(s1,s2,2,2)
-fileopen(f'''
+fo(f'''
 %{swp_surf(s1)}
 %{swp_surf(s2)}
 {swp(f1)}
@@ -4413,7 +4412,7 @@ l0=translate([-25,0,0],rot('x90',cosinewave(50,3,2,100)))
 s1=surface_line_vector(l0,[0,50,0],1)
 s2=translate([0,0,-10],cylinder(r=10,h=50))
 f1=ip_fillet_closed(s1,s2,-2,2)
-fileopen(f'''
+fo(f'''
 %{swp_surf(s1)}
 %{swp_surf(s2)}
 {swp(f1)}
@@ -4455,7 +4454,7 @@ def ellipse(a,b,s=50):
 function to form ellipse
 example:
 l1=ellipse(a=20,b=10,s=100)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3dc({l1},.3);
 ''')
     """
@@ -4472,7 +4471,7 @@ path1=equidistant_path(path1,200)
 sol=prism(sec,path1)
 path=bspline_open(cr3dt([[10,0,0,0],[10,15,10,8],[0,0,15,6],[20,0,0,0]],20),2,50)
 sol2=sol2path(sol,path)
-fileopen(f'''
+fo(f'''
 %{swp(sol)}
 %{swp(sol2)}
 color("cyan")p_line3d({path},.5);
@@ -4546,7 +4545,7 @@ following code has 3 points at [0,0],[10,0] and [7,15] and radiuses of 0.5,2 and
 s=5 represent the number of segments at each corner radius.
 example:
 sec1=corner_radius(sec=[[0,0,.5],[10,0,2],[7,15,1]],s=5)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3dc({sec1},.3);
 ''')
     
@@ -4650,7 +4649,7 @@ function to surround a path to create a rounded section
 example:
 sec1=corner_radius(sec=[[0,0,.5],[10,0,2],[7,15,1]],s=5)
 l1=surround(homogenise(sec1,.25),.5)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({sec1},.3);
 color("magenta") p_line3dc({l1},.3);
 ''')
@@ -4734,7 +4733,7 @@ example:
 l1=rot('x90',sinewave(50,3,2,50))
 l2=rot('x90z90',cosinewave(50,3,2,50))
 s1=surface_from_2_waves(l1,l2,2)
-fileopen(f'''
+fo(f'''
 {swp_surf(s1)}
 ''')
     """
@@ -4752,7 +4751,7 @@ example:
 l1=rot('x90',sinewave(50,3,2,50))
 l2=rot('x90z90',cosinewave(50,3,2,50))
 s1=surface_from_2_waves_add(l1,l2,2)
-fileopen(f'''
+fo(f'''
 {swp_surf(s1)}
 ''')
     """
@@ -4769,7 +4768,7 @@ example:
 l1=rot('x90',sinewave(50,3,2,50))
 l2=rot('x90z90',cosinewave(50,3,2,50))
 s1=surface_from_2_waves_min(l1,l2,2)
-fileopen(f'''
+fo(f'''
 {swp_surf(s1)}
 ''')
     """
@@ -4786,7 +4785,7 @@ example:
 l1=rot('x90',sinewave(50,3,2,50))
 l2=rot('x90z90',cosinewave(50,3,2,50))
 s1=surface_from_2_waves_max(l1,l2,2)
-fileopen(f'''
+fo(f'''
 {swp_surf(s1)}
 ''')
     """
@@ -4803,7 +4802,7 @@ example:
 l1=rot('x90',sinewave(50,3,2,50))
 l2=rot('x90z90',cosinewave(50,3,2,50))
 s1=surface_from_2_waves_norm(l1,l2,2)
-fileopen(f'''
+fo(f'''
 {swp_surf(s1)}
 ''')
     """
@@ -4823,7 +4822,7 @@ example:
 l1=point_vector([-5,-5],[10,10])
 l2=point_vector([-5,20],[10,-10])
 l3=fillet_intersection_lines(l1,l2,r=3)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l1},.3);
 color("cyan") p_line3d({l2},.3);
 color("magenta") p_line3d({l3},.3);
@@ -4867,7 +4866,7 @@ c1=circle(10,[-30,0])
 l1=point_vector([0,0],[10,3])
 l2=cir_line_tangent(c1,l1,side=0)
 l3=cir_line_tangent(c1,l1,side=1)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({c1},.3);
 color("cyan") p_line3d({l1},.3);
 color("magenta") p_line3d({l2},.3);
@@ -4893,7 +4892,7 @@ n: number of sides of the polygon
 t: number of turns
 example:
 l1=spiral_poly(r=1,d=.2,n=5,t=100)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l1},.3);
 ''')
     """
@@ -4948,7 +4947,7 @@ creates a sinewave with length 'l', number of cycles 'n'
 amplitude 'a' and number of points 'p'
 example:
 l1=sinewave(l=50,n=3,a=2,p=50)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l1},.3);
 ''')
     """
@@ -4961,7 +4960,7 @@ def cosinewave(l,n,a,p):
 creates a cosinewave with length 'l', number of cycles 'n'
 amplitude 'a' and number of points 'p'
 l1=cosinewave(l=50,n=3,a=2,p=50)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l1},.3);
 ''')
     """
@@ -4986,7 +4985,7 @@ a: amplitude
 l: length of time
 example:
 l1=e_wave(l=20,a=10,w=.2,t=100)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l1},.3);
 ''')
     """
@@ -4999,7 +4998,7 @@ example:
 l1=e_wave(l=20,a=10,w=.2,t=100)
 l2=sinewave(20,3,2,100)
 l3=waves_2d_multiply(l1,l2,10)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l3},.3);
 ''')
     """
@@ -5015,7 +5014,7 @@ example:
 l1=e_wave(l=20,a=10,w=.2,t=100)
 l2=sinewave(20,3,2,100)
 l3=waves_2d_add(l1,l2,10)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l3},.3);
 ''')
     """
@@ -5031,7 +5030,7 @@ example:
 l1=e_wave(l=20,a=10,w=.2,t=100)
 l2=sinewave(20,3,2,100)
 l3=waves_2d_max(l1,l2,10)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l3},.3);
 ''')
     """
@@ -5047,7 +5046,7 @@ example:
 l1=e_wave(l=20,a=10,w=.2,t=100)
 l2=sinewave(20,3,2,100)
 l3=waves_2d_min(l1,l2,10)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l3},.3);
 ''')
     """
@@ -5063,7 +5062,7 @@ example:
 l1=e_wave(l=20,a=10,w=.2,t=100)
 l2=sinewave(20,3,2,100)
 l3=waves_2d_norm(l1,l2,10)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l3},.3);
 ''')
     """
@@ -5099,7 +5098,7 @@ example:
 l1=c23(sinewave(50,5,4,100))
 p1=c23(arc(5,0,360,s=99))
 l2=extrude_wave2path(l1,p1)
-fileopen(f'''
+fo(f'''
 // wave
 color("magenta",.2) p_line3d({l1},.2);
 //path
@@ -5148,7 +5147,7 @@ example:
 l1=translate([10,0,0],rot('x90y-90',sinewave(100,3,2,100)))
 l2,l3=[rot(f'z{i}',point_vector([10,0,0],[0,0,100])) for i in [-90,90]]
 s1=convert_3lines2surface(l2,l1,l3)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[l1,l2,l3]}) p_line3d(p,.3);
 color("magenta",.2) for(p={s1}) p_line3d(p,.3);
 {swp_surf(s1)}
@@ -5179,7 +5178,7 @@ l2=translate([0,30,0],rot('z20',l1))
 l3=rot('x45',sinewave(50,3,2,50))
 l3=fit_pline2line(l3,[l1[0],l2[0]])
 s1=SurfaceFrom3LinesInDifferentPlanes(l1,l2,l3,50,50)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[l1,l2,l3]}) p_line3d(p,.3);
 color("magenta",.2) for(p={s1}) p_line3d(p,.3);
 {swp_surf(s1)}
@@ -5203,7 +5202,7 @@ l1=[[0,0],[10,0]]
 p0=mid_point(l1)
 l2=translate_2d([0,5],square(10))
 p1=mid_point(l2)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l1},.3);
 color("magenta") points({[p0]},.5);
 color("cyan") p_line3d({l2},.3);
@@ -5308,7 +5307,7 @@ l1=rot('x90',sinewave(20,1,2,40))
 l2=rot('x90z90',sinewave(20,2,2,40))
 s1=surface_from_2_waves(l1,l2,2)
 s2=surface_offset(s1,1)
-fileopen(f'''
+fo(f'''
 {swp_surf(s1)}
 color("cyan"){swp_surf(s2)}
 ''')
@@ -5342,7 +5341,7 @@ sec2=corner_radius(pts1([[-25,0],[10,5,5],[10,-3,10],[10,5,5],[10,-8,7],[10,1]])
 path2=cytz(corner_radius(pts1([[-35,5,0],[10,8,20],[20,-5,10],[20,8,20],[10,-9,20],[10,1,0]]),10))
 surf2=path_extrude_open(sec2,path2)
 surf3=surface_thicken(surf2,-1)
-fileopen(f'''
+fo(f'''
 {swp(surf3)}
 //color("blue")for(p={surf3})p_line3dc(p,.1,rec=1);
 ''') 
@@ -5359,7 +5358,7 @@ sec1=circle(10)
 path=corner_radius(pts1([[2,0],[-2,0,2],[0,10,3],[-3,0]]),5)
 sol=prism(sec1,path)
 sol2=surface_thicken_1(sol,1)
-fileopen(f'''
+fo(f'''
 {swp_c(sol2)} 
 ''') 
     """
@@ -5426,7 +5425,7 @@ extend a 2d arc by theta degrees
 example:
 l1=arc_2p([0,0],[10,0],5)
 l2=extend_arc2d(l1,90,s=50)
-fileopen(f'''
+fo(f'''
 color("blue",.2) p_line3d({l1},.3);
 color("magenta") p_line3d({l2},.28);
 ''')
@@ -5448,7 +5447,7 @@ extend a 3d arc by theta degrees
 example:
 l1=arc_2p_3d([0,1,-.3],[0,0,0],[10,0,0],5)
 l2=extend_arc3d(l1,90,s=50)
-fileopen(f'''
+fo(f'''
 color("blue",.2) p_line3d({l1},.3);
 color("magenta") p_line3d({l2},.28);
 ''')
@@ -5533,7 +5532,7 @@ fillet6=fillet_line_circle_internal(line,cir1,r2,2)
 fillet7=fillet_line_circle_internal(line,cir1,1,3)
 fillet8=fillet_line_circle_internal(line,cir1,r2,4)
 
-fileopen(f'''
+fo(f'''
  
 color("blue",.1)p_line({line},.3);
 color("violet",.2)p_line({cir1},.3);
@@ -5576,7 +5575,7 @@ example:
 l1=point_vector([-12,0,0],[5,0,5])
 l2=flip(point_vector([0,-12,0],[0,5,5]))
 f1=fillet_intersection_lines_3d(l1,l2,5,20)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l1},.3);
 color("cyan") p_line3d({l2},.3);
 color("magenta") p_line3d({f1},.2);
@@ -5628,7 +5627,7 @@ fillet6=fillet_line_circle_internal(line,cir1,r2,2)
 fillet7=fillet_line_circle_internal(line,cir1,1,3)
 fillet8=fillet_line_circle_internal(line,cir1,r2,4)
 
-fileopen(f'''
+fo(f'''
  
 color("blue",.1)p_line({line},.3);
 color("violet",.2)p_line({cir1},.3);
@@ -5696,7 +5695,7 @@ mirroring_plane=[1,1,0]
 passing_through_point=[0,0,0]
 pl1=plane(mirroring_plane,size=[50,50],intercept=passing_through_point)
 l2=mirror_line(l1,mirroring_plane,passing_through_point)
-fileopen(f'''
+fo(f'''
 //original line
 color("blue") p_line3d({l1},.3);
 // mirrored along defined plane
@@ -5790,7 +5789,7 @@ if surface is required both sides of the line, both_sides option should be marke
 example:
 l1=rot('x90',sinewave(50,3,2,50))
 s1=surface_line_vector(line=l1,vector=[0,20,0],both_sides=1)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l1},.3);
 %{swp_surf(s1)}
 ''')
@@ -5808,7 +5807,7 @@ example:
 l1=rot('x90',sinewave(50,3,2,50))
 s1=surface_line_vector(line=l1,vector=[0,20,0],both_sides=1)
 s2=mirror_surface(s1,[1,1,0],[0,-30,0])
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l1},.3);
 // original surface
 color("blue",.3){swp_surf(s1)}
@@ -5830,7 +5829,7 @@ l2=rot('x90z90',sinewave(20,2,2,40))
 s1=surface_from_2_waves(l1,l2,1)
 s2=surface_offset(s1,1)
 sol=solid_from_2surfaces(s1,s2)
-fileopen(f'''
+fo(f'''
 {swp(sol)}
 ''')
     """
@@ -5844,7 +5843,7 @@ function to convert a closed polygon to lines
 example:
 a=c2t3(circle(10))
 b=sec2surface(a)
-fileopen(f'''
+fo(f'''
 color("blue")p_line3d({a},.2,1);
 color("magenta")for(p={b})p_line3d(p,.2,1);
 {swp_surf(b)}''')
@@ -5862,7 +5861,7 @@ a=cylinder(r=10,h=50,s=100)
 s1=surface_line_vector([[-20,-20,5],[-20,20,5]],[40,0,30])
 l1=ip_sol2sol(s1,a)
 l2=rot_sec2xy_plane(l1)
-fileopen(f'''
+fo(f'''
 %{swp(a)}
 %{swp_surf(s1)}
 //original line
@@ -5919,7 +5918,7 @@ example:
 n1=[1,1,0] # normal vector to define plane
 pl1=plane(nv=n1,size=[100,100],intercept=[0,0,0])
 l1=vector2line(n1,30)
-fileopen(f'''
+fo(f'''
 %{swp_surf(pl1)}
 color("blue") p_line3d({l1},.5);
 ''')
@@ -5960,7 +5959,7 @@ segments=seg(b)[:-1]+seg(a)
 n=s_int1_list(segments)
 p0=s_int1(segments)
 tx=[label_linear(segments[i],f's-{i}') for i in range(len(segments))]
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[a,b]}) p_line3dc(p,.3);
 color("magenta") points({p0},1);
 {tx[0]}{tx[1]}{tx[2]}{tx[3]}{tx[4]}{tx[5]}{tx[6]}
@@ -6050,7 +6049,7 @@ c=array([a,b]).transpose(1,0).tolist()
 r=3
 sec2=cs1(sec,r-.01)
 p_0=points_inside_offset_surround(sec,c,r-.01)
-fileopen(f'''
+fo(f'''
     color("blue")p_line3dc({sec},.1,1);
     color("cyan")points({c},.2);
     color("green",.1)for(p={sec2})p_line3dc(p,.1,1);
@@ -6119,7 +6118,7 @@ function to draw a coil with initial radius 'r1', final_radius 'r2' and numbe of
 example:
 coil=array([i/360*array([cos(d2r(i)),sin(d2r(i)),-1]) for i in linspace(0,3600,720)]).tolist()
 cyl1=translate([0,0,-10],cylinder(r1=10,r2=0.1,h=10))
-fileopen(f'''
+fo(f'''
 translate([0,0,10]){{  
 color("blue")p_line3d({coil},.05);
 %{swp(cyl1)}
@@ -6144,7 +6143,7 @@ txt2=dim_radial(sec[15:20],.2,'magenta',.5)
 txt3=dim_radial(sec[25:30],.2,'magenta',.5)
 txt4=dim_radial(sec[35:40],.2,'magenta',.5)
 
-fileopen(f'''
+fo(f'''
 color("blue") p_line3dc({sec},.3);
 {txt1}{txt2}{txt3}{txt4}
 ''')
@@ -6170,7 +6169,7 @@ txt2=dim_radial(sec[12:20],.2,'magenta',.5)
 txt3=dim_radial(sec[22:30],.2,'magenta',.5)
 txt4=dim_radial(sec[32:40],.2,'magenta',.5)
 
-fileopen(f'''
+fo(f'''
 color("blue") p_line3dc({sec},.3);
 {txt1}{txt2}{txt3}{txt4}
 ''')
@@ -6201,7 +6200,7 @@ example:
 sec=corner_radius(pts1([[0,0,.2],[3,0,.2],[0,2,1.49],[-3,0,1.49]]),10)
 path=c2t3(circle(10))
 sol=path_extrude_closed(sec,path)
-fileopen(f'''
+fo(f'''
 {swp_c(sol)}
 color("blue")p_line3d({path},.1);
     ''')
@@ -6244,7 +6243,7 @@ example:
 sec=corner_radius(pts1([[0,0,.2],[3,0,.2],[0,2,1],[-3,0,1]]),10)
 path=helix(10,2.5,4,5.01)
 sol=path_extrude_open(sec,path)
-fileopen(f'''
+fo(f'''
 {swp(sol)}
 color("blue")p_line3d({path},.1);
     ''')
@@ -6289,7 +6288,7 @@ example:
 sec=corner_radius(pts1([[-15,0,2.4],[0,15,3],[30,0,3],[0,-15,2.4],[5,0,2.4],[0,20,7],[-40,0,7],[0,-20,2.4]]),15)
 os=linspace(-2.5,50,50)
 sec1=[offset(sec,i) for i in os] #
-fileopen(f'''
+fo(f'''
 color("magenta")for(p={sec1})p_line3dc(p,.1,1);
 color("blue")p_line3dc({sec},.1,1);
 ''') 
@@ -6368,7 +6367,7 @@ example:
 sec=corner_radius(pts1([[3,2,1],[8,3,3],[5,7,1],[-8,0,2],[-5,20,1]]),30)
 sec1=o_solid([2,3,5],sec,1,10)[0]
 sec2=offset_3d(sec1,-2)
-fileopen(f'''
+fo(f'''
 //original section
 color("blue")p_line3dc({sec1},.1);
 //offset section
@@ -6426,7 +6425,7 @@ a=cylinder(r=10,h=50,s=100)
 b=plane([-1,0,1],[100,100],[0,0,15])
 l1=ip_sol2sol(b,a)
 l2=i_p_p(a,l1,5)
-fileopen(f'''
+fo(f'''
 %{swp_surf(b)}
 %{swp(a)}
 color("blue") p_line3dc({l1},.3);
@@ -6462,7 +6461,7 @@ l1=ip_sol2sol(b,a)
 l2=i_p_p(a,l1,5)
 n1,intcpt=best_fit_plane(l2)
 pl1=plane(n1,[100,100],intcpt)
-fileopen(f'''
+fo(f'''
 //best fit plane
 %{swp_surf(pl1)}
 color("magenta") p_line3dc({l2},.3);
@@ -6569,7 +6568,7 @@ considers the min sum method
 example:
 a=cr2dt([[0,0,2],[10,0,2],[0,10,2],[-10,0,2]],11)
 s1=sec2surface_1(a)
-fileopen(f'''
+fo(f'''
 color("magenta") p_line3dc({a},.1);
 color("blue") for(p={s1}) p_line3d(p,.05,1);
 {swp_surf(c23(s1))}
@@ -6588,7 +6587,7 @@ considers the max sum method
 example:
 a=cr2dt([[0,0,2],[10,0,2],[0,10,2],[-10,0,2]],11)
 s1=sec2surface_2(a)
-fileopen(f'''
+fo(f'''
 color("magenta") p_line3dc({a},.1);
 color("blue") for(p={s1}) p_line3d(p,.05,1);
 {swp_surf(c23(s1))}
@@ -6620,7 +6619,7 @@ example:
 a=circle(20)
 b=tangent_on_cir_from_pnt(a,a[10],15)
 c=tangent_on_cir_from_pnt(a,a[10],15,side=1)
-fileopen(f'''
+fo(f'''
 color("magenta") p_line3dc({a},.3);
 color("blue") p_line3d({b},.3);
 color("orange") p_line3d({c},.3);
@@ -6730,7 +6729,7 @@ example:
 p0=pts2([[0,0,0],[10,-2,2],[0,10,3],[5,-3,-6],[-5,5,1],[0,7,-2],[0,0,5]])
 c1=bezier(p0,100)
 s1=bspline_open(p0,2,100)
-fileopen(f'''
+fo(f'''
 color("blue")points({p0},.5);
 color("cyan")p_line3d({c1},.05,rec=1);
 color("green")p_line3d({s1},.05,rec=1);
@@ -6770,7 +6769,7 @@ example:
 px=pts2([[0,0,0],[5,2,3],[5,8,5],[-15,-3,1],[-3,5,-5],[3,5,6],[-13,-10,10]])
 # b=bspline_open(px,2,100)
 c=bspline_closed(px,2,100)
-fileopen(f'''
+fo(f'''
 color("blue")points({px},.5);
 color("cyan")p_line3d({px},.1);
 color("blue")p_line3d({c},.1);
@@ -6818,7 +6817,7 @@ l1=rot('x90',l1)
 l2=rot('z90',l1)
 s1=surface_from_2_waves(l1,l2,10)
 s2=bspline_surface(s1,deg1=3,deg2=3,s1=50,s2=50,a=[0,0])
-fileopen(f'''
+fo(f'''
 color("magenta") p_line3d({l1},.3);
 color("blue") p_line3d({l2},.3);
 //color("orange") for(p={s1}) p_line3d(p,.1);
@@ -6994,7 +6993,7 @@ def ip_triangle_surf(ip,sol1):
     t=x[:,:,0].round(3)
     u=x[:,:,1].round(3)
     v=x[:,:,2].round(3)
-    decision=(t>=0)&(t<=1)&(u>=0)&(u<=1)&(v>=0)&(v<=1)&((u+v)<=1)
+    decision=(t>=-0.03)&(t<=1.03)&(u>=-0.03)&(u<=1.03)&(v>=-0.03)&(v<=1.03)&((u+v)<=1.03)
     tri_1=array([tri[decision[i]][0] for i in range(len(ip))]).tolist()
 
     return tri_1
@@ -7031,7 +7030,7 @@ c1=circle(10)
 p1=cr2dt([[3,0],[-3,0,3],[0,6,2],[-2,0]])
 sol=prism(c1,p1)
 sol1=translate([40,0,0],prism2cpo(sol))
-fileopen(f'''
+fo(f'''
 {swp_c(sol)}
 {swp_c(sol1)}
 ''')
@@ -7060,7 +7059,7 @@ s2=c23(a_(grid2d(circle(10),2)).reshape(11,11,2))
 v1=[1,0,1]
 s3=psos(c_(s1),s2,v1)
 
-fileopen(f'''
+fo(f'''
 //surface to project upon
 %{swp(s1)}
 // surface to project
@@ -7110,7 +7109,7 @@ s2=c23(a_(grid2d(circle(10),2)).reshape(11,11,2))
 v1=[1,0,1]
 s3=psos(c_(s1),s2,v1)
 
-fileopen(f'''
+fo(f'''
 //surface to project upon
 %{swp(s1)}
 // surface to project
@@ -7199,7 +7198,7 @@ s3=psos_v_1(c_(s1),s2,l1,unidirection=1)
 gd=a_(s3).reshape(-1,3)
 vx=[vcost1(l1,p) for p in gd]
 vx=cpo([vx,gd])
-fileopen(f'''
+fo(f'''
 //surface to project upon
 %{swp(s1)}
 // surface to project
@@ -7371,7 +7370,7 @@ example:
 l1=cr2dt([[0,0],[10,0],[-3,7],[15,-5],[0,10],[-10,10],[-15,-5]])
 # l2=interpolation_bspline_open(l1,50)
 l3=interpolation_bspline_closed(l1,50)
-fileopen(f'''
+fo(f'''
 color("blue") points({l1},.5);
 //color("magenta") p_line3d({l2},.2);
 color("cyan") p_line3d({l3},.2);
@@ -7401,7 +7400,7 @@ example:
 l1=cr2dt([[0,0],[10,0],[-3,7],[15,-5],[0,10],[-10,10],[-15,-5]])
 l2=interpolation_bspline_open(l1,50)
 #l3=interpolation_bspline_closed(l1,50)
-fileopen(f'''
+fo(f'''
 color("blue") points({l1},.5);
 color("magenta") p_line3d({l2},.2);
 //color("cyan") p_line3d({l3},.2);
@@ -7431,7 +7430,7 @@ l1=rot('x90',l1)
 l2=rot('z90',l1)
 s1=surface_from_2_waves(l1,l2,10)
 s2=interpolation_surface_open(s1,f1=10,f2=10,s1=50,s2=50)
-fileopen(f'''
+fo(f'''
 color("magenta") p_line3d({l1},.3);
 color("blue") p_line3d({l2},.3);
 //color("orange") for(p={s1}) p_line3d(p,.1);
@@ -7453,7 +7452,7 @@ l1=m_points1_o(rot('x90',l1),10)
 l2=m_points1_o(rot('z90',l1),10)
 s1=surface_from_2_waves(l1,l2,10)
 s2=bezier_surface(s1,s1=50,s2=50)
-fileopen(f'''
+fo(f'''
 color("magenta") p_line3d({l1},.3);
 color("blue") p_line3d({l2},.3);
 //color("orange") for(p={s1}) p_line3d(p,.1);
@@ -7835,7 +7834,7 @@ example:
     c1=circle(10,[10.1,0],s=100)
 p1=rot('x90',sinewave(25,3,1,100))
 c2=wrap_x(c1,p1)
-fileopen(f'''
+fo(f'''
 // original section
 color("magenta",.2) p_line3d({c1},.2);
 //path
@@ -8013,7 +8012,7 @@ l1=rot('x90',arc_2p([0,0],[50,0],50,s=50))
 l2=translate([0,50,0],rot('z30',l1))
 p0=[25,25,-5]
 surf1=surface_reshape_with_2lines_and_pnt(l1,l2,p0,50)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[l1,l2]}) p_line3d(p,.3);
 {swp_surf(surf1)}
 color("magenta") points({[p0]},1);
@@ -8072,7 +8071,7 @@ switch the orientation of the solid
 example:
 sol=cylinder(r=10,h=20)
 sol1=switch_orientation(sol)
-fileopen(f'''
+fo(f'''
 {swp_surf(sol1)}
 ''')
     """
@@ -8118,7 +8117,7 @@ l1=homogenise(l1,1,1)
 l2=point_vector([0,10,5],[1,0,0])
 l2=[vcost1(l2,p) for p in l1]
 l3=mid_line(l1,l2)
-fileopen(f'''
+fo(f'''
 //original line
 color("blue") p_line3d({l1},.3);
 // line 2
@@ -8197,7 +8196,7 @@ v1=lines2vectors(cpo([l2,l1]))
 s1=sphere(15)
 l3=plos_v_2(c_(s1),l1,v1,unidirection=1)
 l4=cpo([l2,l3])
-fileopen(f'''
+fo(f'''
 %{swp(s1)}
 //original line
 color("blue") p_line3d({l1},.3);
@@ -8222,7 +8221,7 @@ l1=m_points1_o(point_vector([0,1,0],[5,5,0]),10)
 l2=point_vector([0,-5,-2],[5,0,0])
 l3=plos_v_1(s1,l1,l2)
 x1=[ vcost1(l2,p) for p in l1]
-fileopen(f'''
+fo(f'''
 %{swp(c_(s1))}
 // line to project
 color("blue") p_line3d({l1},.2);
@@ -8248,7 +8247,7 @@ s1=sphere(10)
 l1=m_points1_o(point_vector([0,1,0],[5,5,0]),10)
 v1=[0,0,-5]
 l2=plos_v(s1,l1,v1)
-fileopen(f'''
+fo(f'''
 %{swp(c_(s1))}
 color("blue") p_line3d({l1},.2);
 color("cyan") p_line3d({l2},.2);
@@ -8265,7 +8264,7 @@ convert lines to vectors
 example:
 c1=circle(10)
 l1=lines2vectors(seg(c1))
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({c1},.2);
 color("cyan") for(p={l1})p_line3d([[0,0],p],.02);
 ''')
@@ -8280,7 +8279,7 @@ p0=[10,5,5]
 p1=mirror_point(p0,n1=[0,1,0],loc=[0,0,0])
 p2=mirror_point(p0,n1=[1,0,0],loc=[0,0,0])
 p3=mirror_point(p0,n1=[0,0,1],loc=[0,0,0])
-fileopen(f'''
+fo(f'''
 color("blue") points({[p0]},.5);
 color("cyan") points({[p1]},.5);
 color("magenta") points({[p2]},.5);
@@ -8296,7 +8295,7 @@ example:
 # cr3d is the short name of this function
 l1=cr3d([[0,0,0,5],[0,10,0,5],[20,10,0,5],[20,0,0,5],[20,0,10,5],[20,10,10,5],
          [0,10,10,5],[0,0,10,5]],20)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l1},.3);
 ''')
     """
@@ -8329,7 +8328,7 @@ example:
 cir1=circle(10)
 cir2=circle(5,[15,6])
 p0=twoCircleCrossTangent(cir1,cir2)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[cir1,cir2]}) p_line3d(p,.3);
 color("magenta") points({p0},.5);
 %color("cyan",.2) p_line3d({p0},.3);
@@ -8391,7 +8390,7 @@ example:
 cir1=circle(10)
 cir2=circle(5,[15,6])
 p0=twoCircleTangentPoints(cir1,cir2)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[cir1,cir2]}) p_line3d(p,.3);
 color("magenta") points({p0},.5);
 %color("cyan",.2) p_line3d({p0},.3);
@@ -8471,7 +8470,7 @@ example:
 # for this to work library "skimage" needs to be imported
 from skimage import measure
 l1=c23(circle(5))
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l1},.3);
 {points_to_meshes(l1,.5,10)}
 ''')
@@ -8561,7 +8560,7 @@ creates a grid of points to cover a 2d shape
 example:
 l1=circle(5)
 l2=grid2d(l1,1,offset=2)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l1},.3);
 color("magenta") points({l2},.1);
 //%color("cyan",.2) p_line3d({l2},.05);
@@ -8600,7 +8599,7 @@ horizontal lines are drawn covering the bounding box of a sketch
 example:
 l1=circle(5)
 l2=h_lines(l1,n=10)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l1},.3);
 color("magenta") for(p={l2}) p_line3d(p,.1);
 ''')
@@ -8618,7 +8617,7 @@ horizontal lines are drawn covering the closed loop secton
 example:
 l1=circle(5)
 l2=h_lines_sec(l1,n=10)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l1},.3);
 color("magenta") for(p={l2}) p_line3d(p,.1);
 ''')
@@ -8639,7 +8638,7 @@ verticle lines are drawn covering the bounding box of a sketch
 example:
 l1=circle(5)
 l2=v_lines(l1,n=10)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l1},.3);
 color("magenta") for(p={l2}) p_line3d(p,.1);
 ''')
@@ -8657,7 +8656,7 @@ verticle lines are drawn to fill the closed section
 example:
 l1=cr2dt([[0,0,2],[10,0,2],[0,10,2],[-10,0,2]],10)
 l2=v_lines_sec(l1,n=10)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l1},.3);
 color("magenta") for(p={l2}) p_line3d(p,.1);
 ''')
@@ -8680,7 +8679,7 @@ control points can be given as turtle movement e.g. [[0,0],[10,0],[0,10]] means 
 example:
 # cr2dt is the short name of this function. below is square with rounded corners with radius 2 mm at each corner
 l1=cr2dt([[0,0,2],[10,0,2],[0,10,2],[-10,0,2]],10)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l1},.3);
 ''')
     """
@@ -8785,7 +8784,7 @@ example:
 # cr3dt is the short name of this function
 l1=cr3dt([[0,0,0,5],[0,10,0,5],[20,0,0,5],[0,-10,0,5],[0,0,10,5],[0,10,0,5],
          [-20,0,0,5],[0,-10,0,5]],20)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({l1},.3);
 ''')
     """
@@ -8822,7 +8821,7 @@ l1=point_vector([0,0],[15,10])
 l2=rot2d(100,l1)
 p0,p1=s_int1([l1,l2]+seg(c1))
 l3=trim_sec_ip(c1,p0,p1)
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({c1},.2);
 color("cyan") p_line3d({l1},.2);
 color("grey") p_line3d({l2},.2);
@@ -8868,7 +8867,7 @@ example:
 c1=circle(10,[5,0])
 c2=[rot2d(i,c1) for i in linspace(0,360,5)[:-1]]
 c3=homogenise(c2,pitch=1,closed_loop=1)
-fileopen(f'''
+fo(f'''
 color("blue") points({c3},.2);
 ''')
     """
@@ -8960,7 +8959,7 @@ fillet1=fillet_line_circle(line,cir1,r2,1)
 fillet2=fillet_line_circle(line,cir1,r2,2)
 fillet3=fillet_line_circle(line,cir1,r2,3)
 fillet4=fillet_line_circle(line,cir1,r2,4)
-fileopen(f'''
+fo(f'''
 color("blue",.1)p_line({line},.3);
 color("violet",.2)p_line({cir1},.3);
 color("cyan")p_lineo({fillet1},.3);
@@ -9018,7 +9017,7 @@ fillet5=fillet_line_circle_internal(line,cir1,1,1)
 fillet6=fillet_line_circle_internal(line,cir1,r2,2)
 fillet7=fillet_line_circle_internal(line,cir1,1,3)
 fillet8=fillet_line_circle_internal(line,cir1,r2,4)
-fileopen(f'''
+fo(f'''
 color("blue",.1)p_line({line},.3);
 color("violet",.2)p_line({cir1},.3);
 color("blue")p_lineo({fillet5},.3);
@@ -9071,7 +9070,7 @@ l1=point_vector([-10,-5],[10,0])
 l2=extend_line(l1,c1)
 txt1=label_linear(l1,"original line",3,text_size=.5)
 txt2=label_linear(l2,"extended line",-3, text_size=.5)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[c1]}) p_line3d(p,.3);
 %color("cyan",.2) p_line3d({l1},.3);
 color("magenta") p_line3d({l2},.1);
@@ -9103,7 +9102,7 @@ c1=circle(10)
 c2=[translate_2d([i,0,0],c1) for i in linspace(0,60,5)]
 l1=point_vector([-10,-5],[80,0])
 p0=line_multi_sections_ip(l1,c2)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={c2}) p_line3d(p,.3);
 color("cyan") p_line3d({l1},.3);
 color("magenta") points({p0},.5);
@@ -9135,7 +9134,7 @@ radial dimensions with defined arc or circle 'a1'
 example:
 c1=circle(10)
 txt1=dim_radial(c1)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[c1]}) p_line3d(p,.1);
 {txt1}
 ''')
@@ -9180,7 +9179,7 @@ angular dimension between 2 lines 'l1' and 'l2'
 example:
 p0,p1,p2=[[10,0],[0,0],rot2d(120,[10,0])]
 txt1=dim_angular([p0,p1],[p1,p2])
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[[p0,p1,p2]]}) p_line3d(p,.1);
 color("magenta") for(p={[[p0,p1,p2]]}) points(p,.3);
 {txt1}
@@ -9218,7 +9217,7 @@ l1=helix(10,10,5,20)
 l2=point_vector([0,0,0],[0,0,1])
 p0=[ vcost1(l2,p) for p in l1]
 l3=cpo([l1,p0])
-fileopen(f'''
+fo(f'''
 color("blue") points({l1},.3);
 color("magenta") points({p0},.3);
 color("cyan") p_line3d({l2},.3);
@@ -9238,7 +9237,7 @@ linear dimensions with defined line l1
 example:
 l1=point_vector([-5,-5],[10,4])
 txt1=dim_linear(l1)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[l1]}) p_line3d(p,.3);
 {txt1}
 ''')
@@ -9294,7 +9293,7 @@ s1=h_lines_sec(c1,100)
 path=rot('y90',circle(40.2/(2*pi)+.2))
 c2=wrap_around(c1,path)
 s2=[wrap_around(p,path) for p in s1]
-fileopen(f'''
+fo(f'''
 color("blue") p_line3d({c1},.2);
 color("cyan") p_line3d({path},.2);
 color("magenta") p_line3d({c2},.2);
@@ -9313,7 +9312,7 @@ example:
 l1=point_vector([-20,-20],[50,40])
 c1=circle(20)
 p0=s_int1_first([l1]+seg(c1))
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[l1]}) p_line3d(p,.3);
 color("cyan") p_line3d({c1},.3);
 color("magenta") points({p0},.5);
@@ -9346,7 +9345,7 @@ a=helix(10,10,5,20)
 l1=point_vector([0,0,10],[0,0,30])
 b=points_projection_on_line_within(l1,a)
 l2=[[p,vcost_within(l1,p)] for p in a if vcost_within(l1,p)!=[]]
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[a]}) points(p,.3);
 color("cyan") p_line3d({l1},.1);
 color("magenta") for(p={[b]}) points(p,.2);
@@ -9433,7 +9432,7 @@ function shows the angle p0p1p2 only in 2d coordinate system
 example:
 p0,p1,p2=[[10,0],[0,0],rot2d(120,[10,0])]
 txt1=dim_angular([p0,p1],[p1,p2])
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[[p0,p1,p2]]}) p_line3d(p,.1);
 color("magenta") for(p={[[p0,p1,p2]]}) points(p,.3);
 {txt1}
@@ -9453,7 +9452,7 @@ example:
 l1=turtle3d([[0,10,0],[0,0,20]])
 l2=sinewave(50,3,2,50)
 l3=fit_pline2line(l2,l1)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[l1]}) p_line3d(p,.1);
 color("magenta") for(p={[l2]}) p_line3d(p,.3);
 color("cyan") for(p={[l3]}) p_line3d(p,.3);
@@ -9498,7 +9497,7 @@ txt1=label_linear([l1[0],l1[-1]],"L1",10,text_size=3)
 txt2=label_linear([l2[0],l2[-1]],"L2",-10,text_size=3)
 txt3=label_linear([l3[0],l3[-1]],"L3",-10,text_size=3)
 txt4=label_linear([l4[0],l4[-1]],"L4",10,text_size=3)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[l1,l2,l3,l4]}) p_line3d(p,.3);
 {txt1}{txt2}{txt3}{txt4}
 %{swp_surf(surf1)}
@@ -9564,7 +9563,7 @@ txt2=label_radial(l2[10:],"L2",text_size=2)
 txt3=label_radial(l3[20:],"L3",text_size=2)
 txt4=label_radial(l4[30:],"L4",text_size=2)
 txt5=label_radial(l5[40:],"L5",text_size=2)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[l1,l2,l3,l4,l5]}) p_line3dc(p,.3);
 {txt1}{txt2}{txt3}{txt4}{txt5}
 difference(){{
@@ -9580,7 +9579,7 @@ difference(){{
     sol1=solid_from_2surfaces(f3,f4)
     return sol1
 
-def fileopen(txt='',fname='trial.scad'):
+def fo(txt='',fname='trial.scad'):
    with open(fname,'w+') as f:
        f.write(txt)
        f.write(f'''
@@ -10103,7 +10102,7 @@ a=cr3dt([[0,0,0],[10,0,0],[0,10,3],[-5,7,5],[-15,-1,-10]])
 pl1=plane([1,1,20],[100,100],[0,0,10])
 b=plos(pl1,a,[1,1,20],unidirection=0)
 c=path_offset3d(b,1)
-fileopen(f'''
+fo(f'''
 %{swp_surf(pl1)}
 //color("blue") p_line3d({a},.3);
 color("magenta") p_line3d({b},.3);
@@ -10137,7 +10136,7 @@ s1=sphere(20)
 c1=rot('y45',cylinder(r=5,h=50))
 l1=ip_sol2sol(s1,c1)
 l2=ilo(l1,s1,c1,-3,1)
-fileopen(f'''
+fo(f'''
 %{swp(s1)}
 %{swp(c1)}
 color("blue") p_line3dc({l1},.3);
@@ -10166,7 +10165,7 @@ example:
 c1=cylinder(r=10,h=50,s=10)
 c2=translate([40,0,0],c1)
 c2=c_(c2)
-fileopen(f'''
+fo(f'''
 {swp_surf(c1)}
 {swp_surf(c2)}
 ''')
@@ -10180,7 +10179,7 @@ example:
 c1=circle(20,[15,0])
 c1,c2,c3,c4=[ rot2d(i,c1) for i in linspace(0,360,5)[:-1]]
 c4=union([c1,c2,c3,c4],5,1)
-fileopen(f'''
+fo(f'''
 color("blue",.2) for(p={[c1,c2,c3,c4]}) p_line3dc(p,.3);
 color("magenta") p_line3dc({c4},.32);
 ''')
@@ -10198,7 +10197,7 @@ example:
 s1=sphere(10)
 s2=sphere(7,[15,15,0])
 f1=fillet_2spheres(s1,s2,7,s1=10,s2=40)
-fileopen(f'''
+fo(f'''
 {swp(s1)}
 {swp(s2)}
 {swp(f1)}
@@ -10246,7 +10245,7 @@ example:
 a=cr3dt([[0,0,0],[10,0,0],[0,10,3],[-5,7,5],[-15,-1,-10]])
 a=m_points1(a,3)
 b=bezier_c(a,100)
-fileopen(f'''
+fo(f'''
 // control points
 color("blue") for(p={[a]}) points(p,.3);
 color("blue",.2) p_line3dc({a},.2);
@@ -10354,7 +10353,7 @@ c1=circle(10)
 c2=circle(8,[13,-4])
 a1=two_cir_tarc_internal(c1,c2,r=2,s=20)
 a2=two_cir_tarc_internal(c2,c1,r=1,s=20)
-fileopen(f'''
+fo(f'''
 color("blue") for(p={[c1,c2]}) p_line3dc(p,.1);
 color("magenta") p_line3d({a1},.1);
 color("cyan") p_line3d({a2},.1);
@@ -10439,7 +10438,7 @@ def convex_hull_3d(pnts):
         sec5=translate(a-b,sec4)
     return sec5
 
-def ip_unsorted(sol1,sol2):
+def ip_unordered(sol1,sol2):
     '''
     calculates the maximum number of intersection points between 2 solids in random order
     '''
@@ -10473,6 +10472,11 @@ def ip_unsorted(sol1,sol2):
     
     a=unordered_ip(sol1,sol2)
     b=unordered_ip(sol2,sol1)
+    return a+b
+
+def ip_unsorted(sol1,sol2):
+    a=ip(sol1,sol2)
+    b=ip(sol2,sol1)
     return a+b
 
 def xyc(pnts):
