@@ -4167,7 +4167,7 @@ color("blue")for(p={tri_1})p_line3dc(p,.04,rec=1);
     t=x[:,:,0]
     u=x[:,:,1]
     v=x[:,:,2]
-    decision=(t>=-0.05)&(t<=1.05)&(u>=-0.05)&(u<=1.05)&(v>=-0.05)&(v<=1.05)&((u+v)<=1.05)
+    decision=(t>=-0.01)&(t<=1.01)&(u>=-0.01)&(u<=1.01)&(v>=-0.01)&(v<=1.01)&((u+v)<=1.01)
     tri_1=array([tri[decision[i]][0] for i in range(len(ip))]).tolist()
 
     return tri_1
@@ -4829,8 +4829,8 @@ color("magenta") p_line3d({l3},.3);
 ''')
     """
     p0=i_p2d(l1,l2)
-    p1=l1[a_([norm([p0,p]) for p in l1]).argsort()[-1]]
-    p2=l2[a_([norm([p0,p]) for p in l2]).argsort()[-1]]
+    p1=l1[a_([l_len([p0,p]) for p in l1]).argsort()[-1]]
+    p2=l2[a_([l_len([p0,p]) for p in l2]).argsort()[-1]]
     p_l=[p1,p0,p2] if cw([p1,p0,p2])==-1 else [p2,p0,p1]
     l1=[mid_point([p_l[1],p_l[0]]),p_l[0]]
     l2=[mid_point([p_l[1],p_l[2]]),p_l[2]]
@@ -6993,7 +6993,7 @@ def ip_triangle_surf(ip,sol1):
     t=x[:,:,0].round(3)
     u=x[:,:,1].round(3)
     v=x[:,:,2].round(3)
-    decision=(t>=-0.03)&(t<=1.03)&(u>=-0.03)&(u<=1.03)&(v>=-0.03)&(v<=1.03)&((u+v)<=1.03)
+    decision=(t>=-0.01)&(t<=1.01)&(u>=-0.01)&(u<=1.01)&(v>=-0.01)&(v<=1.01)&((u+v)<=1.01)
     tri_1=array([tri[decision[i]][0] for i in range(len(ip))]).tolist()
 
     return tri_1
