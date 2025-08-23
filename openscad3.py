@@ -4829,31 +4829,24 @@ color("magenta") p_line3d({l3},.3);
 ''')
     """
     p0=i_p2d(l1,l2)
-    p1=l1[a_([l_len([p0,p]) for p in l1]).argsort()[-1]]
-    p2=l2[a_([l_len([p0,p]) for p in l2]).argsort()[-1]]
-    p_l=[p1,p0,p2] if cw([p1,p0,p2])==-1 else [p2,p0,p1]
-    l1=[mid_point([p_l[1],p_l[0]]),p_l[0]]
-    l2=[mid_point([p_l[1],p_l[2]]),p_l[2]]
-    
-    l2=l2 if l_(a_(p0).round(4))!=l_(a_(l2[0]).round(4)) else flip(l2)
-    
-    clock=cw([l1[0],p0,l2[0]])
-    a1=ang_2lineccw(p0,l1[0],l2[0]) if clock==1 else \
-    ang_2linecw(p0,l1[0],l2[0])
-    a2=180-a1
-    l_1=r*tan(d2r(a2/2))
-    v1=array(l1[0])-array(p0)
-    v2=array(l2[0])-array(p0)
-    u1,u2=v1/norm(v1),v2/norm(v2)
+    # p1=l1[a_([l_len([p0,p]) for p in l1]).argsort()[-1]]
+    # p2=l2[a_([l_len([p0,p]) for p in l2]).argsort()[-1]]
+    p1=l1[0]
+    p2=l2[-1]
+    clock=cw([p1,p0,p2])
     if side==0:
-        p1=array(p0)+u1*l_1
-        p2=array(p0)+u2*l_1
-        arc_1=arc_2p(p1,p2,r,clock,s)
-    elif side==1:
-        p1=array(p0)-u1*l_1
-        p2=array(p0)-u2*l_1
-        arc_1=arc_2p(p1,p2,r,clock,s)
-    return arc_1
+        p3=path_offset([p1,p0,p2],-r)[1] if clock==-1 else \
+        path_offset([p1,p0,p2],r)[1]
+        p4=vcost1(l1,p3)
+        p5=vcost1(l2,p3)
+        arc1=arc_2p(p4,p5,r,clock,s)
+    if side==1:
+        p3=path_offset([p1,p0,p2],r)[1] if clock==-1 else \
+        path_offset([p1,p0,p2],-r)[1]
+        p4=vcost1(l1,p3)
+        p5=vcost1(l2,p3)
+        arc1=arc_2p(p4,p5,r,clock,s)
+    return arc1
     
 def cir_line_tangent(c1,l1,side=0):
     """
@@ -5582,8 +5575,10 @@ color("magenta") p_line3d({f1},.2);
 ''')
     """
     p0=i_p3d(l1,l2)
-    p1=l1[a_([norm([p0,p]) for p in l1]).argsort()[-1]]
-    p2=l2[a_([norm([p0,p]) for p in l2]).argsort()[-1]]
+    # p1=l1[a_([norm([p0,p]) for p in l1]).argsort()[-1]]
+    # p2=l2[a_([norm([p0,p]) for p in l2]).argsort()[-1]]
+    p1=l1[0]
+    p2=l2[-1]
     sec=[p1,p0,p2]
     sec1=rot_sec2xy_plane(sec)
     sec2=c32(sec1)
