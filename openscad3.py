@@ -2684,7 +2684,7 @@ color("cyan") p_line3dc({l2},.3);
     """
     vz=[0,0,-1]
     vz,v1=array([vz,v1])
-    v1=v1+[.0001,.0001,0]
+    # v1=v1+[.0001,.0001,0]
     nvzv1=cross(vz,v1)
     u1=v1/norm(v1)
     theta=r2d(arccos(u1@vz))
@@ -3874,7 +3874,7 @@ def align_sec_1(sec1,sec2):
     return sol2
 
 
-def convert_3lines2fillet_closed(pnt3,pnt2,pnt1,s=10,f=1, orientation=0,style=2):
+def convert_3lines2fillet_closed(pnt3,pnt2,pnt1,s=10, orientation=0,r=10,style=2):
     """
 Develops a fillet with 3 list of points in 3d space
 s: number of segments in the fillet, increase the segments in case finer model is required
@@ -3888,21 +3888,7 @@ color("blue") for(p={[l1,l2,l3]}) p_line3d(p,.3);
 {swp_c(f1)}
 ''')
     """
-    sol=l_(array([pnt3,pnt1,pnt2]).transpose(1,0,2))
-    sol1=[]
-    for i in range(len(sol)):
-        p0,p1,p2=sol[i]
-        p3=mid_point([p0,p2])
-        d=l_len([p0,p3])
-        d1=l_len([p3,p1])
-        p4=movePointOnLine([p3,p1],p3,d/f) if (d1>d or d1>.5) else p1
-        if style==0:
-            sol1.append(bspline_open([p0,mid_point([p0,p4]),mid_point([p4,p2]),p2],3,s)+[p1])
-        elif style==1:
-            sol1.append(bezier([p0,mid_point([p0,p4]),mid_point([p4,p2]),p2],s)+[p1])
-        elif style==2:
-            sol1.append(bezier([p0,p1,p2],s)+[p1])
-            
+    sol1=convert_3lines2fillet(pnt3,pnt2,pnt1,s=s, orientation=orientation,r=r,style=style)
     sol1=sol1+[sol1[0]]
     return sol1 if orientation==0 else cpo(sol1)[:-1]
 
