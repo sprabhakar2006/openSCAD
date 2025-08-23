@@ -2536,7 +2536,7 @@ def r2d(r):
     
 
 
-def convert_3lines2fillet(pnt3,pnt2,pnt1,s=10,f=1,orientation=0,style=2):
+def convert_3lines2fillet(pnt3,pnt2,pnt1,s=10,orientation=0,r=10,style=2):
     """
 Develops a fillet with 3 list of points in 3d space
 s: number of segments in the fillet, increase the segments in case finer model is required
@@ -2552,19 +2552,20 @@ color("blue") for(p={[l1,l2,l3]}) p_line3d(p,.3);
 {swp_c(f1)}
 ''') 
     """
+    l4=i_p_t(pnt1)
+    r=1e5 if r==0 else r
     sol=l_(array([pnt3,pnt1,pnt2]).transpose(1,0,2))
     sol1=[]
     for i in range(len(sol)):
         p0,p1,p2=sol[i]
-        p3=mid_point([p0,p2])
-        d=l_len([p0,p3])
-        d1=l_len([p3,p1])
-        p4=movePointOnLine([p3,p1],p3,d/f) if (d1>d or d1>.5) else p1
-        if style==0:
-            sol1.append(bspline_open([p0,mid_point([p0,p4]),mid_point([p4,p2]),p2],3,s)+[p1])
-        elif style==1:
-            sol1.append(bezier([p0,mid_point([p0,p4]),mid_point([p4,p2]),p2],s)+[p1])
-
+        la,lb,lc=a_([p0,p1,p2])
+        lba=lb-la
+        lbc=lb-lc
+        v1=cross(lba,lbc)
+        v1=v1/norm(v1)
+        clock=1 if norm(v1-l4[i])>1 else -1
+        if style==1:
+            sol1.append(arc_2p_3d(l4[i],p0,p2,r,clock,s)+[p1])
         elif style==2:
             sol1.append(bezier([p0,p1,p2],s)+[p1])
 
@@ -4327,7 +4328,7 @@ offset_intersection_line_on_surface=o_3d_surf
 
 
 
-def ip_fillet(sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,f=1,edges_closed=1,c=0):
+def ip_fillet(sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,edges_closed=1,c=0):
     """
 calculates a fillet at the intersection of 2 solids.
 r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -4346,13 +4347,18 @@ fo(f'''
     """
     sol1=cpo(cpo(sol1)+[cpo(sol1)[0]])
     p1=ip_sol2sol(sol1,sol2,o)
-    p2=i_p_p(sol2,p1,r2)
-    p3=o_3d_rev(p1,sol1,r1,type=type,dist=dist,vx=vx,edges_closed=edges_closed,cg=c)
-    fillet1=convert_3lines2fillet(p3,p2,p1,s=s,style=style,f=f)
+    if style==1:
+        p2=i_p_p(sol2,p1,r2/2)
+        p3= o_3d_rev(p1,sol1,r1/2,type=type, dist=dist,vx=vx, edges_closed=edges_closed, cg=c)
+        fillet1=convert_3lines2fillet(p3,p2,p1,s=s,r=max([r1,r2]),style=1)
+    elif style==2:
+        p2=i_p_p(sol2,p1,r2)
+        p3= o_3d_rev(p1,sol1,r1,type=type, dist=dist,vx=vx, edges_closed=edges_closed, cg=c)
+        fillet1=convert_3lines2fillet(p3,p2,p1,s=s,style=2)
     
     return fillet1
 
-def ip_fillet_closed(sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,f=1,edges_closed=1,c=0):
+def ip_fillet_closed(sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,edges_closed=1,c=0):
     """
 calculates a fillet at the intersection of 2 solids.
 r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -4372,12 +4378,12 @@ fo(f'''
     p1=ip_sol2sol(sol1,sol2,o)
     p2=i_p_p(sol2,p1,r2)
     p3=o_3d_rev(p1,sol1,r1,type=type,dist=dist,vx=vx,edges_closed=edges_closed,cg=c)
-    fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s,style=style,f=f)
+    fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s,style=style)
     
     return fillet1
 
 
-def ip_fillet_surf(surf,sol,r1,r2,s=20,type=1,dist=0,vx=[],style=2,f=1,edges_closed=0,c=0):
+def ip_fillet_surf(surf,sol,r1,r2,s=20,type=1,dist=0,vx=[],style=2,edges_closed=0,c=0):
     """
 calculates a fillet at the intersection of surface with solid.
 r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -4398,7 +4404,7 @@ fo(f'''
     p1=ip_surf2sol(surf,sol)
     p2=i_p_p(sol,p1,r2)
     p3=o_3d_rev(p1,surf,r1,type=type,dist=dist,vx=vx,edges_closed=edges_closed,cg=c)
-    fillet1=convert_3lines2fillet(p3,p2,p1,s=s,style=style,f=f)
+    fillet1=convert_3lines2fillet(p3,p2,p1,s=s,style=style)
 
     return fillet1
 
@@ -4422,7 +4428,7 @@ fo(f'''
     p1=ip_surf2sol(surf,sol)
     p2=i_p_p(sol,p1,r2)
     p3=o_3d_rev(p1,surf,r1,type=type,dist=dist,vx=vx,edges_closed=edges_closed,cg=c)
-    fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s,style=style,f=f)
+    fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s,style=style)
 
     return fillet1
 
