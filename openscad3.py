@@ -10498,3 +10498,50 @@ def yzc(pnts):
     b=s2[:,1]
     c=s2[:,2]
     return l_(a_([a,b,c]).transpose(1,0).reshape(s1))
+
+def bp_mesh_from_points(pnts,normals,n=10000,f=3):
+    '''
+    creates a ball pivoting mesh from a list of points and normals
+    'n' is the max number of triangles required in the resultant mesh
+    'f' is a factor which can be increased to increase the ball size defining the mesh
+    '''
+    pcd=o3d.geometry.PointCloud()
+    pcd.points=o3d.utility.Vector3dVector(pnts)
+    pcd.normals=o3d.utility.Vector3dVector(normals)
+    distances=pcd.compute_nearest_neighbor_distance()
+    avg_dist=mean(distances)
+    radius=f*avg_dist
+    bp_mesh=o3d.geometry.TriangleMesh.create_from_point_cloud_ball_pivoting(pcd,
+                o3d.utility.DoubleVector([radius,radius*2]))
+    dc_mesh=bp_mesh.simplify_quadric_decimation(n)
+    tri_m=l_(a_(dc_mesh.vertices)[a_(dc_mesh.triangles)])
+    return tri_m
+
+
+def poisson_mesh_from_points(pnts,normals,n=10000):
+    '''
+    creates poisson's mesh from points and normals
+    'n' is the max number of triangles required in the resultant mesh
+    '''
+    pcd=o3d.geometry.PointCloud()
+    pcd.points=o3d.utility.Vector3dVector(pnts)
+    pcd.normals=o3d.utility.Vector3dVector(normals)
+    bp_mesh=o3d.geometry.TriangleMesh.create_from_point_cloud_poisson(pcd,depth=8,width=0,scale=1.1,linear_fit=False)
+    dc_mesh=bp_mesh[0].simplify_quadric_decimation(n)
+    tri_m=l_(a_(dc_mesh.vertices)[a_(dc_mesh.triangles)])
+    return tri_m
+
+def alpha_mesh_from_points(pnts,normals,alpha=.5,n=10000):
+    '''
+    creates alpha shape mesh from pointa and normals.
+    'alpha' is a factor need to be defined based on the mesh quality, 
+    it can be any number upto around 20
+    'n' is the max number of triangles required in the resultant mesh
+    '''
+    pcd=o3d.geometry.PointCloud()
+    pcd.points=o3d.utility.Vector3dVector(pnts)
+    pcd.normals=o3d.utility.Vector3dVector(normals)
+    bp_mesh=o3d.geometry.TriangleMesh.create_from_point_cloud_alpha_shape(pcd,alpha)
+    dc_mesh=bp_mesh.simplify_quadric_decimation(n)
+    tri_m=l_(a_(dc_mesh.vertices)[a_(dc_mesh.triangles)])
+    return tri_m
