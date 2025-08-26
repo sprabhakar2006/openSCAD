@@ -2552,7 +2552,7 @@ color("blue") for(p={[l1,l2,l3]}) p_line3d(p,.3);
 {swp_c(f1)}
 ''') 
     """
-    l4=i_p_t(pnt1)
+    l4=i_p_t_o(pnt1)
     r=1e5 if r==0 else r
     sol=l_(array([pnt3,pnt1,pnt2]).transpose(1,0,2))
     sol1=[]
