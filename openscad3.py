@@ -4,8 +4,8 @@ import time
 from scipy.spatial import cKDTree, Delaunay, ConvexHull
 import sympy as sp
 import math
-from skimage import measure
-import open3d as o3d
+# from skimage import measure
+# import open3d as o3d
 # from stl import mesh
 
 def arc(radius=0,start_angle=0,end_angle=0,cp=[0,0],s=20):
@@ -3749,6 +3749,8 @@ def l_sec_ip_3d(sec,line):
     pnts=translate(array(sec).mean(0),axis_rot(a1,pnts,-t1)) if pnts!=[] else []
     return pnts
 
+line_section_ip_3d=l_sec_ip_3d
+
 def path_offset_n(sec,r):
     sec=flip(sec) if cw(sec)==1 else sec
     r=round(r,3)
@@ -3837,7 +3839,7 @@ This calculates the center of the bounding box for a solid.
     z_max=array(sol)[:,:,2].max()
     z_min=array(sol)[:,:,2].min()
 
-    return [array([x_max,x_min]).mean(),array([y_max,y_min]).mean(),array([z_max,z_min]).mean()]
+    return l_([array([x_max,x_min]).mean(),array([y_max,y_min]).mean(),array([z_max,z_min]).mean()])
     
 
     
@@ -10545,3 +10547,22 @@ def alpha_mesh_from_points(pnts,normals,alpha=.5,n=10000):
     dc_mesh=bp_mesh.simplify_quadric_decimation(n)
     tri_m=l_(a_(dc_mesh.vertices)[a_(dc_mesh.triangles)])
     return tri_m
+
+def points_near_line(list_of_points, line, dist=.2):
+    '''
+    find all the points which are at < distance 'dist' from the line from the list_of_points
+    '''
+    a=a_(list_of_points)
+    b=a_(seg(line)[:-1])
+    # a=concatenate([l1,l2,l3])
+    # b=a_(seg(cpo(sol2)[0])[:-1])
+    v1=a_(lines2vectors(b))
+    d1=norm(v1,axis=1)
+    v2=a[None,:]-b[:,0][:,None]
+    x1=einsum('ik,ijk->ij',v1,v2)
+    x2=einsum('ij,i->ij',x1,1/d1)
+    x3=norm(cross(v1[:,None],v2),axis=2)/d1[:,None]
+    
+    pnts=l_(a_([a]*len(b))[(x2<=d1[:,None])&(x2>=0)&(x3<=dist)])
+    pnts=l_(a_(pnts)[a_([timeToReachPoint(p,line,dist) for p in pnts]).argsort()])
+    return pnts
