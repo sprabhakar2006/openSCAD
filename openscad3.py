@@ -8821,7 +8821,7 @@ color("magenta") p_line3d({l3},.3);
     sec=sec+[sec[0]]
     c2=lineFromPointToPointOnLine(sec,p0,p1,dist) if side==0 else lineFromPointToPointOnLine(sec,p1,p0,dist)
     c2=lineFromPointTillEnd(sec,c2[0],dist)+lineFromStartTillPoint(sec,c2[1],dist) if len(c2)==2 else c2
-    return remove_duplicates(c2)
+    return remove_duplicates(c2) if side==0 else flip(remove_duplicates(c2))
 
 def homogenise_points(a=[],pitch=1,closed_loop=0):
     """
