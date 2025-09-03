@@ -4,8 +4,9 @@ import time
 from scipy.spatial import cKDTree, Delaunay, ConvexHull
 import sympy as sp
 import math
+from numba import njit, jit
 # from skimage import measure
-# import open3d as o3d
+import open3d as o3d
 # from stl import mesh
 
 def arc(radius=0,start_angle=0,end_angle=0,cp=[0,0],s=20):
@@ -1371,7 +1372,7 @@ color("magenta",.2) p_line3dc({s2},.3);
 
 resize2d_centered=rsz2dc
 
-
+@njit
 def ip(sol1,sol2):
     """
 function to calculate intersection point between two 3d prisms. 
@@ -10566,3 +10567,36 @@ def points_near_line(list_of_points, line, dist=.2):
     pnts=l_(a_([a]*len(b))[(x2<=d1[:,None])&(x2>=0)&(x3<=dist)])
     pnts=l_(a_(pnts)[a_([timeToReachPoint(p,line,dist) for p in pnts]).argsort()])
     return pnts
+
+def sol2path_closed(sol,path):
+    """
+function to extrude a solid to a closed loop path
+example:
+c1=circle(5)
+p1=rot2d(90,sinewave(100,5,1,50))
+s3=prism(c1,p1)
+p2=c23(arc(20,0,360,[50,50],51))
+s3=sol2path_closed(s3,p2)
+fo(f'''
+{swp(s3)}
+''')
+    """
+    sol1=c3t2(sol)
+    zpath=[[0,0,p[0][2]] for p in sol]
+    path2=path2path1(zpath,path)
+    sol2=align_sol_1(path_extrude2msec_closed(sol1,path2))
+    return sol2
+
+def path_extrude2msec_closed(sec_list,path):
+    p1=path
+    p2=path[1:]+[path[0]]
+    p1,p2=array([p1,p2])
+    v1=p2-p1
+    u1=v1/norm(v1,axis=1).reshape(-1,1)
+    v2=concatenate([[(u1[-1]+u1[0])/2], (u1[1:]+u1[:-1])/2])
+    sec2=[]
+    for i in range(len(path)):
+        sec1=translate(path[i],sec2vector(v2[i],sec_list[i]))
+        sec2.append(sec1)
+    sec2=sec2+[sec2[0]]
+    return sec2
