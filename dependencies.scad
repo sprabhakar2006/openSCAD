@@ -189,10 +189,10 @@ function arc(radius,ang1=0,ang2=355,cp=[0,0],s=20)=[for(i=[ang1:(ang2-ang1)/s:an
 ////example:
 //%p_line(circle(5),.2);
 //%p_line(circle(3,[7,0]),.2);
-//fillet=2cir_fillet(r1=5,r2=3,c1=[0,0],c2=[7,0],r=1);
+//fillet=fillet_2cir(r1=5,r2=3,c1=[0,0],c2=[7,0],r=1);
 //p_line(fillet,.2);
     
-function 2cir_fillet(r1=10,r2=10,c1=[0,0],c2=[20,0],r=10)=
+function fillet_2cir(r1=10,r2=10,c1=[0,0],c2=[20,0],r=10)=
 let(
 l1=norm(c2-c1),l2=r1+r,l3=r2+r,
 t=(l1^2+l2^2-l3^2)/(2*l1),
@@ -218,10 +218,10 @@ arc4=arc(r1,a5,a6<a5?a6+360:a6,c1)
 concat(arc2,arc1);
 
 //function to draw the fillet radius "r" between the 2 circle with radiuses "r1" and "r2" centered at "c1" and "c2" respectively.This function gives an additional flexibility for drawing fillet only one side. e.g try following example
-//fillet=2cir_filleto(r1=10,r2=10,c1=[0,0],c2=[20,0],r=10);
+//fillet=filleto_2cir(r1=10,r2=10,c1=[0,0],c2=[20,0],r=10);
 //p_lineo(fillet[0],.1);
 
-function 2cir_filleto(r1=10,r2=10,c1=[0,0],c2=[20,0],r=10)=
+function filleto_2cir(r1=10,r2=10,c1=[0,0],c2=[20,0],r=10)=
 let(
 l1=norm(c2-c1),l2=r1+r,l3=r2+r,
 t=(l1^2+l2^2-l3^2)/(2*l1),
@@ -255,7 +255,7 @@ arc4=arc(r1,a5,a6<a5?a6+360:a6,c1)
 function rm(theta)=[[cos(theta),sin(theta)],[-sin(theta),cos(theta)]];
 
 
-function 2df(p1,p2,p3,r0,r1,r2,theta0,theta1,theta2,u2,u3,s)=let(
+function f2d(p1,p2,p3,r0,r1,r2,theta0,theta1,theta2,u2,u3,s)=let(
 l1=norm(p1-p2),
 l2=r0*tan(theta0)+r1*tan(theta1),
 l3=norm(p3-p2),
@@ -275,7 +275,7 @@ r1==0 || r1==undef||norm(u2-u3)<.2?[p2]:arc;
     
 
 
-function 2dfillet(pl,rl,s)=[for(i=[0:len(pl)-1])let(ep=[.0001,.0001],
+function fillet2d(pl,rl,s)=[for(i=[0:len(pl)-1])let(ep=[.0001,.0001],
 p0=i==0?pl[len(pl)-2]:i==1?pl[len(pl)-1]:pl[i-2],
 p1=i==0?pl[len(pl)-1]:pl[i-1],
 p2=pl[i],
@@ -305,14 +305,14 @@ theta2=abs(180-((ang4<ang5?ang4+360:ang4)-ang5))/2
 
 )
 each 
-2df(p1,p2,p3,r0,r1,r2,theta0,theta1,theta2,u2,u3,s)];
+f2d(p1,p2,p3,r0,r1,r2,theta0,theta1,theta2,u2,u3,s)];
 
 
 function cr1(pl,s=20)=let(
 pl1=[for(i=[0:len(pl)-1])[pl[i].x,pl[i].y]],
 rl=[for(i=[0:len(pl)-1])pl[i].z==undef?0:pl[i].z]
 
-)2dfillet(pl1,rl,s);
+)fillet2d(pl1,rl,s);
 
 //function to create section with corner radiuses. e.g. following code has 3 points at [0,0],[10,0] and [7,15] and radiuses of 0.5,2 and 1 respectively,s=5 represent the number of segments at each corner radius.
 //sec=cr(pl=[[0,0,.5],[10,0,2],[7,15,1]],s=5);
@@ -514,12 +514,12 @@ function c3t2(sec)=is_undef(sec.x.x)?[sec.x,sec.y]:[for(p=sec)[p.x,p.y]];
 
 //function to draw tangent line joining 2 circles with radiuses "r1" and "r2" with center points "cp1" and "cp2" respectively. This function draws tangent line only one side
 // e.g. try this code below:
-// sec=2ctp(r1=10,r2=5,cp1=[0,0],cp2=[15,6]);
+// sec=tp2c(r1=10,r2=5,cp1=[0,0],cp2=[15,6]);
 // p_line(circle(10),.1);
 // p_line(circle(5,[15,6]),.1);
 // p_line(sec,.1);
 
-function 2ctp(r1,r2,cp1,cp2)=
+function tp2c(r1,r2,cp1,cp2)=
 let(
 v1=cp2-cp1,
 u1=v1/norm(v1),
@@ -533,12 +533,12 @@ t4=cp2+u1*r2*rm(-90-ang1))[t1,t2];
 
 //function to draw tangent line joining 2 circles with radiuses "r1" and "r2" with center points "cp1" and "cp2" respectively. This function draws tangent line on both the sides
 // e.g. try this code below:
-// sec=2ctpf(r1=10,r2=5,cp1=[0,0],cp2=[15,6]);
+// sec=tpf2c(r1=10,r2=5,cp1=[0,0],cp2=[15,6]);
 // p_line(circle(10),.1);
 // p_line(circle(5,[15,6]),.1);
 // p_line(sec,.1);
 
-function 2ctpf(r1,r2,cp1,cp2)=
+function tpf2c(r1,r2,cp1,cp2)=
 let(
 v1=cp2-cp1,
 u1=v1/norm(v1),
@@ -602,7 +602,7 @@ function ipw(prism,prism1,r)=
             
             
             ) //[v1,p2[i]-p1[i],5]
-            if(! is_undef(p7[0]))3p_3d_fillet(p2[i],p1[i],p7[0],3p_3d_r([p2[i],p1[i],p7[0]])*2,s)
+            if(! is_undef(p7[0]))fillet_3p_3d(p2[i],p1[i],p7[0],r_3p_3d([p2[i],p1[i],p7[0]])*2,s)
             
             ];
             
@@ -628,7 +628,7 @@ function ipw(prism,prism1,r)=
             
             
             ) //[v1,p2[i]-p1[i],5]
-            if(! is_undef(p7[0]))3p_3d_fillet_wo_pivot(p7[0],p1[i],p2[i],3p_3d_r([p7[0],p1[i],p2[i]])*2,s)
+            if(! is_undef(p7[0]))fillet_wo_pivot_3p_3d(p7[0],p1[i],p2[i],r_3p_3d([p7[0],p1[i],p2[i]])*2,s)
             
             ];
  
@@ -774,7 +774,7 @@ list_of_radius=[for(i=[0:len(sec)-1])
   i_minus=i==0?len(sec)-1:i-1,
   i_plus=i<len(sec)-1?i+1:0,
   p0=sec[i_minus],p1=sec[i],p2=sec[i_plus],
-  r=3p_r(p0,p1,p2))r]
+  r=r_3p(p0,p1,p2))r]
 )
 min(list_of_radius);
 
@@ -799,9 +799,9 @@ l1=rnd(norm(v1),3),
 l2=rnd(norm(v2),3),
 l3=rnd(norm(v3),3),
 l4=rnd(norm(v4),3),
-r1=rnd(3p_r(pi_2minus,pi_minus,pi),3),
-r2=rnd(3p_r(pi_minus,pi,pi_plus),3),
-r3=rnd(3p_r(pi,pi_plus,pi_2plus),3)
+r1=rnd(r_3p(pi_2minus,pi_minus,pi),3),
+r2=rnd(r_3p(pi_minus,pi,pi_plus),3),
+r3=rnd(r_3p(pi,pi_plus,pi_2plus),3)
 )if(l2!=l3&&(r1!=r2 || r2!=r3))0 else r2]
 
 )
@@ -828,9 +828,9 @@ l1=rnd(norm(v1),3),
 l2=rnd(norm(v2),3),
 l3=rnd(norm(v3),3),
 l4=rnd(norm(v4),3),
-r1=rnd(3p_r(pi_2minus,pi_minus,pi),3),
-r2=rnd(3p_r(pi_minus,pi,pi_plus),3),
-r3=rnd(3p_r(pi,pi_plus,pi_2plus),3)
+r1=rnd(r_3p(pi_2minus,pi_minus,pi),3),
+r2=rnd(r_3p(pi_minus,pi,pi_plus),3),
+r3=rnd(r_3p(pi,pi_plus,pi_2plus),3)
 )if(l2!=l3&&(r1!=r2 || r2!=r3))0 else r2]
 
 )
@@ -923,12 +923,12 @@ function bezier(p,s=10)=[for(t=[0:1/s:1])
 
 // function for creating arc which is tangent to 2 circles
 // try this code as an example:
-// sec=2cir_tarc(10,5,[0,0],[20,5],20);
+// sec=tarc_2cir(10,5,[0,0],[20,5],20);
 // p_lineo(sec,.2);
 // p_line(circle(10),.2);
 // p_line(circle(5,[20,5]),.2);
     
-function 2cir_tarc(r1,r2,cp1,cp2,r)=
+function tarc_2cir(r1,r2,cp1,cp2,r)=
 assert(r>=(r1+r2+norm(cp2-cp1))/2,str("arc radius : ",r," is smaller than the minimum required radius of ",(r1+r2+norm(cp2-cp1))/2))
 let(
 l1=norm(cp2-cp1),
@@ -950,10 +950,10 @@ ang2=ang(u3.x,u3.y)
     
 // function creates a shortest 2d arc with 2 points with a radius "r" and number of segments "s". parameter cw(clockwise=1 and counter clockwise=-1) defines the order of arc
 //try this example for better understanding:
-// sec=2p_arc(p1=[2,3],p2=[6,5],r=2.25,cw=-1,s=20);
+// sec=arc_2p(p1=[2,3],p2=[6,5],r=2.25,cw=-1,s=20);
 // p_lineo(sec,.2);
     
-function 2p_arc(p1,p2,r,cw=1,s=20)=
+function arc_2p(p1,p2,r,cw=1,s=20)=
 assert(r>=norm(p2-p1)/2,str("radius : ",r," is smaller than ",norm(p2-p1)/2))
 let(
 p3=p1+(p2-p1)/2,
@@ -969,10 +969,10 @@ a3=cw==-1?(a2<a1?a2+360:a2):(a2<a1?a2:a2-360)
 
 // function to calculate the center point for arc where 2 points "p1" and "p2" and radius "r" are known (clockwise and counter clockwise will have different center points
 // example:
-// pnt=2p_arc_cp(p1=[2,3],p2=[6,5],r=5,cw=-1);
+// pnt=cp_arc_2p(p1=[2,3],p2=[6,5],r=5,cw=-1);
 // points([pnt],.5);
 
-function 2p_arc_cp(p1,p2,r,cw=1)=
+function cp_arc_2p(p1,p2,r,cw=1)=
 assert(r>=norm(p2-p1)/2,str("radius : ",r," is smaller than ",norm(p2-p1)/2))
 let(
 p3=p1+(p2-p1)/2,
@@ -987,10 +987,10 @@ a3=cw==-1?(a2<a1?a2+360:a2):(a2<a1?a2:a2-360)
 
 // function creates a longest 2d arc with 2 points with a radius "r" and number of segments "s". parameter cw(clockwise=1 and counter clockwise=-1) defines the order of arc
 //try this example for better understanding:
-// sec=2p_long_arc(p1=[2,3],p2=[6,5],r=3,cw=-1,s=20);
+// sec=arc_long_2p(p1=[2,3],p2=[6,5],r=3,cw=-1,s=20);
 // p_lineo(sec,.2);
 
-function 2p_long_arc(p1,p2,r,cw=1,s=20)=let(
+function arc_long_2p(p1,p2,r,cw=1,s=20)=let(
 p3=p1+(p2-p1)/2,
 d=norm(p3-p1),
 l=sqrt(r^2-d^2),
@@ -1004,11 +1004,11 @@ a3=cw==-1?(a2<a1?a2+360:a2):(a2<a1?a2:a2-360)
 
 // function to create arc with 3 points in 2d
 // example:
-// sec=3p_arc([1,2],[3,7],[7,3]);
+// sec=arc_3p([1,2],[3,7],[7,3]);
 // p_lineo(sec,.2);
 // points([[1,2],[3,7],[7,3]],.5);
 
-function 3p_arc(p1,p2,p3,s=30)=
+function arc_3p(p1,p2,p3,s=30)=
 
 let(
 p4=p1+(p2-p1)/2,
@@ -1028,7 +1028,7 @@ a4=cw([p1,p2,p3])==-1?(a3<a1?a3+360:a3):(a3<a1?a3:a3-360)
 )arc(r,a1,a4,cp,s);
 
 
-function 3p_cir(p1,p2,p3,s=30)=
+function cir_3p(p1,p2,p3,s=30)=
 
 let(
 p4=p1+(p2-p1)/2,
@@ -1212,10 +1212,10 @@ length=norm(v)
     
 // function to find radius of arc with 3 known points in 2d
 // example:
-// radius=3p_r([1,2],[3,7],[7,3]);
+// radius=r_3p([1,2],[3,7],[7,3]);
 // echo(radius); //=> ECHO: 3.30892
     
-function 3p_r(p1,p2,p3)=
+function r_3p(p1,p2,p3)=
 
 let(
 p4=p1+(p2-p1)/2,
@@ -1236,7 +1236,7 @@ r=norm(p1-cp)
   
   
 function min_r(sec)=
-min([for(i=[0:len(sec)-1])3p_r(sec[i==0?len(sec)-1:i-1],sec[i],sec[i<len(sec)-1?i+1:0])]);
+min([for(i=[0:len(sec)-1])r_3p(sec[i==0?len(sec)-1:i-1],sec[i],sec[i<len(sec)-1?i+1:0])]);
     
 // function for placing multiple points on the straight line segments of a closed loop section. parameter "sl" is for placing points with pitch distance defined by "sl"
 // example:
@@ -1343,18 +1343,18 @@ path6=[for(i=[0:len(path2)-1])[path2[i].x,path2[i].y,path5[i].y]]
 // path=[[0,0],[0,10]];
 // %swp(cylinder(r=5,h=15));
 // %swp(cylinder(r=3,h=10,cp=[7,0]));
-// swp(2cyl_fillet(5,3,[0,0],[7,0],1,path));
+// swp(fillet_2cyl(5,3,[0,0],[7,0],1,path));
 
-function 2cyl_fillet(r1,r2,cp1,cp2,r,path)=[for(p=path)trns([0,0,p.y],2cir_fillet(r1+p.x,r2+p.x,cp1,cp2,r))];
+function fillet_2cyl(r1,r2,cp1,cp2,r,path)=[for(p=path)trns([0,0,p.y],fillet_2cir(r1+p.x,r2+p.x,cp1,cp2,r))];
 
 //function to create 2d fillet between 2 circles (creates fillet only one side), where r1,r2 and c1,c2 are radiuses and enter points of the 2 circles respectively. r-> fillet radius
 ////example:
 //%p_line(circle(5),.2);
 //%p_line(circle(3,[7,0]),.2);
-//fillet=2cir_fillet1(r1=5,r2=3,c1=[0,0],c2=[7,0],r=1);
+//fillet=fillet1_2cir(r1=5,r2=3,c1=[0,0],c2=[7,0],r=1);
 //p_line(fillet,.2);
     
-function 2cir_fillet1(r1,r2,c1,c2,r)=
+function fillet1_2cir(r1,r2,c1,c2,r)=
 let(
 l1=norm(c2-c1),l2=r1+r,l3=r2+r,
 t=(l1^2+l2^2-l3^2)/(2*l1),
@@ -1385,10 +1385,10 @@ arc4=arc(r1,a5,a6<a5?a6+360:a6,c1)
 // swp(sphere(r=5,cp=[0,0,0]));
 // swp(sphere(r=3,cp=[7,0,0]));
 //
-// fillet=2sphere_fillet(r1=5,r2=3,cp1=[0,0,0],cp2=[7,0,0],1);
+// fillet=fillet_2sphere(r1=5,r2=3,cp1=[0,0,0],cp2=[7,0,0],1);
 // swp(fillet);
 
-function 2sphere_fillet(r1,r2,cp1,cp2,r)=
+function fillet_2sphere(r1,r2,cp1,cp2,r)=
 let(
 v=cp2-cp1,u=v/norm(v),
 l=norm(cp2-cp1),
@@ -1397,7 +1397,7 @@ c2=[l,0],
 a1=u==[0,0,1]?90:u==[0,0,-1]?-90:ang(sqrt(v.x^2+v.y^2),v.z),
 a2=u==[0,0,1]||u==[0,0,-1]?0:ang(v.x,v.y),
  
-sec=2cir_fillet1(r1,r2,c1,c2,r),
+sec=fillet1_2cir(r1,r2,c1,c2,r),
 prism=trns(cp1,q_rot([str("y",-a1),str("z",a2)],[for(i=[0:5:360])[for(p=sec)q([1,0,0],[p.x,p.y,0],i)]]))    
  )flip(prism);
 
@@ -1467,12 +1467,12 @@ ip=i_p2d(line,line1)
   
 // function to create tangent between 2 circle where r1, r2 and cp1, cp2 are the radiuses and center points of the 2 circles respectively. 
 // example:
-//  tangent=2cir_tangent(5,3,[0,0],[7,0]);
+//  tangent=tangent_2cir(5,3,[0,0],[7,0]);
 //  %p_line(circle(5),.2);
 //  %p_line(circle(3,[7,0]),.2);
 //  p_line(tangent,.2);
  
-function 2cir_tangent(r1,r2,cp1,cp2)=
+function tangent_2cir(r1,r2,cp1,cp2)=
 let(
 v=cp2-cp1,u=v/norm(v),
 theta=ang(v.x,v.y),
@@ -1642,16 +1642,16 @@ theta=acos (u1*u2),
 alpha=180-theta,
 pa=p1+u1*r*tan(alpha/2),
 pb=p1+u2*r*tan(alpha/2),
-cp=2p_arc_cp(pa,pb,r,1),
+cp=cp_arc_2p(pa,pb,r,1),
 pc=p1+u1*r*rm(90),
 pd=p1+u2*r*rm(-90)
-) cw([p0,p1,p2])==-1?2p_arc(pc, pd,r,-1,s=norm(pc-pd)<1?0:5):[cp]],
+) cw([p0,p1,p2])==-1?arc_2p(pc, pd,r,-1,s=norm(pc-pd)<1?0:5):[cp]],
 
 op01=[for(i=[0:len(sec)-1])let(
 p0=i==0?sec[len(sec)-1]:sec[i-1],
 p1=sec[i],
 p2=i<len(sec)-1?sec[i+1]:sec[0],
-radius=3p_r(p0,p1,p2)
+radius=r_3p(p0,p1,p2)
 ) if((radius>=r)||(cw( [p0,p1,p2])==-1))each op[i]],
 op02=[for(i=[0:len(op01)-1])let(
 p0=op01[i],p1=i<len (op01)-1?op01[i+1]:op01[0],
@@ -1681,16 +1681,16 @@ theta=acos (u1*u2),
 alpha=180-theta,
 pa=p1+u1*r*tan(alpha/2),
 pb=p1+u2*r*tan(alpha/2),
-cp=2p_arc_cp(pa,pb,r,-1),
+cp=cp_arc_2p(pa,pb,r,-1),
 pc=p1+u1*r*rm(-90),
 pd=p1+u2*r*rm(90)
-) cw( [p0, p1, p2])==-1?[cp]:2p_arc(pc, pd,r,1,s=norm(pc-pd)<1?0:5)],
+) cw( [p0, p1, p2])==-1?[cp]:arc_2p(pc, pd,r,1,s=norm(pc-pd)<1?0:5)],
 
 op01=[for(i=[0:len(sec)-1])let(
 p0=i==0?sec[len(sec)-1]:sec[i-1],
 p1=sec[i],
 p2=i<len(sec)-1?sec[i+1]:sec[0],
-radius=3p_r(p0, p1, p2)
+radius=r_3p(p0, p1, p2)
 ) if((radius>=r)||(cw( [p0, p1, p2])==1)) each op[i]],
 
 op02=[for(i=[0:len(op01)-1])let(
@@ -1865,11 +1865,11 @@ rev_sec=q_rot(["x90","z-90",str("y",-a),str("z",theta)],sec)
 // r=2;
 // s=10;
 // 
-// fillet=3p_3d_fillet(p0,p1,p2,r,s);
+// fillet=fillet_3p_3d(p0,p1,p2,r,s);
 // $fn=20;
 // p_line3dc(fillet,.1);
 
-function 3p_3d_fillet(p0,p1,p2,r=1, s=5)=
+function fillet_3p_3d(p0,p1,p2,r=1, s=5)=
 let(
 n=nv([p0,p1,p2]),
 theta=(180-acos(uv(p0-p1)*uv(p2-p1)))/2,
@@ -1883,7 +1883,7 @@ a=arc[0],b=loop(arc,1,s-1),c=arc[s]
 
 // function to calculate center point for a fillet
 
-function 3p_3d_fillet_cp(p0,p1,p2,r=1, s=5)=
+function cp_fillet_3p_3d(p0,p1,p2,r=1, s=5)=
 let(
 n=nv([p0,p1,p2]),
 theta=(180-acos(uv(p0-p1)*uv(p2-p1)))/2,
@@ -1903,11 +1903,11 @@ cp=p1+q(n,uv(p0-p1)*r/cos(theta),alpha/2),
 // r=2;
 // s=10;
 // 
-// fillet=3p_3d_fillet_wo_pivot(p0,p1,p2,r,s);
+// fillet=fillet_wo_pivot_3p_3d(p0,p1,p2,r,s);
 // $fn=20;
 // p_line3d(fillet,.1);
 
-function 3p_3d_fillet_wo_pivot(p0,p1,p2,r=1, s=5)=
+function fillet_wo_pivot_3p_3d(p0,p1,p2,r=1, s=5)=
 let(
 n=nv([p0,p1,p2]),
 theta=(180-acos(uv(p0-p1)*uv(p2-p1)))/2,
@@ -1924,11 +1924,11 @@ arc=[for(i=[0:theta*2/s:theta*2])cp+q(n,pa-cp,-i)]
 // p1=[3,7,2];
 // p2=[5,8,3];
 // points([p0,p1,p2],.3);
-// arc=3p_3d_arc([p0,p1,p2],s=20);
+// arc=arc_3p_3d([p0,p1,p2],s=20);
 // $fn=20;
 // p_line3d(arc,.1);
 
-function 3p_3d_arc(points, s=5)=
+function arc_3p_3d(points, s=5)=
 let(
 v1=points[0]-points[1], u1=v1/norm(v1),
 v2=points[2]-points[1], u2=v2/norm(v2),
@@ -1953,9 +1953,9 @@ arc=trns(points[1]+cp,[for(i=[0:theta/s:theta])q(n,points[0]-(points[1]+cp),-i)]
 // p0=[2,3,5];
 // p1=[3,7,2];
 // p2=[5,8,3];
-// echo(3p_3d_r([p0,p1,p2])); //=> ECHO: 1.89252
+// echo(r_3p_3d([p0,p1,p2])); //=> ECHO: 1.89252
 
-function 3p_3d_r(points)=
+function r_3p_3d(points)=
 let(
 v1=points[0]-points[1], u1=v1/norm(v1),
 v2=points[2]-points[1], u2=v2/norm(v2),
@@ -1977,11 +1977,11 @@ radius;
 // function to draw a 3d arc on a plane defined by a normal vector "n" with radius "r" from angle "theta1" to "theta2". Rotation of the arc can be defined as clockwise (cw=1) or counter clockwise (cw=-1). Number of segments of the arc can be defined with "s".
 // Example:
 // nv=[3,7,5];
-// arc=3d_arc(v=nv,r=10,theta1=0,theta2=180,cw=-1,s=50);
+// arc=arc_3d(v=nv,r=10,theta1=0,theta2=180,cw=-1,s=50);
 // p_line3d(arc,.2);
 // p_line3d([o(),nv],.2);
 
-function 3d_arc(v, r, theta1=0, theta2=180, cw=-1,s=50)=
+function arc_3d(v, r, theta1=0, theta2=180, cw=-1,s=50)=
 let(
 v=v+[0,0,.0001],
 u=v/norm (v),
@@ -2073,7 +2073,7 @@ i_minus=i==0?len(p)-1:i-1)r[i_minus]*tan(theta[i_minus])+r[i]*tan(theta[i])],
 compare=[for(i=[0:len(p)-1])l1[i]>=l2[i]],
 
 arcs=[for(i=[0:len(p)-1])each assert(compare[i],"radius too big")let(
-i_minus=i==0?len(p)-1:i-1,i_plus=i<len(p)-1?i+1:0)3d_3p_fillet(p[i_minus],p[i],p[i_plus],r[i],s=s)]
+i_minus=i==0?len(p)-1:i-1,i_plus=i<len(p)-1?i+1:0)fillet_3d_3p(p[i_minus],p[i],p[i_plus],r[i],s=s)]
 )arcs;
 
 // function to calculate a unit vector for a given vector
@@ -2128,7 +2128,7 @@ aligned_sec=c3t2(q_rot([str("z",-theta),str("y",theta1)],sec))
 
 // function is used as input to another function
 
-function 3d_offset_input(sec,nv,o)=
+function offset_input_3d(sec,nv,o)=
 let(
 
 v1=[nv.x,nv.y],
@@ -2149,9 +2149,9 @@ back=q_rot([str("y",-theta1),str("z",theta)],rev_align)
 // example:
 // sec=trns([7,8,20],align_v([2,3,5],circle(5)));
 // p_line3dc(sec,.2);
-// p_line3dc(3d_offset(sec,nv(sec),1),.2);
+// p_line3dc(offset_3d(sec,nv(sec),1),.2);
 
-function 3d_offset(sec,nv,o=1)=3d_offset_input(sec,nv+[0.00001,.00001,0],o);
+function offset_3d(sec,nv,o=1)=offset_input_3d(sec,nv+[0.00001,.00001,0],o);
 
 // function to calculate the normal vector of a known section
 // example:
@@ -2178,7 +2178,7 @@ theta=acos(u1*u2)
 
 function path_offset(path,d)=[for(i=[0:len(path)-2])let(p0=path[i],p1=path[i+1],line=[p0,p1],rev_point=offst_l(line,d))each i<len(path)-2?[rev_point[0]]:rev_point];
 
-function fillet(p1,p2,p3,r)=[for(i=[0:len(p1)-1])each i<len(p1)-1?[3p_3d_fillet(p3[i],p1[i],p2[i],r)]:[3p_3d_fillet(p3[i],p1[i],p2[i],r),3p_3d_fillet(p3[0],p1[0],p2[0],r)]];
+function fillet(p1,p2,p3,r)=[for(i=[0:len(p1)-1])each i<len(p1)-1?[fillet_3p_3d(p3[i],p1[i],p2[i],r)]:[fillet_3p_3d(p3[i],p1[i],p2[i],r),fillet_3p_3d(p3[0],p1[0],p2[0],r)]];
 
 // function to create a fillet with 3 known points
 // example:
@@ -2186,11 +2186,11 @@ function fillet(p1,p2,p3,r)=[for(i=[0:len(p1)-1])each i<len(p1)-1?[3p_3d_fillet(
 // p1=[3,7,2];
 // p2=[5,8,3];
 //
-// arc=3d_3p_fillet(p0,p1,p2,r=2,s=10);
+// arc=fillet_3d_3p(p0,p1,p2,r=2,s=10);
 // p_line3d(arc,.1);
 // points([p0,p1,p2],.2);
 
-function 3d_3p_fillet(p0,p1,p2,r,s=5)=
+function fillet_3d_3p(p0,p1,p2,r,s=5)=
 let(
 n=nv([p0,p1,p2]),
 theta=(180-acos(uv(p0-p1)*uv(p2-p1)))/2,
@@ -2224,10 +2224,10 @@ p3=tp1+v
 //
 // points([p0,p1,cp],.3);
 //
-// arc=2pnc_arc(p0,p1,cp,20);
+// arc=arc_2pnc(p0,p1,cp,20);
 // p_line3d(arc,.2);
 
-function 2pnc_arc(p0,p1,cp,cw=-1,s=20)=let(
+function arc_2pnc(p0,p1,cp,cw=-1,s=20)=let(
 n=uv(nv(len(p0)==2?c2t3([p0,cp,p1]):[p0,cp,p1])),
 theta=acos(uv(p0-cp)*uv(p1-cp)),
 r1=norm(p0-cp),r2=norm(p1-cp),
@@ -2384,8 +2384,8 @@ function helix(dia=10,pitch=3,turns=5)=[for(i=[0:5:360*turns])[dia/2*cos(i),dia/
 
 
 function plane(nv, dia)=let(
-sec1=3d_arc(nv,.01,0,360,-1),
-sec2=3d_arc(nv,dia/2,0,360,-1),
+sec1=arc_3d(nv,.01,0,360,-1),
+sec2=arc_3d(nv,dia/2,0,360,-1),
 plane=[sec1,sec2]
 )plane;
 
@@ -2812,9 +2812,9 @@ l1=rnd(norm(v1),3),
 l2=rnd(norm(v2),3),
 l3=rnd(norm(v3),3),
 l4=rnd(norm(v4),3),
-r1=rnd(3p_r(pi_2minus,pi_minus,pi),3),
-r2=rnd(3p_r(pi_minus,pi,pi_plus),3),
-r3=rnd(3p_r(pi,pi_plus,pi_2plus),3)
+r1=rnd(r_3p(pi_2minus,pi_minus,pi),3),
+r2=rnd(r_3p(pi_minus,pi,pi_plus),3),
+r3=rnd(r_3p(pi,pi_plus,pi_2plus),3)
 )if(l2!=l3&&(r1!=r2 || r2!=r3))0 else r2],
 
 sec1=[for(i=[0:len(r)-1])let(
@@ -2873,9 +2873,9 @@ l1=rnd(norm(v1),3),
 l2=rnd(norm(v2),3),
 l3=rnd(norm(v3),3),
 l4=rnd(norm(v4),3),
-r1=rnd(3p_r(pi_2minus,pi_minus,pi),3),
-r2=rnd(3p_r(pi_minus,pi,pi_plus),3),
-r3=rnd(3p_r(pi,pi_plus,pi_2plus),3)
+r1=rnd(r_3p(pi_2minus,pi_minus,pi),3),
+r2=rnd(r_3p(pi_minus,pi,pi_plus),3),
+r3=rnd(r_3p(pi,pi_plus,pi_2plus),3)
 )if(l2!=l3&&(r1!=r2 || r2!=r3))0 else r2],
 
 sec1=[for(i=[0:len(r)-1])let(
@@ -2933,9 +2933,9 @@ l1=rnd(norm(v1),3),
 l2=rnd(norm(v2),3),
 l3=rnd(norm(v3),3),
 l4=rnd(norm(v4),3),
-r1=rnd(3p_r(pi_2minus,pi_minus,pi),3),
-r2=rnd(3p_r(pi_minus,pi,pi_plus),3),
-r3=rnd(3p_r(pi,pi_plus,pi_2plus),3)
+r1=rnd(r_3p(pi_2minus,pi_minus,pi),3),
+r2=rnd(r_3p(pi_minus,pi,pi_plus),3),
+r3=rnd(r_3p(pi,pi_plus,pi_2plus),3)
 )if(l2!=l3&&(r1!=r2 || r2!=r3))0 else r2],
 
 sec1=[for(i=[0:len(r)-1])let(
