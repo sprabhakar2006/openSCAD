@@ -4,7 +4,7 @@ import time
 from scipy.spatial import cKDTree, Delaunay, ConvexHull
 import sympy as sp
 import math
-from numba import njit, jit
+# from numba import njit, jit
 # from skimage import measure
 import open3d as o3d
 # from stl import mesh
@@ -1372,7 +1372,7 @@ color("magenta",.2) p_line3dc({s2},.3);
 
 resize2d_centered=rsz2dc
 
-@njit
+
 def ip(sol1,sol2):
     """
 function to calculate intersection point between two 3d prisms. 
