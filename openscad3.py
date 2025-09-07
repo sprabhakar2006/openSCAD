@@ -4,10 +4,7 @@ import time
 from scipy.spatial import cKDTree, Delaunay, ConvexHull
 import sympy as sp
 import math
-# from numba import njit, jit
-# from skimage import measure
-import open3d as o3d
-# from stl import mesh
+from stl import mesh
 
 def arc(radius=0,start_angle=0,end_angle=0,cp=[0,0],s=20):
     """
@@ -10600,3 +10597,70 @@ def path_extrude2msec_closed(sec_list,path):
         sec2.append(sec1)
     sec2=sec2+[sec2[0]]
     return sec2
+
+def earclip(sec):
+    """
+triangulate a 2d closed section
+example:
+a=cr2dt([[0,0],[15,0],[0,5],[-5,0],[0,5],[-5,0],[0,5],[-5,0]])
+s1=earclip(a)
+fo(f'''
+color("blue") for(p={s1}) p_line3dc(p,.1);
+{swp_triangles(c23(s1))}
+''')
+    """
+    def find_ears(sec):
+        l1=[]
+        for i in range(len(sec)):
+            if i==0:
+                tr1=[sec[-1],sec[0],sec[1]]
+            elif i==len(sec)-1:
+                tr1=[sec[i-1],sec[i],sec[0]]
+            else:
+                tr1=[sec[i-1],sec[i],sec[i+1]]
+            if pies1(tr1,exclude_points(sec,tr1))==[]:
+                l1.append(i)
+        return l_(exclude_numbers(l_(l1),l_(arange(len(sec))[a_(cwv(sec))==1])))
+    
+    if convex(sec):
+        return l_(a_(sec)[Delaunay(sec).simplices])
+    l1=arange(len(sec))
+    l2=a_(find_ears(sec))
+    l3=arange(len(l1))[a_(cwv(sec))==1]
+    for i in l2:
+        if i==0:
+            x1=l_([l1[-1],i,i+1])
+        elif i==len(l1)-1:
+            x1=l_([i-1,i,0])
+        else:
+            x1=l_([i-1,i,i+1])
+        tri=l_(a_(sec)[x1])
+        if pies1(tri,exclude_points(sec,tri))==[]:
+            break
+    pnt=l_(a_(sec)[x1])
+    return [pnt]+earclip(exclude_points(sec,pnt[1]))
+
+def earclip_3d(sec):
+    """
+same as function earclip but for 3d coordinates.
+section should be in the same plane
+example:
+sec=corner_radius(pts1([[3,2,1],[8,3,3],[5,7,1],[-8,0,2],[-5,20,1]]),30)
+sec1=o_solid([2,3,5],sec,1,10)[0]
+sec2=offset_3d(sec1,-2)
+s1=earclip_3d(remove_duplicates(sec2))
+fo(f'''
+color("blue") for(p={[sec1,sec2]}) p_line3dc(p,.1);
+{swp_triangles(s1)}
+''')
+    """
+    n1=array(nv(sec))
+    a1=cross(n1,[0,0,-1])
+    t1=r2d(arccos(n1@[0,0,-1]))
+    sec1=translate(-array(sec).mean(0),sec)
+    sec2=c3t2(axis_rot(a1,sec1,t1))
+    l1=len(sec2)
+    p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
+    pnts=earclip(sec2)
+    pnts=translate(array(sec).mean(0),axis_rot(a1,pnts,-t1)) if pnts!=[] else []
+    return pnts
