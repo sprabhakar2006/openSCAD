@@ -4,7 +4,7 @@ import time
 from scipy.spatial import cKDTree, Delaunay, ConvexHull
 import sympy as sp
 import math
-from stl import mesh
+# from stl import mesh
 
 def arc(radius=0,start_angle=0,end_angle=0,cp=[0,0],s=20):
     """
@@ -2550,7 +2550,10 @@ color("blue") for(p={[l1,l2,l3]}) p_line3d(p,.3);
 {swp_c(f1)}
 ''') 
     """
-    l4=i_p_t_o(pnt1)
+    if len(rationalise_path(pnt1))>2:
+        l4=i_p_t_o(pnt1)
+    else:
+        l4=a_([a_(pnt1[1])-a_(pnt1[0])]*2)
     r=1e5 if r==0 else r
     sol=l_(array([pnt3,pnt1,pnt2]).transpose(1,0,2))
     sol1=[]
@@ -7453,7 +7456,7 @@ color("blue") p_line3d({l2},.3);
 
 
 
-def il_fillet(il,sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,f=1):
+def il_fillet(il,sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2):
     """
     calculates a fillet at the intersection of 2 solids.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -7464,11 +7467,11 @@ def il_fillet(il,sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,f=1):
     p1=il
     p2=o_3d_rev(p1,sol2,r2,type=type,dist=dist,vx=vx,edges_closed=1)
     p3=o_3d_rev(p1,sol1,r1,type=type,dist=dist,vx=vx,edges_closed=1)
-    fillet1=convert_3lines2fillet(p3,p2,p1,s=s,style=style,f=f)
+    fillet1=convert_3lines2fillet(p3,p2,p1,s=s,style=style)
     
     return fillet1
 
-def il_fillet_surf(il,surf1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,f=1):
+def il_fillet_surf(il,surf1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2):
     """
     calculates a fillet at the intersection of surface with solid.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -7479,7 +7482,7 @@ def il_fillet_surf(il,surf1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,f=1)
     p1=il
     p2=o_3d_rev(p1,sol2,r2,type=type,dist=dist,vx=vx,edges_closed=1)
     p3=o_3d_rev(p1,surf1,r1,type=type,dist=dist,vx=vx,edges_closed=0)
-    fillet1=convert_3lines2fillet(p3,p2,p1,s=s,style=style,f=f)
+    fillet1=convert_3lines2fillet(p3,p2,p1,s=s,style=style)
     
     return fillet1
 
