@@ -10667,3 +10667,55 @@ color("blue") for(p={[sec1,sec2]}) p_line3dc(p,.1);
     pnts=earclip(sec2)
     pnts=translate(array(sec).mean(0),axis_rot(a1,pnts,-t1)) if pnts!=[] else []
     return pnts
+
+def ip_tri2sol(tri,sol2):
+    line=array([ seg(p)[:-1] for p in cpo(sol2)])
+    
+    # tri=array(v)[array(f1)]
+    tri=array(tri)
+    line=array([ seg(p)[:-1] for p in cpo(sol2)])
+    tri.shape,line.shape
+    la,lb=line[:,:,0],line[:,:,1]
+    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+    lab=lb-la
+    p01,p02=p1-p0,p2-p0
+    t=einsum('kl,ijkl->ijk',cross(p01,p02),la[:,:,None]-p0)/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00001)
+    u=einsum('ijkl,ijkl->ijk',cross(p02[None,None,:,:],(-lab)[:,:,None,:]),(la[:,:,None,:]-p0[None,None,:,:]))/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00001)
+    v=einsum('ijkl,ijkl->ijk',cross((-lab)[:,:,None,:],p01[None,None,:,:]),(la[:,:,None,:]-p0[None,None,:,:]))/(einsum('ijl,kl->ijk',(-lab),cross(p01,p02))+.00001)
+    condition=(t>=0)&(t<=1)&(u>=0)&(u<=1)&(v>=0)&(v<=1)&(u+v<1)
+
+    a=(la[:,None,:,None,:]+lab[:,None,:,None,:]*t[:,None,:,:,None])
+    b=condition[:,None,:,:]
+    c=[]
+    for i in range(len(a)):
+        c.append(a[i][b[i]].tolist())
+
+    return l_(concatenate([p for p in c if p!=[]]))
+
+def triangulate(sol):
+    """
+function to triangulate a solid completely
+example:
+c2=rot('y60',translate([0,0,-10],cylinder(r=3,h=30)))
+s2=linear_extrude(square(5),10)
+c2=triangulate(c2)
+s2=triangulate(s2)
+fo(f'''
+difference(){{
+{swp_triangles(c2)}
+{swp_triangles(s2)}
+}}
+''')
+    """
+    sol=rot('y.00001',sol)
+    n2=array([[[[(j+1)+i*len(sol[0]),j+i*len(sol[0]),j+(i+1)*len(sol[0])],[(j+1)+i*len(sol[0]),j+(i+1)*len(sol[0]),(j+1)+(i+1)*len(sol[0])]] \
+             if j<len(sol[0])-1 else \
+             [[0+i*len(sol[0]),j+i*len(sol[0]),j+(i+1)*len(sol[0])],[0+i*len(sol[0]),j+(i+1)*len(sol[0]),0+(i+1)*len(sol[0])]] \
+                 for j in range(len(sol[0]))] for i in range(len(sol)-1)]).reshape(-1,3)
+
+    n=n2
+    pnt=array(sol).reshape(-1,3)
+    a=earclip_3d(sol[0])
+    b=earclip_3d(sol[-1])
+    b=[flip(p) for p in b]
+    return a+l_(pnt[n])+b
