@@ -3910,6 +3910,8 @@ def gcd(a,b):
             break
     return a
 
+hcf=gcd
+
 def lcm(a,b):
     """
     calculates the least common multiple of 2 numbers 'a','b'
@@ -10507,6 +10509,9 @@ def bp_mesh_from_points(pnts,normals,n=10000,f=3):
     creates a ball pivoting mesh from a list of points and normals
     'n' is the max number of triangles required in the resultant mesh
     'f' is a factor which can be increased to increase the ball size defining the mesh
+    open3d library needs to be installed.
+    then use following command before starting the library
+    import open3d as o3d
     '''
     pcd=o3d.geometry.PointCloud()
     pcd.points=o3d.utility.Vector3dVector(pnts)
@@ -10525,6 +10530,9 @@ def poisson_mesh_from_points(pnts,normals,n=10000):
     '''
     creates poisson's mesh from points and normals
     'n' is the max number of triangles required in the resultant mesh
+    open3d library needs to be installed.
+    then use following command before starting the library
+    import open3d as o3d
     '''
     pcd=o3d.geometry.PointCloud()
     pcd.points=o3d.utility.Vector3dVector(pnts)
@@ -10540,6 +10548,9 @@ def alpha_mesh_from_points(pnts,normals,alpha=.5,n=10000):
     'alpha' is a factor need to be defined based on the mesh quality, 
     it can be any number upto around 20
     'n' is the max number of triangles required in the resultant mesh
+    open3d library needs to be installed.
+    then use following command before starting the library
+    import open3d as o3d
     '''
     pcd=o3d.geometry.PointCloud()
     pcd.points=o3d.utility.Vector3dVector(pnts)
@@ -10719,3 +10730,50 @@ difference(){{
     b=earclip_3d(sol[-1])
     b=[flip(p) for p in b]
     return a+l_(pnt[n])+b
+
+def convert2df_3df(sec,func):
+    """
+    It is not a function, but just a method to convert for ease of reference
+    """
+    n1=array(nv(sec))
+    a1=cross(n1,[0,0,-1])
+    t1=r2d(arccos(n1@[0,0,-1]))
+    sec1=translate(-array(sec).mean(0),sec)
+    sec2=c3t2(axis_rot(a1,sec1,t1))
+    l1=len(sec2)
+    p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
+    pnts=func(sec2)
+    pnts=translate(array(sec).mean(0),axis_rot(a1,pnts,-t1)) if pnts!=[] else []
+    return pnts
+
+def cwv3d(sec):
+    """
+    function cwv in 3d, all the points should be in the same plane
+    refer function 'cwv' for definition and explanation
+    """
+    sec=axis_rot_1(sec,[0,1,0],sec[0],.00001)
+    n1=array(nv(sec))
+    a1=cross(n1,[0,0,-1])
+    t1=r2d(arccos(n1@[0,0,-1]))
+    sec1=translate(-array(sec).mean(0),sec)
+    sec2=c3t2(axis_rot(a1,sec1,t1))
+    l1=len(sec2)
+    p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
+    dec=cwv(sec2) # change the function name here
+    return dec
+
+def cw3d(sec):
+    """
+    function cw in 3d, all the points should be in the same plane
+    refer function 'cw' for definition and explanation
+    """
+    sec=axis_rot_1(sec,[0,1,0],sec[0],.00001)
+    n1=array(nv(sec))
+    a1=cross(n1,[0,0,-1])
+    t1=r2d(arccos(n1@[0,0,-1]))
+    sec1=translate(-array(sec).mean(0),sec)
+    sec2=c3t2(axis_rot(a1,sec1,t1))
+    l1=len(sec2)
+    p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
+    dec=cw(sec2)
+    return dec
