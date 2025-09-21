@@ -7915,49 +7915,87 @@ def find_points_beyond_distance_of_surface(surf,pnts,d=1,edges_closed=1):
             # pb.append(px[dec].min())
     return pa
 
-def points_inside_solid(pnts,surf,edges_closed=1):
+# def points_inside_solid(pnts,surf,edges_closed=1):
+#     """
+#     finds all the points which are inside the solid
+#     """
+#     c=surf
+#     if edges_closed==1:
+#         f1=faces_1(len(c),len(c[0]))
+#     elif edges_closed==0:
+#         f1=faces_surface(len(c),len(c[0]))
+#     a1,a2,a3=a_([[1,0,0],[0,1,0],[0,0,1]])
+#     l0=a_(pnts)
+#     # f1=faces_1(len(c),len(c[0]))
+#     vert1=a_(c).reshape(-1,3)
+#     trngl=vert1[f1]
+#     p0,p1,p2=trngl[:,0],trngl[:,1],trngl[:,2]
+#     v1,v2=p1-p0,p2-p0
+#     # l0+a1*t0=p0+v1*t1+v2*t2
+#     # l0+a2*t0=p0+v1*t1+v2*t2
+#     # l0+a3*t0=p0+v1*t1+v2*t2
+#     iim1=a_([a_([a1]*len(v1)),-v1,-v2+.000001]).transpose(1,0,2).transpose(0,2,1)+.000001
+#     im1=inv(iim1)
+#     iim2=a_([a_([a2]*len(v1))+.000001,-v1,-v2]).transpose(1,0,2).transpose(0,2,1)+.000001
+#     im2=inv(iim2)
+#     iim3=a_([a_([a3]*len(v1))+.000001,-v1,-v2]).transpose(1,0,2).transpose(0,2,1)+.000001
+#     im3=inv(iim3)
+#     pb=[]
+#     for i in range(len(l0)):
+        
+#         p=p0-l0[i]
+#         t0,t1,t2=einsum('ijk,ik->ij',im1,p).transpose(1,0)
+#         dec=(t0>=0)&(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&((t1+t2)<=1)
+#         x1=ones(len(v1))[dec]
+        
+#         t0,t1,t2=einsum('ijk,ik->ij',im2,p).transpose(1,0)
+#         dec=(t0>=0)&(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&((t1+t2)<=1)
+#         x2=ones(len(v1))[dec]
+        
+#         t0,t1,t2=einsum('ijk,ik->ij',im3,p).transpose(1,0)
+#         dec=(t0>=0)&(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&((t1+t2)<=1)
+#         x3=ones(len(v1))[dec]
+#         if (a_([x1.sum()%2,x2.sum()%2,x3.sum()%2])==1).sum()>=2:
+#             pb.append(pnts[i])
+#     return pb   
+
+
+def points_inside_solid(pnts,solid):
     """
-    finds all the points which are inside the solid
+finds all the points which are inside the solid
+pnts: points
+solid: solid
+example:
+a=circle(3)
+b=c23(sinewave(100,3,5,100))
+c=path_extrude_open(a,b)
+a1=random.random(3000)*(103-(-2.5))+(-2.5)
+a2=random.random(3000)*(8.3-(-8.3))+(-8.3)
+a3=random.random(3000)*(3.5-(-3.5))+(-3.5)
+la=a_([a1,a2,a3]).transpose(1,0)
+px=points_inside_solid(la,c)
+fo(f'''
+%{swp_triangles(c1)}
+color("blue") points({l_(la)},.1);
+color("magenta") points({px},.3);
+''')
     """
-    c=surf
-    if edges_closed==1:
-        f1=faces_1(len(c),len(c[0]))
-    elif edges_closed==0:
-        f1=faces_surface(len(c),len(c[0]))
-    a1,a2,a3=a_([[1,0,0],[0,1,0],[0,0,1]])
-    l0=a_(pnts)
-    # f1=faces_1(len(c),len(c[0]))
-    vert1=a_(c).reshape(-1,3)
-    trngl=vert1[f1]
-    p0,p1,p2=trngl[:,0],trngl[:,1],trngl[:,2]
-    v1,v2=p1-p0,p2-p0
-    # l0+a1*t0=p0+v1*t1+v2*t2
-    # l0+a2*t0=p0+v1*t1+v2*t2
-    # l0+a3*t0=p0+v1*t1+v2*t2
-    iim1=a_([a_([a1]*len(v1)),-v1,-v2+.000001]).transpose(1,0,2).transpose(0,2,1)+.000001
-    im1=inv(iim1)
-    iim2=a_([a_([a2]*len(v1))+.000001,-v1,-v2]).transpose(1,0,2).transpose(0,2,1)+.000001
-    im2=inv(iim2)
-    iim3=a_([a_([a3]*len(v1))+.000001,-v1,-v2]).transpose(1,0,2).transpose(0,2,1)+.000001
-    im3=inv(iim3)
-    pb=[]
-    for i in range(len(l0)):
-        
-        p=p0-l0[i]
-        t0,t1,t2=einsum('ijk,ik->ij',im1,p).transpose(1,0)
-        dec=(t0>=0)&(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&((t1+t2)<=1)
-        x1=ones(len(v1))[dec]
-        
-        t0,t1,t2=einsum('ijk,ik->ij',im2,p).transpose(1,0)
-        dec=(t0>=0)&(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&((t1+t2)<=1)
-        x2=ones(len(v1))[dec]
-        
-        t0,t1,t2=einsum('ijk,ik->ij',im3,p).transpose(1,0)
-        dec=(t0>=0)&(t1>=0)&(t1<=1)&(t2>=0)&(t2<=1)&((t1+t2)<=1)
-        x3=ones(len(v1))[dec]
-        if (a_([x1.sum()%2,x2.sum()%2,x3.sum()%2])==1).sum()>=2:
-            pb.append(pnts[i])
-    return pb   
+    c1=triangulate(solid)
+    la=a_(pnts)
+    p0,p1,p2=a_(c1)[:,0],a_(c1)[:,1],a_(c1)[:,2]
+    p01,p02=p1-p0,p2-p0
+    lab=a_([[1,0,0]]*len(la))
+    x4=einsum('ik,jk->ij',-lab,cross(p01,p02))
+    x3=(la[:,None]-p0[None,:])
+    xa=cross(p01,p02)
+    xb=cross(p02[None,:],-lab[:,None])
+    xc=cross(-lab[:,None],p01[None,:])
+    u=einsum('jk,ijk->ij',xa,x3)/x4
+    v=einsum('ijk,ijk->ij',xb,x3)/x4
+    w=einsum('ijk,ijk->ij',xc,x3)/x4
+    dec=(u>=0)&(v>=0)&(v<=1)&(w>=0)&(w<=1)&((v+w)<=1)
+    px=l_(la[a_([(ones(len(p0))[p]).sum()%2==1 for p in dec])])
+    return px
 
 
 def swp_triangles(sol):
