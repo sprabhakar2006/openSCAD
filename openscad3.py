@@ -10815,3 +10815,130 @@ def cw3d(sec):
     p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
     dec=cw(sec2)
     return dec
+
+def closest_points_two_polylines(l1,l2):
+    """
+finds the closest points between 2 polylines
+example:
+l1=bspline_open(turtle3d([[0,0,0],[10,4,5],[-10,8,-10]]),2,20)
+l2=bspline_open(turtle3d([[15,0,0],[-20,2,1],[10,8,10]]),2,21)
+p0,p1=closest_points_two_polylines(l1,l2)
+fo(f'''
+color("blue") p_line3d({l1},.1);
+color("cyan") p_line3d({l2},.1);
+color("magenta") points({[p0,p1]},.2);
+color("orange") p_line3d({[p0,p1]},.1);
+''')
+    """
+    def list_combinations(m,n):
+        """
+        lists combinations between 2 lists
+        """
+        s=[]
+        for q in range(m):
+            for r in range(n):
+                s.append([q,r])
+        return s
+        
+    m=len(seg(l1)[:-1])
+    n=len(seg(l2)[:-1])
+    a=cpo(list_combinations(m,n))
+    b=cpo([a_(seg(l1)[:-1])[a_(a[0])],a_(seg(l2)[:-1])[a_(a[1])]])
+    c=[closest_points_between_two_lines(x,y) for (x,y) in b]
+    d=[l_len(p) for p in c]
+    e=a_(c)[a_(d).round(4).argsort()[0]]
+
+    return l_(e)
+
+def closest_points_between_two_lines(l1,l2):
+    """
+finds the closest points between to lines
+example:
+l1=flip([[0,0,0],[10,2,1]])
+l2=[[0,10,15],[5,-7,4]]
+p3,p4=closest_points_between_two_lines(l1,l2)
+fo(f'''
+color("blue") for(p={[l1,l2]}) p_line3d(p,.2);
+color("magenta") points({[p3,p4]},.5);
+color("cyan") p_line3d({[p3,p4]},.2);
+    ''')
+    """
+    p1,q1=a_(l1)
+    p2,q2=a_(l2)
+    d1=q1-p1
+    d2=q2-p2
+    # deriving 2 equations
+    # d1@((p1+s*d1)-(p2+t*d2))=0
+    # d2@((p1+s*d1)-(p2+t*d2))=0
+    # d1@p1+d1@d1*s-p2@d1-d1@d2*t=0
+    # d2@p1+d2@d1*s-p2@d2-d2@d2*t=0
+    # d1@d1*s-d1@d2*t=(p2-p1)@d1 - eq1
+    # d1@d2*s-d2@d2*t=(p2-p1)@d2 - eq2
+    # solve above 2 equations for s,t using cramer's rule
+    s,t=two_by_two_equation([d1@d1,-d1@d2,(p2-p1)@d1],[d1@d2,-d2@d2,(p2-p1)@d2])
+    
+    if (s>1) & ((t>=0)&(t<=1)):
+        p3=l_(q1)
+        p4=l_(p2+((q1-p2)@d2)/(d2@d2)*d2)
+    elif (t>1) & ((s>=0)&(s<=1)):
+        p4=l_(q2)
+        p3=l_(p1+((q2-p1)@d1)/(d1@d1)*d1)
+    elif (s<0) & ((t>=0)&(t<=1)):
+        p3=l_(p1)
+        p4=l_(p2+((p1-p2)@d2)/(d2@d2)*d2)
+    elif (t<0) & (s>=0)&(s<=1):
+        p4=l_(p2)
+        p3=l_(p1+((p2-p1)@d1)/(d1@d1)*d1)
+    elif (s>1) & (t>1):
+        p3=l_(q1)
+        p4=l_(q2)
+    elif (s<0) & (t<0):
+        p3=l_(p1)
+        p4=l_(p2)
+    elif (s>1) & (t<0):
+        p3=l_(q1)
+        p4=l_(p2)
+    elif (s<0) & (t>1):
+        p3=l_(p1)
+        p4=l_(q2)
+    else:
+        p3=l_(p1+s*d1)
+        p4=l_(p2+t*d2)
+
+    return [p3,p4]
+
+def two_by_two_equation(eq1,eq2):
+    """
+    solve equation for x,y
+    ax+by=c (eq1=[a,b,c])
+    dx+ey=f (eq2=[d,e,f])
+    
+    """
+    a,b,c=eq1
+    d,e,f=eq2
+    denom=det(a_([[a,b],[d,e]]).T)
+    num1=det(a_([[c,b],[f,e]]).T)
+    num2=det(a_([[a,c],[d,f]]).T)
+    x=l_(num1/denom)
+    y=l_(num2/denom)
+    return [x,y]
+
+def three_by_three_equation(eq1,eq2,eq3):
+    """
+    solve equation for x,y,z
+    ax+by+cz=d (eq1=[a,b,c,d])
+    ex+fy+gz=h (eq2=[e,f,g,h])
+    ix+jy+kz=l (eq3=[i,j,k,l])
+    
+    """
+    a,b,c,d=eq1
+    e,f,g,h=eq2
+    i,j,k,l=eq3
+    denom=det(a_([[a,b,c],[e,f,g],[i,j,k]]).T)
+    num1=det(a_([[d,b,c],[h,f,g],[l,j,k]]).T)
+    num2=det(a_([[a,d,c],[e,h,g],[i,l,k]]).T)
+    num3=det(a_([[a,b,d],[e,f,h],[i,j,l]]).T)
+    x=num1/denom
+    y=num2/denom
+    z=num3/denom
+    return [x,y,z]
