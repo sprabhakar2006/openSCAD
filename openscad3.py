@@ -10879,16 +10879,16 @@ color("cyan") p_line3d({[p3,p4]},.2);
     
     if (s>1) & ((t>=0)&(t<=1)):
         p3=l_(q1)
-        p4=l_(p2+((q1-p2)@d2)/(d2@d2)*d2)
-    elif (t>1) & ((s>=0)&(s<=1)):
+        p4=l_(p2) if ((q1-p2)@d2)/(d2@d2)<0 else l_(q2) if ((q1-p2)@d2)/(d2@d2)>1 else l_(p2+((q1-p2)@d2)/(d2@d2)*d2)
+    elif (t>1) & (s>=0) & (s<=1):
         p4=l_(q2)
-        p3=l_(p1+((q2-p1)@d1)/(d1@d1)*d1)
-    elif (s<0) & ((t>=0)&(t<=1)):
+        p3=l_(p1) if ((q2-p1)@d1)/(d1@d1)<0 else l_(q1) if ((q2-p1)@d1)/(d1@d1)>1 else l_(p1+((q2-p1)@d1)/(d1@d1)*d1)
+    elif (s<0) & (t>=0) & (t<=1):
         p3=l_(p1)
-        p4=l_(p2+((p1-p2)@d2)/(d2@d2)*d2)
-    elif (t<0) & (s>=0)&(s<=1):
+        p4= l_(p2) if ((p1-p2)@d2)/(d2@d2)<0 else l_(q2) if ((p1-p2)@d2)/(d2@d2)>1 else l_(p2+((p1-p2)@d2)/(d2@d2)*d2)
+    elif (t<0) & (s>=0) & (s<=1):
         p4=l_(p2)
-        p3=l_(p1+((p2-p1)@d1)/(d1@d1)*d1)
+        p3= l_(p1) if ((p2-p1)@d1)/(d1@d1)<0 else l_(q1) if ((p2-p1)@d1)/(d1@d1)>1 else l_(p1+((p2-p1)@d1)/(d1@d1)*d1)
     elif (s>1) & (t>1):
         p3=l_(q1)
         p4=l_(q2)
