@@ -10863,6 +10863,33 @@ color("magenta") points({[p3,p4]},.5);
 color("cyan") p_line3d({[p3,p4]},.2);
     ''')
     """
+    def both_minus_or_plus(p1,q1,p2,q2,d1,d2):
+        x1,x2,x3,x4=(p1-p2)@d2/(d2@d2), (q1-p2)@d2/(d2@d2), (p2-p1)@d1/(d1@d1), (q2-p1)@d1/(d1@d1)
+        if 0<=x1<=1:
+            x5=[p1,p2+x1*d2]
+        else:
+            x5=[]
+        if 0<=x2<=1:
+            x6=[q1,p2+x2*d2]
+        else:
+            x6=[]
+        if 0<=x3<=1:
+            x7=[p1+x3*d1,p2]
+        else:
+            x7=[]
+        if 0<=x4<=1:
+            x8=[p1+x4*d1,q2]
+        else:
+            x8=[]
+        
+        x9=a_([1e7 if p==[] else l_len(p) for p in [x5,x6,x7,x8]])
+        if (x9==1e7).all():
+            x10=[]
+        else:
+            x10=x5 if x9.argmin()==0 else x6 if x9.argmin()==1 else x7 if x9.argmin()==0 else x8
+    
+        return l_(x10)
+    
     p1,q1=a_(l1)
     p2,q2=a_(l2)
     d1=q1-p1
@@ -10890,11 +10917,19 @@ color("cyan") p_line3d({[p3,p4]},.2);
         p4=l_(p2)
         p3= l_(p1) if ((p2-p1)@d1)/(d1@d1)<0 else l_(q1) if ((p2-p1)@d1)/(d1@d1)>1 else l_(p1+((p2-p1)@d1)/(d1@d1)*d1)
     elif (s>1) & (t>1):
-        p3=l_(q1)
-        p4=l_(q2)
+        x1=both_minus_or_plus(p1,q1,p2,q2,d1,d2)
+        if x1==[]:
+            p3=l_(q1)
+            p4=l_(q2)
+        else:
+            p3,p4=x1
     elif (s<0) & (t<0):
-        p3=l_(p1)
-        p4=l_(p2)
+        x1=both_minus_or_plus(p1,q1,p2,q2,d1,d2)
+        if x1==[]:
+            p3=l_(p1)
+            p4=l_(p2)
+        else:
+            p3,p4=x1
     elif (s>1) & (t<0):
         p3=l_(q1)
         p4=l_(p2)
