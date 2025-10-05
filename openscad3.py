@@ -10977,3 +10977,182 @@ def three_by_three_equation(eq1,eq2,eq3):
     y=num2/denom
     z=num3/denom
     return [x,y,z]
+
+def closest_point_on_triangle(sec,p):
+    """
+finds projection of a point 'p'on a triangle 'sec'
+example:
+sec=turtle3d([[2,3,5],[10,8,2],[-10,20,0]])
+p=[10,5,4]
+q=closest_point_on_triangle(sec,p)
+fo(f'''
+color("blue") for(p={[sec]}) p_line3dc(p,.2);
+color("magenta") points({[l_(p)]},.5);
+color("cyan") points({[l_(q)]},.5);
+''')
+    """
+    a,b,c=a_(sec)
+    p=a_(p)
+    bp,bc,ba=p-b,c-b,a-b
+    cb,ca,cp=b-c,a-c,p-c
+    ab,ac,ap=b-a,c-a,p-a
+    pa,pb,pc=a-p,b-p,c-p
+    va=cross(pb,pc)@cross(ab,ac)
+    vb=cross(pc,pa)@cross(ab,ac)
+    vc=cross(pa,pb)@cross(ab,ac)
+    u=va/(va+vb+vc)
+    v=vb/(va+vb+vc)
+    w=vc/(va+vb+vc)
+    if (bp@bc<=0)&(bp@ba<=0):
+        q=b
+    elif (cp@cb<=0)&(cp@ca<=0):
+        q=c
+    elif (ap@ab<=0)&(ap@ac<=0):
+        q=a
+    elif cross(pa,pb)@cross(ab,ac)<=0:
+        q=a+ap@ab/(ab@ab)*ab
+    elif cross(pb,pc)@cross(ab,ac)<=0:
+        q=b+bp@bc/(bc@bc)*bc
+    elif cross(pc,pa)@cross(ab,ac)<=0:
+        q=c+cp@ca/(ca@ca)*ca
+    else:
+        q=u*a+v*b+w*c
+    return l_(q)
+
+def nmv(sol,dir=0):
+    """
+    estimated normal vectors in 3 directions to the bounding_box of points
+    direction 'dir' can be '0, 1 or 2'
+    """
+    sol=c23(sol)
+    a=a_(sol).reshape(-1,3)
+    x,y,z=a[:,0],a[:,1],a[:,2]
+    b=l_([[cov(x,x)[0,1],cov(x,y)[0,1],cov(x,z)[0,1]],
+       [cov(y,x)[0,1],cov(y,y)[0,1],cov(y,z)[0,1]],
+       [cov(z,x)[0,1],cov(z,y)[0,1],cov(z,z)[0,1]]])
+    c,d=eig(b)[0],eig(b)[1]
+    return uv(d[:,dir])
+
+def AABB(sol):
+    """
+function for creating an axis-aligned bounding box
+example
+a=random.random(100)*(40-10)+10
+b=random.random(100)*(70-0)+0
+c=random.random(100)*(90)-45
+sol=l_(a_([a,b,c]).transpose(1,0))
+sol1=AABB(sol)
+fo(f'''
+color("magenta") for(p={[sol]}) points(p,.5);
+%{swp(sol1)}
+''')
+    """
+    a=a_(sol).reshape(-1,3)
+    cp1=a_(a).mean(0)
+    p1=convex_hull_3d(ppplane(a,nmv(a),cp1))
+    l4=point_vector(cp1,nmv(a))
+    p2=[vcost1(l4,p) for p in a]
+    i=a_([ a_(cp1)@a_(p) for p in p2])
+    j=i.argmin()
+    k=i.argmax()
+    p_0=a_(p2)[j]
+    p_1=a_(p2)[k]
+    tr1=p_0-cp1
+    tr2=p_1-cp1
+    p3=translate(tr1,p1)
+    p4=translate(tr2,p1)
+    return [p3,p4]
+
+# def triangle_line_intersection(triangle, line):
+#     """
+#     intersection between an triangle and a ray or line
+#     """
+#     a,b,c=a_(triangle)
+#     la,lb=a_(line)
+#     d=lb-la
+#     n1=cross(b-a,c-a)
+#     t1=(n1@(a-la))/(n1@d)
+#     p=la+t1*d
+#     return l_(p) if (a_(barycentric_coord(triangle,p))>0).all() else []
+    
+
+# def barycentric_coord(triangle,point):
+#     """
+#     find the barycentric coordinated of a point w.r.t. triangle coordinates
+#     """
+#     a,b,c=a_(triangle)
+#     p=a_(point)
+#     pa,pb,pc,ab,ac=a-p,b-p,c-p,b-a,c-a
+#     va=cross(pb,pc)@cross(ab,ac)
+#     vb=cross(pc,pa)@cross(ab,ac)
+#     vc=cross(pa,pb)@cross(ab,ac)
+#     u=va/(va+vb+vc)
+#     v=vb/(va+vb+vc)
+#     w=vc/(va+vb+vc)
+#     return l_([u,v,w])
+
+def scalar_triple_product(u,v,w):
+    return cross(u,v)@w
+
+def triangle_line_intersection(triangle,line):
+    """
+finds the intersection point between triangle and line
+example:
+triangle=[[0,0,0],[10,0,3],[5,10,3]]
+line=[[2,2,-3],[10,8,10]]
+p0=triangle_line_intersection(triangle,line)
+fo(f'''
+{swp_sec(triangle)}
+color("blue") p_line3d({line},.2);
+color("magenta") points({[p0]},.5);
+''')
+    """
+    a,b,c=a_(triangle)
+    p,q=a_(line)
+    pq,pa,pb,pc,ab,ac,ap=q-p,a-p,b-p,c-p,b-a,c-a,p-a
+    u=scalar_triple_product(pq,pb,pc)
+    x=scalar_triple_product(ab,ac,ap)
+    if u*x>0:
+        return []
+    v=scalar_triple_product(pq,pc,pa)
+    if v*x>0:
+        return []
+    w=scalar_triple_product(pq,pa,pb)
+    if w*x>0:
+        return []
+    u1=u/(u+v+w)
+    v1=v/(u+v+w)
+    w1=w/(u+v+w)
+    return l_(u1*a+v1*b+w1*c)
+
+def triangle_triangle_intersection(triangle1,triangle2):
+    """
+Intersection line between 2 triangles
+example:
+a=[[0,0,0],[10,0,3],[5,10,3]]
+b=translate([4,2,-2],rot('y-50z30',a))
+l1=triangle_triangle_intersection(a,b)
+fo(f'''
+color("blue") p_line3dc({a},.1);
+color("grey") p_line3dc({b},.1);
+color("magenta") p_line3d({l1},.2);
+{swp_sec(a)}
+{swp_sec(b)}
+''')
+    """
+    a,b,c=a_(triangle1)
+    d,e,f=a_(triangle2)
+    l1=[[a,b],[b,c],[c,a]]
+    l2=[[d,e],[e,f],[f,d]]
+    p1=[ triangle_line_intersection(triangle2,p) for p in l1]
+    p2=[ triangle_line_intersection(triangle1,p) for p in l2]
+    p1=[ p for p in p1 if p!=[]]
+    p2=[ p for p in p2 if p!=[]]
+    if len(p1)==2:
+        return p1
+    elif len(p2)==2:
+        return p2
+    elif len(p1)==1:
+        return l_(concatenate([p1,p2]))
+    else:
+        return []
