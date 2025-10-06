@@ -11109,16 +11109,19 @@ color("magenta") points({[p0]},.5);
     """
     a,b,c=a_(triangle)
     p,q=a_(line)
-    pq,pa,pb,pc,ab,ac,ap=q-p,a-p,b-p,c-p,b-a,c-a,p-a
+    pq,pa,pb,pc,ab,ac,ap,aq=q-p,a-p,b-p,c-p,b-a,c-a,p-a,q-a
     u=scalar_triple_product(pq,pb,pc)
     x=scalar_triple_product(ab,ac,ap)
-    if u*x>0:
+    y=scalar_triple_product(ab,ac,aq)
+    if x*y>=0:
+        return []
+    if u*x>=0:
         return []
     v=scalar_triple_product(pq,pc,pa)
-    if v*x>0:
+    if v*x>=0:
         return []
     w=scalar_triple_product(pq,pa,pb)
-    if w*x>0:
+    if w*x>=0:
         return []
     u1=u/(u+v+w)
     v1=v/(u+v+w)
