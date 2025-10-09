@@ -10764,10 +10764,15 @@ difference(){{
 
     n=n2
     pnt=array(sol).reshape(-1,3)
-    a=earclip_3d(sol[0])
-    b=earclip_3d(sol[-1])
-    b=[flip(p) for p in b]
-    return a+l_(pnt[n])+b
+    pnt=l_(pnt[n])
+    if ~(a_(sol[0]).round(4)==a_(sol[0][0]).round(4)).all():
+        a=earclip_3d(sol[0])
+        pnt=a+pnt
+    if ~(a_(sol[-1]).round(4)==a_(sol[-1][0]).round(4)).all():
+        b=earclip_3d(sol[-1])
+        b=[flip(p) for p in b]
+        pnt=pnt+b
+    return pnt
 
 def convert2df_3df(sec,func):
     """
@@ -11145,6 +11150,13 @@ color("magenta") p_line3d({l1},.2);
     """
     a,b,c=a_(triangle1)
     d,e,f=a_(triangle2)
+    x1=a_(triangle1).mean(0)
+    x2=a_(triangle2).mean(0)
+    d1=max([(a-x1)@(a-x1),(b-x1)@(b-x1),(c-x1)@(c-x1)])
+    d2=max([(d-x2)@(d-x2),(e-x2)@(e-x2),(f-x2)@(f-x2)])
+    d3=(x2-x1)@(x2-x1)
+    if d3>(d1+d2):
+        return []
     l1=[[a,b],[b,c],[c,a]]
     l2=[[d,e],[e,f],[f,d]]
     p1=[ triangle_line_intersection(triangle2,p) for p in l1]
@@ -11159,3 +11171,33 @@ color("magenta") p_line3d({l1},.2);
         return l_(concatenate([p1,p2]))
     else:
         return []
+
+def two_solids_intersection(s1,s2):
+    a=a_(triangulate(s1))
+    b=a_(triangulate(s2))
+    c1=(a-a.mean(1)[:,None])
+    c2=(b-b.mean(1)[:,None])
+    c1=einsum('ijk,ijk->ij',c1,c1).max(1)
+    c2=einsum('ijk,ijk->ij',c2,c2).max(1)
+    
+    l1=[]
+    for i in range(len(a)):
+        d=a[i].mean(0)-b.mean(1)
+        d1=einsum('ij,ij->i',d,d)
+        d2=c1[i]+c2
+        e=b[d1<d2]
+        for p in e:
+            y1=triangle_triangle_intersection(a[i],p)
+            if y1!=[]:
+                l1.append(y1)
+    return l1
+
+def list_combinations(m,n):
+        """
+        lists combinations between 2 lists
+        """
+        s=[]
+        for q in range(m):
+            for r in range(n):
+                s.append([q,r])
+        return s
