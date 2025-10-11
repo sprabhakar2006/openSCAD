@@ -11202,19 +11202,48 @@ def list_combinations(m,n):
                 s.append([q,r])
         return s
 
-def plane_from_equation(n,d,size=[100,100]):
+def plane_from_equation(e,size=[100,100]):
     """
 draws a plane with equation 'ax+by+cz=d'
-where n=[a,b,c] i.e. coefficients of equation
+where e=[a,b,c,d] i.e. coefficients of equation a,b,c
 and 'd' is the distance of plane from the origin
 size is the rectangular size of the plane
 example:
-pl1=plane_from_equation([1,1,1],10)
+pl1=plane_from_equation([1,1,1,10])
 l1=[pnt,pnt1]
 fo(f'''
 %{swp_surf(pl1)}
 ''')
     """
-    u1=uv(n)
-    loc=a_(u1)*d
-    return plane(n,size,loc)
+    e=a_(e)
+    u1=uv(e[:3])
+    loc=a_(u1)*e[-1]
+    return plane(u1,size,loc)
+
+def two_planes_intersection_line(pl1,pl2,line_length=10):
+    """
+intersection line between 2 planes pl1 and pl2
+length of the line to show can be defined as required
+example:
+pl1=plane_from_equation([2,3,4,200])
+pl2=plane_from_equation([-2,2,5,20])
+l1=two_planes_intersection_line(pl1,pl2,20)
+fo(f'''
+{swp_surf(pl1)}
+{swp_surf(pl2)}
+color("magenta") p_line3d({l1},.5);
+''')
+    """
+    n1=a_(nv(a_(pl1).reshape(-1,3)))
+    p1=a_(ppos(pl1,[0,0,0],n1,0))
+    d1=l_(n1@p1)
+    
+    n2=a_(nv(a_(pl2).reshape(-1,3)))
+    p2=a_(ppos(pl2,[0,0,0],n2,0))
+    d2=l_(n2@p2)
+    
+    d=cross(n1,n2)
+    p=cross((d1*a_(n2)-d2*a_(n1)),d)/(d@d)
+    
+    l1=point_vector(p,d*line_length)
+    return l1
