@@ -11201,3 +11201,20 @@ def list_combinations(m,n):
             for r in range(n):
                 s.append([q,r])
         return s
+
+def plane_from_equation(n,d,size=[100,100]):
+    """
+draws a plane with equation 'ax+by+cz=d'
+where n=[a,b,c] i.e. coefficients of equation
+and 'd' is the distance of plane from the origin
+size is the rectangular size of the plane
+example:
+pl1=plane_from_equation([1,1,1],10)
+l1=[pnt,pnt1]
+fo(f'''
+%{swp_surf(pl1)}
+''')
+    """
+    u1=uv(n)
+    loc=a_(u1)*d
+    return plane(n,size,loc)
