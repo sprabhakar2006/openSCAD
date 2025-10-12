@@ -11190,7 +11190,7 @@ def two_solids_intersection(s1,s2):
             y1=triangle_triangle_intersection(a[i],p)
             if y1!=[]:
                 l1.append(y1)
-    return l1
+    return contiguous_chains(l1)
 
 def list_combinations(m,n):
         """
@@ -11265,3 +11265,43 @@ p1
     l1=a_(pl1).reshape(-1,3)[0]
     d=n1@l1
     return l_(n1)+[l_(d)]
+
+def chain_segments(seg_list):
+    
+    l3=seg_list
+    l2=[l3[0]]
+    l3=exclude_seg(l3,[l2[-1]])
+    while l3:
+        added=False
+        for s1 in l3:
+            if (round(s1[0],4)==round(l2[-1][1],4)).all():
+                l2.append(s1)
+                l3=exclude_seg(l3,[s1])
+                added=True
+                break
+            elif (round(s1[1],4)==round(l2[-1][1],4)).all():
+                l2.append(flip(s1))
+                l3=exclude_seg(l3,[s1])
+                added=True
+                break
+            elif (round(s1[1],4)==round(l2[0][0],4)).all():
+                l2.insert(0,s1)
+                l3=exclude_seg(l3,[s1])
+                added=True
+                break
+            elif (round(s1[0],4)==round(l2[0][0],4)).all():
+                l2.insert(0,flip(s1))
+                l3=exclude_seg(l3,[s1])
+                added=True
+                break
+        if added==False:
+            break
+    return [l_(a_(l2)[:,0]),l3]
+
+def contiguous_chains(seg_list):
+    s1=seg_list
+    l2=[]
+    while s1:
+        a,s1=chain_segments(s1)
+        l2.append(a)
+    return l2
