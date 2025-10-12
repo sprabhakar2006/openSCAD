@@ -11217,7 +11217,9 @@ fo(f'''
     """
     e=a_(e)
     u1=uv(e[:3])
-    loc=a_(u1)*e[-1]
+    d=e[-1]
+    d1=d/norm(e[:3])
+    loc=a_(u1)*d1
     return plane(u1,size,loc)
 
 def two_planes_intersection_line(pl1,pl2,line_length=10):
@@ -11234,16 +11236,32 @@ fo(f'''
 color("magenta") p_line3d({l1},.5);
 ''')
     """
-    n1=a_(nv(a_(pl1).reshape(-1,3)))
-    p1=a_(ppos(pl1,[0,0,0],n1,0))
-    d1=l_(n1@p1)
-    
-    n2=a_(nv(a_(pl2).reshape(-1,3)))
-    p2=a_(ppos(pl2,[0,0,0],n2,0))
-    d2=l_(n2@p2)
-    
+    e1=a_(equation_of_plane(pl1))
+    e2=a_(equation_of_plane(pl2))
+    n1,d1=e1[:3],e1[-1]
+    n2,d2=e2[:3],e2[-1]
     d=cross(n1,n2)
-    p=cross((d1*a_(n2)-d2*a_(n1)),d)/(d@d)
-    
-    l1=point_vector(p,d*line_length)
+    p=cross((n2*d1-n1*d2),d)/(d@d)
+    l1=point_vector(p,line_length*d)
     return l1
+
+def equation_of_plane(pl1):
+    """
+returns the equation of plane from a given list of points in the plane
+returns in the form [a,b,c,d] where a,b,c,d are the coefficient of equation
+of plane ax+by+cz=d
+example:
+p0=[[10,0,0],[0,10,0],[0,0,10]]
+p1=equation_of_plane(p0)
+pl1=plane_from_equation(p1)
+
+fo(f'''
+color("magenta"){swp_sec(p0)}
+%{swp_surf(pl1)}
+''')
+p1    
+    """
+    n1=a_(nv(a_(pl1).reshape(-1,3)))
+    l1=a_(pl1).reshape(-1,3)[0]
+    d=n1@l1
+    return l_(n1)+[l_(d)]
