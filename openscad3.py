@@ -7980,7 +7980,7 @@ color("blue") points({l_(la)},.1);
 color("magenta") points({px},.3);
 ''')
     """
-    c1=triangulate(solid)
+    c1=triangulate_solid_open(solid)
     la=a_(pnts)
     p0,p1,p2=a_(c1)[:,0],a_(c1)[:,1],a_(c1)[:,2]
     p01,p02=p1-p0,p2-p0
@@ -10741,14 +10741,14 @@ def ip_tri2sol(tri,sol2):
 
     return l_(concatenate([p for p in c if p!=[]]))
 
-def triangulate(sol):
+def triangulate_solid_open(sol):
     """
-function to triangulate a solid completely
+function to triangulate a solid with open ends like cylinder completely
 example:
 c2=rot('y60',translate([0,0,-10],cylinder(r=3,h=30)))
 s2=linear_extrude(square(5),10)
-c2=triangulate(c2)
-s2=triangulate(s2)
+c2=triangulate_solid_open(c2)
+s2=triangulate_solid_open(s2)
 fo(f'''
 difference(){{
 {swp_triangles(c2)}
@@ -11173,8 +11173,8 @@ color("magenta") p_line3d({l1},.2);
         return []
 
 def two_solids_intersection(s1,s2):
-    a=a_(triangulate(s1))
-    b=a_(triangulate(s2))
+    a=a_(triangulate_solid_open(s1))
+    b=a_(triangulate_solid_open(s2))
     c1=(a-a.mean(1)[:,None])
     c2=(b-b.mean(1)[:,None])
     c1=einsum('ijk,ijk->ij',c1,c1).max(1)
@@ -11305,3 +11305,144 @@ def contiguous_chains(seg_list):
         a,s1=chain_segments(s1)
         l2.append(a)
     return l2
+
+def triangulate_solid_closed(sol):
+    """
+    triangulate a solid with closed loop like doughnut shape
+    """
+    sol=sol+[sol[0]]
+    l,m=[len(sol),len(sol[0])]
+    n2=array([[[[(j+1)+i*m,j+i*m,j+(i+1)*m],[(j+1)+i*m,j+(i+1)*m,(j+1)+(i+1)*m]] \
+             if j<m-1 else \
+             [[0+i*m,j+i*m,j+(i+1)*m],[0+i*m,j+(i+1)*m,0+(i+1)*m]] \
+                 for j in range(m)] for i in range(l-1)],dtype=int).reshape(-1,3)
+    v1=a_(sol).reshape(-1,3)
+    return l_(v1[n2])
+
+def triangulate_surface(surface):
+    """
+function to triangulate a surface
+example:
+
+    """
+    l,m=len(surface),len(surface[0])
+    f_1=faces_surface(l,m)
+    v_1=array(surface).reshape(-1,3)
+    pnt=v_1[f_1]
+    return pnt
+
+def surface_solid_closed_intersection(surface1,s2):
+    a=a_(triangulate_surface(surface1))
+    b=a_(triangulate_solid_closed(s2))
+    c1=(a-a.mean(1)[:,None])
+    c2=(b-b.mean(1)[:,None])
+    c1=einsum('ijk,ijk->ij',c1,c1).max(1)
+    c2=einsum('ijk,ijk->ij',c2,c2).max(1)
+    
+    l1=[]
+    for i in range(len(a)):
+        d=a[i].mean(0)-b.mean(1)
+        d1=einsum('ij,ij->i',d,d)
+        d2=c1[i]+c2
+        e=b[d1<d2]
+        for p in e:
+            y1=triangle_triangle_intersection(a[i],p)
+            if y1!=[]:
+                l1.append(y1)
+    return contiguous_chains(l1)
+
+def solid_solid_closed_intersection(solid_open,solid_closed):
+    a=a_(triangulate_solid_open(solid))
+    b=a_(triangulate_solid_closed(solid_closed))
+    c1=(a-a.mean(1)[:,None])
+    c2=(b-b.mean(1)[:,None])
+    c1=einsum('ijk,ijk->ij',c1,c1).max(1)
+    c2=einsum('ijk,ijk->ij',c2,c2).max(1)
+    
+    l1=[]
+    for i in range(len(a)):
+        d=a[i].mean(0)-b.mean(1)
+        d1=einsum('ij,ij->i',d,d)
+        d2=c1[i]+c2
+        e=b[d1<d2]
+        for p in e:
+            y1=triangle_triangle_intersection(a[i],p)
+            if y1!=[]:
+                l1.append(y1)
+    return contiguous_chains(l1)
+
+def two_surface_intersection(surface1,surface2):
+    a=a_(triangulate_surface(surface1))
+    b=a_(triangulate_surface(surface2))
+    c1=(a-a.mean(1)[:,None])
+    c2=(b-b.mean(1)[:,None])
+    c1=einsum('ijk,ijk->ij',c1,c1).max(1)
+    c2=einsum('ijk,ijk->ij',c2,c2).max(1)
+    
+    l1=[]
+    for i in range(len(a)):
+        d=a[i].mean(0)-b.mean(1)
+        d1=einsum('ij,ij->i',d,d)
+        d2=c1[i]+c2
+        e=b[d1<d2]
+        for p in e:
+            y1=triangle_triangle_intersection(a[i],p)
+            if y1!=[]:
+                l1.append(y1)
+    return contiguous_chains(l1)
+
+def surface_solid_open_intersection(surface1,s2):
+    a=a_(triangulate_surface(surface1))
+    b=a_(triangulate_solid_open(s2))
+    c1=(a-a.mean(1)[:,None])
+    c2=(b-b.mean(1)[:,None])
+    c1=einsum('ijk,ijk->ij',c1,c1).max(1)
+    c2=einsum('ijk,ijk->ij',c2,c2).max(1)
+    
+    l1=[]
+    for i in range(len(a)):
+        d=a[i].mean(0)-b.mean(1)
+        d1=einsum('ij,ij->i',d,d)
+        d2=c1[i]+c2
+        e=b[d1<d2]
+        for p in e:
+            y1=triangle_triangle_intersection(a[i],p)
+            if y1!=[]:
+                l1.append(y1)
+    return contiguous_chains(l1)
+
+def seg_pair_matching_closed(a,b):
+    d,e=[seg(a),seg(b)]
+    def two_seg_len(l1,l2):
+        a=l_len([l1[0],l2[0]])
+        b=l_len([l1[1],l2[1]])
+        return a+b
+    
+    f_c=l_(zeros(len(d)))
+    for i in range(len(d)):
+        min1=1e7
+        for j in range(len(e)):
+            min2=two_seg_len(d[i],e[j])
+            if min1>min2:
+                min1=min2
+                f_c[i]=j
+    g,h=l_(a_([a_(d)[:,0],a_(e)[f_c][:,0]]))
+    return h      
+
+def seg_pair_matching_open(a,b):
+    d,e=[seg(a)[:-1],seg(b)[:-1]]
+    def two_seg_len(l1,l2):
+        a=l_len([l1[0],l2[0]])
+        b=l_len([l1[1],l2[1]])
+        return a+b
+    
+    f_c=l_(zeros(len(d)))
+    for i in range(len(d)):
+        min1=1e7
+        for j in range(len(e)):
+            min2=two_seg_len(d[i],e[j])
+            if min1>min2:
+                min1=min2
+                f_c[i]=j
+    g,h=l_(a_([a_(d)[:,0],a_(e)[f_c][:,0]]))
+    return h+[b[-1]]
