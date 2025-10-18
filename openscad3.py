@@ -1591,6 +1591,7 @@ convex(sec1),convex(sec2) => (False, True)
 refer file "example of various functions" for application example
     """
     sec= c3t2(sec) if array(sec).shape[-1]==3 else sec
+    sec=rationalise_sec(sec)
     return (array(cwv(sec))==-1).all()|(array(cwv(sec))==1).all()
 
 def oo_convex(sec,r): #outer offset of a convex section
@@ -11172,25 +11173,51 @@ color("magenta") p_line3d({l1},.2);
     else:
         return []
 
-def two_solids_intersection(s1,s2):
-    a=a_(triangulate_solid_open(s1))
-    b=a_(triangulate_solid_open(s2))
-    c1=(a-a.mean(1)[:,None])
-    c2=(b-b.mean(1)[:,None])
-    c1=einsum('ijk,ijk->ij',c1,c1).max(1)
-    c2=einsum('ijk,ijk->ij',c2,c2).max(1)
+# def two_solids_intersection(s1,s2):
+#     a=a_(triangulate_solid_open(s1))
+#     b=a_(triangulate_solid_open(s2))
+#     c1=(a-a.mean(1)[:,None])
+#     c2=(b-b.mean(1)[:,None])
+#     c1=einsum('ijk,ijk->ij',c1,c1).max(1)
+#     c2=einsum('ijk,ijk->ij',c2,c2).max(1)
     
+#     l1=[]
+#     for i in range(len(a)):
+#         d=a[i].mean(0)-b.mean(1)
+#         d1=einsum('ij,ij->i',d,d)
+#         d2=c1[i]+c2
+#         e=b[d1<d2]
+#         for p in e:
+#             y1=triangle_triangle_intersection(a[i],p)
+#             if y1!=[]:
+#                 l1.append(y1)
+#     return contiguous_chains(l1)
+
+def two_solids_intersection(sol1,sol2):
+    a1=triangulate_solid_open(sol1)
+    b1=triangulate_solid_open(sol2)
     l1=[]
-    for i in range(len(a)):
-        d=a[i].mean(0)-b.mean(1)
-        d1=einsum('ij,ij->i',d,d)
-        d2=c1[i]+c2
-        e=b[d1<d2]
-        for p in e:
-            y1=triangle_triangle_intersection(a[i],p)
+    min1,max1=a_(a1).min(1),a_(a1).max(1)
+    min2,max2=a_(b1).min(1),a_(b1).max(1)
+    dec=a_([(min2[i]>max1)|(max2[i]<min1) for i in range(len(b1))]).any(2)
+    a2=a_(b1)[~dec.all(1)]
+    b2=a_(a1)[~dec.transpose(1,0).all(1)]
+    
+    for i in range(len(a2)):
+        min1,max1=a_(a2[i]).min(0),a_(a2[i]).max(0)
+        min2,max2=a_(b2).min(1),a_(b2).max(1)
+        c1=a_(b2)[~((min2>max1)|(max2<min1)).any(1)]
+        
+        n1=equation_of_plane(a2[i])
+        n1,d=a_(n1[:3]),n1[-1]
+        e1=einsum('ijk,k->ij',a_(c1),n1)-d
+        f1=a_(c1)[~((e1<0).all(1) | (e1>0).all(1))]
+        for p in f1:
+            y1=triangle_triangle_intersection(a2[i],p)
             if y1!=[]:
                 l1.append(y1)
-    return contiguous_chains(l1)
+    l1=contiguous_chains(l1)
+    return l1
 
 def list_combinations(m,n):
         """
@@ -11331,85 +11358,129 @@ example:
     pnt=v_1[f_1]
     return pnt
 
-def surface_solid_closed_intersection(surface1,s2):
-    a=a_(triangulate_surface(surface1))
-    b=a_(triangulate_solid_closed(s2))
-    c1=(a-a.mean(1)[:,None])
-    c2=(b-b.mean(1)[:,None])
-    c1=einsum('ijk,ijk->ij',c1,c1).max(1)
-    c2=einsum('ijk,ijk->ij',c2,c2).max(1)
+# def surface_solid_closed_intersection(surface1,s2):
+#     a=a_(triangulate_surface(surface1))
+#     b=a_(triangulate_solid_closed(s2))
+#     c1=(a-a.mean(1)[:,None])
+#     c2=(b-b.mean(1)[:,None])
+#     c1=einsum('ijk,ijk->ij',c1,c1).max(1)
+#     c2=einsum('ijk,ijk->ij',c2,c2).max(1)
     
+#     l1=[]
+#     for i in range(len(a)):
+#         d=a[i].mean(0)-b.mean(1)
+#         d1=einsum('ij,ij->i',d,d)
+#         d2=c1[i]+c2
+#         e=b[d1<d2]
+#         for p in e:
+#             y1=triangle_triangle_intersection(a[i],p)
+#             if y1!=[]:
+#                 l1.append(y1)
+#     return contiguous_chains(l1)
+
+def surface_solid_closed_intersection(surface1,solid1):
+    a1=a_(triangulate_surface(surface1))
+    b1=a_(triangulate_solid_closed(solid1))
     l1=[]
-    for i in range(len(a)):
-        d=a[i].mean(0)-b.mean(1)
-        d1=einsum('ij,ij->i',d,d)
-        d2=c1[i]+c2
-        e=b[d1<d2]
-        for p in e:
-            y1=triangle_triangle_intersection(a[i],p)
+    min1,max1=a_(a1).min(1),a_(a1).max(1)
+    min2,max2=a_(b1).min(1),a_(b1).max(1)
+    dec=a_([(min2[i]>max1)|(max2[i]<min1) for i in range(len(b1))]).any(2)
+    a2=a_(b1)[~dec.all(1)]
+    b2=a_(a1)[~dec.transpose(1,0).all(1)]
+    
+    for i in range(len(a2)):
+        min1,max1=a_(a2[i]).min(0),a_(a2[i]).max(0)
+        min2,max2=a_(b2).min(1),a_(b2).max(1)
+        c1=a_(b2)[~((min2>max1)|(max2<min1)).any(1)]
+        
+        n1=equation_of_plane(a2[i])
+        n1,d=a_(n1[:3]),n1[-1]
+        e1=einsum('ijk,k->ij',a_(c1),n1)-d
+        f1=a_(c1)[~((e1<0).all(1) | (e1>0).all(1))]
+        for p in f1:
+            y1=triangle_triangle_intersection(a2[i],p)
             if y1!=[]:
                 l1.append(y1)
-    return contiguous_chains(l1)
+    l1=contiguous_chains(l1)
+    return l1
 
 def solid_solid_closed_intersection(solid_open,solid_closed):
-    a=a_(triangulate_solid_open(solid))
-    b=a_(triangulate_solid_closed(solid_closed))
-    c1=(a-a.mean(1)[:,None])
-    c2=(b-b.mean(1)[:,None])
-    c1=einsum('ijk,ijk->ij',c1,c1).max(1)
-    c2=einsum('ijk,ijk->ij',c2,c2).max(1)
-    
+    a1=a_(triangulate_solid_open(solid))
+    b1=a_(triangulate_solid_closed(solid_closed))
     l1=[]
-    for i in range(len(a)):
-        d=a[i].mean(0)-b.mean(1)
-        d1=einsum('ij,ij->i',d,d)
-        d2=c1[i]+c2
-        e=b[d1<d2]
-        for p in e:
-            y1=triangle_triangle_intersection(a[i],p)
+    min1,max1=a_(a1).min(1),a_(a1).max(1)
+    min2,max2=a_(b1).min(1),a_(b1).max(1)
+    dec=a_([(min2[i]>max1)|(max2[i]<min1) for i in range(len(b1))]).any(2)
+    a2=a_(b1)[~dec.all(1)]
+    b2=a_(a1)[~dec.transpose(1,0).all(1)]
+    
+    for i in range(len(a2)):
+        min1,max1=a_(a2[i]).min(0),a_(a2[i]).max(0)
+        min2,max2=a_(b2).min(1),a_(b2).max(1)
+        c1=a_(b2)[~((min2>max1)|(max2<min1)).any(1)]
+        
+        n1=equation_of_plane(a2[i])
+        n1,d=a_(n1[:3]),n1[-1]
+        e1=einsum('ijk,k->ij',a_(c1),n1)-d
+        f1=a_(c1)[~((e1<0).all(1) | (e1>0).all(1))]
+        for p in f1:
+            y1=triangle_triangle_intersection(a2[i],p)
             if y1!=[]:
                 l1.append(y1)
-    return contiguous_chains(l1)
+    l1=contiguous_chains(l1)
+    return l1
 
 def two_surface_intersection(surface1,surface2):
-    a=a_(triangulate_surface(surface1))
-    b=a_(triangulate_surface(surface2))
-    c1=(a-a.mean(1)[:,None])
-    c2=(b-b.mean(1)[:,None])
-    c1=einsum('ijk,ijk->ij',c1,c1).max(1)
-    c2=einsum('ijk,ijk->ij',c2,c2).max(1)
-    
+    a1=a_(triangulate_surface(surface1))
+    b1=a_(triangulate_surface(surface2))
     l1=[]
-    for i in range(len(a)):
-        d=a[i].mean(0)-b.mean(1)
-        d1=einsum('ij,ij->i',d,d)
-        d2=c1[i]+c2
-        e=b[d1<d2]
-        for p in e:
-            y1=triangle_triangle_intersection(a[i],p)
+    min1,max1=a_(a1).min(1),a_(a1).max(1)
+    min2,max2=a_(b1).min(1),a_(b1).max(1)
+    dec=a_([(min2[i]>max1)|(max2[i]<min1) for i in range(len(b1))]).any(2)
+    a2=a_(b1)[~dec.all(1)]
+    b2=a_(a1)[~dec.transpose(1,0).all(1)]
+    
+    for i in range(len(a2)):
+        min1,max1=a_(a2[i]).min(0),a_(a2[i]).max(0)
+        min2,max2=a_(b2).min(1),a_(b2).max(1)
+        c1=a_(b2)[~((min2>max1)|(max2<min1)).any(1)]
+        
+        n1=equation_of_plane(a2[i])
+        n1,d=a_(n1[:3]),n1[-1]
+        e1=einsum('ijk,k->ij',a_(c1),n1)-d
+        f1=a_(c1)[~((e1<0).all(1) | (e1>0).all(1))]
+        for p in f1:
+            y1=triangle_triangle_intersection(a2[i],p)
             if y1!=[]:
                 l1.append(y1)
-    return contiguous_chains(l1)
+    l1=contiguous_chains(l1)
+    return l1
 
-def surface_solid_open_intersection(surface1,s2):
-    a=a_(triangulate_surface(surface1))
-    b=a_(triangulate_solid_open(s2))
-    c1=(a-a.mean(1)[:,None])
-    c2=(b-b.mean(1)[:,None])
-    c1=einsum('ijk,ijk->ij',c1,c1).max(1)
-    c2=einsum('ijk,ijk->ij',c2,c2).max(1)
-    
+def surface_solid_open_intersection(surface1,solid_open):
+    a1=a_(triangulate_surface(surface1))
+    b1=a_(triangulate_solid_open(solid_open))
     l1=[]
-    for i in range(len(a)):
-        d=a[i].mean(0)-b.mean(1)
-        d1=einsum('ij,ij->i',d,d)
-        d2=c1[i]+c2
-        e=b[d1<d2]
-        for p in e:
-            y1=triangle_triangle_intersection(a[i],p)
+    min1,max1=a_(a1).min(1),a_(a1).max(1)
+    min2,max2=a_(b1).min(1),a_(b1).max(1)
+    dec=a_([(min2[i]>max1)|(max2[i]<min1) for i in range(len(b1))]).any(2)
+    a2=a_(b1)[~dec.all(1)]
+    b2=a_(a1)[~dec.transpose(1,0).all(1)]
+    
+    for i in range(len(a2)):
+        min1,max1=a_(a2[i]).min(0),a_(a2[i]).max(0)
+        min2,max2=a_(b2).min(1),a_(b2).max(1)
+        c1=a_(b2)[~((min2>max1)|(max2<min1)).any(1)]
+        
+        n1=equation_of_plane(a2[i])
+        n1,d=a_(n1[:3]),n1[-1]
+        e1=einsum('ijk,k->ij',a_(c1),n1)-d
+        f1=a_(c1)[~((e1<0).all(1) | (e1>0).all(1))]
+        for p in f1:
+            y1=triangle_triangle_intersection(a2[i],p)
             if y1!=[]:
                 l1.append(y1)
-    return contiguous_chains(l1)
+    l1=contiguous_chains(l1)
+    return l1
 
 def seg_pair_matching_closed(a,b):
     d,e=[seg(a),seg(b)]
@@ -11446,3 +11517,51 @@ def seg_pair_matching_open(a,b):
                 f_c[i]=j
     g,h=l_(a_([a_(d)[:,0],a_(e)[f_c][:,0]]))
     return h+[b[-1]]
+
+def orient_and_align_lines_closed(l1,s=100):
+    """
+multiple closed sections are aligned together to avoid distortion
+example:
+a=rot('x90',sinewave(100,5,1,100))
+b=rot('x90z90',sinewave(100,5,1,100))
+c=surface_from_2_waves(a,b,1)
+d=translate([50,50,0],rot('y60',cylinder(r=5,h=30,center=True)))
+r=2
+e=corner_radius_with_turtle([[r,0],[-r,0,r],[0,r]],6)
+c1=[ translate([0,0,x],c) for (x,y) in e]
+d1=[ translate([50,50,0],rot('y60',cylinder(r=5+y,h=30+y*2,center=True)))  for (x,y) in e]
+l1=[ surface_solid_open_intersection(c1[i],d1[i]) for i in range(len(e))]
+l1=[p[0] for p in l1]
+l2=orient_and_align_lines_closed(l1,300)
+
+fo(f'''
+%{swp_surf(c)}
+%{swp(d)}
+color("blue") for(p={l2}) p_line3dc(p,.05,1);
+color("magenta") for(p={cpo(l2)}) p_line3d(p,.05,1);
+''')    
+    
+    """
+    l1=[equidistant_pathc(p,s) for p in l1]
+    l2=[]
+    for i in range(len(l1)):
+        if a_(equation_of_plane(l1[i])[:3])@a_(equation_of_plane(l1[0])[:3])<0:
+            l2.append(flip(l1[i]))
+        else:
+            l2.append(l1[i])
+    l2=align_sol_1(l2)
+    return l2
+def orient_and_align_lines_open(l1,s=100):
+    """
+multiple open sections are aligned together to avoid distortion
+
+    """
+    l1=[equidistant_path(p,s) for p in l1]
+    l2=[]
+    for i in range(len(l1)):
+        if a_(equation_of_plane(l1[i])[:3])@a_(equation_of_plane(l1[0])[:3])<0:
+            l2.append(flip(l1[i]))
+        else:
+            l2.append(l1[i])
+    l2=align_sol_1(l2)
+    return l2
