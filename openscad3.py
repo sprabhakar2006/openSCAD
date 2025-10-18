@@ -11565,3 +11565,65 @@ multiple open sections are aligned together to avoid distortion
             l2.append(l1[i])
     l2=align_sol_1(l2)
     return l2
+
+def points_increase_closed(l1,n=100):
+    """
+    increase the number of points in a closed loop line section, without altering the original points
+    
+    """
+    if n<len(l1):
+        return equidistant_pathc(l1,n)
+    else:
+        f0=1
+        f1=1.5
+        for j in range(30):
+            d=l_lenv(l1)/n*f1
+            l2=seg(l1)
+            l3=[]
+            for i in range(len(l2)):
+                l3.append(m_points_o(l2[i],d))
+            a=a_(remove_extra_points(concatenate(l3))).shape[0]
+            if a<n:
+                f2=(f0+f1)/2 if f0<f1 else f1-(f0-f1)/2
+                f0=f1
+                f1=f2
+            elif a>n:
+                f2= f1+(f1-f0)/2 if f0<f1 else (f0+f1)/2
+                f0=f1
+                f1=f2
+            elif a==n:
+                break
+        
+        l3=remove_extra_points(concatenate(l3))
+        return l3
+
+def points_increase_open(l1,n=100):
+    """
+    increase the number of points in a open loop line section, without altering the original points
+    
+    """
+    if n<len(l1):
+        return equidistant_path(l1,n)
+    else:
+        f0=1
+        f1=1.5
+        for j in range(30):
+            d=l_lenv(l1)/n*f1
+            l2=seg(l1[:-1])
+            l3=[]
+            for i in range(len(l2)):
+                l3.append(m_points_o(l2[i],d))
+            a=a_(remove_extra_points(concatenate(l3))).shape[0]
+            if a<n:
+                f2=(f0+f1)/2 if f0<f1 else f1-(f0-f1)/2
+                f0=f1
+                f1=f2
+            elif a>n:
+                f2= f1+(f1-f0)/2 if f0<f1 else (f0+f1)/2
+                f0=f1
+                f1=f2
+            elif a==n:
+                break
+        
+        l3=remove_extra_points(concatenate(l3))
+        return l3
