@@ -3349,12 +3349,41 @@ a_3seg([[0,0,0],[10,0,0],[0,0,10]]) => 50.0
 #     return sol
     
 def offset_solid(sol,n):
+    """
+offset solids with open ends
+example:
+a=cube([10,7,8])
+b=offset_solid(a,1)
+fo(f'''
+{swp(a)}
+%{swp(b)}
+''')
+    """
     a=sol
     b=[offset_3d(p,n) for p in a]
     c1,c2=translate(a_(nv(b[0]))*n,b[0]),translate(-a_(nv(b[-1]))*n,b[-1])
     b[0],b[-1]=c1,c2
     return b    
 
+def offset_solid_closed(sol,n):
+    """
+offset solids with closed ends like doughnut
+example:
+a=circle(5)
+b=c23(circle(20))
+c=path_extrude_closed(a,b)
+d=offset_solid_closed(c,1)
+fo(f'''
+difference(){{
+{swp_c(c)}
+{swp(cut_plane([0,-1,0],[50,50],50))}
+}}
+%{swp_c(d)}
+''')
+    """
+    a=sol
+    b=[offset_3d(p,n) for p in a]
+    return b  
 
 def ip_sol2sol(sol1,sol2,n=0):
     """
@@ -6355,11 +6384,11 @@ def arc_with_start_pt_and_cp_3d(n1,start_point=[],center_point=[],theta=90,segme
     arc_1=arc_1.tolist()
     return arc_1
 
-def offset_3d(sec,d,type_of_offset=1):
+def offset_3d(sec,r,type=1):
     """
 offsets an enclosed section in 3d space, in case the section is in 1 plane
 sec: section in 3d space
-d: offset distance -ve sign means inner offset and +ve sign is outer offset
+r: offset distance -ve sign means inner offset and +ve sign is outer offset
 refer to the file"example of various functions" for application examples
 type_of_offset: offset type default is '1' in case of any issue in offset, try with '2'
 example:
@@ -6373,21 +6402,22 @@ color("blue")p_line3dc({sec1},.1);
 color("magenta")p_line3dc({sec2},.1);
 ''')
     """
-    sec1=rot_sec2xy_plane(sec)
-    sec2=c32(sec1)
-    sec3=offset(sec2,d,type_of_offset)
-    a=a_(sec[0])
-    b=a_(c23(c32(sec)[0]))
-    v1=uv(best_fit_plane(sec)[0])
-    if (l_(a_(v1).round(4))==[0,0,-1]) | (l_(a_(v1).round(4))==[0,0,1]):
-        sec5=translate(a-b,sec3)
+    n1=array(nv(sec))
+    a1=cross(n1,[0,0,-1])
+    t1=r2d(arccos(n1@[0,0,-1]))
+    sec1=translate(-array(sec).mean(0),sec)
+    if (l_(n1)==[0,0,1]) or (l_(n1)==[0,0,-1]):
+        sec2=c32(sec1)
     else:
-        v2=[0,0,-1]
-        theta=l_(r2d(arccos(a_(v1)@v2)))
-        ax_1=cross(v1,v2)
-        sec4=axis_rot_1(c23(sec3),ax_1,c23(sec2)[0],-theta)
-        sec5=translate(a-b,sec4)
-    return sec5
+        sec2=c3t2(axis_rot(a1,sec1,t1))
+    l1=len(sec2)
+    p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
+    pnts=offset(sec2,r,type)
+    if (l_(n1)==[0,0,1]) or (l_(n1)==[0,0,-1]):
+        pnts=translate(array(sec).mean(0),pnts) if pnts!=[] else []
+    else:
+        pnts=translate(array(sec).mean(0),axis_rot(a1,pnts,-t1)) if pnts!=[] else []
+    return pnts
 
 def intersection_between_2_sketches(s1,s2):
     """
@@ -10130,10 +10160,9 @@ def vcost2(line,point):
 #     l5=translate(d1,axis_rot_1(l4,n3,l4[0],-theta))
 #     return l5
 
-def path_offset3d(path,d=1,nv=[]):
+def path_offset3d(sec,n):
     """
-function to offset a 3d path. path has to be in the same plane
-Incase the normal vector 'nv' is known can be specified
+path offset in 3d
 example:
 a=cr3dt([[0,0,0],[10,0,0],[0,10,3],[-5,7,5],[-15,-1,-10]])
 pl1=plane([1,1,20],[100,100],[0,0,10])
@@ -10144,20 +10173,24 @@ fo(f'''
 //color("blue") p_line3d({a},.3);
 color("magenta") p_line3d({b},.3);
 color("cyan") p_line3d({c},.3);
-''')    
+''')
     """
-    b=path
-    n1=uv(best_fit_plane(b)[0]) if nv==[] else nv
-    n2=[0,0,-1]
-    n3=uv(cross(n1,n2))
-    theta=r2d(arccos(a_(n1)@a_(n2)))
-    b1=rot_sec2xy_plane(b)
-    b2=c32(b1)
-    tr1=a_(b)[0]-a_(c23(b2))[0]
-    b3=path_offset(b2,d)
-    b4=axis_rot_1(c23(b3),n3,c23(b2)[0],-theta)
-    b5=translate(tr1,b4)
-    return b5
+    n1=array(nv(sec))
+    a1=cross(n1,[0,0,-1])
+    t1=r2d(arccos(n1@[0,0,-1]))
+    sec1=translate(-array(sec).mean(0),sec)
+    if (l_(n1)==[0,0,1]) or (l_(n1)==[0,0,-1]):
+        sec2=c32(sec1)
+    else:
+        sec2=c3t2(axis_rot(a1,sec1,t1))
+    l1=len(sec2)
+    p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
+    pnts=path_offset(sec2,n)
+    if (l_(n1)==[0,0,1]) or (l_(n1)==[0,0,-1]):
+        pnts=translate(array(sec).mean(0),pnts) if pnts!=[] else []
+    else:
+        pnts=translate(array(sec).mean(0),axis_rot(a1,pnts,-t1)) if pnts!=[] else []
+    return pnts
 
 
 def ilo(il,s1,s2,r,t=1):
@@ -10823,11 +10856,17 @@ def convert2df_3df(sec,func):
     a1=cross(n1,[0,0,-1])
     t1=r2d(arccos(n1@[0,0,-1]))
     sec1=translate(-array(sec).mean(0),sec)
-    sec2=c3t2(axis_rot(a1,sec1,t1))
+    if (l_(n1)==[0,0,1]) or (l_(n1)==[0,0,-1]):
+        sec2=c32(sec1)
+    else:
+        sec2=c3t2(axis_rot(a1,sec1,t1))
     l1=len(sec2)
     p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
     pnts=func(sec2)
-    pnts=translate(array(sec).mean(0),axis_rot(a1,pnts,-t1)) if pnts!=[] else []
+    if (l_(n1)==[0,0,1]) or (l_(n1)==[0,0,-1]):
+        pnts=translate(array(sec).mean(0),pnts) if pnts!=[] else []
+    else:
+        pnts=translate(array(sec).mean(0),axis_rot(a1,pnts,-t1)) if pnts!=[] else []
     return pnts
 
 def cwv3d(sec):
@@ -12003,3 +12042,24 @@ def points_increase_open(l1,n=100):
         
         l3=remove_extra_points(concatenate(l3))
         return l3
+
+def offset_solid_type_cup(sol,n):
+    """
+offset solid which of cup type orientation
+example:
+a=circle(10)
+b=corner_radius_with_turtle([[-3,0],[3,0,3],[3,7,10],[0,10,1],[-2,0,.99],
+                            [0,-10,8],[-2.5,-5,3],[-3,0]],5)
+c=prism(a,b)
+d=offset_solid_type_cup(c,1)
+fo(f'''
+difference(){{
+{swp(c)}
+{swp(cut_plane([0,-1,0],[50,50],20))}
+}}
+%{swp(d)}
+''')
+    """
+    a=cpo(sol)
+    b=cpo([path_offset3d(p,n) for p in a])
+    return b 
