@@ -3328,26 +3328,32 @@ a_3seg([[0,0,0],[10,0,0],[0,0,10]]) => 50.0
 
 
 
-def offset_sol(sol,d,type=1):
-    """
-function to calculate offset of a 3d object by distance 'd'
-example:
-c1=cylinder(r=10,h=40)
-c2=offset_sol(c1,-3)
-c3=offset_sol(c1,3)
-fo(f'''
-//original cylinder
-color("blue",.2) swp_c({c1});
-// offset inwards by 3mm
-color("magenta",.2) swp_c({c2});
-// offset outwards 3mm
-color("cyan",.2) swp_c({c3});
-''')
-    """
+# def offset_sol(sol,d,type=1):
+#     """
+# function to calculate offset of a 3d object by distance 'd'
+# example:
+# c1=cylinder(r=10,h=40)
+# c2=offset_sol(c1,-3)
+# c3=offset_sol(c1,3)
+# fo(f'''
+# //original cylinder
+# color("blue",.2) swp_c({c1});
+# // offset inwards by 3mm
+# color("magenta",.2) swp_c({c2});
+# // offset outwards 3mm
+# color("cyan",.2) swp_c({c3});
+# ''')
+#     """
     
-    sol=[offset_3d(p,d,type) for p in sol]
-    return sol
+#     sol=[offset_3d(p,d,type) for p in sol]
+#     return sol
     
+def offset_solid(sol,n):
+    a=sol
+    b=[offset_3d(p,n) for p in a]
+    c1,c2=translate(a_(nv(b[0]))*n,b[0]),translate(-a_(nv(b[-1]))*n,b[-1])
+    b[0],b[-1]=c1,c2
+    return b    
 
 
 def ip_sol2sol(sol1,sol2,n=0):
