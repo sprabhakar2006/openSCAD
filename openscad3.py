@@ -11379,7 +11379,7 @@ def two_solids_intersection(sol1,sol2,ear=0):
                 x1=triangle_triangle_intersection(a2[i],f1[j])
                 if x1!=[]:
                     l1.append(x1)
-    return remove_duplicates(concatenate(l1))
+    return l1
 
 def list_combinations(m,n):
         """
@@ -11632,7 +11632,7 @@ def surface_solid_closed_intersection(surface1,solid1):
                 x1=triangle_triangle_intersection(a2[i],f1[j])
                 if x1!=[]:
                     l1.append(x1)
-    return remove_duplicates(concatenate(l1))
+    return l1
 
 def solid_solid_closed_intersection(solid_open,solid_closed):
     a1=a_(triangulate_solid_open(solid))
@@ -11752,7 +11752,7 @@ def two_surface_intersection(surface1,surface2):
                 x1=triangle_triangle_intersection(a2[i],f1[j])
                 if x1!=[]:
                     l1.append(x1)
-    return remove_duplicates(concatenate(l1))
+    return l1
 
 def surface_solid_open_intersection(surface1,solid_open,ear=0):
     if ear==1:
@@ -11850,7 +11850,7 @@ def surface_solid_open_intersection(surface1,solid_open,ear=0):
                 x1=triangle_triangle_intersection(a2[i],f1[j])
                 if x1!=[]:
                     l1.append(x1)
-    return remove_duplicates(concatenate(l1))
+    return l1
 
 def seg_pair_matching_closed(a,b):
     d,e=[seg(a),seg(b)]
