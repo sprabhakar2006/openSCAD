@@ -10775,6 +10775,40 @@ difference(){{
         pnt=pnt+b
     return pnt
 
+def triangulate_solid_openx(sol):
+    """
+function to triangulate a solid with open ends like cylinder completely
+example:
+c2=rot('y60',translate([0,0,-10],cylinder(r=3,h=30)))
+s2=linear_extrude(square(5),10)
+c2=triangulate_solid_open(c2)
+s2=triangulate_solid_open(s2)
+fo(f'''
+difference(){{
+{swp_triangles(c2)}
+{swp_triangles(s2)}
+}}
+''')
+    """
+    sol=rot('y.00001',sol)
+    n2=array([[[[(j+1)+i*len(sol[0]),j+i*len(sol[0]),j+(i+1)*len(sol[0])],[(j+1)+i*len(sol[0]),j+(i+1)*len(sol[0]),(j+1)+(i+1)*len(sol[0])]] \
+             if j<len(sol[0])-1 else \
+             [[0+i*len(sol[0]),j+i*len(sol[0]),j+(i+1)*len(sol[0])],[0+i*len(sol[0]),j+(i+1)*len(sol[0]),0+(i+1)*len(sol[0])]] \
+                 for j in range(len(sol[0]))] for i in range(len(sol)-1)]).reshape(-1,3)
+
+    n=n2
+    pnt=array(sol).reshape(-1,3)
+    pnt=l_(pnt[n])
+    # if ~(a_(sol[0]).round(4)==a_(sol[0][0]).round(4)).all():
+    #     a=earclip_3d(sol[0])
+    #     pnt=a+pnt
+    # if ~(a_(sol[-1]).round(4)==a_(sol[-1][0]).round(4)).all():
+    #     b=earclip_3d(sol[-1])
+    #     b=[flip(p) for p in b]
+    #     pnt=pnt+b
+    return pnt
+
+
 def convert2df_3df(sec,func):
     """
     It is not a function, but just a method to convert for ease of reference
@@ -11100,6 +11134,40 @@ color("magenta") for(p={[sol]}) points(p,.5);
 def scalar_triple_product(u,v,w):
     return cross(u,v)@w
 
+# def triangle_line_intersection(triangle,line):
+#     """
+# finds the intersection point between triangle and line
+# example:
+# triangle=[[0,0,0],[10,0,3],[5,10,3]]
+# line=[[2,2,-3],[10,8,10]]
+# p0=triangle_line_intersection(triangle,line)
+# fo(f'''
+# {swp_sec(triangle)}
+# color("blue") p_line3d({line},.2);
+# color("magenta") points({[p0]},.5);
+# ''')
+#     """
+#     a,b,c=a_(triangle)
+#     p,q=a_(line)
+#     pq,pa,pb,pc,ab,ac,ap,aq=q-p,a-p,b-p,c-p,b-a,c-a,p-a,q-a
+#     u=scalar_triple_product(pq,pb,pc)
+#     x=scalar_triple_product(ab,ac,ap)
+#     y=scalar_triple_product(ab,ac,aq)
+#     if x*y>=0:
+#         return []
+#     if u*x>=0:
+#         return []
+#     v=scalar_triple_product(pq,pc,pa)
+#     if v*x>=0:
+#         return []
+#     w=scalar_triple_product(pq,pa,pb)
+#     if w*x>=0:
+#         return []
+#     u1=u/(u+v+w)
+#     v1=v/(u+v+w)
+#     w1=w/(u+v+w)
+#     return l_(u1*a+v1*b+w1*c)
+
 def triangle_line_intersection(triangle,line):
     """
 finds the intersection point between triangle and line
@@ -11115,24 +11183,15 @@ color("magenta") points({[p0]},.5);
     """
     a,b,c=a_(triangle)
     p,q=a_(line)
-    pq,pa,pb,pc,ab,ac,ap,aq=q-p,a-p,b-p,c-p,b-a,c-a,p-a,q-a
-    u=scalar_triple_product(pq,pb,pc)
-    x=scalar_triple_product(ab,ac,ap)
-    y=scalar_triple_product(ab,ac,aq)
-    if x*y>=0:
+    ab,ac,pq=b-a,c-a,q-p
+    x=cross(ab,ac)
+    t=(x@(p-a))/(-pq@x)
+    u=(cross(ac,-pq)@(p-a))/(-pq@x)
+    v=(cross(-pq,ab)@(p-a))/(-pq@x)
+    if (t>=0)&(t<=1)&(u>=0)&(u<=1)&(v>=0)&(v<=1)&(u+v<1):
+        return l_(p+pq*t)
+    else:
         return []
-    if u*x>=0:
-        return []
-    v=scalar_triple_product(pq,pc,pa)
-    if v*x>=0:
-        return []
-    w=scalar_triple_product(pq,pa,pb)
-    if w*x>=0:
-        return []
-    u1=u/(u+v+w)
-    v1=v/(u+v+w)
-    w1=w/(u+v+w)
-    return l_(u1*a+v1*b+w1*c)
 
 def triangle_triangle_intersection(triangle1,triangle2):
     """
@@ -11151,13 +11210,13 @@ color("magenta") p_line3d({l1},.2);
     """
     a,b,c=a_(triangle1)
     d,e,f=a_(triangle2)
-    x1=a_(triangle1).mean(0)
-    x2=a_(triangle2).mean(0)
-    d1=max([(a-x1)@(a-x1),(b-x1)@(b-x1),(c-x1)@(c-x1)])
-    d2=max([(d-x2)@(d-x2),(e-x2)@(e-x2),(f-x2)@(f-x2)])
-    d3=(x2-x1)@(x2-x1)
-    if d3>(d1+d2):
-        return []
+    # x1=a_(triangle1).mean(0)
+    # x2=a_(triangle2).mean(0)
+    # d1=max([(a-x1)@(a-x1),(b-x1)@(b-x1),(c-x1)@(c-x1)])
+    # d2=max([(d-x2)@(d-x2),(e-x2)@(e-x2),(f-x2)@(f-x2)])
+    # d3=(x2-x1)@(x2-x1)
+    # if d3>(d1+d2):
+    #     return []
     l1=[[a,b],[b,c],[c,a]]
     l2=[[d,e],[e,f],[f,d]]
     p1=[ triangle_line_intersection(triangle2,p) for p in l1]
@@ -11193,9 +11252,44 @@ color("magenta") p_line3d({l1},.2);
 #                 l1.append(y1)
 #     return contiguous_chains(l1)
 
-def two_solids_intersection(sol1,sol2):
-    a1=triangulate_solid_open(sol1)
-    b1=triangulate_solid_open(sol2)
+# def two_solids_intersection(sol1,sol2,ear=0):
+#     if ear==1:
+#         a1=triangulate_solid_open(sol1)
+#         b1=triangulate_solid_open(sol2)
+#     elif ear==0:
+#         a1=triangulate_solid_openx(sol1)
+#         b1=triangulate_solid_openx(sol2)
+#     l1=[]
+#     min1,max1=a_(a1).min(1),a_(a1).max(1)
+#     min2,max2=a_(b1).min(1),a_(b1).max(1)
+#     dec=a_([(min2[i]>max1)|(max2[i]<min1) for i in range(len(b1))]).any(2)
+#     a2=a_(b1)[~dec.all(1)]
+#     b2=a_(a1)[~dec.transpose(1,0).all(1)]
+    
+#     for i in range(len(a2)):
+#         min1,max1=a_(a2[i]).min(0),a_(a2[i]).max(0)
+#         min2,max2=a_(b2).min(1),a_(b2).max(1)
+#         c1=a_(b2)[~((min2>max1)|(max2<min1)).any(1)]
+        
+#         n1=equation_of_plane(a2[i])
+#         n1,d=a_(n1[:3]),n1[-1]
+#         e1=einsum('ijk,k->ij',a_(c1),n1)-d
+#         f1=a_(c1)[~((e1<0).all(1) | (e1>0).all(1))]
+#         for p in f1:
+#             y1=triangle_triangle_intersection(a2[i],p)
+#             if y1!=[]:
+#                 l1.append(y1)
+#     # l1=contiguous_chains(l1)
+#     return l1
+
+def two_solids_intersection(sol1,sol2,ear=0):
+    if ear==1:
+        a1=triangulate_solid_open(sol1)
+        b1=triangulate_solid_open(sol2)
+    elif ear==0:
+        a1=triangulate_solid_openx(sol1)
+        b1=triangulate_solid_openx(sol2)
+    
     l1=[]
     min1,max1=a_(a1).min(1),a_(a1).max(1)
     min2,max2=a_(b1).min(1),a_(b1).max(1)
@@ -11212,12 +11306,80 @@ def two_solids_intersection(sol1,sol2):
         n1,d=a_(n1[:3]),n1[-1]
         e1=einsum('ijk,k->ij',a_(c1),n1)-d
         f1=a_(c1)[~((e1<0).all(1) | (e1>0).all(1))]
-        for p in f1:
-            y1=triangle_triangle_intersection(a2[i],p)
-            if y1!=[]:
-                l1.append(y1)
-    l1=contiguous_chains(l1)
-    return l1
+    
+    
+        p0,p1,p2=a2[i]
+        q0,q1,q2=f1[:,0],f1[:,1],f1[:,2]
+        p01=p1-p0
+        p02=p2-p0
+        p12=p2-p1
+        p20=p0-p2
+        q01=q1-q0
+        q20=q0-q2
+        q12=q2-q1
+        q02=q2-q0
+        r1=cross(p01,p02)
+        r2=cross(p02[None,:],-q01)
+        r3=cross(-q01,p01[None,:])
+        t1=einsum('j,ij->i',r1,(q0-p0))/einsum('ij,j->i',(-q01),r1)
+        u1=einsum('ij,ij->i',r2,(q0-p0))/einsum('ij,j->i',(-q01),r1)
+        v1=einsum('ij,ij->i',r3,(q0-p0))/einsum('ij,j->i',(-q01),r1)
+        d1=(t1>=0)&(t1<=1)&(u1>=0)&(u1<=1)&(v1>=0)&(v1<=1)&(u1+v1<1)
+        
+        r1=cross(p01,p02)
+        r2=cross(p02[None,:],-q12)
+        r3=cross(-q12,p01[None,:])
+        t2=einsum('j,ij->i',r1,(q1-p0))/einsum('ij,j->i',(-q12),r1)
+        u2=einsum('ij,ij->i',r2,(q1-p0))/einsum('ij,j->i',(-q12),r1)
+        v2=einsum('ij,ij->i',r3,(q1-p0))/einsum('ij,j->i',(-q12),r1)
+        d2=(t2>=0)&(t2<=1)&(u2>=0)&(u2<=1)&(v2>=0)&(v2<=1)&(u2+v2<1)
+        
+        r1=cross(p01,p02)
+        r2=cross(p02[None,:],-q20)
+        r3=cross(-q20,p01[None,:])
+        t3=einsum('j,ij->i',r1,(q2-p0))/einsum('ij,j->i',(-q20),r1)
+        u3=einsum('ij,ij->i',r2,(q2-p0))/einsum('ij,j->i',(-q20),r1)
+        v3=einsum('ij,ij->i',r3,(q2-p0))/einsum('ij,j->i',(-q20),r1)
+        d3=(t3>=0)&(t3<=1)&(u3>=0)&(u3<=1)&(v3>=0)&(v3<=1)&(u3+v3<1)
+        
+        r1=cross(q01,q02)
+        r2=cross(q02,(-p01)[None,:])
+        r3=cross((-p01)[None,:],q01)
+        t4=einsum('ij,ij->i',r1,(p0-q0))/einsum('j,ij->i',(-p01),r1)
+        u4=einsum('ij,ij->i',r2,(p0-q0))/einsum('j,ij->i',(-p01),r1)
+        v4=einsum('ij,ij->i',r3,(p0-q0))/einsum('j,ij->i',(-p01),r1)
+        d4=(t4>=0)&(t4<=1)&(u4>=0)&(u4<=1)&(v4>=0)&(v4<=1)&(u4+v4<1)
+        
+        r1=cross(q01,q02)
+        r2=cross(q02,(-p12)[None,:])
+        r3=cross((-p12)[None,:],q01)
+        t5=einsum('ij,ij->i',r1,(p1-q0))/einsum('j,ij->i',(-p12),r1)
+        u5=einsum('ij,ij->i',r2,(p1-q0))/einsum('j,ij->i',(-p12),r1)
+        v5=einsum('ij,ij->i',r3,(p1-q0))/einsum('j,ij->i',(-p12),r1)
+        d5=(t5>=0)&(t5<=1)&(u5>=0)&(u5<=1)&(v5>=0)&(v5<=1)&(u5+v5<1)
+        
+        r1=cross(q01,q02)
+        r2=cross(q02,(-p20)[None,:])
+        r3=cross((-p20)[None,:],q01)
+        t6=einsum('ij,ij->i',r1,(p2-q0))/einsum('j,ij->i',(-p20),r1)
+        u6=einsum('ij,ij->i',r2,(p2-q0))/einsum('j,ij->i',(-p20),r1)
+        v6=einsum('ij,ij->i',r3,(p2-q0))/einsum('j,ij->i',(-p20),r1)
+        d6=(t6>=0)&(t6<=1)&(u6>=0)&(u6<=1)&(v6>=0)&(v6<=1)&(u6+v6<1)
+        
+        lx=[arange(len(q0))[d1], \
+        arange(len(q0))[d2], \
+        arange(len(q0))[d3], \
+        arange(len(q0))[d4], \
+        arange(len(q0))[d5], \
+        arange(len(q0))[d6]]
+        if concatenate(lx).size!=0:
+            
+            ly=remove_duplicates(concatenate([ p for p in lx if p.size!=0]))
+            for j in ly:
+                x1=triangle_triangle_intersection(a2[i],f1[j])
+                if x1!=[]:
+                    l1.append(x1)
+    return remove_duplicates(concatenate(l1))
 
 def list_combinations(m,n):
         """
@@ -11397,12 +11559,80 @@ def surface_solid_closed_intersection(surface1,solid1):
         n1,d=a_(n1[:3]),n1[-1]
         e1=einsum('ijk,k->ij',a_(c1),n1)-d
         f1=a_(c1)[~((e1<0).all(1) | (e1>0).all(1))]
-        for p in f1:
-            y1=triangle_triangle_intersection(a2[i],p)
-            if y1!=[]:
-                l1.append(y1)
-    l1=contiguous_chains(l1)
-    return l1
+    
+    
+        p0,p1,p2=a2[i]
+        q0,q1,q2=f1[:,0],f1[:,1],f1[:,2]
+        p01=p1-p0
+        p02=p2-p0
+        p12=p2-p1
+        p20=p0-p2
+        q01=q1-q0
+        q20=q0-q2
+        q12=q2-q1
+        q02=q2-q0
+        r1=cross(p01,p02)
+        r2=cross(p02[None,:],-q01)
+        r3=cross(-q01,p01[None,:])
+        t1=einsum('j,ij->i',r1,(q0-p0))/einsum('ij,j->i',(-q01),r1)
+        u1=einsum('ij,ij->i',r2,(q0-p0))/einsum('ij,j->i',(-q01),r1)
+        v1=einsum('ij,ij->i',r3,(q0-p0))/einsum('ij,j->i',(-q01),r1)
+        d1=(t1>=0)&(t1<=1)&(u1>=0)&(u1<=1)&(v1>=0)&(v1<=1)&(u1+v1<1)
+        
+        r1=cross(p01,p02)
+        r2=cross(p02[None,:],-q12)
+        r3=cross(-q12,p01[None,:])
+        t2=einsum('j,ij->i',r1,(q1-p0))/einsum('ij,j->i',(-q12),r1)
+        u2=einsum('ij,ij->i',r2,(q1-p0))/einsum('ij,j->i',(-q12),r1)
+        v2=einsum('ij,ij->i',r3,(q1-p0))/einsum('ij,j->i',(-q12),r1)
+        d2=(t2>=0)&(t2<=1)&(u2>=0)&(u2<=1)&(v2>=0)&(v2<=1)&(u2+v2<1)
+        
+        r1=cross(p01,p02)
+        r2=cross(p02[None,:],-q20)
+        r3=cross(-q20,p01[None,:])
+        t3=einsum('j,ij->i',r1,(q2-p0))/einsum('ij,j->i',(-q20),r1)
+        u3=einsum('ij,ij->i',r2,(q2-p0))/einsum('ij,j->i',(-q20),r1)
+        v3=einsum('ij,ij->i',r3,(q2-p0))/einsum('ij,j->i',(-q20),r1)
+        d3=(t3>=0)&(t3<=1)&(u3>=0)&(u3<=1)&(v3>=0)&(v3<=1)&(u3+v3<1)
+        
+        r1=cross(q01,q02)
+        r2=cross(q02,(-p01)[None,:])
+        r3=cross((-p01)[None,:],q01)
+        t4=einsum('ij,ij->i',r1,(p0-q0))/einsum('j,ij->i',(-p01),r1)
+        u4=einsum('ij,ij->i',r2,(p0-q0))/einsum('j,ij->i',(-p01),r1)
+        v4=einsum('ij,ij->i',r3,(p0-q0))/einsum('j,ij->i',(-p01),r1)
+        d4=(t4>=0)&(t4<=1)&(u4>=0)&(u4<=1)&(v4>=0)&(v4<=1)&(u4+v4<1)
+        
+        r1=cross(q01,q02)
+        r2=cross(q02,(-p12)[None,:])
+        r3=cross((-p12)[None,:],q01)
+        t5=einsum('ij,ij->i',r1,(p1-q0))/einsum('j,ij->i',(-p12),r1)
+        u5=einsum('ij,ij->i',r2,(p1-q0))/einsum('j,ij->i',(-p12),r1)
+        v5=einsum('ij,ij->i',r3,(p1-q0))/einsum('j,ij->i',(-p12),r1)
+        d5=(t5>=0)&(t5<=1)&(u5>=0)&(u5<=1)&(v5>=0)&(v5<=1)&(u5+v5<1)
+        
+        r1=cross(q01,q02)
+        r2=cross(q02,(-p20)[None,:])
+        r3=cross((-p20)[None,:],q01)
+        t6=einsum('ij,ij->i',r1,(p2-q0))/einsum('j,ij->i',(-p20),r1)
+        u6=einsum('ij,ij->i',r2,(p2-q0))/einsum('j,ij->i',(-p20),r1)
+        v6=einsum('ij,ij->i',r3,(p2-q0))/einsum('j,ij->i',(-p20),r1)
+        d6=(t6>=0)&(t6<=1)&(u6>=0)&(u6<=1)&(v6>=0)&(v6<=1)&(u6+v6<1)
+        
+        lx=[arange(len(q0))[d1], \
+        arange(len(q0))[d2], \
+        arange(len(q0))[d3], \
+        arange(len(q0))[d4], \
+        arange(len(q0))[d5], \
+        arange(len(q0))[d6]]
+        if concatenate(lx).size!=0:
+            
+            ly=remove_duplicates(concatenate([ p for p in lx if p.size!=0]))
+            for j in ly:
+                x1=triangle_triangle_intersection(a2[i],f1[j])
+                if x1!=[]:
+                    l1.append(x1)
+    return remove_duplicates(concatenate(l1))
 
 def solid_solid_closed_intersection(solid_open,solid_closed):
     a1=a_(triangulate_solid_open(solid))
@@ -11427,7 +11657,7 @@ def solid_solid_closed_intersection(solid_open,solid_closed):
             y1=triangle_triangle_intersection(a2[i],p)
             if y1!=[]:
                 l1.append(y1)
-    l1=contiguous_chains(l1)
+    # l1=contiguous_chains(l1)
     return l1
 
 def two_surface_intersection(surface1,surface2):
@@ -11449,16 +11679,88 @@ def two_surface_intersection(surface1,surface2):
         n1,d=a_(n1[:3]),n1[-1]
         e1=einsum('ijk,k->ij',a_(c1),n1)-d
         f1=a_(c1)[~((e1<0).all(1) | (e1>0).all(1))]
-        for p in f1:
-            y1=triangle_triangle_intersection(a2[i],p)
-            if y1!=[]:
-                l1.append(y1)
-    l1=contiguous_chains(l1)
-    return l1
+    
+    
+        p0,p1,p2=a2[i]
+        q0,q1,q2=f1[:,0],f1[:,1],f1[:,2]
+        p01=p1-p0
+        p02=p2-p0
+        p12=p2-p1
+        p20=p0-p2
+        q01=q1-q0
+        q20=q0-q2
+        q12=q2-q1
+        q02=q2-q0
+        r1=cross(p01,p02)
+        r2=cross(p02[None,:],-q01)
+        r3=cross(-q01,p01[None,:])
+        t1=einsum('j,ij->i',r1,(q0-p0))/einsum('ij,j->i',(-q01),r1)
+        u1=einsum('ij,ij->i',r2,(q0-p0))/einsum('ij,j->i',(-q01),r1)
+        v1=einsum('ij,ij->i',r3,(q0-p0))/einsum('ij,j->i',(-q01),r1)
+        d1=(t1>=0)&(t1<=1)&(u1>=0)&(u1<=1)&(v1>=0)&(v1<=1)&(u1+v1<1)
+        
+        r1=cross(p01,p02)
+        r2=cross(p02[None,:],-q12)
+        r3=cross(-q12,p01[None,:])
+        t2=einsum('j,ij->i',r1,(q1-p0))/einsum('ij,j->i',(-q12),r1)
+        u2=einsum('ij,ij->i',r2,(q1-p0))/einsum('ij,j->i',(-q12),r1)
+        v2=einsum('ij,ij->i',r3,(q1-p0))/einsum('ij,j->i',(-q12),r1)
+        d2=(t2>=0)&(t2<=1)&(u2>=0)&(u2<=1)&(v2>=0)&(v2<=1)&(u2+v2<1)
+        
+        r1=cross(p01,p02)
+        r2=cross(p02[None,:],-q20)
+        r3=cross(-q20,p01[None,:])
+        t3=einsum('j,ij->i',r1,(q2-p0))/einsum('ij,j->i',(-q20),r1)
+        u3=einsum('ij,ij->i',r2,(q2-p0))/einsum('ij,j->i',(-q20),r1)
+        v3=einsum('ij,ij->i',r3,(q2-p0))/einsum('ij,j->i',(-q20),r1)
+        d3=(t3>=0)&(t3<=1)&(u3>=0)&(u3<=1)&(v3>=0)&(v3<=1)&(u3+v3<1)
+        
+        r1=cross(q01,q02)
+        r2=cross(q02,(-p01)[None,:])
+        r3=cross((-p01)[None,:],q01)
+        t4=einsum('ij,ij->i',r1,(p0-q0))/einsum('j,ij->i',(-p01),r1)
+        u4=einsum('ij,ij->i',r2,(p0-q0))/einsum('j,ij->i',(-p01),r1)
+        v4=einsum('ij,ij->i',r3,(p0-q0))/einsum('j,ij->i',(-p01),r1)
+        d4=(t4>=0)&(t4<=1)&(u4>=0)&(u4<=1)&(v4>=0)&(v4<=1)&(u4+v4<1)
+        
+        r1=cross(q01,q02)
+        r2=cross(q02,(-p12)[None,:])
+        r3=cross((-p12)[None,:],q01)
+        t5=einsum('ij,ij->i',r1,(p1-q0))/einsum('j,ij->i',(-p12),r1)
+        u5=einsum('ij,ij->i',r2,(p1-q0))/einsum('j,ij->i',(-p12),r1)
+        v5=einsum('ij,ij->i',r3,(p1-q0))/einsum('j,ij->i',(-p12),r1)
+        d5=(t5>=0)&(t5<=1)&(u5>=0)&(u5<=1)&(v5>=0)&(v5<=1)&(u5+v5<1)
+        
+        r1=cross(q01,q02)
+        r2=cross(q02,(-p20)[None,:])
+        r3=cross((-p20)[None,:],q01)
+        t6=einsum('ij,ij->i',r1,(p2-q0))/einsum('j,ij->i',(-p20),r1)
+        u6=einsum('ij,ij->i',r2,(p2-q0))/einsum('j,ij->i',(-p20),r1)
+        v6=einsum('ij,ij->i',r3,(p2-q0))/einsum('j,ij->i',(-p20),r1)
+        d6=(t6>=0)&(t6<=1)&(u6>=0)&(u6<=1)&(v6>=0)&(v6<=1)&(u6+v6<1)
+        
+        lx=[arange(len(q0))[d1], \
+        arange(len(q0))[d2], \
+        arange(len(q0))[d3], \
+        arange(len(q0))[d4], \
+        arange(len(q0))[d5], \
+        arange(len(q0))[d6]]
+        if concatenate(lx).size!=0:
+            
+            ly=remove_duplicates(concatenate([ p for p in lx if p.size!=0]))
+            for j in ly:
+                x1=triangle_triangle_intersection(a2[i],f1[j])
+                if x1!=[]:
+                    l1.append(x1)
+    return remove_duplicates(concatenate(l1))
 
-def surface_solid_open_intersection(surface1,solid_open):
-    a1=a_(triangulate_surface(surface1))
-    b1=a_(triangulate_solid_open(solid_open))
+def surface_solid_open_intersection(surface1,solid_open,ear=0):
+    if ear==1:
+        a1=a_(triangulate_surface(surface1))
+        b1=a_(triangulate_solid_open(solid_open))
+    elif ear==0:
+        a1=a_(triangulate_surface(surface1))
+        b1=a_(triangulate_solid_openx(solid_open))
     l1=[]
     min1,max1=a_(a1).min(1),a_(a1).max(1)
     min2,max2=a_(b1).min(1),a_(b1).max(1)
@@ -11475,12 +11777,80 @@ def surface_solid_open_intersection(surface1,solid_open):
         n1,d=a_(n1[:3]),n1[-1]
         e1=einsum('ijk,k->ij',a_(c1),n1)-d
         f1=a_(c1)[~((e1<0).all(1) | (e1>0).all(1))]
-        for p in f1:
-            y1=triangle_triangle_intersection(a2[i],p)
-            if y1!=[]:
-                l1.append(y1)
-    l1=contiguous_chains(l1)
-    return l1
+    
+    
+        p0,p1,p2=a2[i]
+        q0,q1,q2=f1[:,0],f1[:,1],f1[:,2]
+        p01=p1-p0
+        p02=p2-p0
+        p12=p2-p1
+        p20=p0-p2
+        q01=q1-q0
+        q20=q0-q2
+        q12=q2-q1
+        q02=q2-q0
+        r1=cross(p01,p02)
+        r2=cross(p02[None,:],-q01)
+        r3=cross(-q01,p01[None,:])
+        t1=einsum('j,ij->i',r1,(q0-p0))/einsum('ij,j->i',(-q01),r1)
+        u1=einsum('ij,ij->i',r2,(q0-p0))/einsum('ij,j->i',(-q01),r1)
+        v1=einsum('ij,ij->i',r3,(q0-p0))/einsum('ij,j->i',(-q01),r1)
+        d1=(t1>=0)&(t1<=1)&(u1>=0)&(u1<=1)&(v1>=0)&(v1<=1)&(u1+v1<1)
+        
+        r1=cross(p01,p02)
+        r2=cross(p02[None,:],-q12)
+        r3=cross(-q12,p01[None,:])
+        t2=einsum('j,ij->i',r1,(q1-p0))/einsum('ij,j->i',(-q12),r1)
+        u2=einsum('ij,ij->i',r2,(q1-p0))/einsum('ij,j->i',(-q12),r1)
+        v2=einsum('ij,ij->i',r3,(q1-p0))/einsum('ij,j->i',(-q12),r1)
+        d2=(t2>=0)&(t2<=1)&(u2>=0)&(u2<=1)&(v2>=0)&(v2<=1)&(u2+v2<1)
+        
+        r1=cross(p01,p02)
+        r2=cross(p02[None,:],-q20)
+        r3=cross(-q20,p01[None,:])
+        t3=einsum('j,ij->i',r1,(q2-p0))/einsum('ij,j->i',(-q20),r1)
+        u3=einsum('ij,ij->i',r2,(q2-p0))/einsum('ij,j->i',(-q20),r1)
+        v3=einsum('ij,ij->i',r3,(q2-p0))/einsum('ij,j->i',(-q20),r1)
+        d3=(t3>=0)&(t3<=1)&(u3>=0)&(u3<=1)&(v3>=0)&(v3<=1)&(u3+v3<1)
+        
+        r1=cross(q01,q02)
+        r2=cross(q02,(-p01)[None,:])
+        r3=cross((-p01)[None,:],q01)
+        t4=einsum('ij,ij->i',r1,(p0-q0))/einsum('j,ij->i',(-p01),r1)
+        u4=einsum('ij,ij->i',r2,(p0-q0))/einsum('j,ij->i',(-p01),r1)
+        v4=einsum('ij,ij->i',r3,(p0-q0))/einsum('j,ij->i',(-p01),r1)
+        d4=(t4>=0)&(t4<=1)&(u4>=0)&(u4<=1)&(v4>=0)&(v4<=1)&(u4+v4<1)
+        
+        r1=cross(q01,q02)
+        r2=cross(q02,(-p12)[None,:])
+        r3=cross((-p12)[None,:],q01)
+        t5=einsum('ij,ij->i',r1,(p1-q0))/einsum('j,ij->i',(-p12),r1)
+        u5=einsum('ij,ij->i',r2,(p1-q0))/einsum('j,ij->i',(-p12),r1)
+        v5=einsum('ij,ij->i',r3,(p1-q0))/einsum('j,ij->i',(-p12),r1)
+        d5=(t5>=0)&(t5<=1)&(u5>=0)&(u5<=1)&(v5>=0)&(v5<=1)&(u5+v5<1)
+        
+        r1=cross(q01,q02)
+        r2=cross(q02,(-p20)[None,:])
+        r3=cross((-p20)[None,:],q01)
+        t6=einsum('ij,ij->i',r1,(p2-q0))/einsum('j,ij->i',(-p20),r1)
+        u6=einsum('ij,ij->i',r2,(p2-q0))/einsum('j,ij->i',(-p20),r1)
+        v6=einsum('ij,ij->i',r3,(p2-q0))/einsum('j,ij->i',(-p20),r1)
+        d6=(t6>=0)&(t6<=1)&(u6>=0)&(u6<=1)&(v6>=0)&(v6<=1)&(u6+v6<1)
+        
+        lx=[arange(len(q0))[d1], \
+        arange(len(q0))[d2], \
+        arange(len(q0))[d3], \
+        arange(len(q0))[d4], \
+        arange(len(q0))[d5], \
+        arange(len(q0))[d6]]
+        if concatenate(lx).size!=0:
+            
+            ly=remove_duplicates(concatenate([ p for p in lx if p.size!=0]))
+            for j in ly:
+                x1=triangle_triangle_intersection(a2[i],f1[j])
+                if x1!=[]:
+                    l1.append(x1)
+    return remove_duplicates(concatenate(l1))
 
 def seg_pair_matching_closed(a,b):
     d,e=[seg(a),seg(b)]
