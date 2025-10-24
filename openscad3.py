@@ -2556,7 +2556,13 @@ color("blue") for(p={[l1,l2,l3]}) p_line3d(p,.3);
     else:
         l4=a_([a_(pnt1[1])-a_(pnt1[0])]*2)
     r=1e5 if r==0 else r
-    sol=l_(array([pnt3,pnt1,pnt2]).transpose(1,0,2))
+    if a_(pnt1).size==a_(pnt2).size==a_(pnt3).size:
+        sol=l_(array([pnt3,pnt1,pnt2]).transpose(1,0,2))
+    else:
+        a,b,c=[pnt1,pnt2,pnt3]
+        b=path2path1(a,b)
+        c=path2path1(a,c)
+        sol=l_(array([c,a,b]).transpose(1,0,2))
     sol1=[]
     for i in range(len(sol)):
         p0,p1,p2=sol[i]
@@ -10690,48 +10696,113 @@ def path_extrude2msec_closed(sec_list,path):
     sec2=sec2+[sec2[0]]
     return sec2
 
-def earclip(sec):
-    """
-triangulate a 2d closed section
-example:
-a=cr2dt([[0,0],[15,0],[0,5],[-5,0],[0,5],[-5,0],[0,5],[-5,0]])
-s1=earclip(a)
-fo(f'''
-color("blue") for(p={s1}) p_line3dc(p,.1);
-{swp_triangles(c23(s1))}
-''')
-    """
-    def find_ears(sec):
-        l1=[]
-        for i in range(len(sec)):
-            if i==0:
-                tr1=[sec[-1],sec[0],sec[1]]
-            elif i==len(sec)-1:
-                tr1=[sec[i-1],sec[i],sec[0]]
-            else:
-                tr1=[sec[i-1],sec[i],sec[i+1]]
-            if pies1(tr1,exclude_points(sec,tr1))==[]:
-                l1.append(i)
-        return l_(exclude_numbers(l_(l1),l_(arange(len(sec))[a_(cwv(sec))==1])))
+# def earclip(sec):
+#     """
+# triangulate a 2d closed section
+# example:
+# a=cr2dt([[0,0],[15,0],[0,5],[-5,0],[0,5],[-5,0],[0,5],[-5,0]])
+# s1=earclip(a)
+# fo(f'''
+# color("blue") for(p={s1}) p_line3dc(p,.1);
+# {swp_triangles(c23(s1))}
+# ''')
+#     """
+#     def find_ears(sec):
+#         l1=[]
+#         for i in range(len(sec)):
+#             if i==0:
+#                 tr1=[sec[-1],sec[0],sec[1]]
+#             elif i==len(sec)-1:
+#                 tr1=[sec[i-1],sec[i],sec[0]]
+#             else:
+#                 tr1=[sec[i-1],sec[i],sec[i+1]]
+#             if pies1(tr1,exclude_points(sec,tr1))==[]:
+#                 l1.append(i)
+#         return l_(exclude_numbers(l_(l1),l_(arange(len(sec))[a_(cwv(sec))==1])))
     
-    if convex(sec):
-        return l_(a_(sec)[Delaunay(sec).simplices])
-    l1=arange(len(sec))
-    l2=a_(find_ears(sec))
-    l3=arange(len(l1))[a_(cwv(sec))==1]
-    for i in l2:
-        if i==0:
-            x1=l_([l1[-1],i,i+1])
-        elif i==len(l1)-1:
-            x1=l_([i-1,i,0])
-        else:
-            x1=l_([i-1,i,i+1])
-        tri=l_(a_(sec)[x1])
-        if pies1(tri,exclude_points(sec,tri))==[]:
-            break
-    pnt=l_(a_(sec)[x1])
-    return [pnt]+earclip(exclude_points(sec,pnt[1]))
+#     if convex(sec):
+#         return l_(a_(sec)[Delaunay(sec).simplices])
+#     l1=arange(len(sec))
+#     l2=a_(find_ears(sec))
+#     l3=arange(len(l1))[a_(cwv(sec))==1]
+#     for i in l2:
+#         if i==0:
+#             x1=l_([l1[-1],i,i+1])
+#         elif i==len(l1)-1:
+#             x1=l_([i-1,i,0])
+#         else:
+#             x1=l_([i-1,i,i+1])
+#         tri=l_(a_(sec)[x1])
+#         if pies1(tri,exclude_points(sec,tri))==[]:
+#             break
+#     pnt=l_(a_(sec)[x1])
+#     return [pnt]+earclip(exclude_points(sec,pnt[1]))
 
+
+def is_convex(p1, p2, p3):
+    # Cross product to check if angle is convex
+    return (p2[0] - p1[0])*(p3[1] - p1[1]) - (p2[1] - p1[1])*(p3[0] - p1[0]) > 0
+
+def point_in_triangle(pt, tri):
+    # Barycentric point-in-triangle test
+    a, b, c = tri
+    v0 = c - a
+    v1 = b - a
+    v2 = pt - a
+
+    dot00 = dot(v0, v0)
+    dot01 = dot(v0, v1)
+    dot02 = dot(v0, v2)
+    dot11 = dot(v1, v1)
+    dot12 = dot(v1, v2)
+
+    inv_denom = 1 / (dot00 * dot11 - dot01 * dot01)
+    u = (dot11 * dot02 - dot01 * dot12) * inv_denom
+    v = (dot00 * dot12 - dot01 * dot02) * inv_denom
+
+    return (u >= 0) and (v >= 0) and (u + v <= 1)
+
+def earclip(vertices):
+    vertices = array(vertices)
+    n = len(vertices)
+    if n < 3:
+        return []
+
+    indices = list(range(n))
+    triangles = []
+
+    while len(indices) > 3:
+        ear_found = False
+        for i in range(len(indices)):
+            prev_idx = indices[i - 1]
+            curr_idx = indices[i]
+            next_idx = indices[(i + 1) % len(indices)]
+
+            p1, p2, p3 = vertices[[prev_idx, curr_idx, next_idx]]
+
+            if is_convex(p1, p2, p3):
+                # Check if any other point lies inside this ear triangle
+                others = delete(indices, [i - 1, i, (i + 1) % len(indices)])
+                is_ear = True
+                for o in others:
+                    if point_in_triangle(vertices[o], [p1, p2, p3]):
+                        is_ear = False
+                        break
+                if is_ear:
+                    triangles.append([prev_idx, curr_idx, next_idx])
+                    del indices[i]
+                    ear_found = True
+                    break
+
+        if not ear_found:
+            # Polygon might be self-intersecting or degenerate
+            break
+
+    # Add the last remaining triangle
+    if len(indices) == 3:
+        triangles.append(indices)
+
+    return l_(a_(vertices)[triangles])
 
 
 def earclip_3d(sec):
@@ -11688,7 +11759,7 @@ def surface_solid_closed_intersection(surface1,solid1):
     return l1
 
 def solid_solid_closed_intersection(solid_open,solid_closed):
-    a1=a_(triangulate_solid_open(solid))
+    a1=a_(triangulate_solid_open(solid_open))
     b1=a_(triangulate_solid_closed(solid_closed))
     l1=[]
     min1,max1=a_(a1).min(1),a_(a1).max(1)
@@ -12071,3 +12142,36 @@ difference(){{
     a=cpo(sol)
     b=cpo([path_offset3d(p,n) for p in a])
     return b 
+
+def two_polylines_intersection(l1,l2,dist=.1):
+    """
+finds the closest points between 2 polylines at a distance <= dist
+example:
+a=c23(circle(20))
+b=translate([.2,0,0],rot('x90', circle(20)))
+two_polylines_intersection(a,b,.5) 
+# => 
+# [[[20.0, 0.0, 0.0],
+#   [20.199179001382323, 7.830217837048885e-19, 0.012787716168450508]],
+#  [[-19.95890785500673, 0.0, 0.0],
+#   [-19.75890785500673, 1.232595164407831e-32, 0.0]]]
+    """
+    def list_combinations(m,n):
+        """
+        lists combinations between 2 lists
+        """
+        s=[]
+        for q in range(m):
+            for r in range(n):
+                s.append([q,r])
+        return s
+        
+    m=len(seg(l1)[:-1])
+    n=len(seg(l2)[:-1])
+    a=cpo(list_combinations(m,n))
+    b=cpo([a_(seg(l1)[:-1])[a_(a[0])],a_(seg(l2)[:-1])[a_(a[1])]])
+    c=[closest_points_between_two_lines(x,y) for (x,y) in b]
+    d=[l_len(p) for p in c]
+    e=a_(c)[a_(d).round(4)<=dist]
+
+    return l_(e)
