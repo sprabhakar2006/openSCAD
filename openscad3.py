@@ -4,6 +4,7 @@ import time
 from scipy.spatial import cKDTree, Delaunay, ConvexHull
 import sympy as sp
 import math
+from skimage import measure
 # from stl import mesh
 
 def arc(radius=0,start_angle=0,end_angle=0,cp=[0,0],s=20):
@@ -12175,3 +12176,37 @@ two_polylines_intersection(a,b,.5)
     e=a_(c)[a_(d).round(4)<=dist]
 
     return l_(e)
+
+def rot_surface2xy_plane(surf,n1=[]):
+    """
+    surface rotate parallel to xy plane
+    if the normal vector on which a surface lies is known , 
+    provide the same in parameter 'n1'
+    """
+    if n1==[]:
+        n1=uv(best_fit_plane(a_(surf).reshape(-1,3))[0])
+    else:
+        n1=uv(n1)
+    if (array(n1).round(5).tolist()==[0,0,1]) | (array(n1).round(5).tolist()==[0,0,-1]) :
+        return surf
+    v1=cross(-a_(n1),[0,0,-1])
+    theta=r2d(arccos(-array(n1)@[0,0,-1]))
+    l1=axis_rot_1(surf,v1,surf[0][0],theta)
+    return l1
+
+def marching_cubes_surface_from_points_list(points_list,grid=[100,100,100],iso=0.5):
+    points_list=array(points_list)
+    a,b=points_list.min(0),points_list.max(0)
+    c=linspace(a[0]-2*iso,b[0]+2*iso,grid[0])
+    d=linspace(a[1]-2*iso,b[1]+2*iso,grid[1])
+    e=linspace(a[2]-2*iso,b[2]+2*iso,grid[2])
+    x,y,z=meshgrid( c , d , e , indexing='ij')
+    grid_points=vstack([x.ravel(),y.ravel(),z.ravel()]).T
+    dist,_=cKDTree(points_list).query(grid_points,k=1)
+    dist_f=dist.reshape(x.shape)
+    v,f,_,_=measure.marching_cubes(dist_f,level=iso)
+    scale = array([ptp(c)/(grid[0]-1), ptp(d)/(grid[1]-1), ptp(e)/(grid[2]-1)])
+    origin = array([c[0],d[0],e[0]])
+    v1 = v * scale + origin
+    sol=l_(v1[f])
+    return sol
