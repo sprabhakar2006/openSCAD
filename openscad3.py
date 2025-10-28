@@ -11407,12 +11407,14 @@ color("magenta") p_line3d({l1},.2);
 #     # l1=contiguous_chains(l1)
 #     return l1
 
-def two_solids_intersection(sol1,sol2,ear=0):
-    if ear==1:
+def two_solid_intersection(sol1,sol2,ear1=0,ear2=0):
+    if ear1==1:
         a1=triangulate_solid_open(sol1)
-        b1=triangulate_solid_open(sol2)
-    elif ear==0:
+    elif ear1==0:
         a1=triangulate_solid_openx(sol1)
+    if ear2==1:
+        b1=triangulate_solid_open(sol2)
+    elif ear2==0:
         b1=triangulate_solid_openx(sol2)
     
     l1=[]
