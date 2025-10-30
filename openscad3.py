@@ -2561,8 +2561,8 @@ color("blue") for(p={[l1,l2,l3]}) p_line3d(p,.3);
         sol=l_(array([pnt3,pnt1,pnt2]).transpose(1,0,2))
     else:
         a,b,c=[pnt1,pnt2,pnt3]
-        b=path2path1(a,b)
-        c=path2path1(a,c)
+        n=len(a)
+        a,b,c=align_sol_1([equidistant_path(p,n) for p in [a,b,c]])
         sol=l_(array([c,a,b]).transpose(1,0,2))
     sol1=[]
     for i in range(len(sol)):
@@ -10886,10 +10886,10 @@ difference(){{
     pnt=array(sol).reshape(-1,3)
     pnt=l_(pnt[n])
     if ~(a_(sol[0]).round(4)==a_(sol[0][0]).round(4)).all():
-        a=earclip_3d(sol[0])
+        a=earclip_3d(remove_extra_points(sol[0]))
         pnt=a+pnt
     if ~(a_(sol[-1]).round(4)==a_(sol[-1][0]).round(4)).all():
-        b=earclip_3d(sol[-1])
+        b=earclip_3d(remove_extra_points(sol[-1]))
         b=[flip(p) for p in b]
         pnt=pnt+b
     return pnt
@@ -11407,7 +11407,7 @@ color("magenta") p_line3d({l1},.2);
 #     # l1=contiguous_chains(l1)
 #     return l1
 
-def two_solid_intersection(sol1,sol2,ear1=0,ear2=0):
+def two_solids_intersection(sol1,sol2,ear1=0,ear2=0):
     if ear1==1:
         a1=triangulate_solid_open(sol1)
     elif ear1==0:
