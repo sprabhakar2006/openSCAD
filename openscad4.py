@@ -4004,7 +4004,7 @@ def edges(l,m):
 
 
 def i_p_n(px,sol1,triangulation_type=0):
-    tri=array(ip_triangle(px,sol1,triangulation_type))
+    tri=array(ip_triangles(px,sol1,triangulation_type))
     p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
     p01,p02=p1-p0,p2-p0
     v3=cross(p01,p02)
@@ -4210,9 +4210,9 @@ color("blue")for(p={tri_1})p_line3dc(p,.04,rec=1);
     # tri=array(v)[array(f1)]
     if triangulation_type==0:
         tri=a_(triangulate_solid_open(sol1))
-    elif triangulate_type==1:
+    elif triangulation_type==1:
         tri=a_(triangulate_solid_openx(sol1))
-    elif triangulate_type==2:
+    elif triangulation_type==2:
         tri=a_(triangulate_solid_closed(sol1))
     elif triangulation_type==3:
         tri=a_(triangulate_surface(sol1))
@@ -12363,3 +12363,50 @@ def check_multiple_lines_orientation(l2):
         else:
             l1.append(flip(p))
     return l1
+
+def ip_triangles(l1,s1,triangulation_type=0):
+    """
+finds the triangles in surface 's1' where each point of the intersection line 'l1' lies
+example:
+s1=sphere(20)
+l1=translate([-10,0,0],sinewave(20,2,2,50))
+s2=rot('x60',surface_line_vector(l1,[1,1,50]))
+# f1=ip_fillet(s1,s2,2,2)
+l1=contiguous_chains(surface_solid_open_intersection(s2,s1))[0]
+tx=ip_triangles(l1,s1,triangulation_type=0)
+fo(f'''
+%{swp(s1)}
+%{swp_surf(s2)}
+color("blue") for(p={[l1]}) p_line3d(p,.1);
+color("magenta") for(p={tx}) p_line3dc(p,.05,1);
+''')
+    """
+    if triangulation_type==0: # example: cylinder with top and bottom triangulated
+        tri=a_(triangulate_solid_open(s1))
+    elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
+        tri=a_(triangulate_solid_openx(s1))
+    elif triangulation_type==2: # example: doughnut type
+        tri=a_(triangulate_solid_closed(s1))
+    elif triangulation_type==3: #example: surface without any closed ends
+        tri=a_(triangulate_surface(s1))
+    a,b,c=tri[:,0],tri[:,1],tri[:,2]
+    tx=[]
+    ls=[]
+    n=10
+    ab,ac=a_([b-a,c-a]).round(n)
+    vx=cross(ab,ac)
+    for i in range(len(l1)):
+        p=l1[i]
+        pa,pb,pc=a_([a-p,b-p,c-p]).round(n)
+        va=einsum('ij,ij->i',cross(pb,pc),vx).round(n-2)
+        vb=einsum('ij,ij->i',cross(pc,pa),vx).round(n-2)
+        vc=einsum('ij,ij->i',cross(pa,pb),vx).round(n-2)
+        vd=einsum('ij,ij->i',vx,pa).round(n-3)
+        sabc=va+vb+vc
+        u,v,w=va/sabc,vb/sabc,vc/sabc
+        d1=(u>=-0.001)&(u<=1.001)&(v>=-0.001)&(v<=1.001)&(w>=-0.001)&(w<=1.001)&((u+v+w)<=1.0001)&(abs(vd)==0)
+        try:
+            tx.append(tri[d1][0])
+        except:
+            ls.append(i)
+    return l_(tx)
