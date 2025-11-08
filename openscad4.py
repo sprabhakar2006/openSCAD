@@ -2536,49 +2536,23 @@ def r2d(r):
     
 
 
-def convert_3lines2fillet(pnt3,pnt2,pnt1,s=10,orientation=0,r=10,style=2):
-    """
-Develops a fillet with 3 list of points in 3d space
-s: number of segments in the fillet, increase the segments in case finer model is required
-f: higher number of factor 'f' reduces the concavity, very high number like >10 will be like chamfer
-example:
-l1=sinewave(50,3,2,100)
-l2=path_offset(l1,-5)
-l3=translate([0,0,5],l1)
-l1,l2=c23([l1,l2])
-f1=convert_3lines2fillet(l2,l3,l1)
-fo(f'''
-color("blue") for(p={[l1,l2,l3]}) p_line3d(p,.3);
-{swp_c(f1)}
-''') 
-    """
-    if len(rationalise_path(pnt1))>2:
-        l4=i_p_t_o(pnt1)
-    else:
-        l4=a_([a_(pnt1[1])-a_(pnt1[0])]*2)
-    r=1e5 if r==0 else r
-    if a_(pnt1).size==a_(pnt2).size==a_(pnt3).size:
-        sol=l_(array([pnt3,pnt1,pnt2]).transpose(1,0,2))
-    else:
-        a,b,c=[pnt1,pnt2,pnt3]
-        n=len(a)
-        a,b,c=align_sol_1([equidistant_path(p,n) for p in [a,b,c]])
-        sol=l_(array([c,a,b]).transpose(1,0,2))
-    sol1=[]
-    for i in range(len(sol)):
-        p0,p1,p2=sol[i]
-        la,lb,lc=a_([p0,p1,p2])
-        lba=lb-la
-        lbc=lb-lc
-        v1=cross(lba,lbc)
-        v1=v1/norm(v1)
-        clock=1 if norm(v1-l4[i])>1 else -1
-        if style==1:
-            sol1.append(arc_2p_3d(l4[i],p0,p2,r,clock,s)+[p1])
-        elif style==2:
-            sol1.append(bezier([p0,p1,p2],s)+[p1])
 
-    return sol1 if orientation==0 else cpo(sol1)[:-1]
+
+def convert_3lines2fillet(l1,l2,l3,s=20,n=100,closed_loop=0):
+    """
+    converts 3 lines to fillet, here 'l1','l2','l3' are the 3 lines or 3 list of points
+    's' is the number of points in each bezier curve which defines the fillet profile
+    'n' is the number of points required in each line, 'n' has to be greater than 
+    the max length of points among the lines
+    if the fillet is closed loop, the parameter closed_loop should be set to '1' else '0'
+    """
+    n1=max_len([l1,l2,l3])
+    n1=n if n>n1 else n1
+    l4,l5,l6=[points_add(p,n1,closed_loop=closed_loop) for p in [l1,l2,l3]]
+    l4,l5,l6=correct_lines_orientation([l4,l5,l6])
+    l4,l5,l6=align_sol_1([l4,l5,l6])
+    f1=[ bezier([a,b,c],s)+[b] for (a,b,c) in cpo([l4,l6,l5])]
+    return f1 if closed_loop==0 else f1+[f1[0]]
     
 def min_d_points(sec,min_d=.1):
     """ 
@@ -3944,25 +3918,6 @@ def align_sec_1(l1,l2):
     return [l1,l2[c:]+l2[:c]]
 
 
-def convert_3lines2fillet_closed(pnt3,pnt2,pnt1,s=10, orientation=0,r=10,style=2):
-    """
-Develops a fillet with 3 list of points in 3d space
-s: number of segments in the fillet, increase the segments in case finer model is required
-example:
-l1=c23(circle(10))
-l2=offset_3d(l1,3)
-l3=translate([0,0,3],l1)
-f1=convert_3lines2fillet_closed(l2,l3,l1)
-fo(f'''
-color("blue") for(p={[l1,l2,l3]}) p_line3d(p,.3);
-{swp_c(f1)}
-''')
-    """
-    sol1=convert_3lines2fillet(pnt3,pnt2,pnt1,s=s, orientation=orientation,r=r,style=style)
-    sol1=sol1+[sol1[0]]
-    return sol1 if orientation==0 else cpo(sol1)[:-1]
-
-
     
 def gcd(a,b):
     """
@@ -4003,13 +3958,14 @@ def edges(l,m):
 
 
 
-def i_p_n(px,sol1,triangulation_type=0):
-    tri=array(ip_triangles(px,sol1,triangulation_type))
-    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
-    p01,p02=p1-p0,p2-p0
-    v3=cross(p01,p02)
-    v3=v3/norm(v3,axis=1).reshape(-1,1)
-    return v3
+def i_p_n(l1,s1,triangulation_type=0):
+    tx=ip_triangles(l1,s1,triangulation_type=triangulation_type)
+    p0,p1,p2=a_(tx)[:,0],a_(tx)[:,1],a_(tx)[:,2]
+    v1=p1-p0
+    v2=p2-p0
+    vx=cross(v1,v2)
+    vy=vx/norm(vx,axis=1).reshape(-1,1)
+    return vy
 
 
 def arc_2p_3d(n1,p0,p1,r,cw=1,s=20):
@@ -4182,214 +4138,223 @@ color("cyan") for(p={[p1,p2]}) points(p,.4);
 
 match_points_of_a_path_to_reference_path_closed=path2path1_closed
 
-def ip_triangle(ip,sol1,triangulation_type=0):
-    """
-function to find the triangles on the solid 'sol1' where the intersection points list 'ip' lies
-example:
-sec=pts([[0,0],[5,0],[0,5],[-5,0]])
-sec=m_points1(sec,7)
-path=corner_radius(pts1([[-2.49,0],[2.49,0,0.25],[0,5,0.25],[-2.49,0]]),10)
-sol1=prism(sec,path)
-v1=[2,0,8]
-sec1=axis_rot([0,0,1],circle(1.5,s=100),90)
-sol2=o_solid(v1,sec1,10,-1.5,-2.5,0)
-p1=ip_sol2sol(sol1,sol2)
-p2=ip_sol2sol(sol1,sol2,-1)
-p3=flip(p1)+p2
-tri_1=ip_triangle(p3,sol1)
-fo(f'''
-%{swp(sol1)}
-%{swp(sol2)}
-// intersection points
-color("magenta")points({p3},.05);
-// triangles where the intersection points fall
-color("blue")for(p={tri_1})p_line3dc(p,.04,rec=1);
-''')
-    """
-    # v,f1=vnf2(sol1)
-    # tri=array(v)[array(f1)]
-    if triangulation_type==0:
-        tri=a_(triangulate_solid_open(sol1))
-    elif triangulation_type==1:
-        tri=a_(triangulate_solid_openx(sol1))
-    elif triangulation_type==2:
-        tri=a_(triangulate_solid_closed(sol1))
-    elif triangulation_type==3:
-        tri=a_(triangulate_surface(sol1))
-    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
-    p01,p02=p1-p0,p2-p0
-    n1=cross(p01,p02)
-    n1=n1/(norm(n1,axis=1).reshape(-1,1)+.00001)
-    tri=tri[~((n1==[0,0,0]).all(1))]
-    n1=n1[~((n1==[0,0,0]).all(1))]
-    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
-    p01,p02=p1-p0,p2-p0
-    la=array(ip)
-    lab=n1
+# def ip_triangle(ip,sol1,triangulation_type=0):
+#     """
+# function to find the triangles on the solid 'sol1' where the intersection points list 'ip' lies
+# example:
+# sec=pts([[0,0],[5,0],[0,5],[-5,0]])
+# sec=m_points1(sec,7)
+# path=corner_radius(pts1([[-2.49,0],[2.49,0,0.25],[0,5,0.25],[-2.49,0]]),10)
+# sol1=prism(sec,path)
+# v1=[2,0,8]
+# sec1=axis_rot([0,0,1],circle(1.5,s=100),90)
+# sol2=o_solid(v1,sec1,10,-1.5,-2.5,0)
+# p1=ip_sol2sol(sol1,sol2)
+# p2=ip_sol2sol(sol1,sol2,-1)
+# p3=flip(p1)+p2
+# tri_1=ip_triangle(p3,sol1)
+# fo(f'''
+# %{swp(sol1)}
+# %{swp(sol2)}
+# // intersection points
+# color("magenta")points({p3},.05);
+# // triangles where the intersection points fall
+# color("blue")for(p={tri_1})p_line3dc(p,.04,rec=1);
+# ''')
+#     """
+#     # v,f1=vnf2(sol1)
+#     # tri=array(v)[array(f1)]
+#     if triangulation_type==0:
+#         tri=a_(triangulate_solid_open(sol1))
+#     elif triangulation_type==1:
+#         tri=a_(triangulate_solid_openx(sol1))
+#     elif triangulation_type==2:
+#         tri=a_(triangulate_solid_closed(sol1))
+#     elif triangulation_type==3:
+#         tri=a_(triangulate_surface(sol1))
+#     p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+#     p01,p02=p1-p0,p2-p0
+#     n1=cross(p01,p02)
+#     n1=n1/(norm(n1,axis=1).reshape(-1,1)+.00001)
+#     tri=tri[~((n1==[0,0,0]).all(1))]
+#     n1=n1[~((n1==[0,0,0]).all(1))]
+#     p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+#     p01,p02=p1-p0,p2-p0
+#     la=array(ip)
+#     lab=n1
 
-    iim=array([lab,-p01,-p02]).transpose(1,0,2).transpose(0,2,1)
-    im=inv(iim)
+#     iim=array([lab,-p01,-p02]).transpose(1,0,2).transpose(0,2,1)
+#     im=inv(iim)
 
-    x=einsum('jkl,ijl->ijk',im,(p0-la[:,None]))
-    t=x[:,:,0]
-    u=x[:,:,1]
-    v=x[:,:,2]
-    decision=(t>=-0.01)&(t<=1.01)&(u>=-0.01)&(u<=1.01)&(v>=-0.01)&(v<=1.01)&((u+v)<=1.01)
-    tri_1=array([tri[decision[i]][0] for i in range(len(ip))]).tolist()
+#     x=einsum('jkl,ijl->ijk',im,(p0-la[:,None]))
+#     t=x[:,:,0]
+#     u=x[:,:,1]
+#     v=x[:,:,2]
+#     decision=(t>=-0.01)&(t<=1.01)&(u>=-0.01)&(u<=1.01)&(v>=-0.01)&(v<=1.01)&((u+v)<=1.01)
+#     tri_1=array([tri[decision[i]][0] for i in range(len(ip))]).tolist()
 
-    return tri_1
+#     return tri_1
 
 
 
-def o_3d(i_p,sol,r,o=0,f=1,closed=0,triangulation_type=0):
-    """
-function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset.
-for closed loop path set closed=1
-example:
-sec=pts([[0,0],[5,0],[0,5],[-5,0]])
-sec=m_points1(sec,7)
-path=corner_radius(pts1([[-2.49,0],[2.49,0,0.25],[0,5,0.25],[-2.49,0]]),10)
-sol1=prism(sec,path)
-v1=[2,0,8]
-sec1=axis_rot([0,0,1],circle(1.5,s=100),90)
-sol2=o_solid(v1,sec1,10,-1.5,-2.5,0)
-p1=ip_sol2sol(sol1,sol2)
-p2=ip_sol2sol(sol1,sol2,-1)
-p3=flip(p1)+p2
-tri_1=ip_triangle(p3,sol1)
-p4=o_3d(p3,sol1,-.5)
-p5=o_3d(p3,sol2,.5)
+# def o_3d(i_p,sol,r,o=0,f=1,closed=0,triangulation_type=0):
+#     """
+# function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset.
+# for closed loop path set closed=1
+# example:
+# sec=pts([[0,0],[5,0],[0,5],[-5,0]])
+# sec=m_points1(sec,7)
+# path=corner_radius(pts1([[-2.49,0],[2.49,0,0.25],[0,5,0.25],[-2.49,0]]),10)
+# sol1=prism(sec,path)
+# v1=[2,0,8]
+# sec1=axis_rot([0,0,1],circle(1.5,s=100),90)
+# sol2=o_solid(v1,sec1,10,-1.5,-2.5,0)
+# p1=ip_sol2sol(sol1,sol2)
+# p2=ip_sol2sol(sol1,sol2,-1)
+# p3=flip(p1)+p2
+# tri_1=ip_triangle(p3,sol1)
+# p4=o_3d(p3,sol1,-.5)
+# p5=o_3d(p3,sol2,.5)
 
-fo(f'''
-%{swp(sol1)}
-%{swp(sol2)}
-// intersection points
-color("magenta")points({p3},.05);
-color("magenta") p_line3dc({p3},.03);
-// offset 3d of intersection points on sol1
-color("cyan") points({p4},.05);
-color("cyan") p_line3dc({p4},.03);
-// offset 3d of intersection points on sol2
-color("green") points({p5},.05);
-color("green") p_line3dc({p5},.03);
-''')
-    """
-    a=i_p_n(i_p,sol,triangulation_type)
-    if closed==0:
-        b=i_p_t_o(i_p)
-    elif closed==1:
-        b=i_p_t(ip)
-    if o==0:
-        c=array(i_p)+cross(b,a)*r
-    elif o==1:
-        c=array(i_p)+cross(a,b)*r
-    s=array([c+a*r*f,c-a*r*f])
-    i_p1=ip_sol2sol(sol,s,triangulation_type=triangulation_type)
-    # i_p1=[p[0] for p in i_p1]
-    return i_p1
+# fo(f'''
+# %{swp(sol1)}
+# %{swp(sol2)}
+# // intersection points
+# color("magenta")points({p3},.05);
+# color("magenta") p_line3dc({p3},.03);
+# // offset 3d of intersection points on sol1
+# color("cyan") points({p4},.05);
+# color("cyan") p_line3dc({p4},.03);
+# // offset 3d of intersection points on sol2
+# color("green") points({p5},.05);
+# color("green") p_line3dc({p5},.03);
+# ''')
+#     """
+#     a=i_p_n(i_p,sol,triangulation_type)
+#     if closed==0:
+#         b=i_p_t_o(i_p)
+#     elif closed==1:
+#         b=i_p_t(ip)
+#     if o==0:
+#         c=array(i_p)+cross(b,a)*r
+#     elif o==1:
+#         c=array(i_p)+cross(a,b)*r
+#     s=array([c+a*r*f,c-a*r*f])
+#     i_p1=ip_sol2sol(sol,s,triangulation_type=triangulation_type)
+#     # i_p1=[p[0] for p in i_p1]
+#     return i_p1
+
+def o_3d(l1,s1,r=1,triangulation_type=0):
+    l2=i_p_n(l1,s1,triangulation_type=triangulation_type)
+    l3=i_p_t_o(l1)
+    l4=a_(cross(l3,l2))
+    l4=l4/norm(l4,axis=1).reshape(-1,1)
+    l5=l_(a_(l1)+l4*r)
+    l6=plos_v_2(s1,l5,l2,triangulation_type=triangulation_type)
+    return l6
 
 offset_intersection_line_on_solid=o_3d
 
-def o_3d_rev(i_p,sol,r,o=0,closed=0,type=0,dist=0,vx=[],edges_closed=1,cg=0):
-    """
-function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset.
-for closed loop path set closed=1
-o: set '1' to shift the line on other side
-type: set '1' if prism_center lies outside the solid. type can also be set to '2'.
-for using type=2, refer function definition psos_v_1 and also checkout the video explanation
-prism_center is the center of the bounding box of the solid
-example:
-sec=pts([[0,0],[5,0],[0,5],[-5,0]])
-sec=m_points1(sec,7)
-path=corner_radius(pts1([[-2.49,0],[2.49,0,0.25],[0,5,0.25],[-2.49,0]]),10)
-sol1=prism(sec,path)
-v1=[2,0,8]
-sec1=axis_rot([0,0,1],circle(1.5,s=100),90)
-sol2=o_solid(v1,sec1,10,-1.5,-2.5,0)
-p1=ip_sol2sol(sol1,sol2)
-p2=ip_sol2sol(sol1,sol2,-1)
-p3=flip(p1)+p2
-tri_1=ip_triangle(p3,sol1)
-p4=o_3d_rev(p3,sol1,-.5)
-p5=o_3d_rev(p3,sol2,.5)
+# def o_3d_rev(i_p,sol,r,o=0,closed=0,type=0,dist=0,vx=[],edges_closed=1,cg=0):
+#     """
+# function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset.
+# for closed loop path set closed=1
+# o: set '1' to shift the line on other side
+# type: set '1' if prism_center lies outside the solid. type can also be set to '2'.
+# for using type=2, refer function definition psos_v_1 and also checkout the video explanation
+# prism_center is the center of the bounding box of the solid
+# example:
+# sec=pts([[0,0],[5,0],[0,5],[-5,0]])
+# sec=m_points1(sec,7)
+# path=corner_radius(pts1([[-2.49,0],[2.49,0,0.25],[0,5,0.25],[-2.49,0]]),10)
+# sol1=prism(sec,path)
+# v1=[2,0,8]
+# sec1=axis_rot([0,0,1],circle(1.5,s=100),90)
+# sol2=o_solid(v1,sec1,10,-1.5,-2.5,0)
+# p1=ip_sol2sol(sol1,sol2)
+# p2=ip_sol2sol(sol1,sol2,-1)
+# p3=flip(p1)+p2
+# tri_1=ip_triangle(p3,sol1)
+# p4=o_3d_rev(p3,sol1,-.5)
+# p5=o_3d_rev(p3,sol2,.5)
 
-fo(f'''
-%{swp(sol1)}
-%{swp(sol2)}
-// intersection points
-color("magenta")points({p3},.05);
-color("magenta") p_line3dc({p3},.03);
-// offset 3d of intersection points on sol1
-color("cyan") points({p4},.05);
-color("cyan") p_line3dc({p4},.03);
-// offset 3d of intersection points on sol2
-color("green") points({p5},.05);
-color("green") p_line3dc({p5},.03);
-''')
-    """
-    if edges_closed==1:
-        sol=cpo(cpo(sol)+[cpo(sol)[0]])
-    elif edges_closed==0:
-        sol=sol
-    a=i_p_n(i_p,sol)
-    if closed==0:
-        b=i_p_t_o(i_p)
-    elif closed==1:
-        b=i_p_t(ip)
-    if o==0:
-        c=array(i_p)+cross(b,a)*r
-    elif o==1:
-        c=array(i_p)+cross(a,b)*r
+# fo(f'''
+# %{swp(sol1)}
+# %{swp(sol2)}
+# // intersection points
+# color("magenta")points({p3},.05);
+# color("magenta") p_line3dc({p3},.03);
+# // offset 3d of intersection points on sol1
+# color("cyan") points({p4},.05);
+# color("cyan") p_line3dc({p4},.03);
+# // offset 3d of intersection points on sol2
+# color("green") points({p5},.05);
+# color("green") p_line3dc({p5},.03);
+# ''')
+#     """
+#     if edges_closed==1:
+#         sol=cpo(cpo(sol)+[cpo(sol)[0]])
+#     elif edges_closed==0:
+#         sol=sol
+#     a=i_p_n(i_p,sol)
+#     if closed==0:
+#         b=i_p_t_o(i_p)
+#     elif closed==1:
+#         b=i_p_t(ip)
+#     if o==0:
+#         c=array(i_p)+cross(b,a)*r
+#     elif o==1:
+#         c=array(i_p)+cross(a,b)*r
 
-    if type==0:
-        i_p1=psos_v(sol,[l_(c)],prism_center(sol),dist=(abs(r) if dist==0 else dist))[0]
-    elif type==1:
-        s=[i_p,l_(c)]
-        i_p1=psos_n_b(sol,s,dist=(abs(r) if dist==0 else dist))[-1]
-    elif type==2:
-        if cg==0:
-            i_p1=psos_v_1(sol,[l_(c)],prism_center(sol),vx,dist=(abs(r) if dist==0 else dist))[0]
-        elif cg==1:
-            i_p1=psos_v_1(sol,[l_(c)],cog(sol),vx,dist=(abs(r) if dist==0 else dist))[0]
+#     if type==0:
+#         i_p1=psos_v(sol,[l_(c)],prism_center(sol),dist=(abs(r) if dist==0 else dist))[0]
+#     elif type==1:
+#         s=[i_p,l_(c)]
+#         i_p1=psos_n_b(sol,s,dist=(abs(r) if dist==0 else dist))[-1]
+#     elif type==2:
+#         if cg==0:
+#             i_p1=psos_v_1(sol,[l_(c)],prism_center(sol),vx,dist=(abs(r) if dist==0 else dist))[0]
+#         elif cg==1:
+#             i_p1=psos_v_1(sol,[l_(c)],cog(sol),vx,dist=(abs(r) if dist==0 else dist))[0]
             
-    return i_p1
+#     return i_p1
 
-offset_intersection_line_on_solid_rev=o_3d_rev
+# offset_intersection_line_on_solid_rev=o_3d_rev
 
-def o_3d_surf(i_p,sol,r,o=0,f=1,closed=0):
-    """
-function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset
-for closed loop path, set closed=1
-example:
-l1=rot('x90',sinewave(50,3,2,50))
-l2=rot('x90z90',cosinewave(50,3,2,50))
-s1=surface_from_2_waves(l1,l2,2)
-c1=translate([0,0,-10],linear_extrude(circle(5,[25,25]),30))
-l3=ip_surf2sol(s1,c1)
-l4=o_3d_surf(l3,s1,-3)
-l5=o_3d(l3,c_(c1),3)
-fo(f'''
-%{swp_surf(s1)}
-%{swp(c1)}
-color("blue") p_line3dc({l3},.3);
-color("magenta") p_line3dc({l4},.3);
-color("cyan") p_line3dc({l5},.3);
-''')
-    """
-    a=i_p_n_surf(i_p,sol)
-    if closed==0:
-        b=i_p_t_o(i_p)
-    elif closed==1:
-        b=i_p_t(ip)
-    if o==0:
-        c=array(i_p)+cross(b,a)*r
-    elif o==1:
-        c=array(i_p)+cross(a,b)*r
-    i_p1=psos_v_2(sol,[c],a)[0]
+# def o_3d_surf(i_p,sol,r,o=0,f=1,closed=0):
+#     """
+# function to offset the intersection points 'i_p' on a solid 'sol' by distance 'r'. option 'o' can have values '0' or '1' and changes the direction of offset
+# for closed loop path, set closed=1
+# example:
+# l1=rot('x90',sinewave(50,3,2,50))
+# l2=rot('x90z90',cosinewave(50,3,2,50))
+# s1=surface_from_2_waves(l1,l2,2)
+# c1=translate([0,0,-10],linear_extrude(circle(5,[25,25]),30))
+# l3=ip_surf2sol(s1,c1)
+# l4=o_3d_surf(l3,s1,-3)
+# l5=o_3d(l3,c_(c1),3)
+# fo(f'''
+# %{swp_surf(s1)}
+# %{swp(c1)}
+# color("blue") p_line3dc({l3},.3);
+# color("magenta") p_line3dc({l4},.3);
+# color("cyan") p_line3dc({l5},.3);
+# ''')
+#     """
+#     a=i_p_n_surf(i_p,sol)
+#     if closed==0:
+#         b=i_p_t_o(i_p)
+#     elif closed==1:
+#         b=i_p_t(ip)
+#     if o==0:
+#         c=array(i_p)+cross(b,a)*r
+#     elif o==1:
+#         c=array(i_p)+cross(a,b)*r
+#     i_p1=psos_v_2(sol,[c],a)[0]
 
-    return i_p1
+#     return i_p1
 
-offset_intersection_line_on_surface=o_3d_surf
+# offset_intersection_line_on_surface=o_3d_surf
     
 
 
@@ -7066,13 +7031,13 @@ def ip_triangle_surf(ip,sol1):
 
     return tri_1
 
-def i_p_n_surf(px,sol1):
-    tri=array(ip_triangle_surf(px,sol1))
-    p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
-    p01,p02=p1-p0,p2-p0
-    v3=cross(p01,p02)
-    v3=v3/norm(v3,axis=1).reshape(-1,1)
-    return v3
+# def i_p_n_surf(px,sol1):
+#     tri=array(ip_triangle_surf(px,sol1))
+#     p0,p1,p2=tri[:,0],tri[:,1],tri[:,2]
+#     p01,p02=p1-p0,p2-p0
+#     v3=cross(p01,p02)
+#     v3=v3/norm(v3,axis=1).reshape(-1,1)
+#     return v3
 
 def c23(pl):
     """
@@ -7113,7 +7078,7 @@ fo(f'''
     return s2
 
 
-def psos(s2,s3,v1,dist=100000,unidirection=1):
+def psos(s2,s3,v1,dist=100000,unidirection=1,triangulation_type=0):
     """
 project a surface on to another without loosing the original points
 surface 's3' will be projected on surface 's2'
@@ -7139,9 +7104,15 @@ color("blue") p_line3d({vector2line(v1,10)},.3);
 ''')
     """
     p0=a_(s3).reshape(-1,3)
-    f=faces_surface(len(s2),len(s2[0]))
-    v=a_(s2).reshape(-1,3)
-    tri=v[f]
+    if triangulation_type==0: # example: cylinder with top and bottom triangulated
+        tri=a_(triangulate_solid_open(s2))
+    elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
+        tri=a_(triangulate_solid_openx(s2))
+    elif triangulation_type==2: # example: doughnut type
+        tri=a_(triangulate_solid_closed(s2))
+    elif triangulation_type==3: #example: surface without any closed ends
+        tri=a_(triangulate_surface(s2))
+        
     p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
     n1=a_([v1]*len(p2))
     v2,v3=p3-p2,p4-p2
@@ -7165,7 +7136,7 @@ color("blue") p_line3d({vector2line(v1,10)},.3);
     return px
 
 
-def psos_v(s2,s3,v1,dist=100000,unidirection=0):
+def psos_v(s2,s3,v1,dist=100000,unidirection=0,triangulation_type=0):
     """
 project a surface on to another without loosing the original points
 surface 's3' will be projected on surface 's2'
@@ -7189,9 +7160,14 @@ color("blue") p_line3d({vector2line(v1,10)},.3);
 ''')
     """
     p0=a_(s3).reshape(-1,3)
-    f=faces_surface(len(s2),len(s2[0]))
-    v=a_(s2).reshape(-1,3)
-    tri=v[f]
+    if triangulation_type==0: # example: cylinder with top and bottom triangulated
+        tri=a_(triangulate_solid_open(s2))
+    elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
+        tri=a_(triangulate_solid_openx(s2))
+    elif triangulation_type==2: # example: doughnut type
+        tri=a_(triangulate_solid_closed(s2))
+    elif triangulation_type==3: #example: surface without any closed ends
+        tri=a_(triangulate_surface(s2))
     p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
     
     px=[]
@@ -7280,9 +7256,14 @@ color("magenta") p_line3d({l1},.5);
 ''')
     """
     p0=a_(s3).reshape(-1,3)
-    f=faces_surface(len(s2),len(s2[0]))
-    v=a_(s2).reshape(-1,3)
-    tri=v[f]
+    if triangulation_type==0: # example: cylinder with top and bottom triangulated
+        tri=a_(triangulate_solid_open(s2))
+    elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
+        tri=a_(triangulate_solid_openx(s2))
+    elif triangulation_type==2: # example: doughnut type
+        tri=a_(triangulate_solid_closed(s2))
+    elif triangulation_type==3: #example: surface without any closed ends
+        tri=a_(triangulate_surface(s2))
     p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
     p1=a_([vcost1(l1,p) for p in p0])
     v1=p0-p1
@@ -7357,16 +7338,21 @@ def surface_normals(surf,direction=1):
 
     return n2
 
-def psos_n(s2,s3,direction=1,dist=100000):
+def psos_n(s2,s3,direction=1,dist=100000,triangulation_type=0):
     """
 project a surface on to another without loosing the original points
 surface 's3' will be projected on surface 's2'
 the projection is based on the normal to the surface s3 and the direction of normals can be changed from '1' to '-1'
     """
     p0=a_(s3).reshape(-1,3)
-    f=faces_surface(len(s2),len(s2[0]))
-    v=a_(s2).reshape(-1,3)
-    tri=v[f]
+    if triangulation_type==0: # example: cylinder with top and bottom triangulated
+        tri=a_(triangulate_solid_open(s2))
+    elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
+        tri=a_(triangulate_solid_openx(s2))
+    elif triangulation_type==2: # example: doughnut type
+        tri=a_(triangulate_solid_closed(s2))
+    elif triangulation_type==3: #example: surface without any closed ends
+        tri=a_(triangulate_surface(s2))
     p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
     v1=l_(surface_normals(s3,direction))
     px=[]
@@ -7388,16 +7374,21 @@ the projection is based on the normal to the surface s3 and the direction of nor
     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
     return px
 
-def psos_n_b(s2,s3,dist=100000):
+def psos_n_b(s2,s3,dist=100000,triangulation_type=0):
     """
 project a surface on to another without loosing the original points
 surface 's3' will be projected on surface 's2'
 the projection is based on the normal to the surface s3 and the direction of normals can be changed from '1' to '-1'
     """
     p0=a_(s3).reshape(-1,3)
-    f=faces_surface(len(s2),len(s2[0]))
-    v=a_(s2).reshape(-1,3)
-    tri=v[f]
+    if triangulation_type==0: # example: cylinder with top and bottom triangulated
+        tri=a_(triangulate_solid_open(s2))
+    elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
+        tri=a_(triangulate_solid_openx(s2))
+    elif triangulation_type==2: # example: doughnut type
+        tri=a_(triangulate_solid_closed(s2))
+    elif triangulation_type==3: #example: surface without any closed ends
+        tri=a_(triangulate_surface(s2))
     p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
     v1=l_(surface_normals(s3,1))
     px=[]
@@ -7614,16 +7605,21 @@ def line_as_axis(l1):
     return v1
 
 
-def psos_v_2(s2,s3,v1,dist=100000,unidirection=0):
+def psos_v_2(s2,s3,v1,dist=100000,unidirection=0,triangulation_type=0):
     """
     project a surface on to another without loosing the original points
     surface 's3' will be projected on surface 's2'
     'v1' are the vectors for projection. v1 are the list of vectors
     """
     p0=a_(s3).reshape(-1,3)
-    f=faces_surface(len(s2),len(s2[0]))
-    v=a_(s2).reshape(-1,3)
-    tri=v[f]
+    if triangulation_type==0: # example: cylinder with top and bottom triangulated
+        tri=a_(triangulate_solid_open(s2))
+    elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
+        tri=a_(triangulate_solid_openx(s2))
+    elif triangulation_type==2: # example: doughnut type
+        tri=a_(triangulate_solid_closed(s2))
+    elif triangulation_type==3: #example: surface without any closed ends
+        tri=a_(triangulate_surface(s2))
     p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
     
     px=[]
@@ -7808,7 +7804,7 @@ def list_remove_points_within_dist_open(path,line,dist=1):
             l3.append(i)
     return l3
 
-def ppos(surf,pnt,vect,unidirection=1):#project point on surface
+def ppos(surf,pnt,vect,unidirection=1,triangulation_type=0):#project point on surface
     """
     function to project a point on a surface
     'vect' is the vector in which direction the line would be projected.
@@ -7817,9 +7813,9 @@ def ppos(surf,pnt,vect,unidirection=1):#project point on surface
     the direction. 
     Projections happens at the nearest location on the surface from a line
     """
-    return psos(surf,[[pnt]],vect,unidirection=unidirection)[0][0]
+    return psos(surf,[[pnt]],vect,unidirection=unidirection,triangulation_type=triangulation_type)[0][0]
 
-def plos(surf,line,vect,unidirection=1):#project line on surface
+def plos(surf,line,vect,unidirection=1,triangulation_type=0):#project line on surface
     """
     function to project a line on a surface
     'vect' is the vector in which direction the line would be projected.
@@ -7828,7 +7824,7 @@ def plos(surf,line,vect,unidirection=1):#project line on surface
     the direction. 
     Projections happens at the nearest location on the surface from a line
     """
-    return psos(surf,[line],vect,unidirection=unidirection)[0]
+    return psos(surf,[line],vect,unidirection=unidirection,triangulation_type=triangulation_type)[0]
 
 def barycentric_normals(surf,edges_closed=1):
     """
@@ -8288,7 +8284,7 @@ def surface_correction_after_offset_open(surf_original,surf_off,dist=1):
             sol2.append(d)
     return sol2
 
-def plos_v_2(s2,l1,v1,dist=100000,unidirection=0):
+def plos_v_2(s2,l1,v1,dist=100000,unidirection=0,triangulation_type=0):
     """
 project a line on to a surface without loosing the original points
 line 'l1' will be projected on surface 's2'
@@ -8314,9 +8310,9 @@ color("cyan") p_line3d({l2},.2);
 color("grey") for(p={l4}) p_line3d(p,.05);
 ''')
     """
-    return psos_v_2(s2,[l1],v1,dist=dist,unidirection=unidirection)[0]
+    return psos_v_2(s2,[l1],v1,dist=dist,unidirection=unidirection,triangulation_type=triangulation_type)[0]
 
-def plos_v_1(s2,l1,l2,dist=100000,unidirection=0):
+def plos_v_1(s2,l1,l2,dist=100000,unidirection=0,triangulation_type=0):
     """
 project a line on to a surface without loosing the original points
 line 'l1' will be projected on surface 's2'
@@ -8339,10 +8335,10 @@ color("magenta") p_line3d({l3},.2);
 color("grey") for(p={cpo([x1,l3])}) p_line3d(p,.03);
 ''')
     """
-    return psos_v_1(s2,[l1],l2,dist=dist,unidirection=unidirection)[0]
+    return psos_v_1(s2,[l1],l2,dist=dist,unidirection=unidirection,triangulation_type=triangulation_type)[0]
 
 
-def plos_v(s2,l1,v1,dist=100000,unidirection=0):
+def plos_v(s2,l1,v1,dist=100000,unidirection=0,triangulation_type=0):
     """
 project a line on to a surface without loosing the original points
 line 'l1' will be projected on surface 's2'
@@ -8362,7 +8358,7 @@ color("magenta") points({[v1]},.5);
 color("grey") for(p={l2}) p_line3d([{v1},p],.03);
 ''')
     """
-    return psos_v(s2,[l1],v1,dist=dist,unidirection=unidirection)[0]
+    return psos_v(s2,[l1],v1,dist=dist,unidirection=unidirection,triangulation_type=triangulation_type)[0]
 
 def lines2vectors(lines):
     """
@@ -12184,6 +12180,7 @@ color("magenta") for(p={cpo(l2)}) p_line3d(p,.05,1);
             l2.append(l1[i])
     l2=align_sol_1(l2)
     return l2
+    
 def orient_and_align_lines_open(l1,s=100):
     """
 multiple open sections are aligned together to avoid distortion
@@ -12199,67 +12196,7 @@ multiple open sections are aligned together to avoid distortion
     l2=align_sol_1(l2)
     return l2
 
-def points_increase_closed(l1,n=100):
-    """
-    increase the number of points in a closed loop line section, without altering the original points
-    
-    """
-    if n<len(l1):
-        return equidistant_pathc(l1,n)
-    else:
-        f0=1
-        f1=1.5
-        for j in range(100):
-            d=l_lenv(l1)/n*f1
-            l2=seg(l1)
-            l3=[]
-            for i in range(len(l2)):
-                l3.append(m_points_o(l2[i],d))
-            a=a_(remove_extra_points(concatenate(l3))).shape[0]
-            if a<n:
-                f2=(f0+f1)/2 if f0<f1 else f1-(f0-f1)/2
-                f0=f1
-                f1=f2
-            elif a>n:
-                f2= f1+(f1-f0)/2 if f0<f1 else (f0+f1)/2
-                f0=f1
-                f1=f2
-            elif a==n:
-                break
-        
-        l3=remove_extra_points(concatenate(l3))
-        return l3
 
-def points_increase_open(l1,n=100):
-    """
-    increase the number of points in a open loop line section, without altering the original points
-    
-    """
-    if n<len(l1):
-        return equidistant_path(l1,n)
-    else:
-        f0=1
-        f1=1.5
-        for j in range(100):
-            d=l_lenv(l1)/n*f1
-            l2=seg(l1[:-1])
-            l3=[]
-            for i in range(len(l2)):
-                l3.append(m_points_o(l2[i],d))
-            a=a_(remove_extra_points(concatenate(l3))).shape[0]
-            if a<n:
-                f2=(f0+f1)/2 if f0<f1 else f1-(f0-f1)/2
-                f0=f1
-                f1=f2
-            elif a>n:
-                f2= f1+(f1-f0)/2 if f0<f1 else (f0+f1)/2
-                f0=f1
-                f1=f2
-            elif a==n:
-                break
-        
-        # l3=remove_extra_points(concatenate(l3))
-        return l3
 
 def offset_solid_type_cup(sol,n):
     """
@@ -12349,20 +12286,14 @@ def marching_cubes_surface_from_points_list(points_list,grid=[100,100,100],iso=0
     sol=l_(v1[f])
     return sol
 
-def check_multiple_lines_orientation(l2):
-    l1=[]
-    for p in l2:
-        e1=equation_of_plane(p)
-        u1=uv(e1[:3])
-        d=e1[-1]
-        d1=d/norm(e1[:3])
-        loc=a_(u1)*d1
-        a=ppplane(p,u1,loc)
-        if cw3d(a)==-1:
-            l1.append(p)
-        else:
-            l1.append(flip(p))
-    return l1
+def correct_lines_orientation(sol):
+    a=[]
+    for p in sol:
+        e1=equation_of_plane(p)[:3]
+        a.append(sign(e1[abs(e1).argmax()]))
+    a=l_(a)
+    sol=[sol[i] if a[i]==a[0] else flip(sol[i]) for i in range(len(a))]
+    return sol
 
 def ip_triangles(l1,s1,triangulation_type=0):
     """
@@ -12410,3 +12341,70 @@ color("magenta") for(p={tx}) p_line3dc(p,.05,1);
         except:
             ls.append(i)
     return l_(tx)
+
+def closest_points(l1,l2,closed_loop=0):
+    """
+equalises points between 2 polylines based on the closest points between the two
+
+    """
+    if closed_loop==1:
+        m=len(seg(l1))
+        n=len(seg(l2))
+        a=cpo(list_combinations(m,n))
+        b=cpo([a_(seg(l1))[a_(a[0])],a_(seg(l2))[a_(a[1])]])
+        c=[closest_points_between_two_lines(x,y) for (x,y) in b]
+        c=a_(c).reshape(-1,n,2,3)
+        p0,p1=c[:,:,0],c[:,:,1]
+        v1=p1-p0
+        d=einsum('ijk,ijk->ij',v1,v1).argmin(1)
+        l4=l_(a_([c[i][d[i]] for i in range(len(c))]))
+        return l4
+    elif closed_loop==0:
+        m=len(seg(l1)[:-1])
+        n=len(seg(l2)[:-1])
+        a=cpo(list_combinations(m,n))
+        b=cpo([a_(seg(l1)[:-1])[a_(a[0])],a_(seg(l2)[:-1])[a_(a[1])]])
+        c=[closest_points_between_two_lines(x,y) for (x,y) in b]
+        c=a_(c).reshape(-1,n,2,3)
+        p0,p1=c[:,:,0],c[:,:,1]
+        v1=p1-p0
+        d=einsum('ijk,ijk->ij',v1,v1).argmin(1)
+        l4=l_(a_([c[i][d[i]] for i in range(len(c))]))
+        return l4
+
+def points_add(lx,n=100,closed_loop=0):
+    """
+    increases the number of points in a 2d or 3d points list 
+    without disturbing the original points
+    """
+    if len(lx)>=n:
+        return lx
+    else:
+        d=l_lenv(lx)/n
+        x1=d/5
+        g=a_([1])
+        for i in range(100):
+            la=m_points_o(lx,d+x1*g[-1]) if closed_loop==0 else m_points(lx,d+x1*g[-1])
+            if len(la)==n:
+                break
+            else:
+                if len(la)>n:
+                    if argwhere(sort(g)==g[-1])[0][0]==len(g)-1:
+                        g=append(g,g[-1]+1)
+                    else:
+                        n1=sort(g)[argwhere(sort(g)==g[-1])[0][0]+1]
+                        g=append(g,(g[-1]+n1)/2)
+                else:
+                    if len(g)==1:
+                        n1=-1
+                        g=append(g,n1)
+                    else:
+                        n1=sort(g)[argwhere(sort(g)==g[-1])[0][0]-1]
+                        g=append(g,(g[-1]+n1)/2)
+        return la
+
+def max_len(l1):
+    """
+    finds the maximum number of points in a list of lists
+    """
+    return max([ len(p) for p in l1]).tolist()
