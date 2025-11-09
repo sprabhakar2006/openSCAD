@@ -12408,3 +12408,11 @@ def max_len(l1):
     finds the maximum number of points in a list of lists
     """
     return max([ len(p) for p in l1]).tolist()
+
+def remove_seg_with_len_lessthan_d(l2,d=.1):
+    """
+    removes all the segments where length of the segments is less than 'd'
+    """
+    p0,p1=a_(l2)[:,0],a_(l2)[:,1]
+    v1=p1-p0
+    return a_(l2)[norm(v1,axis=1)>=d].tolist()
