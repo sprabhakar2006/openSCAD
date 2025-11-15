@@ -7229,7 +7229,7 @@ color("blue") p_line3d({vector2line(v1,10)},.3);
 #     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
 #     return px
 
-def psos_v_1(s2,s3,l1,dist=100000,unidirection=0):
+def psos_v_1(s2,s3,l1,dist=100000,unidirection=0,triangulation_type=0):
     """
 project a surface on to another without loosing the original points
 surface 's3' will be projected on surface 's2'
@@ -7266,7 +7266,10 @@ color("magenta") p_line3d({l1},.5);
         tri=a_(triangulate_surface(s2))
     p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
     p1=a_([vcost1(l1,p) for p in p0])
-    v1=p0-p1
+    if unidirection==0 or unidirection==1:
+        v1=p0-p1
+    elif unidirection==-1:
+        v1=p1-p0
     px=[]
     for i in range(len(p0)):
         n1=a_([uv(v1[i])]*len(p2))
@@ -7278,7 +7281,7 @@ color("magenta") p_line3d({l1},.5);
         t1,t2,t3=t[:,0],t[:,1],t[:,2]
         if unidirection==0:
             dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
-        elif unidirection==1:
+        elif unidirection==1 or unidirection==-1:
             dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
 
         if dec.any()==1 and norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
@@ -12295,52 +12298,95 @@ def correct_lines_orientation(sol):
     sol=[sol[i] if a[i]==a[0] else flip(sol[i]) for i in range(len(a))]
     return sol
 
-def ip_triangles(l1,s1,triangulation_type=0):
-    """
-finds the triangles in surface 's1' where each point of the intersection line 'l1' lies
-example:
-s1=sphere(20)
-l1=translate([-10,0,0],sinewave(20,2,2,50))
-s2=rot('x60',surface_line_vector(l1,[1,1,50]))
-# f1=ip_fillet(s1,s2,2,2)
-l1=contiguous_chains(surface_solid_open_intersection(s2,s1))[0]
-tx=ip_triangles(l1,s1,triangulation_type=0)
-fo(f'''
-%{swp(s1)}
-%{swp_surf(s2)}
-color("blue") for(p={[l1]}) p_line3d(p,.1);
-color("magenta") for(p={tx}) p_line3dc(p,.05,1);
-''')
-    """
+# def ip_triangles(l1,s1,triangulation_type=0):
+#     """
+# finds the triangles in surface 's1' where each point of the intersection line 'l1' lies
+# example:
+# s1=sphere(20)
+# l1=translate([-10,0,0],sinewave(20,2,2,50))
+# s2=rot('x60',surface_line_vector(l1,[1,1,50]))
+# # f1=ip_fillet(s1,s2,2,2)
+# l1=contiguous_chains(surface_solid_open_intersection(s2,s1))[0]
+# tx=ip_triangles(l1,s1,triangulation_type=0)
+# fo(f'''
+# %{swp(s1)}
+# %{swp_surf(s2)}
+# color("blue") for(p={[l1]}) p_line3d(p,.1);
+# color("magenta") for(p={tx}) p_line3dc(p,.05,1);
+# ''')
+#     """
+#     if triangulation_type==0: # example: cylinder with top and bottom triangulated
+#         tri=a_(triangulate_solid_open(s1))
+#     elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
+#         tri=a_(triangulate_solid_openx(s1))
+#     elif triangulation_type==2: # example: doughnut type
+#         tri=a_(triangulate_solid_closed(s1))
+#     elif triangulation_type==3: #example: surface without any closed ends
+#         tri=a_(triangulate_surface(s1))
+#     a,b,c=tri[:,0],tri[:,1],tri[:,2]
+#     tx=[]
+#     ls=[]
+#     n=10
+#     ab,ac=a_([b-a,c-a]).round(n)
+#     vx=cross(ab,ac)
+#     for i in range(len(l1)):
+#         p=l1[i]
+#         pa,pb,pc=a_([a-p,b-p,c-p]).round(n)
+#         va=einsum('ij,ij->i',cross(pb,pc),vx).round(n-2)
+#         vb=einsum('ij,ij->i',cross(pc,pa),vx).round(n-2)
+#         vc=einsum('ij,ij->i',cross(pa,pb),vx).round(n-2)
+#         vd=einsum('ij,ij->i',vx,pa).round(n-3)
+#         sabc=va+vb+vc
+#         u,v,w=va/sabc,vb/sabc,vc/sabc
+#         d1=(u>=-0.001)&(u<=1.001)&(v>=-0.001)&(v<=1.001)&(w>=-0.001)&(w<=1.001)&((u+v+w)<=1.0001)&(abs(vd)==0)
+#         try:
+#             tx.append(tri[d1][0])
+#         except:
+#             ls.append(i)
+#     return l_(tx)
+
+def ip_triangles(line,sol,triangulation_type=0):
     if triangulation_type==0: # example: cylinder with top and bottom triangulated
-        tri=a_(triangulate_solid_open(s1))
+        sol=a_(triangulate_solid_open(sol))
     elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
-        tri=a_(triangulate_solid_openx(s1))
+        sol=a_(triangulate_solid_openx(sol))
     elif triangulation_type==2: # example: doughnut type
-        tri=a_(triangulate_solid_closed(s1))
+        sol=a_(triangulate_solid_closed(sol))
     elif triangulation_type==3: #example: surface without any closed ends
-        tri=a_(triangulate_surface(s1))
-    a,b,c=tri[:,0],tri[:,1],tri[:,2]
-    tx=[]
-    ls=[]
-    n=10
-    ab,ac=a_([b-a,c-a]).round(n)
-    vx=cross(ab,ac)
-    for i in range(len(l1)):
-        p=l1[i]
-        pa,pb,pc=a_([a-p,b-p,c-p]).round(n)
-        va=einsum('ij,ij->i',cross(pb,pc),vx).round(n-2)
-        vb=einsum('ij,ij->i',cross(pc,pa),vx).round(n-2)
-        vc=einsum('ij,ij->i',cross(pa,pb),vx).round(n-2)
-        vd=einsum('ij,ij->i',vx,pa).round(n-3)
-        sabc=va+vb+vc
-        u,v,w=va/sabc,vb/sabc,vc/sabc
-        d1=(u>=-0.001)&(u<=1.001)&(v>=-0.001)&(v<=1.001)&(w>=-0.001)&(w<=1.001)&((u+v+w)<=1.0001)&(abs(vd)==0)
-        try:
-            tx.append(tri[d1][0])
+        sol=a_(triangulate_surface(sol))
+    a,b,c=a_(sol)[:,0],a_(sol)[:,1],a_(sol)[:,2]
+    ab,ac=b-a,c-a
+    abxac=cross(ab,ac)
+    abxac=abxac/norm(abxac,axis=1).reshape(-1,1)
+    d1=einsum('ik,ik->i',abxac,a).round(5)
+    d2=einsum('jk,ik->ji',line,abxac).round(5)
+    d3=(abs(d2-d1[None,:])<1)
+    d4=[arange(len(sol))[p] for p in d3]
+    solz=[]
+    for i in range(len(line)):
+        soly=a_(sol)[d4[i]]
+        a,b,c=a_(soly)[:,0],a_(soly)[:,1],a_(soly)[:,2]
+        ab,ac=b-a,c-a
+        abxac=cross(ab,ac)
+        abxac=abxac/norm(abxac,axis=1).reshape(-1,1)
+        pa,pb,pc=a-line[i],b-line[i],c-line[i]
+        pbxpc=cross(pb,pc)
+        pbxpc=pbxpc/norm(pbxpc,axis=1).reshape(-1,1)
+        pcxpa=cross(pc,pa)
+        pcxpa=pcxpa/norm(pcxpa,axis=1).reshape(-1,1)
+        paxpb=cross(pa,pb)
+        paxpb=paxpb/norm(paxpb,axis=1).reshape(-1,1)
+        va=einsum('ij,ij->i',pbxpc,abxac)
+        vb=einsum('ij,ij->i',pcxpa,abxac)
+        vc=einsum('ij,ij->i',paxpb,abxac)
+        u=va/(va+vb+vc)
+        v=vb/(va+vb+vc)
+        w=vc/(va+vb+vc)
+        try :
+            solz.append(soly[(u>=-0.1)&(u<=1.1)&(v>=-0.1)&(v<=1.1)&(w>=-0.1)&(w<=1.1)&(u+v+w<1.1)][0])
         except:
-            ls.append(i)
-    return l_(tx)
+            pass
+    return l_(solz)
 
 def closest_points(l1,l2,closed_loop=0):
     """
