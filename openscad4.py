@@ -9615,34 +9615,53 @@ color("blue") for(p={[l1,l2,l3,l4]}) p_line3d(p,.3);
     s3=[ fit_pline2line(s1[i],s2[i]) for i in range(len(s1))]
     return s3
 
-def s_int1_3d(sec1):
-    """
-    same as function s_int1, applicable to 3d coordinates
-    """
+# def s_int1_3d(sec1):
+#     """
+#     same as function s_int1, applicable to 3d coordinates
+#     """
+#     n=len(sec1)
+#     a=array(sec1)[comb_list(n)]
+#     p0=a[:,0][:,0]
+#     p1=a[:,0][:,1]
+#     p2=a[:,1][:,0]
+#     p3=a[:,1][:,1]
+#     v1=a_(rot('z.00001',p1-p0))
+#     v2=a_(rot('x.00001',p3-p2))
+#     iim=a_([v1[:,:2],-v2[:,:2]]).transpose(1,0,2).transpose(0,2,1)
+#     im=inv(iim)
+#     p=(p2-p0)[:,:2]
+#     t=einsum('ijk,ik->ij',im,p)
+    
+#     iim1=a_([v1[:,1:],-v2[:,1:]]).transpose(1,0,2).transpose(0,2,1)
+#     im1=inv(iim1)
+#     px=(p2-p0)[:,1:]
+#     t1=einsum('ijk,ik->ij',im1,px)
+    
+#     dcn=(t[:,0].round(4)>0)&(t[:,0].round(4)<1)&(t[:,1].round(4)>0)&(t[:,1].round(4)<1) 
+#     dcn1=(t1[:,0].round(4)>0)&(t1[:,0].round(4)<1)&(t1[:,1].round(4)>0)&(t1[:,1].round(4)<1)
+#     dcn2=dcn&dcn1
+#     i_p1=p0+einsum('ij,i->ij',v1,t[:,0])
+#     i_p1=i_p1[dcn2].tolist()
+#     return i_p1
+
+def s_int1_3d(segments,d=.01):
+    sec1=segments
     n=len(sec1)
     a=array(sec1)[comb_list(n)]
-    p0=a[:,0][:,0]
-    p1=a[:,0][:,1]
-    p2=a[:,1][:,0]
-    p3=a[:,1][:,1]
-    v1=a_(rot('z.00001',p1-p0))
-    v2=a_(rot('x.00001',p3-p2))
-    iim=a_([v1[:,:2],-v2[:,:2]]).transpose(1,0,2).transpose(0,2,1)
-    im=inv(iim)
-    p=(p2-p0)[:,:2]
-    t=einsum('ijk,ik->ij',im,p)
-    
-    iim1=a_([v1[:,1:],-v2[:,1:]]).transpose(1,0,2).transpose(0,2,1)
-    im1=inv(iim1)
-    px=(p2-p0)[:,1:]
-    t1=einsum('ijk,ik->ij',im1,px)
-    
-    dcn=(t[:,0].round(4)>0)&(t[:,0].round(4)<1)&(t[:,1].round(4)>0)&(t[:,1].round(4)<1) 
-    dcn1=(t1[:,0].round(4)>0)&(t1[:,0].round(4)<1)&(t1[:,1].round(4)>0)&(t1[:,1].round(4)<1)
-    dcn2=dcn&dcn1
-    i_p1=p0+einsum('ij,i->ij',v1,t[:,0])
-    i_p1=i_p1[dcn2].tolist()
-    return i_p1
+    b=a_([closest_points_between_two_lines(x,y) for (x,y) in a])
+    c=remove_duplicates(b[norm(b[:,1]-b[:,0],axis=1).round(5)<d].reshape(-1,3))
+    return exclude_points(c,remove_duplicates(a_(sec1).reshape(-1,3)))
+
+def s_int1_3d_list(segments,d=.01):
+    sec1=segments
+    n=len(sec1)
+    n1=comb_list(n)
+    a=array(sec1)[n1]
+    b=a_([closest_points_between_two_lines(x,y) for (x,y) in a])
+    c=remove_duplicates(b[norm(b[:,1]-b[:,0],axis=1).round(5)<d].reshape(-1,3))
+    e=exclude_points(c,remove_duplicates(a_(sec1).reshape(-1,3)))
+    i=[argwhere((b.round(5)==round(p,5)).all(2).any(1)) for p in e]
+    return comb_list(n)[i].reshape(-1,2)
 
 def sec_start_pos(sec,n=0):
     """
