@@ -3958,8 +3958,8 @@ def edges(l,m):
 
 
 
-def i_p_n(l1,s1,triangulation_type=0):
-    tx=ip_triangles(l1,s1,triangulation_type=triangulation_type)
+def i_p_n(l1,s1,d=1,triangulation_type=0):
+    tx=ip_triangles(l1,s1,d,triangulation_type=triangulation_type)
     p0,p1,p2=a_(tx)[:,0],a_(tx)[:,1],a_(tx)[:,2]
     v1=p1-p0
     v2=p2-p0
@@ -4244,8 +4244,8 @@ match_points_of_a_path_to_reference_path_closed=path2path1_closed
 #     # i_p1=[p[0] for p in i_p1]
 #     return i_p1
 
-def o_3d(l1,s1,r=1,triangulation_type=0):
-    l2=i_p_n(l1,s1,triangulation_type=triangulation_type)
+def o_3d(l1,s1,r=1,d=1,triangulation_type=0):
+    l2=i_p_n(l1,s1,d,triangulation_type=triangulation_type)
     l3=i_p_t_o(l1)
     l4=a_(cross(l3,l2))
     l4=l4/norm(l4,axis=1).reshape(-1,1)
@@ -12364,7 +12364,7 @@ def correct_lines_orientation(sol):
 #             ls.append(i)
 #     return l_(tx)
 
-def ip_triangles(line,sol,triangulation_type=0):
+def ip_triangles(line,sol,d=1,triangulation_type=0):
     if triangulation_type==0: # example: cylinder with top and bottom triangulated
         sol=a_(triangulate_solid_open(sol))
     elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
@@ -12379,7 +12379,7 @@ def ip_triangles(line,sol,triangulation_type=0):
     abxac=abxac/norm(abxac,axis=1).reshape(-1,1)
     d1=einsum('ik,ik->i',abxac,a).round(5)
     d2=einsum('jk,ik->ji',line,abxac).round(5)
-    d3=(abs(d2-d1[None,:])<1)
+    d3=(abs(d2-d1[None,:])<d)
     d4=[arange(len(sol))[p] for p in d3]
     solz=[]
     for i in range(len(line)):
@@ -12574,3 +12574,39 @@ def two_tri_intersection(a1,b1):
                 if x1!=[]:
                     l1.append(x1)
     return l1
+
+def remove_line_beyond_plane(line, equation_plane):
+    """
+removes line beyond a specified plane 
+example:
+a=rot('x45',circle(10))
+p1=uv([0,-1,0])+[0.1] # [0,-1,0,0.1] represent equation of plane ax+by+cz=d 
+b=remove_line_beyond_plane(a,p1)
+fo(f'''
+color("blue") for(p={[a]}) p_line3d(p,.1,1);
+color("magenta") p_line3d({b},.12,1);
+''')    
+    """
+    p1=equation_plane[:3]
+    d=equation_plane[-1]
+    return a_(line)[einsum('j,ij->i',p1,line)>=d].tolist()
+
+def remove_triangles_beyond_plane(triangles_mesh,equation_plane):
+    """
+removes triangles beyond a specified plane
+example:
+a=slice_sol(cylinder(r=10,h=50),20)
+b=triangulate_solid_openx(a)
+p1=uv([1,0,1])+[10]
+c=remove_triangles_beyond_plane(b,p1)
+fo(f'''
+{swp_triangles(c)}
+{swp_surf(plane_from_equation(p1))}
+''')    
+    """
+    b=triangles_mesh
+    p1=equation_plane[:3]
+    d=equation_plane[-1]
+    c=a_(b)[(einsum('k,ijk->ij',p1,b)>=d).all(1)].tolist()
+    # d=psos(plane_from_equation(equation_plane,[1e7,1e7]),c,p1)
+    return c
