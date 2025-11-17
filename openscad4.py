@@ -2538,20 +2538,45 @@ def r2d(r):
 
 
 
-def convert_3lines2fillet(l1,l2,l3,s=20,n=100,closed_loop=0):
+# def convert_3lines2fillet(l1,l2,l3,s=20,n=100,closed_loop=0):
+#     """
+#     converts 3 lines to fillet, here 'l1','l2','l3' are the 3 lines or 3 list of points
+#     's' is the number of points in each bezier curve which defines the fillet profile
+#     'n' is the number of points required in each line, 'n' has to be greater than 
+#     the max length of points among the lines
+#     if the fillet is closed loop, the parameter closed_loop should be set to '1' else '0'
+#     """
+#     n1=max_len([l1,l2,l3])
+#     n1=n if n>n1 else n1
+#     l4,l5,l6=[points_add(p,n1,closed_loop=closed_loop) for p in [l1,l2,l3]]
+#     l4,l5,l6=correct_lines_orientation([l4,l5,l6])
+#     l4,l5,l6=align_sol_1([l4,l5,l6])
+#     f1=[ bezier([a,b,c],s)+[b] for (a,b,c) in cpo([l4,l6,l5])]
+#     return f1 if closed_loop==0 else f1+[f1[0]]
+
+def convert_3lines2fillet(l2,l3,l1,s=20,closed_loop=0):
     """
-    converts 3 lines to fillet, here 'l1','l2','l3' are the 3 lines or 3 list of points
-    's' is the number of points in each bezier curve which defines the fillet profile
-    'n' is the number of points required in each line, 'n' has to be greater than 
-    the max length of points among the lines
-    if the fillet is closed loop, the parameter closed_loop should be set to '1' else '0'
+    convert 3 lines in to a fillet
+    all the lines should have an equal number of points
+    order of lines should be starting line, ending line and anchore line
+    's' is the number of points in each fillet line
+    closed_loop parameter can be set to '0' or '1' if the fillet is open or closed loop respectively
+example:
+a=sphere(20)
+b=rot('y50.01',cylinder(r=5,h=30))
+l1=contiguous_chains(two_solids_intersection(a,b))[0]
+l1=equidistant_pathc(l1,50)
+l2=o_3d(l1,a,r=-2)
+l3=o_3d(l1,b,2)
+f1=convert_3lines2fillet(l2,l3,l1,closed_loop=1)
+fo(f'''
+color("blue") for(p={[l1,l2,l3]}) p_line3d(p,.1);
+%{swp(a)}
+%{swp(b)}
+{swp_c(f1)}
+''')
     """
-    n1=max_len([l1,l2,l3])
-    n1=n if n>n1 else n1
-    l4,l5,l6=[points_add(p,n1,closed_loop=closed_loop) for p in [l1,l2,l3]]
-    l4,l5,l6=correct_lines_orientation([l4,l5,l6])
-    l4,l5,l6=align_sol_1([l4,l5,l6])
-    f1=[ bezier([a,b,c],s)+[b] for (a,b,c) in cpo([l4,l6,l5])]
+    f1=[ bezier([p0,p1,p2],s)+[p1]  for (p0,p1,p2) in cpo([l2,l1,l3])]
     return f1 if closed_loop==0 else f1+[f1[0]]
     
 def min_d_points(sec,min_d=.1):
