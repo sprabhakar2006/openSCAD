@@ -12635,3 +12635,100 @@ fo(f'''
     c=a_(b)[(einsum('k,ijk->ij',p1,b)>=d).all(1)].tolist()
     # d=psos(plane_from_equation(equation_plane,[1e7,1e7]),c,p1)
     return c
+
+def o_3d_tri(l1,s1,r=1,d=1):
+    l2=i_p_n_tri(l1,s1,d)
+    l3=i_p_t_o(l1)
+    l4=a_(cross(l3,l2))
+    l4=l4/norm(l4,axis=1).reshape(-1,1)
+    l5=l_(a_(l1)+l4*r)
+    l6=plos_v_2_tri(s1,l5,l2)
+    return l6
+
+def i_p_n_tri(l1,s1,d=1):
+    tx=ip_triangles_tri(l1,s1,d)
+    p0,p1,p2=a_(tx)[:,0],a_(tx)[:,1],a_(tx)[:,2]
+    v1=p1-p0
+    v2=p2-p0
+    vx=cross(v1,v2)
+    vy=vx/norm(vx,axis=1).reshape(-1,1)
+    return vy
+
+def ip_triangles_tri(line,sol,d=1):
+    sol=a_(sol)
+    a,b,c=a_(sol)[:,0],a_(sol)[:,1],a_(sol)[:,2]
+    ab,ac=b-a,c-a
+    abxac=cross(ab,ac)
+    abxac=abxac/norm(abxac,axis=1).reshape(-1,1)
+    d1=einsum('ik,ik->i',abxac,a).round(5)
+    d2=einsum('jk,ik->ji',line,abxac).round(5)
+    d3=(abs(d2-d1[None,:])<d)
+    d4=[arange(len(sol))[p] for p in d3]
+    solz=[]
+    for i in range(len(line)):
+        soly=a_(sol)[d4[i]]
+        a,b,c=a_(soly)[:,0],a_(soly)[:,1],a_(soly)[:,2]
+        ab,ac=b-a,c-a
+        abxac=cross(ab,ac)
+        abxac=abxac/norm(abxac,axis=1).reshape(-1,1)
+        pa,pb,pc=a-line[i],b-line[i],c-line[i]
+        pbxpc=cross(pb,pc)
+        pbxpc=pbxpc/norm(pbxpc,axis=1).reshape(-1,1)
+        pcxpa=cross(pc,pa)
+        pcxpa=pcxpa/norm(pcxpa,axis=1).reshape(-1,1)
+        paxpb=cross(pa,pb)
+        paxpb=paxpb/norm(paxpb,axis=1).reshape(-1,1)
+        va=einsum('ij,ij->i',pbxpc,abxac)
+        vb=einsum('ij,ij->i',pcxpa,abxac)
+        vc=einsum('ij,ij->i',paxpb,abxac)
+        u=va/(va+vb+vc)
+        v=vb/(va+vb+vc)
+        w=vc/(va+vb+vc)
+        try :
+            solz.append(soly[(u>=-0.1)&(u<=1.1)&(v>=-0.1)&(v<=1.1)&(w>=-0.1)&(w<=1.1)&(u+v+w<1.1)][0])
+        except:
+            pass
+    return l_(solz)
+
+def plos_v_2_tri(s2,l1,v1,dist=100000,unidirection=0):
+    """
+project a line on to a surface without loosing the original points
+line 'l1' will be projected on surface 's2'
+'v1' are the vectors for projection. v1 are the list of vectors
+
+    """
+    return psos_v_2_tri(s2,[l1],v1,dist=dist,unidirection=unidirection)[0]
+
+    
+
+def psos_v_2_tri(s2,s3,v1,dist=100000,unidirection=0):
+    """
+    project a surface on to another without loosing the original points
+    surface 's3' will be projected on surface 's2'
+    'v1' are the vectors for projection. v1 are the list of vectors
+    """
+    p0=a_(s3).reshape(-1,3)
+    tri=a_(s2)
+    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
+    
+    px=[]
+    for i in range(len(p0)):
+        n1=a_([uv(v1[i])]*len(p2))
+        v2,v3=p3-p2,p4-p2
+        iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
+        im=inv(iim)
+        # im.shape,p0[198].shape
+        t=(im@(p2-a_(p0[i])[None,:])[:,:,None]).reshape(-1,3)
+        t1,t2,t3=t[:,0],t[:,1],t[:,2]
+        if unidirection==0:
+            dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+        elif unidirection==1:
+            dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+
+        if dec.any()==1 and norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
+            px.append(a_(p0[i])+a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
+        elif dec.any()==0 or norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])>dist:
+            px.append(p0[i])
+    
+    px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
+    return px
