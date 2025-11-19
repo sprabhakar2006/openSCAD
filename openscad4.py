@@ -12764,3 +12764,69 @@ def psos_v_tri(s2,s3,v1,dist=100000,unidirection=0):
     
     px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
     return px
+
+def psos_v_1_tri(s2,s3,l1,dist=100000,unidirection=0):
+    
+    p0=a_(s3).reshape(-1,3)
+    tri=a_(s2)
+    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
+    p1=a_([vcost1(l1,p) for p in p0])
+    if unidirection==0 or unidirection==1:
+        v1=p0-p1
+    elif unidirection==-1:
+        v1=p1-p0
+    px=[]
+    for i in range(len(p0)):
+        n1=a_([uv(v1[i])]*len(p2))
+        v2,v3=p3-p2,p4-p2
+        iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
+        im=inv(iim)
+        # im.shape,p0[198].shape
+        t=(im@(p2-a_(p0[i])[None,:])[:,:,None]).reshape(-1,3)
+        t1,t2,t3=t[:,0],t[:,1],t[:,2]
+        if unidirection==0:
+            dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+        elif unidirection==1 or unidirection==-1:
+            dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+
+        if dec.any()==1 and norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
+            px.append(a_(p0[i])+a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
+        elif dec.any()==0 or norm(a_(n1[0])*sorted(t1[arange(len(p2))[dec]],key=abs)[0])>dist:
+            px.append(p0[i])
+    
+    px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
+    return px
+
+def plos_v_1_tri(s2,l1,l2,dist=100000,unidirection=0,triangulation_type=0):
+    
+    return psos_v_1_tri(s2,[l1],l2,dist=dist,unidirection=unidirection)[0]
+
+def psos_tri(s2,s3,v1,dist=100000,unidirection=1):
+    
+    p0=a_(s3).reshape(-1,3)
+    tri=a_(s2)
+        
+    p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
+    n1=a_([v1]*len(p2))
+    v2,v3=p3-p2,p4-p2
+    
+    iim=a_([n1,-v2,-v3+.0000001]).transpose(1,0,2).transpose(0,2,1)+.000001
+    im=inv(iim)
+    px=[]
+    for i in range(len(p0)):
+        t=(im@(p2-p0[i][None,:])[:,:,None]).reshape(-1,3)
+        t1,t2,t3=t[:,0],t[:,1],t[:,2]
+        if unidirection==0:
+            dec=(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+        elif unidirection==1:
+            dec=(t1>=0)&(t2>=0)&(t2<=1)&(t3>=0)&(t3<=1)&((t2+t3)<=1)
+        if dec.any()==1 and norm(a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])<=dist:
+            px.append(p0[i]+a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])
+        elif dec.any()==0 or norm(a_(v1)*sorted(t1[arange(len(p2))[dec]],key=abs)[0])>dist:
+            px.append(p0[i])
+
+    px=l_(a_(px).reshape(len(s3),len(s3[0]),3))
+    return px
+
+def plos_tri(surf,line,vect,unidirection=1):#project line on surface
+    return psos_tri(surf,[line],vect,unidirection=unidirection)[0]
