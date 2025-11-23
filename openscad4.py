@@ -12831,3 +12831,6 @@ def psos_tri(s2,s3,v1,dist=100000,unidirection=1):
 
 def plos_tri(surf,line,vect,unidirection=1):#project line on surface
     return psos_tri(surf,[line],vect,unidirection=unidirection)[0]
+
+def offset_solid_simple(sol, d=1):
+    return [offset_3d(p,d) for p in sol]
