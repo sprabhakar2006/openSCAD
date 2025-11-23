@@ -11722,7 +11722,7 @@ def chain_segments(seg_list):
                 break
         if added==False:
             break
-    return [l_(a_(l2)[:,0]),l3]
+    return [l_(a_(l2)[:,0])+[l_(l2[-1][1])],l3]
 
 def contiguous_chains(seg_list):
     s1=seg_list
