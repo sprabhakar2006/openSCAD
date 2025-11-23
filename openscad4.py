@@ -12316,7 +12316,8 @@ def rot_surface2xy_plane(surf,n1=[]):
     l1=axis_rot_1(surf,v1,surf[0][0],theta)
     return l1
 
-def marching_cubes_surface_from_points_list(points_list,grid=[100,100,100],iso=0.5):
+def marching_cubes_surface_from_points_list(points_list,iso=0.5,grid=[100,100,100]):
+    
     points_list=array(points_list)
     a,b=points_list.min(0),points_list.max(0)
     c=linspace(a[0]-2*iso,b[0]+2*iso,grid[0])
