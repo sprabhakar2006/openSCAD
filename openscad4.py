@@ -12834,3 +12834,9 @@ def plos_tri(surf,line,vect,unidirection=1):#project line on surface
 
 def offset_solid_simple(sol, d=1):
     return [offset_3d(p,d) for p in sol]
+
+def vsint1(l1,p0):
+    v1=line_as_vector(l1)
+    v2=line_as_vector([l1[0],p0])
+    v1,v2=c23([v1,v2])
+    return l_(norm(cross(v1,v2))/norm(v1))
