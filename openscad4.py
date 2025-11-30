@@ -7129,15 +7129,19 @@ color("blue") p_line3d({vector2line(v1,10)},.3);
 ''')
     """
     p0=a_(s3).reshape(-1,3)
-    if triangulation_type==0: # example: cylinder with top and bottom triangulated
-        tri=a_(triangulate_solid_open(s2))
-    elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
-        tri=a_(triangulate_solid_openx(s2))
-    elif triangulation_type==2: # example: doughnut type
-        tri=a_(triangulate_solid_closed(s2))
-    elif triangulation_type==3: #example: surface without any closed ends
-        tri=a_(triangulate_surface(s2))
-        
+    if a_(s2).shape[1:]==(3,3):
+        tri=a_(s2)
+    else:
+        if triangulation_type==0: # example: cylinder with top and bottom triangulated
+            tri=a_(triangulate_solid_open(s2))
+        elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
+            tri=a_(triangulate_solid_openx(s2))
+        elif triangulation_type==2: # example: doughnut type
+            tri=a_(triangulate_solid_closed(s2))
+        elif triangulation_type==3: #example: surface without any closed ends
+            tri=a_(triangulate_surface(s2))
+        elif triangulation_type==4: #example: surface from prism2cpo function
+            tri=a_(triangulate_surfacex(s2))
     p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
     n1=a_([v1]*len(p2))
     v2,v3=p3-p2,p4-p2
@@ -7185,14 +7189,19 @@ color("blue") p_line3d({vector2line(v1,10)},.3);
 ''')
     """
     p0=a_(s3).reshape(-1,3)
-    if triangulation_type==0: # example: cylinder with top and bottom triangulated
-        tri=a_(triangulate_solid_open(s2))
-    elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
-        tri=a_(triangulate_solid_openx(s2))
-    elif triangulation_type==2: # example: doughnut type
-        tri=a_(triangulate_solid_closed(s2))
-    elif triangulation_type==3: #example: surface without any closed ends
-        tri=a_(triangulate_surface(s2))
+    if a_(s2).shape[1:]==(3,3):
+        tri=a_(s2)
+    else:
+        if triangulation_type==0: # example: cylinder with top and bottom triangulated
+            tri=a_(triangulate_solid_open(s2))
+        elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
+            tri=a_(triangulate_solid_openx(s2))
+        elif triangulation_type==2: # example: doughnut type
+            tri=a_(triangulate_solid_closed(s2))
+        elif triangulation_type==3: #example: surface without any closed ends
+            tri=a_(triangulate_surface(s2))
+        elif triangulation_type==4: #example: surface from prism2cpo function
+            tri=a_(triangulate_surfacex(s2))
     p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
     
     px=[]
@@ -7281,14 +7290,19 @@ color("magenta") p_line3d({l1},.5);
 ''')
     """
     p0=a_(s3).reshape(-1,3)
-    if triangulation_type==0: # example: cylinder with top and bottom triangulated
-        tri=a_(triangulate_solid_open(s2))
-    elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
-        tri=a_(triangulate_solid_openx(s2))
-    elif triangulation_type==2: # example: doughnut type
-        tri=a_(triangulate_solid_closed(s2))
-    elif triangulation_type==3: #example: surface without any closed ends
-        tri=a_(triangulate_surface(s2))
+    if a_(s2).shape[1:]==(3,3):
+        tri=a_(s2)
+    else:
+        if triangulation_type==0: # example: cylinder with top and bottom triangulated
+            tri=a_(triangulate_solid_open(s2))
+        elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
+            tri=a_(triangulate_solid_openx(s2))
+        elif triangulation_type==2: # example: doughnut type
+            tri=a_(triangulate_solid_closed(s2))
+        elif triangulation_type==3: #example: surface without any closed ends
+            tri=a_(triangulate_surface(s2))
+        elif triangulation_type==4: #example: surface from prism2cpo function
+            tri=a_(triangulate_surfacex(s2))
     p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
     p1=a_([vcost1(l1,p) for p in p0])
     if unidirection==0 or unidirection==1:
@@ -7373,14 +7387,19 @@ surface 's3' will be projected on surface 's2'
 the projection is based on the normal to the surface s3 and the direction of normals can be changed from '1' to '-1'
     """
     p0=a_(s3).reshape(-1,3)
-    if triangulation_type==0: # example: cylinder with top and bottom triangulated
-        tri=a_(triangulate_solid_open(s2))
-    elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
-        tri=a_(triangulate_solid_openx(s2))
-    elif triangulation_type==2: # example: doughnut type
-        tri=a_(triangulate_solid_closed(s2))
-    elif triangulation_type==3: #example: surface without any closed ends
-        tri=a_(triangulate_surface(s2))
+    if a_(s2).shape[1:]==(3,3):
+        tri=a_(s2)
+    else:
+        if triangulation_type==0: # example: cylinder with top and bottom triangulated
+            tri=a_(triangulate_solid_open(s2))
+        elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
+            tri=a_(triangulate_solid_openx(s2))
+        elif triangulation_type==2: # example: doughnut type
+            tri=a_(triangulate_solid_closed(s2))
+        elif triangulation_type==3: #example: surface without any closed ends
+            tri=a_(triangulate_surface(s2))
+        elif triangulation_type==4: #example: surface from prism2cpo function
+            tri=a_(triangulate_surfacex(s2))
     p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
     v1=l_(surface_normals(s3,direction))
     px=[]
@@ -7409,14 +7428,19 @@ surface 's3' will be projected on surface 's2'
 the projection is based on the normal to the surface s3 and the direction of normals can be changed from '1' to '-1'
     """
     p0=a_(s3).reshape(-1,3)
-    if triangulation_type==0: # example: cylinder with top and bottom triangulated
-        tri=a_(triangulate_solid_open(s2))
-    elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
-        tri=a_(triangulate_solid_openx(s2))
-    elif triangulation_type==2: # example: doughnut type
-        tri=a_(triangulate_solid_closed(s2))
-    elif triangulation_type==3: #example: surface without any closed ends
-        tri=a_(triangulate_surface(s2))
+    if a_(s2).shape[1:]==(3,3):
+        tri=a_(s2)
+    else:
+        if triangulation_type==0: # example: cylinder with top and bottom triangulated
+            tri=a_(triangulate_solid_open(s2))
+        elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
+            tri=a_(triangulate_solid_openx(s2))
+        elif triangulation_type==2: # example: doughnut type
+            tri=a_(triangulate_solid_closed(s2))
+        elif triangulation_type==3: #example: surface without any closed ends
+            tri=a_(triangulate_surface(s2))
+        elif triangulation_type==4: #example: surface from prism2cpo function
+            tri=a_(triangulate_surfacex(s2))
     p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
     v1=l_(surface_normals(s3,1))
     px=[]
@@ -7640,14 +7664,19 @@ def psos_v_2(s2,s3,v1,dist=100000,unidirection=0,triangulation_type=0):
     'v1' are the vectors for projection. v1 are the list of vectors
     """
     p0=a_(s3).reshape(-1,3)
-    if triangulation_type==0: # example: cylinder with top and bottom triangulated
-        tri=a_(triangulate_solid_open(s2))
-    elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
-        tri=a_(triangulate_solid_openx(s2))
-    elif triangulation_type==2: # example: doughnut type
-        tri=a_(triangulate_solid_closed(s2))
-    elif triangulation_type==3: #example: surface without any closed ends
-        tri=a_(triangulate_surface(s2))
+    if a_(s2).shape[1:]==(3,3):
+        tri=a_(s2)
+    else:
+        if triangulation_type==0: # example: cylinder with top and bottom triangulated
+            tri=a_(triangulate_solid_open(s2))
+        elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
+            tri=a_(triangulate_solid_openx(s2))
+        elif triangulation_type==2: # example: doughnut type
+            tri=a_(triangulate_solid_closed(s2))
+        elif triangulation_type==3: #example: surface without any closed ends
+            tri=a_(triangulate_surface(s2))
+        elif triangulation_type==4: #example: surface from prism2cpo function
+            tri=a_(triangulate_surfacex(s2))
     p2,p3,p4=tri[:,0],tri[:,1],tri[:,2]
     
     px=[]
@@ -10969,7 +10998,7 @@ difference(){{
         pnt=pnt+b
     return pnt
 
-def triangulate_solid_openx(sol):
+def triangulate_solid_openx(sol,ear1=0,ear2=0):
     """
 function to triangulate a solid with open ends like cylinder completely
 example:
@@ -10993,13 +11022,15 @@ difference(){{
     n=n2
     pnt=array(sol).reshape(-1,3)
     pnt=l_(pnt[n])
-    # if ~(a_(sol[0]).round(4)==a_(sol[0][0]).round(4)).all():
-    #     a=earclip_3d(sol[0])
-    #     pnt=a+pnt
-    # if ~(a_(sol[-1]).round(4)==a_(sol[-1][0]).round(4)).all():
-    #     b=earclip_3d(sol[-1])
-    #     b=[flip(p) for p in b]
-    #     pnt=pnt+b
+    if ear1==1:
+        if ~(a_(sol[0]).round(4)==a_(sol[0][0]).round(4)).all():
+            a=earclip_3d(sol[0])
+            pnt=a+pnt
+    if ear2==1:
+        if ~(a_(sol[-1]).round(4)==a_(sol[-1][0]).round(4)).all():
+            b=earclip_3d(sol[-1])
+            b=[flip(p) for p in b]
+            pnt=pnt+b
     return pnt
 
 
@@ -12840,3 +12871,14 @@ def vsint1(l1,p0):
     v2=line_as_vector([l1[0],p0])
     v1,v2=c23([v1,v2])
     return l_(norm(cross(v1,v2))/norm(v1))
+
+def triangulate_surfacex(surf_1):
+    """
+function to triangulate a surface with orientation defined by prism2cpo function
+example:
+
+    """
+    l,m=len(surf_1),len(surf_1[0])
+    f_1=faces_surface(l,m)
+    v_1=array(surf_1).reshape(-1,3)
+    return l_(v_1[f_1])
