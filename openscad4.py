@@ -6431,18 +6431,19 @@ color("blue")p_line3dc({sec1},.1);
 color("magenta")p_line3dc({sec2},.1);
 ''')
     """
+    
     n1=array(nv(sec))
     a1=cross(n1,[0,0,-1])
     t1=r2d(arccos(n1@[0,0,-1]))
     sec1=translate(-array(sec).mean(0),sec)
-    if (l_(n1)==[0,0,1]) or (l_(n1)==[0,0,-1]):
+    if (l_(n1.round(5))==[0,0,1]) or (l_(n1.round(5))==[0,0,-1]):
         sec2=c32(sec1)
     else:
         sec2=c3t2(axis_rot(a1,sec1,t1))
     l1=len(sec2)
     p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
     pnts=offset(sec2,r,type)
-    if (l_(n1)==[0,0,1]) or (l_(n1)==[0,0,-1]):
+    if (l_(n1.round(5))==[0,0,1]) or (l_(n1.round(5))==[0,0,-1]):
         pnts=translate(array(sec).mean(0),pnts) if pnts!=[] else []
     else:
         pnts=translate(array(sec).mean(0),axis_rot(a1,pnts,-t1)) if pnts!=[] else []
