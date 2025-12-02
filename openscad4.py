@@ -4270,6 +4270,17 @@ match_points_of_a_path_to_reference_path_closed=path2path1_closed
 #     return i_p1
 
 def o_3d(l1,s1,r=1,d=1,triangulation_type=0):
+    """
+    l1: line to offset
+    s1: surface or solid on which the line needs to be offset
+    d: is a factor used to pick the points which are around <=1mm away from the surface
+    triangulation_type==0: # example: cylinder with top and bottom triangulated
+    triangulation_type==1: # example: cylinder with top and bottom without triangulation
+    triangulation_type==2: # example: doughnut type
+    triangulation_type==3: #example: surface without any closed ends
+    triangulation_type==4: #example: surface from prism2cpo function
+    
+    """
     l2=i_p_n(l1,s1,d,triangulation_type=triangulation_type)
     l3=i_p_t_o(l1)
     l4=a_(cross(l3,l2))
@@ -4384,7 +4395,7 @@ offset_intersection_line_on_solid=o_3d
 
 
 
-def ip_fillet(sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,edges_closed=1,c=0):
+def ip_fillet(sol1,sol2,r1,r2,s=20):
     """
 calculates a fillet at the intersection of 2 solids.
 r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -4402,19 +4413,14 @@ fo(f'''
 ''')
     """
     sol1=cpo(cpo(sol1)+[cpo(sol1)[0]])
-    p1=ip_sol2sol(sol1,sol2,o)
-    if style==1:
-        p2=i_p_p(sol2,p1,r2/2)
-        p3= o_3d_rev(p1,sol1,r1/2,type=type, dist=dist,vx=vx, edges_closed=edges_closed, cg=c)
-        fillet1=convert_3lines2fillet(p3,p2,p1,s=s,r=max([r1,r2]),style=1)
-    elif style==2:
-        p2=i_p_p(sol2,p1,r2)
-        p3= o_3d_rev(p1,sol1,r1,type=type, dist=dist,vx=vx, edges_closed=edges_closed, cg=c)
-        fillet1=convert_3lines2fillet(p3,p2,p1,s=s,style=2)
+    p1=ip_sol2sol(sol1,sol2)
+    p2=i_p_p(sol2,p1,r2/2)
+    p3= o_3d(p1,sol1,r1/2)
+    fillet1=convert_3lines2fillet(p3,p2,p1,s=s)
     
     return fillet1
 
-def ip_fillet_closed(sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2,edges_closed=1,c=0):
+def ip_fillet_closed(sol1,sol2,r1,r2,s=20):
     """
 calculates a fillet at the intersection of 2 solids.
 r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -4431,15 +4437,15 @@ fo(f'''
 ''')
     """
     sol1=cpo(cpo(sol1)+[cpo(sol1)[0]])
-    p1=ip_sol2sol(sol1,sol2,o)
+    p1=ip_sol2sol(sol1,sol2)
     p2=i_p_p(sol2,p1,r2)
-    p3=o_3d_rev(p1,sol1,r1,type=type,dist=dist,vx=vx,edges_closed=edges_closed,cg=c)
-    fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s,style=style)
+    p3=o_3d(p1,sol1,r1)
+    fillet1=convert_3lines2fillet(p3,p2,p1,s=s,closed_loop=1)
     
     return fillet1
 
 
-def ip_fillet_surf(surf,sol,r1,r2,s=20,type=1,dist=0,vx=[],style=2,edges_closed=0,c=0):
+def ip_fillet_surf(surf,sol,r1,r2,s=20):
     """
 calculates a fillet at the intersection of surface with solid.
 r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -4459,12 +4465,12 @@ fo(f'''
         
     p1=ip_surf2sol(surf,sol)
     p2=i_p_p(sol,p1,r2)
-    p3=o_3d_rev(p1,surf,r1,type=type,dist=dist,vx=vx,edges_closed=edges_closed,cg=c)
-    fillet1=convert_3lines2fillet(p3,p2,p1,s=s,style=style)
+    p3=o_3d(p1,surf,r1)
+    fillet1=convert_3lines2fillet(p3,p2,p1,s=s)
 
     return fillet1
 
-def ip_fillet_surf_closed(surf,sol,r1,r2,s=20,type=1,dist=0,vx=[],style=2,f=1,edges_closed=0,c=0):
+def ip_fillet_surf_closed(surf,sol,r1,r2,s=20):
     """
 calculates a fillet at the intersection of surface with solid.
 r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -4483,8 +4489,8 @@ fo(f'''
         
     p1=ip_surf2sol(surf,sol)
     p2=i_p_p(sol,p1,r2)
-    p3=o_3d_rev(p1,surf,r1,type=type,dist=dist,vx=vx,edges_closed=edges_closed,cg=c)
-    fillet1=convert_3lines2fillet_closed(p3,p2,p1,s=s,style=style)
+    p3=o_3d_rev(p1,surf,r1)
+    fillet1=convert_3lines2fillet(p3,p2,p1,s=s,closed_loop=1)
 
     return fillet1
 
@@ -7112,6 +7118,11 @@ surface 's3' will be projected on surface 's2'
 'dist' is the maximum distance through which projection can happen
 unidirection: if the projection is to be in both direction set parameter
 unidirection to '1' else to '0'
+triangulation_type==0: # example: cylinder with top and bottom triangulated
+triangulation_type==1: # example: cylinder with top and bottom without triangulation
+triangulation_type==2: # example: doughnut type
+triangulation_type==3: #example: surface without any closed ends
+triangulation_type==4: #example: surface from prism2cpo function
 example:
 s1=sphere(20)
 s2=c23(a_(grid2d(circle(10),2)).reshape(11,11,2))
@@ -7172,6 +7183,11 @@ project a surface on to another without loosing the original points
 surface 's3' will be projected on surface 's2'
 'v1' is vector for projection. this is a focal vector 
 from where the rays are emitted for projection
+triangulation_type==0: # example: cylinder with top and bottom triangulated
+triangulation_type==1: # example: cylinder with top and bottom without triangulation
+triangulation_type==2: # example: doughnut type
+triangulation_type==3: #example: surface without any closed ends
+triangulation_type==4: #example: surface from prism2cpo function
 example:
 s1=sphere(20)
 s2=c23(a_(grid2d(circle(10),2)).reshape(11,11,2))
@@ -7269,6 +7285,12 @@ def psos_v_1(s2,s3,l1,dist=100000,unidirection=0,triangulation_type=0):
 project a surface on to another without loosing the original points
 surface 's3' will be projected on surface 's2'
 'l1' is a line for projection
+triangulation_type==0: # example: cylinder with top and bottom triangulated
+triangulation_type==1: # example: cylinder with top and bottom without triangulation
+triangulation_type==2: # example: doughnut type
+triangulation_type==3: #example: surface without any closed ends
+triangulation_type==4: #example: surface from prism2cpo function
+
 example:
 s1=sphere(20)
 s2=c23(a_(grid2d(circle(10),2)).reshape(11,11,2))
@@ -7386,6 +7408,11 @@ def psos_n(s2,s3,direction=1,dist=100000,triangulation_type=0):
 project a surface on to another without loosing the original points
 surface 's3' will be projected on surface 's2'
 the projection is based on the normal to the surface s3 and the direction of normals can be changed from '1' to '-1'
+triangulation_type==0: # example: cylinder with top and bottom triangulated
+triangulation_type==1: # example: cylinder with top and bottom without triangulation
+triangulation_type==2: # example: doughnut type
+triangulation_type==3: #example: surface without any closed ends
+triangulation_type==4: #example: surface from prism2cpo function
     """
     p0=a_(s3).reshape(-1,3)
     if a_(s2).shape[1:]==(3,3):
@@ -7427,6 +7454,11 @@ def psos_n_b(s2,s3,dist=100000,triangulation_type=0):
 project a surface on to another without loosing the original points
 surface 's3' will be projected on surface 's2'
 the projection is based on the normal to the surface s3 and the direction of normals can be changed from '1' to '-1'
+triangulation_type==0: # example: cylinder with top and bottom triangulated
+triangulation_type==1: # example: cylinder with top and bottom without triangulation
+triangulation_type==2: # example: doughnut type
+triangulation_type==3: #example: surface without any closed ends
+triangulation_type==4: #example: surface from prism2cpo function
     """
     p0=a_(s3).reshape(-1,3)
     if a_(s2).shape[1:]==(3,3):
@@ -7578,7 +7610,7 @@ color("blue") p_line3d({l2},.3);
 
 
 
-def il_fillet(il,sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2):
+def il_fillet(il,sol1,sol2,r1,r2,s=20):
     """
     calculates a fillet at the intersection of 2 solids.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -7587,13 +7619,13 @@ def il_fillet(il,sol1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2):
     """
         
     p1=il
-    p2=o_3d_rev(p1,sol2,r2,type=type,dist=dist,vx=vx,edges_closed=1)
-    p3=o_3d_rev(p1,sol1,r1,type=type,dist=dist,vx=vx,edges_closed=1)
-    fillet1=convert_3lines2fillet(p3,p2,p1,s=s,style=style)
+    p2=o_3d(p1,sol2,r2)
+    p3=o_3d(p1,sol1,r1)
+    fillet1=convert_3lines2fillet(p3,p2,p1,s=s)
     
     return fillet1
 
-def il_fillet_surf(il,surf1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2):
+def il_fillet_surf(il,surf1,sol2,r1,r2,s=20):
     """
     calculates a fillet at the intersection of surface with solid.
     r1 and r2 would be same in most of the cases, but the signs can be different depending on which side the fillet is required
@@ -7602,9 +7634,9 @@ def il_fillet_surf(il,surf1,sol2,r1,r2,s=20,o=0,type=1,dist=0,vx=[],style=2):
     """
         
     p1=il
-    p2=o_3d_rev(p1,sol2,r2,type=type,dist=dist,vx=vx,edges_closed=1)
-    p3=o_3d_rev(p1,surf1,r1,type=type,dist=dist,vx=vx,edges_closed=0)
-    fillet1=convert_3lines2fillet(p3,p2,p1,s=s,style=style)
+    p2=o_3d_rev(p1,sol2,r2)
+    p3=o_3d_rev(p1,surf1,r1)
+    fillet1=convert_3lines2fillet(p3,p2,p1,s=s)
     
     return fillet1
 
@@ -7660,9 +7692,14 @@ def line_as_axis(l1):
 
 def psos_v_2(s2,s3,v1,dist=100000,unidirection=0,triangulation_type=0):
     """
-    project a surface on to another without loosing the original points
-    surface 's3' will be projected on surface 's2'
-    'v1' are the vectors for projection. v1 are the list of vectors
+project a surface on to another without loosing the original points
+surface 's3' will be projected on surface 's2'
+'v1' are the vectors for projection. v1 are the list of vectors
+triangulation_type==0: # example: cylinder with top and bottom triangulated
+triangulation_type==1: # example: cylinder with top and bottom without triangulation
+triangulation_type==2: # example: doughnut type
+triangulation_type==3: #example: surface without any closed ends
+triangulation_type==4: #example: surface from prism2cpo function
     """
     p0=a_(s3).reshape(-1,3)
     if a_(s2).shape[1:]==(3,3):
@@ -7879,7 +7916,12 @@ def plos(surf,line,vect,unidirection=1,triangulation_type=0):#project line on su
     'vect' is the vector in which direction the line would be projected.
     'unidirection' to be set to '1' if the projection is required in the 
     direction of the vector and set to '0' in case it is required in either of 
-    the direction. 
+    the direction.
+    triangulation_type==0: # example: cylinder with top and bottom triangulated
+    triangulation_type==1: # example: cylinder with top and bottom without triangulation
+    triangulation_type==2: # example: doughnut type
+    triangulation_type==3: #example: surface without any closed ends
+    triangulation_type==4: #example: surface from prism2cpo function
     Projections happens at the nearest location on the surface from a line
     """
     return psos(surf,[line],vect,unidirection=unidirection,triangulation_type=triangulation_type)[0]
@@ -8347,6 +8389,11 @@ def plos_v_2(s2,l1,v1,dist=100000,unidirection=0,triangulation_type=0):
 project a line on to a surface without loosing the original points
 line 'l1' will be projected on surface 's2'
 'v1' are the vectors for projection. v1 are the list of vectors
+triangulation_type==0: # example: cylinder with top and bottom triangulated
+triangulation_type==1: # example: cylinder with top and bottom without triangulation
+triangulation_type==2: # example: doughnut type
+triangulation_type==3: #example: surface without any closed ends
+triangulation_type==4: #example: surface from prism2cpo function
 example:
 l1=cr3dt([[-10,-5,0,5],[0,10,0,5],[20,0,0,5],[0,-10,0,5],[0,0,10,5],[0,10,0,5],
          [-20,0,0,5],[0,-10,0,5]],20)
@@ -8375,6 +8422,11 @@ def plos_v_1(s2,l1,l2,dist=100000,unidirection=0,triangulation_type=0):
 project a line on to a surface without loosing the original points
 line 'l1' will be projected on surface 's2'
 'l2' is the line from where the rays are emitting to project  
+triangulation_type==0: # example: cylinder with top and bottom triangulated
+triangulation_type==1: # example: cylinder with top and bottom without triangulation
+triangulation_type==2: # example: doughnut type
+triangulation_type==3: #example: surface without any closed ends
+triangulation_type==4: #example: surface from prism2cpo function
 example:
 s1=sphere(10)
 l1=m_points1_o(point_vector([0,1,0],[5,5,0]),10)
@@ -8400,7 +8452,12 @@ def plos_v(s2,l1,v1,dist=100000,unidirection=0,triangulation_type=0):
     """
 project a line on to a surface without loosing the original points
 line 'l1' will be projected on surface 's2'
-'v1' is vector for projection. this is a focal vector 
+'v1' is vector for projection. this is a focal vector
+triangulation_type==0: # example: cylinder with top and bottom triangulated
+triangulation_type==1: # example: cylinder with top and bottom without triangulation
+triangulation_type==2: # example: doughnut type
+triangulation_type==3: #example: surface without any closed ends
+triangulation_type==4: #example: surface from prism2cpo function
 from where the rays are emitted for projection
 example:
 s1=sphere(10)
@@ -12728,7 +12785,11 @@ def plos_v_2_tri(s2,l1,v1,dist=100000,unidirection=0):
 project a line on to a surface without loosing the original points
 line 'l1' will be projected on surface 's2'
 'v1' are the vectors for projection. v1 are the list of vectors
-
+triangulation_type==0: # example: cylinder with top and bottom triangulated
+triangulation_type==1: # example: cylinder with top and bottom without triangulation
+triangulation_type==2: # example: doughnut type
+triangulation_type==3: #example: surface without any closed ends
+triangulation_type==4: #example: surface from prism2cpo function
     """
     return psos_v_2_tri(s2,[l1],v1,dist=dist,unidirection=unidirection)[0]
 
@@ -12883,3 +12944,13 @@ example:
     f_1=faces_surface(l,m)
     v_1=array(surf_1).reshape(-1,3)
     return l_(v_1[f_1])
+
+def track_points(line,text_size=1,text_color="blue"):
+    """
+    track the point number in a line
+    """
+    l1=line
+    ts=text_size
+    tc=text_color
+    return f"""color("{tc}") for(i=[0:{len(l1)}-1]) translate({l1}[i]) text(str(i),{ts});"""
+    
