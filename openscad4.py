@@ -7979,16 +7979,37 @@ def smoothening_by_subdivison(sec,iterations=4,closed=0):
 
 
 
-def smoothening_by_subdivison_surf(sol,iterations=4,o=[0,0]):
+# def smoothening_by_subdivison_surf(sol,iterations=4,o=[0,0]):
+#     """
+#     smoothen a solid with sub-divison method
+#     iterations: number of iterations
+#     o: if o[0]==0 (means loop remains open for the 1st orientation, and '1' means the loop remains closed for the 1st orientation of the shape) 
+#     similarly o[1]==0 (means loop remains open for the 2nd orientation, and '1' means the loop remains closed for the 2n orientation of the shape)
+#     an example can make this more clear
+#     """
+#     sol=[smoothening_by_subdivison(p,iterations,o[0]) for p in sol]
+#     sol=cpo([smoothening_by_subdivison(p,iterations,o[1]) for p in cpo(sol)])
+#     return sol
+
+def smoothening_by_subdivison_surf(sol,iterations=4,o=[0,0],s=[100,100],r=[.001,.001]):
     """
     smoothen a solid with sub-divison method
     iterations: number of iterations
     o: if o[0]==0 (means loop remains open for the 1st orientation, and '1' means the loop remains closed for the 1st orientation of the shape) 
     similarly o[1]==0 (means loop remains open for the 2nd orientation, and '1' means the loop remains closed for the 2n orientation of the shape)
+    s[0] means number of segments in orientation1 and s[1] is the number of segments in orientation2
+    r[0] is the radius in orientation1 and r[1] is the radius in orientation2
     an example can make this more clear
     """
-    sol=[smoothening_by_subdivison(p,iterations,o[0]) for p in sol]
-    sol=cpo([smoothening_by_subdivison(p,iterations,o[1]) for p in cpo(sol)])
+    if o[0]==0:
+        sol=[equidistant_path(smoothening_by_subdivison(min_d_points(p,r[0]),iterations,o[0]),s[0]) for p in sol]
+    elif o[0]==1:
+        sol=[equidistant_pathc(smoothening_by_subdivison(min_d_points(p,r[0]),iterations,o[0]),s[0]) for p in sol]
+    if o[1]==0:  
+        sol=c2ro([equidistant_path(smoothening_by_subdivison(min_d_points(p,r[1]),iterations,o[1]),s[1]) for p in c2ro(sol)])
+    elif o[1]==1:
+        sol=c2ro([equidistant_pathc(smoothening_by_subdivison(min_d_points(p,r[1]),iterations,o[1]),s[1]) for p in c2ro(sol)])
+        
     return sol
 
 def wrap_x(l1,path):
@@ -12953,4 +12974,13 @@ def track_points(line,text_size=1,text_color="blue"):
     ts=text_size
     tc=text_color
     return f"""color("{tc}") for(i=[0:{len(l1)}-1]) translate({l1}[i]) text(str(i),{ts});"""
+
+def bezier_closed(pl,n=100):
+    """
+    closed loop bezier curve
     
+    """
+    pl1=bezier(pl,n)
+    pl1=pl1[int(n/2):]+pl1[:int(n/2)]
+    pl1=bezier(pl1,n)
+    return pl1
