@@ -11865,7 +11865,7 @@ example:
     f_1=faces_surface(l,m)
     v_1=array(surface).reshape(-1,3)
     pnt=v_1[f_1]
-    return pnt
+    return l_(pnt)
 
 # def surface_solid_closed_intersection(surface1,s2):
 #     a=a_(triangulate_surface(surface1))
@@ -12973,7 +12973,7 @@ def track_points(line,text_size=1,text_color="blue"):
     l1=line
     ts=text_size
     tc=text_color
-    return f"""color("{tc}") for(i=[0:{len(l1)}-1]) translate({l1}[i]) text(str(i),{ts});"""
+    return f"""color("{tc}") for(i=[0:{len(l1)}-1]) translate({l1}[i]) linear_extrude(.1) text(str(i),{ts});"""
 
 def bezier_closed(pl,n=100):
     """
