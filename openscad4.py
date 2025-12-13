@@ -12521,26 +12521,30 @@ def ip_triangles(line,sol,d=1,triangulation_type=0):
     for i in range(len(line)):
         soly=a_(sol)[d4[i]]
         a,b,c=a_(soly)[:,0],a_(soly)[:,1],a_(soly)[:,2]
-        ab,ac=b-a,c-a
-        abxac=cross(ab,ac)
-        abxac=abxac/norm(abxac,axis=1).reshape(-1,1)
-        pa,pb,pc=a-line[i],b-line[i],c-line[i]
-        pbxpc=cross(pb,pc)
-        pbxpc=pbxpc/norm(pbxpc,axis=1).reshape(-1,1)
-        pcxpa=cross(pc,pa)
-        pcxpa=pcxpa/norm(pcxpa,axis=1).reshape(-1,1)
-        paxpb=cross(pa,pb)
-        paxpb=paxpb/norm(paxpb,axis=1).reshape(-1,1)
-        va=einsum('ij,ij->i',pbxpc,abxac)
-        vb=einsum('ij,ij->i',pcxpa,abxac)
-        vc=einsum('ij,ij->i',paxpb,abxac)
-        u=va/(va+vb+vc)
-        v=vb/(va+vb+vc)
-        w=vc/(va+vb+vc)
-        try :
-            solz.append(soly[(u>=-0.1)&(u<=1.1)&(v>=-0.1)&(v<=1.1)&(w>=-0.1)&(w<=1.1)&(u+v+w<1.1)][0])
-        except:
-            pass
+        x1=soly[(soly==line[i]).all(2).any(1)].tolist()
+        if x1!=[]:
+            solz.append(x1[0])
+        else:
+            ab,ac=b-a,c-a
+            abxac=cross(ab,ac)
+            abxac=abxac/norm(abxac,axis=1).reshape(-1,1)
+            pa,pb,pc=a-line[i],b-line[i],c-line[i]
+            pbxpc=cross(pb,pc)
+            pbxpc=pbxpc/norm(pbxpc,axis=1).reshape(-1,1)
+            pcxpa=cross(pc,pa)
+            pcxpa=pcxpa/norm(pcxpa,axis=1).reshape(-1,1)
+            paxpb=cross(pa,pb)
+            paxpb=paxpb/norm(paxpb,axis=1).reshape(-1,1)
+            va=einsum('ij,ij->i',pbxpc,abxac)
+            vb=einsum('ij,ij->i',pcxpa,abxac)
+            vc=einsum('ij,ij->i',paxpb,abxac)
+            u=va/(va+vb+vc)
+            v=vb/(va+vb+vc)
+            w=vc/(va+vb+vc)
+            try :
+                solz.append(soly[(u>=-0.1)&(u<=1.1)&(v>=-0.1)&(v<=1.1)&(w>=-0.1)&(w<=1.1)&(u+v+w<1.1)][0])
+            except:
+                pass
     return l_(solz)
 
 def closest_points(l1,l2,closed_loop=0):
