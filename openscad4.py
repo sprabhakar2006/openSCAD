@@ -12988,3 +12988,6 @@ def bezier_closed(pl,n=100):
     pl1=pl1[int(n/2):]+pl1[:int(n/2)]
     pl1=bezier(pl1,n)
     return pl1
+
+def lines2unitvectors(lines):
+    return [ line_as_unit_vector(p) for p in lines ]
