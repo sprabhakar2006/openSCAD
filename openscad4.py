@@ -2304,6 +2304,7 @@ color("magenta")p_lineo({path1},.1);
         return g
 
 
+
 def bb2d(sec):
     return [array(sec)[:,0].max()-array(sec)[:,0].min(),array(sec)[:,1].max()-array(sec)[:,1].min()]
 
@@ -3926,6 +3927,22 @@ fo(f'''
 #     sol2=[sec1]+[sec2[i:]+sec2[:i]]
 #     return sol2
 
+# def align_sec_1(l1,l2):
+#     """
+#     function to align 2 3d sections to obtain the non twisted optimised solid
+#     """
+#     lx=[]
+#     for i in range(len(l2)):
+#         la=l2[i:]+l2[:i]
+#         s1=a_(triangulate_solid_openx([l1,la]))
+#         p0,p1,p2=s1[:,0],s1[:,1],s1[:,2]
+#         v1,v2=p1-p0,p2-p0
+#         a=cross(v1,v2)
+#         b=einsum('ij,ij->i',a,a).sum()
+#         lx.append(b)
+#     c=a_(lx).argmin()
+#     return [l1,l2[c:]+l2[:c]]
+
 def align_sec_1(l1,l2):
     """
     function to align 2 3d sections to obtain the non twisted optimised solid
@@ -3940,7 +3957,21 @@ def align_sec_1(l1,l2):
         b=einsum('ij,ij->i',a,a).sum()
         lx.append(b)
     c=a_(lx).argmin()
-    return [l1,l2[c:]+l2[:c]]
+    l3=flip(l2)
+    lx1=[]
+    for i in range(len(l3)):
+        la=l3[i:]+l3[:i]
+        s1=a_(triangulate_solid_openx([l1,la]))
+        p0,p1,p2=s1[:,0],s1[:,1],s1[:,2]
+        v1,v2=p1-p0,p2-p0
+        a=cross(v1,v2)
+        b=einsum('ij,ij->i',a,a).sum()
+        lx1.append(b)
+    c1=a_(lx1).argmin()
+    if lx1[c1] < lx[c]:
+        return [l1,flip(l2)[c1:]+flip(l2)[:c1]]
+    else:
+        return [l1,l2[c:]+l2[:c]]
 
 
     
@@ -8006,9 +8037,9 @@ def smoothening_by_subdivison_surf(sol,iterations=4,o=[0,0],s=[100,100],r=[.001,
     elif o[0]==1:
         sol=[equidistant_pathc(smoothening_by_subdivison(min_d_points(p,r[0]),iterations,o[0]),s[0]) for p in sol]
     if o[1]==0:  
-        sol=c2ro([equidistant_path(smoothening_by_subdivison(min_d_points(p,r[1]),iterations,o[1]),s[1]) for p in c2ro(sol)])
+        sol=cpo([equidistant_path(smoothening_by_subdivison(min_d_points(p,r[1]),iterations,o[1]),s[1]) for p in cpo(sol)])
     elif o[1]==1:
-        sol=c2ro([equidistant_pathc(smoothening_by_subdivison(min_d_points(p,r[1]),iterations,o[1]),s[1]) for p in c2ro(sol)])
+        sol=cpo([equidistant_pathc(smoothening_by_subdivison(min_d_points(p,r[1]),iterations,o[1]),s[1]) for p in cpo(sol)])
         
     return sol
 
@@ -12991,3 +13022,16 @@ def bezier_closed(pl,n=100):
 
 def lines2unitvectors(lines):
     return [ line_as_unit_vector(p) for p in lines ]
+
+def near_segment(seg,seg_list):
+    a=a_(seg)
+    b=a_(seg_list)
+    c=a_([ closest_points_between_two_lines(a,p) for p in b ])
+    d=b[norm(c[:,1]-c[:,0],axis=1).argmin()]
+    return d.tolist()
+
+def map_segments(seg1,seg2):
+    a=[]
+    for p in seg1:
+        a.append(p+near_segment(p,seg2))
+    return a
