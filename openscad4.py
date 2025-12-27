@@ -2270,7 +2270,40 @@ def pntsnfaces(bead2):
 
 
 
-def path_offset(path,d):
+# def path_offset(path,d):
+#     """
+# function to offset a 2d path by distance 'd'
+# example:
+# r=-1
+# path=corner_radius(pts1([[-5,0],[5,0,2],[-1,10,2],[5,0]]),20)
+# # path=circle(10)
+# # path=corner_radius(pts1([[0,0],[10,0,.1],[-10,5,.1],[-10,-5]]),20)
+# path1=path_offset(path,r)
+# fo(f'''
+# // orginal path
+# color("blue")p_lineo({path},.1);
+# //offset path
+# color("magenta")p_lineo({path1},.1);
+#     ''')
+#     """
+#     if d==0:
+#         return path
+#     elif len(rationalise_path(path))==2:
+#         return offset_segv(path,d)[:-1][0]
+#     else:
+#         a=offset_segv(path,d)[:-1]
+#         b=[a[0][0]]+intersections(a)[1:]+[a[-1][-1]]
+#         c=s_int1(seg(b))
+#         c=b+c if c!=[] else b
+#         d=cs1(path,abs(d))[:-1]
+#         e=[ pies1(p,c) for p in d]
+#         e=[p for p in e if p!=[]]
+#         f=remove_extra_points(concatenate(e)) if e!=[] else []
+#         g=exclude_points(c,f) if f!=[] else c
+#         g=sort_points(path,g)
+#         return g
+
+def path_offset(path,r):
     """
 function to offset a 2d path by distance 'd'
 example:
@@ -2286,22 +2319,40 @@ color("blue")p_lineo({path},.1);
 color("magenta")p_lineo({path1},.1);
     ''')
     """
-    if d==0:
+    if r==0:
         return path
     elif len(rationalise_path(path))==2:
-        return offset_segv(path,d)[:-1][0]
+        return offset_segv(path,r)[:-1][0]
     else:
-        a=offset_segv(path,d)[:-1]
-        b=[a[0][0]]+intersections(a)[1:]+[a[-1][-1]]
-        c=s_int1(seg(b))
-        c=b+c if c!=[] else b
-        d=cs1(path,abs(d))[:-1]
-        e=[ pies1(p,c) for p in d]
-        e=[p for p in e if p!=[]]
-        f=remove_extra_points(concatenate(e)) if e!=[] else []
-        g=exclude_points(c,f) if f!=[] else c
-        g=sort_points(path,g)
-        return g
+        a=offset_segv(path,r)[:-1]
+        b=intersections(a)[1:]
+        b=[a[0][0]]+b+[a[-1][1]]
+        c=seg(b)[:-1]
+        d=s_int1(c)
+        n=s_int1_list(c).tolist()
+        i=0
+        for (x,y) in n:
+            if (y==len(b)-1) and (i==0):
+                b[:x]=[d[i]]*(x+1)
+                
+            elif (y-x)<(len(b)-y+x):
+                b[x+1:y+1] = [d[i]]*(y-x)
+                
+            i=i+1
+        
+        dist=[]
+        for i in range(len(b)):
+            try:
+                p0=vcost2(path,b[i])
+                p1=path[cKDTree(path).query(b[i])[1]]
+                dist.append(min([l_len([p0,b[i]]),l_len([p1,b[i]])]))
+            except:
+                p0=path[cKDTree(path).query(b[i])[1]]
+                dist.append(l_len([p0,b[i]]))
+        f=arange(len(b))[a_(dist).round(5)>=abs(r)]
+        g=arange(len(b))
+        b=a_(b)[f[abs(g[:,None]-f).argmin(1)]].tolist()
+        return b
 
 
 
@@ -4754,8 +4805,8 @@ color("magenta") p_line3dc({l1},.3);
 ''')
     
     """
-    a=path_offset_n(path,r)
-    b=path_offset_n(path,-r)
+    a=path_offset(path,r)
+    b=path_offset(path,-r)
     b=flip(b)
     arc1=arc_2p(a[-1],b[0],r,-1,s)
     arc2=arc_2p(b[-1],a[0],r,-1,s)
@@ -5992,8 +6043,8 @@ def surround_3d(path,r,s=20):
         l_3=axis_rot_1([path],v1,path[0],t1)[0]
         path1=c3t2(l_3)
     path1=remove_extra_points(array(path1).round(5))
-    a=path_offset_n(path1,r)
-    b=path_offset_n(path1,-r)
+    a=path_offset(path1,r)
+    b=path_offset(path1,-r)
     b=flip(b)
     arc1=arc_2p(a[-1],b[0],r,-1,s)
     arc2=arc_2p(b[-1],a[0],r,-1,s)
@@ -10347,20 +10398,34 @@ def extend_line3d(line,sec):
     l10=l8[len(l1):]
     return l10
 
-def vcost2(line,point):
+# def vcost2(line,point):
+#     """
+#     perpendicular projection of a point on a polyline
+#     projection will be returned if it lies within the line
+#     """
+#     for p in seg(line)[:-1]:
+#         px=vcost1(p,point)
+#         d1=l_len([p[0],px])
+#         d2=l_len(p)
+#         v1=line_as_unit_vector(p)
+#         v2=line_as_unit_vector([p[0],px])
+#         if (d1<=d2) & (l_((a_(v1).round(4)==a_(v2).round(4)).all())):
+#             p5=px
+#     return p5
+
+def vcost2(path,pnt):
     """
     perpendicular projection of a point on a polyline
     projection will be returned if it lies within the line
     """
-    for p in seg(line)[:-1]:
-        px=vcost1(p,point)
-        d1=l_len([p[0],px])
-        d2=l_len(p)
-        v1=line_as_unit_vector(p)
-        v2=line_as_unit_vector([p[0],px])
-        if (d1<=d2) & (l_((a_(v1).round(4)==a_(v2).round(4)).all())):
-            p5=px
-    return p5
+    pr=[]
+    pr1=[]
+    for l in seg(path)[:-1]:
+        p0=vcost_within(l,pnt)
+        if p0!=[]:
+            pr.append(l_len([p0,pnt]))
+            pr1.append(p0)
+    return pr1[a_(pr).argmin()]
 
 # def path_offset3d(line,d=1,nv=[]):
 #     """
