@@ -2332,9 +2332,6 @@ color("magenta")p_lineo({path1},.1);
         n=s_int1_list(c).tolist()
         i=0
         for (x,y) in n:
-            # if (y==len(b)-1) and (i==0):
-            #     b[:x]=[d[i]]*(x+1)
-                
             if (y-x)<(len(b)-y+x):
                 b[x+1:y+1] = [d[i]]*(y-x)
             elif (y-x)>(len(b)-y+x):
@@ -5863,8 +5860,8 @@ def solid_from_fillet(fillet_1,d):
     """
     fillet_1=cpo(fillet_1)[:-1]
     fillet_2=surface_offset(fillet_1,d)
-    sol=fillet_1+flip(fillet_2)
-    return cpo(sol)
+    sol=[ cpo(fillet_1)[i]+ flip(cpo(fillet_2)[i]) for i in range(len(cpo(fillet_1))) ]
+    return sol
 
 def solid_from_fillet_closed(fillet_1,d):
     """
@@ -5872,8 +5869,7 @@ def solid_from_fillet_closed(fillet_1,d):
     """
     fillet_1=cpo(fillet_1)[:-1]
     fillet_2=surface_offset(fillet_1,d)
-    sol=fillet_1+flip(fillet_2)
-    sol=cpo(sol)
+    sol=[ cpo(fillet_1)[i]+ flip(cpo(fillet_2)[i]) for i in range(len(cpo(fillet_1))) ]
     sol=sol+[sol[0]]
     return sol
 
