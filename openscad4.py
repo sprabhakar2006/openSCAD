@@ -2332,14 +2332,14 @@ color("magenta")p_lineo({path1},.1);
         n=s_int1_list(c).tolist()
         i=0
         for (x,y) in n:
-            if (y==len(b)-1) and (i==0):
-                b[:x]=[d[i]]*(x+1)
+            # if (y==len(b)-1) and (i==0):
+            #     b[:x]=[d[i]]*(x+1)
                 
-            elif (y-x)<(len(b)-y+x):
+            if (y-x)<(len(b)-y+x):
                 b[x+1:y+1] = [d[i]]*(y-x)
-                
+            elif (y-x)>(len(b)-y+x):
+                b[:x+1]=[d[i]]*(x+1)  
             i=i+1
-        
         dist=[]
         for i in range(len(b)):
             try:
@@ -6442,6 +6442,45 @@ color("blue")p_line3dc({sec},.1,1);
         return offset_1(sec,r)
     elif type==2:
         return offset_2(sec,r)
+
+# def offset(sec,r):
+#     """
+# function to offset a 2d closed loop section by distance 'r'
+# example:
+# sec=corner_radius(pts1([[-15,0,2.4],[0,15,3],[30,0,3],[0,-15,2.4],[5,0,2.4],[0,20,7],[-40,0,7],[0,-20,2.4]]),15)
+# os=linspace(-2.5,50,50)
+# sec1=[offset(sec,i) for i in os] #
+# fo(f'''
+# color("magenta")for(p={sec1})p_line3dc(p,.1,1);
+# color("blue")p_line3dc({sec},.1,1);
+# ''') 
+#     """
+#     a=offset_segv(sec,r)
+#     b=intersections(a)
+#     c=seg(b)
+#     d=s_int1(c)
+#     n=s_int1_list(c).tolist()
+#     i=0
+#     for (x,y) in n:
+#         if (y-x)<(len(b)-y+x):
+#             b[x+1:y+1] = [d[i]]*(y-x)
+#         elif (y-x)>(len(b)-y+x):
+#             b[:x+1]=[d[i]]*(x+1)
+#         i=i+1
+    
+#     dist=[]
+#     for i in range(len(b)):
+#         try:
+#             p0=vcost2(sec,b[i])
+#             p1=sec[cKDTree(sec).query(b[i])[1]]
+#             dist.append(min([l_len([p0,b[i]]),l_len([p1,b[i]])]))
+#         except:
+#             p0=sec[cKDTree(sec).query(b[i])[1]]
+#             dist.append(l_len([p0,b[i]]))
+#     f=arange(len(b))[a_(dist).round(5)>=abs(r)*.95]
+#     g=arange(len(b))
+#     b=a_(b)[f[abs(g[:,None]-f).argmin(1)]].tolist()
+#     return b
 
 def sort_random_points(l_1,n_1,k=3):
     """
