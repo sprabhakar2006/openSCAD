@@ -2346,7 +2346,7 @@ color("magenta")p_lineo({path1},.1);
             except:
                 p0=path[cKDTree(path).query(b[i])[1]]
                 dist.append(l_len([p0,b[i]]))
-        f=arange(len(b))[a_(dist).round(5)>=abs(r)]
+        f=arange(len(b))[a_(dist).round(5)>=abs(r)*0.95]
         g=arange(len(b))
         b=a_(b)[f[abs(g[:,None]-f).argmin(1)]].tolist()
         return b
@@ -13135,3 +13135,45 @@ def map_segments(seg1,seg2):
     for p in seg1:
         a.append(p+near_segment(p,seg2))
     return a
+
+def earclip_faces(vertices):
+    vertices = array(vertices)
+    n = len(vertices)
+    if n < 3:
+        return []
+
+    indices = list(range(n))
+    triangles = []
+
+    while len(indices) > 3:
+        ear_found = False
+        for i in range(len(indices)):
+            prev_idx = indices[i - 1]
+            curr_idx = indices[i]
+            next_idx = indices[(i + 1) % len(indices)]
+
+            p1, p2, p3 = vertices[[prev_idx, curr_idx, next_idx]]
+
+            if is_convex(p1, p2, p3):
+                # Check if any other point lies inside this ear triangle
+                others = delete(indices, [i - 1, i, (i + 1) % len(indices)])
+                is_ear = True
+                for o in others:
+                    if point_in_triangle(vertices[o], [p1, p2, p3]):
+                        is_ear = False
+                        break
+                if is_ear:
+                    triangles.append([prev_idx, curr_idx, next_idx])
+                    del indices[i]
+                    ear_found = True
+                    break
+
+        if not ear_found:
+            # Polygon might be self-intersecting or degenerate
+            break
+
+    # Add the last remaining triangle
+    if len(indices) == 3:
+        triangles.append(indices)
+
+    return l_(triangles)
