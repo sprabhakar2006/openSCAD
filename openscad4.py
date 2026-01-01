@@ -13199,127 +13199,127 @@ color("cyan") p_line3dc({sec},.2);
     
     """
         
-        def sweep_sec2closed_path(section2d,path3d,mirror,orientation):
-            def path_extrude_closed_input(section2d,path3d):
-                l1=path3d
-                s1=section2d
-                sz=[a_(bb(c23(s1))).max()*4]*2
-                v1=lines2unitvectors(seg(l1))
-                v2=i_p_t(l1)
-                p1=[ plane(v2[i],sz,l1[i]) for i in range(len(l1)) ]
-                s2=[ translate(l1[i],sec2vector(v1[i],s1)) for i in range(len(l1)) ]
-                s3=[ plos(p1[i],s2[i],v1[i],0,3) for i in range(len(l1)) ]
-                sol=s3+[s3[0]]
-                return sol
+    def sweep_sec2closed_path(section2d,path3d,mirror,orientation):
+        def path_extrude_closed_input(section2d,path3d):
             l1=path3d
-            if len(rationalise_path(l1))==2:
-                raise ValueError('Length of path cannot be less than 3')
-            if mirror==0:
-                match orientation:
-                    case 0:
-                        s1 = rot2d(0,section2d)
-                    case 1:
-                        s1 = rot2d(90,section2d)
-                    case 2:
-                        s1 = rot2d(180,section2d)
-                    case 3:
-                        s1 = rot2d(270,section2d)
-            elif mirror==1:
-                match orientation:
-                    case 0:
-                        s1 = rot2d(0,flip(mirror_line(section2d,[0,1,0],[0,0,0])))
-                    case 1:
-                        s1 = rot2d(90,flip(mirror_line(section2d,[0,1,0],[0,0,0])))
-                    case 2:
-                        s1 = rot2d(180,flip(mirror_line(section2d,[0,1,0],[0,0,0])))
-                    case 3:
-                        s1 = rot2d(270,flip(mirror_line(section2d,[0,1,0],[0,0,0])))
-            l2=rationalise_path(l1)[:3]
-            n1=array(nv(l2))
-            if l_(round(n1,4))==[0,0,-1]:
-                s3=path_extrude_closed_input(circle(1,s=5),l1)
-            else:
-                a1=cross(n1,[0,0,-1])
-                t1=r2d(arccos(n1@[0,0,-1]))
-                l3=axis_rot_1(l1,a1,l1[0],t1)
-                s2=path_extrude_closed_input(circle(1,s=5),l3)
-                s3=axis_rot_1(s2,a1,l1[0],-t1)
-            s3=align_sol(s3,1)
-            path=a_(l1)
-            sol=a_(s3)
-            sol1=[]
-            for i in range(len(path)):
-                v1=sol[i][0]-path[i]
-                v2=sol[i][1]-path[i]
-                a=a_(s1)[:,0]
-                b=a_(s1)[:,1]
-                sol1.append(l_(path[i]+v1*a[:,None]+v2*b[:,None]))
-            sol1=sol1+[sol1[0]]
-            return sol1
-        
-        
-        def sweep_sec2open_path(section2d,path3d,mirror,orientation):
-            def path_extrude_open_input(section2d,path3d):
-                l1=path3d
-                s1=section2d
-                sz=[a_(bb(c23(s1))).max()*4]*2
-                v1=lines2unitvectors(seg(l1)[:-1])
-                v1=v1+[v1[-1]]
-                v2=a_([v1[0]]+l_(i_p_t(l1))[1:-1]+[v1[-1]])
-                p1=[ plane(v2[i],sz,l1[i]) for i in range(len(l1)) ]
-                s2=[ translate(l1[i],sec2vector(v1[i],s1)) for i in range(len(l1)) ]
-                s3=[ plos(p1[i],s2[i],v1[i],0,3) for i in range(len(l1)) ]
-                sol=s3
-                return sol
+            s1=section2d
+            sz=[a_(bb(c23(s1))).max()*4]*2
+            v1=lines2unitvectors(seg(l1))
+            v2=i_p_t(l1)
+            p1=[ plane(v2[i],sz,l1[i]) for i in range(len(l1)) ]
+            s2=[ translate(l1[i],sec2vector(v1[i],s1)) for i in range(len(l1)) ]
+            s3=[ plos(p1[i],s2[i],v1[i],0,3) for i in range(len(l1)) ]
+            sol=s3+[s3[0]]
+            return sol
+        l1=path3d
+        if len(rationalise_path(l1))==2:
+            raise ValueError('Length of path cannot be less than 3')
+        if mirror==0:
+            match orientation:
+                case 0:
+                    s1 = rot2d(0,section2d)
+                case 1:
+                    s1 = rot2d(90,section2d)
+                case 2:
+                    s1 = rot2d(180,section2d)
+                case 3:
+                    s1 = rot2d(270,section2d)
+        elif mirror==1:
+            match orientation:
+                case 0:
+                    s1 = rot2d(0,flip(mirror_line(section2d,[0,1,0],[0,0,0])))
+                case 1:
+                    s1 = rot2d(90,flip(mirror_line(section2d,[0,1,0],[0,0,0])))
+                case 2:
+                    s1 = rot2d(180,flip(mirror_line(section2d,[0,1,0],[0,0,0])))
+                case 3:
+                    s1 = rot2d(270,flip(mirror_line(section2d,[0,1,0],[0,0,0])))
+        l2=rationalise_path(l1)[:3]
+        n1=array(nv(l2))
+        if l_(round(n1,4))==[0,0,-1]:
+            s3=path_extrude_closed_input(circle(1,s=5),l1)
+        else:
+            a1=cross(n1,[0,0,-1])
+            t1=r2d(arccos(n1@[0,0,-1]))
+            l3=axis_rot_1(l1,a1,l1[0],t1)
+            s2=path_extrude_closed_input(circle(1,s=5),l3)
+            s3=axis_rot_1(s2,a1,l1[0],-t1)
+        s3=align_sol(s3,1)
+        path=a_(l1)
+        sol=a_(s3)
+        sol1=[]
+        for i in range(len(path)):
+            v1=sol[i][0]-path[i]
+            v2=sol[i][1]-path[i]
+            a=a_(s1)[:,0]
+            b=a_(s1)[:,1]
+            sol1.append(l_(path[i]+v1*a[:,None]+v2*b[:,None]))
+        sol1=sol1+[sol1[0]]
+        return sol1
+    
+    
+    def sweep_sec2open_path(section2d,path3d,mirror,orientation):
+        def path_extrude_open_input(section2d,path3d):
             l1=path3d
-            if len(l1)==2:
-                return path_extrude_open_input(section2d,path3d)
-            if mirror==0:
-                match orientation:
-                    case 0:
-                        s1 = rot2d(0,section2d)
-                    case 1:
-                        s1 = rot2d(90,section2d)
-                    case 2:
-                        s1 = rot2d(180,section2d)
-                    case 3:
-                        s1 = rot2d(270,section2d)
-            elif mirror==1:
-                match orientation:
-                    case 0:
-                        s1 = rot2d(0,flip(mirror_line(section2d,[0,1,0],[0,0,0])))
-                    case 1:
-                        s1 = rot2d(90,flip(mirror_line(section2d,[0,1,0],[0,0,0])))
-                    case 2:
-                        s1 = rot2d(180,flip(mirror_line(section2d,[0,1,0],[0,0,0])))
-                    case 3:
-                        s1 = rot2d(270,flip(mirror_line(section2d,[0,1,0],[0,0,0])))
-            l2=rationalise_path(l1)[:3]
-            n1=array(nv(l2))
-            if (l_(round(n1,4))==[0,0,-1]) | (l_(round(n1,4))==[0,0,1]):
-                s3=path_extrude_open_input(circle(1,s=5),l1)
-            else:
-                a1=cross(n1,[0,0,-1])
-                t1=r2d(arccos(n1@[0,0,-1]))
-                l3=axis_rot_1(l1,a1,l1[0],t1)
-                s2=path_extrude_open_input(circle(1,s=5),l3)
-                s3=axis_rot_1(s2,a1,l1[0],-t1)
-            s3=align_sol(s3,1)
-            path=a_(l1)
-            sol=a_(s3)
-            sol1=[]
-            for i in range(len(path)):
-                v1=sol[i][0]-path[i]
-                v2=sol[i][1]-path[i]
-                a=a_(s1)[:,0]
-                b=a_(s1)[:,1]
-                sol1.append(l_(path[i]+v1*a[:,None]+v2*b[:,None]))
-            sol1=sol1
-            return sol1
+            s1=section2d
+            sz=[a_(bb(c23(s1))).max()*4]*2
+            v1=lines2unitvectors(seg(l1)[:-1])
+            v1=v1+[v1[-1]]
+            v2=a_([v1[0]]+l_(i_p_t(l1))[1:-1]+[v1[-1]])
+            p1=[ plane(v2[i],sz,l1[i]) for i in range(len(l1)) ]
+            s2=[ translate(l1[i],sec2vector(v1[i],s1)) for i in range(len(l1)) ]
+            s3=[ plos(p1[i],s2[i],v1[i],0,3) for i in range(len(l1)) ]
+            sol=s3
+            return sol
+        l1=path3d
+        if len(l1)==2:
+            return path_extrude_open_input(section2d,path3d)
+        if mirror==0:
+            match orientation:
+                case 0:
+                    s1 = rot2d(0,section2d)
+                case 1:
+                    s1 = rot2d(90,section2d)
+                case 2:
+                    s1 = rot2d(180,section2d)
+                case 3:
+                    s1 = rot2d(270,section2d)
+        elif mirror==1:
+            match orientation:
+                case 0:
+                    s1 = rot2d(0,flip(mirror_line(section2d,[0,1,0],[0,0,0])))
+                case 1:
+                    s1 = rot2d(90,flip(mirror_line(section2d,[0,1,0],[0,0,0])))
+                case 2:
+                    s1 = rot2d(180,flip(mirror_line(section2d,[0,1,0],[0,0,0])))
+                case 3:
+                    s1 = rot2d(270,flip(mirror_line(section2d,[0,1,0],[0,0,0])))
+        l2=rationalise_path(l1)[:3]
+        n1=array(nv(l2))
+        if (l_(round(n1,4))==[0,0,-1]) | (l_(round(n1,4))==[0,0,1]):
+            s3=path_extrude_open_input(circle(1,s=5),l1)
+        else:
+            a1=cross(n1,[0,0,-1])
+            t1=r2d(arccos(n1@[0,0,-1]))
+            l3=axis_rot_1(l1,a1,l1[0],t1)
+            s2=path_extrude_open_input(circle(1,s=5),l3)
+            s3=axis_rot_1(s2,a1,l1[0],-t1)
+        s3=align_sol(s3,1)
+        path=a_(l1)
+        sol=a_(s3)
+        sol1=[]
+        for i in range(len(path)):
+            v1=sol[i][0]-path[i]
+            v2=sol[i][1]-path[i]
+            a=a_(s1)[:,0]
+            b=a_(s1)[:,1]
+            sol1.append(l_(path[i]+v1*a[:,None]+v2*b[:,None]))
+        sol1=sol1
+        return sol1
 
-        if closed_loop==0:
-            sol = sweep_sec2open_path(section2d,path3d,mirror,orientation)
-        elif closed_loop==1:
-            sol = sweep_sec2closed_path(section2d,path3d,mirror,orientation)
-        return sol
+    if closed_loop==0:
+        sol = sweep_sec2open_path(section2d,path3d,mirror,orientation)
+    elif closed_loop==1:
+        sol = sweep_sec2closed_path(section2d,path3d,mirror,orientation)
+    return sol
             
