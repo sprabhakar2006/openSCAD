@@ -6439,7 +6439,7 @@ color("blue")p_line3dc({sec},.1,1);
     elif type==2:
         return offset_2(sec,r)
 
-# def offset(sec,r):
+# def offset(sec,r): # quite accurate function, but slower than the other offset function
 #     """
 # function to offset a 2d closed loop section by distance 'r'
 # example:
@@ -9829,9 +9829,12 @@ color("cyan") for(p={[l3]}) p_line3d(p,.3);
     u1=line_as_unit_vector(l1)
     u2=line_as_unit_vector([b[0],b[-1]])
     a1=cross(u1,u2)
-    theta1=-l_(r2d(arccos(a_(u1)@a_(u2))))
-    b=axis_rot_1(b,a1,b[0],theta1)
-    return b
+    if l_(a1.round(4))==[0,0,0]:
+        return b
+    else:
+        theta1=-l_(r2d(arccos(a_(u1)@a_(u2))))
+        b=axis_rot_1(b,a1,b[0],theta1)
+        return b
 
 def surface_from_4_lines(l1,l2,l3,l4):
     """
@@ -13322,4 +13325,15 @@ color("cyan") p_line3dc({sec},.2);
     elif closed_loop==1:
         sol = sweep_sec2closed_path(section2d,path3d,mirror,orientation)
     return sol
-            
+
+def fixed_radius_fillet(l2,l3,l1,r=1,s=20,closed_loop=0):
+    """
+draw a fixed radius fillet between 2 lines "l2" and "l3" where "l1 is the anchor line
+or the intersection line.
+
+    """
+    v1=lines2unitvectors(seg(l1))
+    d1=cpo([l2,l3,l1])
+    f1=[ arc_2p_3d(v1[i],d1[i][0],d1[i][1],r,cw=1,s=s)+[d1[i][2]]  for i in range(len(d1)) ]
+    f1=f1+[f1[0]] if closed_loop==1 else f1
+    return f1
