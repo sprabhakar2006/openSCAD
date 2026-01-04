@@ -13337,3 +13337,10 @@ or the intersection line.
     f1=[ arc_2p_3d(v1[i],d1[i][0],d1[i][1],r,cw=1,s=s)+[d1[i][2]]  for i in range(len(d1)) ]
     f1=f1+[f1[0]] if closed_loop==1 else f1
     return f1
+
+def zrot4d(theta,v):
+    return (v[:3]@zrot(theta)).tolist()+v[3:]
+def yrot4d(theta,v):
+    return (v[:3]@yrot(theta)).tolist()+v[3:]
+def xrot4d(theta,v):
+    return (v[:3]@xrot(theta)).tolist()+v[3:]
