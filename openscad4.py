@@ -9483,7 +9483,7 @@ color("magenta") points({p0},.5);
     return p0
 
 
-def dim_radial(a1,cross_hair_size=2,text_color="blue",text_size=1,line_color="blue",arc_color="magenta",outside=0):
+def dim_radial(a1,cross_hair_size=2,text_color="blue",text_size=1,line_color="blue",arc_color="magenta",line_thickness=0.1,outside=0):
     """
 radial dimensions with defined arc or circle 'a1'
 example:
@@ -9512,6 +9512,7 @@ color("blue") for(p={[c1]}) p_line3d(p,.1);
     ts=text_size
     lc=line_color
     ac=arc_color
+    lt=line_thickness
     pl1=plane(line_as_axis(l1),[chs,chs],l1[0])
     l2=[mid_point(pl1[0]),mid_point(pl1[1])]
     l3=mid_line(pl1[0],pl1[1])
@@ -9523,12 +9524,12 @@ color("blue") for(p={[c1]}) p_line3d(p,.1);
     p0=mid_point(l1)
     
     txt=f"""
-    color("{ac}") p_line3d({a1},.1);
-    color("{lc}")for(p={[l1,l2,l3,l4,l5]})p_line3d(p,.1);
+    color("{ac}") p_line3d({a1},{lt});
+    color("{lc}")for(p={[l1,l2,l3,l4,l5]})p_line3d(p,{lt});
     color("{tc}")translate({p0})linear_extrude(.2)text(str("R",{round(l_len([c1,a1[0]]),2)}),{ts});"""
     return txt
 
-def dim_angular(l1,l2,text_color="blue",text_size=1,line_color="blue",arc_color="magenta"):
+def dim_angular(l1,l2,text_color="blue",text_size=1,line_color="blue",arc_color="magenta",line_thickness=0.1):
     """
 angular dimension between 2 lines 'l1' and 'l2'
 example:
@@ -9545,6 +9546,7 @@ color("magenta") for(p={[[p0,p1,p2]]}) points(p,.3);
     ts=text_size
     lc=line_color
     ac=arc_color
+    lt=line_thickness
     v1,v2=[line_as_unit_vector(p) for p in [l1,l2]]
     v1=l_(a_(v1)*-1)
     a1=l_(r2d(arcsin(round(norm(cross(v1,v2))/(norm(v1)*norm(v2)),4))))
@@ -9558,8 +9560,8 @@ color("magenta") for(p={[[p0,p1,p2]]}) points(p,.3);
     a2=arc_2p_3d(nv([v1,[0,0,0],v2]),p4,p5,d2)
     p6=mid_point(a2)
     txt=f"""
-    color("{lc}")for(p={[l1,l2]})p_line3d(p,.1);
-    color("{ac}")p_line3d({a2},.1);
+    color("{lc}")for(p={[l1,l2]})p_line3d(p,{lt});
+    color("{ac}")p_line3d({a2},{lt});
     color("{tc}")translate({p6})linear_extrude(.2)text(str({round(a1,2)},"deg"),{ts});
     """
     return txt
@@ -9586,7 +9588,7 @@ color("grey") for(p={l3}) p_line3d(p,.1);
     p1=l_(a_(l1[0])+u1*d1)
     return p1
 
-def dim_linear(l1,gap=2,cross_hair_size=2,text_color="blue",text_size=1,line_color="blue"):
+def dim_linear(l1,gap=2,cross_hair_size=2,text_color="blue",text_size=1,line_color="blue",line_thickness=0.1):
     """
 linear dimensions with defined line l1
 example:
@@ -9613,6 +9615,7 @@ color("blue") for(p={[l1]}) p_line3d(p,.3);
     tc=text_color
     ts=text_size
     lc=line_color
+    lt=line_thickness
     pl1=plane(vector,[gap,gap],l1[0])
     l2=[mid_point(pl1[0]),mid_point(pl1[1])]
     l3=mid_line(pl1[0],pl1[1])
@@ -9624,7 +9627,7 @@ color("blue") for(p={[l1]}) p_line3d(p,.3);
     l4,l5=translate(vector,[l2,l3])
     p2=mid_point([p0,p1])
     txt=f"""
-    color("{lc}")for(p={[[p0,p1],l2,l3,l4,l5]})p_line3d(p,.1);
+    color("{lc}")for(p={[[p0,p1],l2,l3,l4,l5]})p_line3d(p,{lt});
     color("{tc}")translate({p2})linear_extrude(.2)text(str({l_len(l1)}),{ts});"""
     return txt
 
@@ -13344,3 +13347,32 @@ def yrot4d(theta,v):
     return (v[:3]@yrot(theta)).tolist()+v[3:]
 def xrot4d(theta,v):
     return (v[:3]@xrot(theta)).tolist()+v[3:]
+
+
+def wrap_sec2path(sec,path,v1):
+    sec=c23(sec)
+    v1=c23(uv(v1))
+    v2=cross(v1,[0,0,1])
+    v3=[0,0,1]
+    d1=einsum('ij,ij->i',a_([v1]*len(sec)),a_(xyc(sec)) )
+    n=d1.argmin()
+    sec1=sec[n:]+sec[:n]
+    d2=d1-min(d1)
+    d3=einsum('ij,ij->i',a_([v2]*len(sec)),a_(xyc(sec)) )
+    d4=einsum('ij,ij->i',a_([v3]*len(sec)),a_(sec) )
+    vx=a_(nv(path))
+    # vy=a_(lines2unitvectors(seg(path)[:-1]))
+    # vz=cross(vy,vx)
+    sec2,sec3=[],[]
+    for i in range(len(d2)):
+        try:
+            a=path[0]  if d2[i]==0 else movePointOnLine(path,path[0],d2[i]) 
+            vy= line_as_unit_vector(seg(path)[0]) if d2[i]==0 else line_as_unit_vector( seg(lineFromStartTillPoint(path,a))[:-1][-1])
+            vz=cross(vx,vy)
+            b=a_(a)-vx*d3[i]
+            c=b+vector2length(vz,d4[i])
+            sec2.append(l_(c))
+            sec3.append([[0,0,0],vector2length(vz,d4[i])])
+        except:
+            print(i)
+    return sec2
