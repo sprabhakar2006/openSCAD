@@ -13352,8 +13352,8 @@ def xrot4d(theta,v):
 def wrap_sec2path(sec,path,v1):
     sec=c23(sec)
     v1=c23(uv(v1))
-    v2=cross(v1,[0,0,1])
-    v3=[0,0,1]
+    v2=cross(v1,[0,0,-1])
+    v3=[0,0,-1]
     d1=einsum('ij,ij->i',a_([v1]*len(sec)),a_(xyc(sec)) )
     n=d1.argmin()
     sec1=sec[n:]+sec[:n]
@@ -13369,7 +13369,7 @@ def wrap_sec2path(sec,path,v1):
             a=path[0]  if d2[i]==0 else movePointOnLine(path,path[0],d2[i]) 
             vy= line_as_unit_vector(seg(path)[0]) if d2[i]==0 else line_as_unit_vector( seg(lineFromStartTillPoint(path,a))[:-1][-1])
             vz=cross(vx,vy)
-            b=a_(a)-vx*d3[i]
+            b=a_(a)+vx*d3[i]
             c=b+vector2length(vz,d4[i])
             sec2.append(l_(c))
             sec3.append([[0,0,0],vector2length(vz,d4[i])])
