@@ -13380,3 +13380,10 @@ def wrap_sec2path(sec,path,v1):
 def wrap_surf2path(surf,path,vector,p0=[0,0,0],p1=[0,0,0]):
     surf1=l_(a_(wrap_sec2path([l_(p0)]+a_(c23(surf)).reshape(-1,3).tolist()+[l_(p1)],path,vector))[1:-1].reshape(a_(c23(surf)).shape))
     return surf1
+
+def sec_limit_points(sec,vector):
+    l1=[vcost1(point_vector([0,0,0],vector),p) for p in sec ]
+    d=norm(a_(l1).max(axis=0)-a_(l1).min(axis=0))
+    p0=a_(l1).min(axis=0).tolist()
+    p1=a_(l1).max(axis=0).tolist()
+    return [p0,p1]
