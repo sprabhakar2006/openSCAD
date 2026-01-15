@@ -13376,3 +13376,7 @@ def wrap_sec2path(sec,path,v1):
         except:
             print(i)
     return sec2
+
+def wrap_surf2path(surf,path,vector,p0=[0,0,0],p1=[0,0,0]):
+    surf1=l_(a_(wrap_sec2path([l_(p0)]+a_(c23(surf)).reshape(-1,3).tolist()+[l_(p1)],path,vector))[1:-1].reshape(a_(c23(surf)).shape))
+    return surf1
