@@ -7119,6 +7119,23 @@ def vcost(l1,p0,dist=.2):
     return p1
 
 
+# def timeToReachPoint(p0,l1,dist=.1):
+#     """
+#     p0: point
+#     l1: line
+#     dist: point within distance 'dist' of line will be picked
+#     it return time where 0<=time<=1
+#     """
+#     sec1=seg(l1)[:-1]
+#     n=0
+#     for i in range(len(sec1)):
+#         if vcost(sec1[i],p0,dist):
+#             n=i
+#     a=l_lenv_o(l1[:n+1])
+#     b=l_len([l1[n],p0])
+#     c=l_lenv_o(l1)
+#     return (a+b)/c
+
 def timeToReachPoint(p0,l1,dist=.1):
     """
     p0: point
@@ -7126,15 +7143,16 @@ def timeToReachPoint(p0,l1,dist=.1):
     dist: point within distance 'dist' of line will be picked
     it return time where 0<=time<=1
     """
+        
     sec1=seg(l1)[:-1]
     n=0
     for i in range(len(sec1)):
         if vcost(sec1[i],p0,dist):
             n=i
-    a=l_lenv_o(l1[:n+1])
-    b=l_len([l1[n],p0])
-    c=l_lenv_o(l1)
-    return (a+b)/c
+    d1=l_lenv_o(l1[:n+1])
+    d2=l_len([sec1[n][0],vcost(sec1[n],p0,dist)])
+    d3=d1+d2
+    return d3/l_lenv_o(l1)
 
 
 def movePointOnLine(l1,p0,d):
@@ -13349,7 +13367,7 @@ def xrot4d(theta,v):
     return (v[:3]@xrot(theta)).tolist()+v[3:]
 
 
-def wrap_sec2path(sec,path,v1):
+def wrap_sec2path(sec,path,v1,m=0):
     sec=c23(sec)
     v1=c23(uv(v1))
     v2=cross(v1,[0,0,-1])
@@ -13375,7 +13393,7 @@ def wrap_sec2path(sec,path,v1):
             sec3.append([[0,0,0],vector2length(vz,d4[i])])
         except:
             print(i)
-    return sec2
+    return sec2 if m==0 else mirror_line(sec2,rot('z90',v1),path[0])
 
 def wrap_surf2path(surf,path,vector,p0=[0,0,0],p1=[0,0,0]):
     surf1=l_(a_(wrap_sec2path([l_(p0)]+a_(c23(surf)).reshape(-1,3).tolist()+[l_(p1)],path,vector))[1:-1].reshape(a_(c23(surf)).shape))
