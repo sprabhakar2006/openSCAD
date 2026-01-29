@@ -7136,6 +7136,25 @@ def vcost(l1,p0,dist=.2):
 #     c=l_lenv_o(l1)
 #     return (a+b)/c
 
+# def timeToReachPoint(p0,l1,dist=.1):
+#     """
+#     p0: point
+#     l1: line
+#     dist: point within distance 'dist' of line will be picked
+#     it return time where 0<=time<=1
+#     """
+        
+#     sec1=seg(l1)[:-1]
+#     n=0
+#     for i in range(len(sec1)):
+#         if vcost(sec1[i],p0,dist):
+#             n=i
+#     d1=l_lenv_o(l1[:n+1])
+#     d2=l_len([sec1[n][0],vcost(sec1[n],p0,dist)])
+#     d3=d1+d2
+#     return d3/l_lenv_o(l1)
+
+
 def timeToReachPoint(p0,l1,dist=.1):
     """
     p0: point
@@ -7143,17 +7162,29 @@ def timeToReachPoint(p0,l1,dist=.1):
     dist: point within distance 'dist' of line will be picked
     it return time where 0<=time<=1
     """
+    try:
+        s1=seg(l1)[:-1]
+        s2,s3,s4=[],[],[]
+        for i in range(len(s1)):
+            d1=vcost(s1[i],p0,dist)
+            if d1!=[]:
+                s2.append(i)
+                s3.append(d1)
+                s4.append(l_len([p0,d1]))
+        n=s2[a_(s4).argmin()]
+        d1=l_lenv_o(l1[:n+1])
+        d2=l_len([s1[n][0],vcost(s1[n],p0,dist)])
+        d3=d1+d2
+        return d3/l_lenv_o(l1)
         
-    sec1=seg(l1)[:-1]
-    n=0
-    for i in range(len(sec1)):
-        if vcost(sec1[i],p0,dist):
-            n=i
-    d1=l_lenv_o(l1[:n+1])
-    d2=l_len([sec1[n][0],vcost(sec1[n],p0,dist)])
-    d3=d1+d2
-    return d3/l_lenv_o(l1)
-
+    except:
+        a=cKDTree(l1).query(p0)
+        if a[0]<=dist:
+            n=a[1]
+            d1=l_lenv_o(l1[:n+1])
+            return d1/l_lenv_o(l1)
+        else:
+            return []
 
 def movePointOnLine(l1,p0,d):
     """
