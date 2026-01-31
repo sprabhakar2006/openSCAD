@@ -7082,7 +7082,7 @@ def lineFromPointTillEnd(l1,pnt,dist=.01):
         else:
             l2=[p0]+l1[n+1:]
         return l2
-    return lfpte(l1,timeToReachPoint(pnt,l1,dist=dist))
+    return remove_duplicates(lfpte(l1,timeToReachPoint(pnt,l1,dist=dist)))
 
 def lineFromStartTillPoint(l1,pnt,dist=.01):
     """
@@ -7100,7 +7100,7 @@ def lineFromStartTillPoint(l1,pnt,dist=.01):
         l2=[l1[0],p0]
     else:
         l2=l1[:n+1]+[p0]
-    return l2
+    return remove_duplicates(l2)
 
 def vcost(l1,p0,dist=.2):
     """
@@ -8437,7 +8437,11 @@ def lineFromPointToPointOnLine(l1,p0,p1,dist=.01):
         l3=l1
     else:
         l3=lineFromStartTillPoint(l1,p1,dist)
-    l4=[l2[-1]]+(exclude_points(l3,l2) if p0!=l1[0] else l3)
+    if l2!=[]:
+        l4=[l2[-1]]+exclude_points(l3,l2)
+    else:
+        l4=l3
+    # l4=[l2[-1]]+(exclude_points(l3,l2) if p0!=l1[0] else l3)
     return l4
 
 def distanceOfPointFromLine(p0,l1):
@@ -13436,3 +13440,42 @@ def sec_limit_points(sec,vector):
     p0=a_(l1).min(axis=0).tolist()
     p1=a_(l1).max(axis=0).tolist()
     return [p0,p1]
+
+def npol(l1,p0,dist=0.1):
+    """
+nearest projection of the point 'p0' on line 'l1', if the point is with in 
+specified distance 'dist' from line
+    """
+    return polp(l1,timeToReachPoint(p0,l1,dist))
+
+def solid_from_4_lines(l1,l2,l3,l4,dist=0.1):
+    """
+create solid with 4 lines, 2 closed sections and 2 lines to define shape between 2 sections
+example:
+a=translate([0,0,30],cr2dt([[0,0,3],[20,0,3],[0,15,3],[-20,0,3]],20))
+b=translate([0,0,10],cr2dt([[2.5,7,3],[15,0,3],[0,7,3],[-15,0,3]],20))
+a=homogenise(a,.5,1)
+b=homogenise(b,.5,1)
+l1=bezier(cr3dt([[10,0,30],[0,0,-10],[0,7,0],[0,0,-10]]),30)
+l2=turtle3d([[10,15,30],[0,-1,-20]])
+s1=flip(solid_from_4_lines(a,b,l1,l2,.1))
+e1=end_cap(s1,3)
+fo(f'''
+color("blue") for(p={[a,b,l1,l2]}) p_line3d(p,0.2);
+difference(){{
+{swp(s1)}
+for(p={e1}) swp_c(p);
+}}
+''')
+    """
+    p0,p1,p2,p3=npol(l1,l3[0],dist), npol(l1,l4[0],dist), npol(l2,l3[-1],dist), npol(l2,l4[-1],dist)
+    l1=lineFromPointTillEnd(l1,p0)+lineFromStartTillPoint(l1,p0)
+    l2=lineFromPointTillEnd(l2,p2)+lineFromStartTillPoint(l2,p2)
+    l1a=lineFromStartTillPoint(l1,p1)
+    l2a=lineFromStartTillPoint(l2,p3)
+    l1b=lineFromPointTillEnd(l1,p1)
+    l2b=lineFromPointTillEnd(l2,p3)
+    s1=surface_from_4_lines(l1a,l2a,l3,l4)
+    s2=surface_from_4_lines(l1b,l2b,cpo(s1)[-1],l3)
+    s3=cpo(s1)[:-1]+cpo(s2)[:-1]
+    return cpo(s3)
