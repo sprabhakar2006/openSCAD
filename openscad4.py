@@ -9917,8 +9917,8 @@ color("blue") for(p={[l1,l2,l3,l4]}) p_line3d(p,.3);
 %{swp_surf(surf1)}
 ''')
     """
-    l2=path2path1(l1,l2)
-    l4=path2path1(l3,l4)
+    l2=path2path1(l1,l2) if len(l1)!=len(l2) else l2
+    l4=path2path1(l3,l4) if len(l3)!=len(l4) else l4
     s1=slice_sol([l1,l2],len(l3)-1)
     s2=cpo([l3,l4])
     s3=[ fit_pline2line(s1[i],s2[i]) for i in range(len(s1))]
@@ -13469,6 +13469,8 @@ for(p={e1}) swp_c(p);
 ''')
     """
     p0,p1,p2,p3=npol(l1,l3[0],dist), npol(l1,l4[0],dist), npol(l2,l3[-1],dist), npol(l2,l4[-1],dist)
+    l3=fit_pline2line(l3,[p0,p2])
+    l4=fit_pline2line(l4,[p1,p3])
     l1=lineFromPointTillEnd(l1,p0)+lineFromStartTillPoint(l1,p0)
     l2=lineFromPointTillEnd(l2,p2)+lineFromStartTillPoint(l2,p2)
     l1a=lineFromStartTillPoint(l1,p1)
