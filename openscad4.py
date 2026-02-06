@@ -13479,3 +13479,48 @@ for(p={e1}) swp_c(p);
     s2=surface_from_4_lines(l1b,l2b,cpo(s1)[-1],l3)
     s3=cpo(s1)[:-1]+cpo(s2)[:-1]
     return cpo(s3)
+
+def solid_from_6_lines(a,b,l1,l2,l3,l4,d=1):
+    """
+create solid with 6 lines, 2 closed sections and 4 lines to define shape between 2 sections
+example:
+a=translate([0,10,0],circle(5))
+b=translate([0,0,20],circle(20))
+l1=bezier(cr3dt([[0,5,0],[0,0,10],[0,-25,0],[0,0,10]]),20)
+l2=bezier(turtle3d([[5,10,0],[15,0,0],[0,0,20]]),20)
+l3=bezier(turtle3d([[0,15,0],[0,5,0],[0,0,20]]),20)
+l4=bezier(turtle3d([[-5,10,0],[-15,0,0],[0,0,20]]),20)
+sol=solid_from_6_lines(a,b,l1,l2,l3,l4,5)
+fo(f'''
+{swp(sol)}
+''')
+    """
+    a,b=a+[a[0]],b+[b[0]]
+    p0,p1=npol(a,l1[0],d),npol(b,l1[-1],d)
+    p2,p3=npol(a,l2[0],d),npol(b,l2[-1],d)
+    p4,p5=npol(a,l3[0],d),npol(b,l3[-1],d)
+    p6,p7=npol(a,l4[0],d),npol(b,l4[-1],d)
+    a=lineFromPointTillEnd(a,p0)+lineFromStartTillPoint(a,p0)
+    b=lineFromPointTillEnd(b,p1)+lineFromStartTillPoint(b,p1)
+    
+    l1=fit_pline2line(l1,[p0,p1])
+    l2=fit_pline2line(l2,[p2,p3])
+    l3=fit_pline2line(l3,[p4,p5])
+    l4=fit_pline2line(l4,[p6,p7])
+    
+    s1=lineFromStartTillPoint(a,p2)
+    s2=lineFromStartTillPoint(b,p3)
+    s3=lineFromPointToPointOnLine(a,p2,p4)
+    s4=lineFromPointToPointOnLine(b,p3,p5)
+    s5=lineFromPointToPointOnLine(a,p4,p6)
+    s6=lineFromPointToPointOnLine(b,p5,p7)
+    s7=lineFromPointTillEnd(a,p6)
+    s8=lineFromPointTillEnd(b,p7)
+    
+    sr1=surface_from_4_lines(s1,s2,l1,l2)
+    sr2=surface_from_4_lines(s3,s4,cpo(sr1)[-1],l3)
+    sr3=surface_from_4_lines(s5,s6,cpo(sr2)[-1],l4)
+    sr4=surface_from_4_lines(s7,s8,cpo(sr3)[-1],l1)
+    
+    sol=cpo(cpo(sr1)[:-1]+cpo(sr2)[:-1]+cpo(sr3)[:-1]+cpo(sr4)[:-1])
+    return sol
