@@ -13448,39 +13448,42 @@ specified distance 'dist' from line
     """
     return polp(l1,timeToReachPoint(p0,l1,dist))
 
-def solid_from_4_lines(l1,l2,l3,l4,dist=0.1):
+def solid_from_4_lines(a,b,l1,l2,d=1):
     """
 create solid with 4 lines, 2 closed sections and 2 lines to define shape between 2 sections
+'d' is the approximate distance of lines end points from closed sections
 example:
-a=translate([0,0,30],cr2dt([[0,0,3],[20,0,3],[0,15,3],[-20,0,3]],20))
-b=translate([0,0,10],cr2dt([[2.5,7,3],[15,0,3],[0,7,3],[-15,0,3]],20))
-a=homogenise(a,.5,1)
-b=homogenise(b,.5,1)
-l1=bezier(cr3dt([[10,0,30],[0,0,-10],[0,7,0],[0,0,-10]]),30)
-l2=turtle3d([[10,15,30],[0,-1,-20]])
-s1=flip(solid_from_4_lines(a,b,l1,l2,.1))
-e1=end_cap(s1,3)
+s1=translate([0,0,20],circle(10))
+s2=c23(circle(20))
+l1=arc_2p_3d([0,1,0],s2[0],s1[0],15,1)
+l2=arc_2p_3d([0,1,0],s2[25],s1[25],15,-1)
+sol1=solid_from_4_lines(s2,s1,l1,l2,1)
 fo(f'''
-color("blue") for(p={[a,b,l1,l2]}) p_line3d(p,0.2);
-difference(){{
-{swp(s1)}
-for(p={e1}) swp_c(p);
-}}
+%color("blue",0.5) for(p={[s1]}) points(p,0.25);
+color("magenta") for(p={[sol1[-1]]}) points(p,0.2);
+%{swp(sol1)}
 ''')
     """
-    p0,p1,p2,p3=npol(l1,l3[0],dist), npol(l1,l4[0],dist), npol(l2,l3[-1],dist), npol(l2,l4[-1],dist)
-    l3=fit_pline2line(l3,[p0,p2])
-    l4=fit_pline2line(l4,[p1,p3])
-    l1=lineFromPointTillEnd(l1,p0)+lineFromStartTillPoint(l1,p0)
-    l2=lineFromPointTillEnd(l2,p2)+lineFromStartTillPoint(l2,p2)
-    l1a=lineFromStartTillPoint(l1,p1)
-    l2a=lineFromStartTillPoint(l2,p3)
-    l1b=lineFromPointTillEnd(l1,p1)
-    l2b=lineFromPointTillEnd(l2,p3)
-    s1=surface_from_4_lines(l1a,l2a,l3,l4)
-    s2=surface_from_4_lines(l1b,l2b,cpo(s1)[-1],l3)
-    s3=cpo(s1)[:-1]+cpo(s2)[:-1]
-    return cpo(s3)
+    a,b=a+[a[0]],b+[b[0]]
+    p0,p1=npol(a,l1[0],d),npol(b,l1[-1],d)
+    p2,p3=npol(a,l2[0],d),npol(b,l2[-1],d)
+    
+    a=lineFromPointTillEnd(a,p0)+lineFromStartTillPoint(a,p0)
+    b=lineFromPointTillEnd(b,p1)+lineFromStartTillPoint(b,p1)
+    
+    l1=fit_pline2line(l1,[p0,p1])
+    l2=fit_pline2line(l2,[p2,p3])
+    
+    s1=lineFromStartTillPoint(a,p2)
+    s2=lineFromStartTillPoint(b,p3)
+    s3=lineFromPointTillEnd(a,p2)
+    s4=lineFromPointTillEnd(b,p3)
+    
+    sr1=surface_from_4_lines(s1,s2,l1,l2)
+    sr2=surface_from_4_lines(s3,s4,cpo(sr1)[-1],l1)
+    
+    sol=cpo(cpo(sr1)[1:-1]+cpo(sr2)[1:-1])
+    return sol
 
 def solid_from_6_lines(a,b,l1,l2,l3,l4,d=1):
     """
@@ -13524,5 +13527,5 @@ fo(f'''
     sr3=surface_from_4_lines(s5,s6,cpo(sr2)[-1],l4)
     sr4=surface_from_4_lines(s7,s8,cpo(sr3)[-1],l1)
     
-    sol=cpo(cpo(sr1)[:-1]+cpo(sr2)[:-1]+cpo(sr3)[:-1]+cpo(sr4)[:-1])
+    sol=cpo(cpo(sr1)[1:-1]+cpo(sr2)[1:-1]+cpo(sr3)[1:-1]+cpo(sr4)[1:-1])
     return sol
