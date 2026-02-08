@@ -9295,7 +9295,7 @@ cr3dt=corner_radius3d_with_turtle
 #     return remove_duplicates(c2) if side==0 else flip(remove_duplicates(c2))
 
 def trim_sec_ip(sec,p0,p1,dist=1):
-"""
+    """
 trim any closed loop section given 2 points (p0,p1) on the sec
 dist: points can be approximately with in a defined distance "dist" from the section 
 example:
