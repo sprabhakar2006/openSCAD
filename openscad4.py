@@ -7061,46 +7061,76 @@ def interpolate(p0,s=100):
     return p1
 
 
-def lineFromPointTillEnd(l1,pnt,dist=.01):
-    """
-    draws line from point 'pnt' till end of line 'l1'
-    the point with in distance 'dist' will be picked up
-    deletes the rest of the line
-    """
-    def lfpte(l1,t):
-        """
-        removes the line till parameter t where 0<=t<=1
-        keeps the rest of the line
-        """
-        p0=polp(l1,t)
-        a=l_lenv_o(l1)*t
-        b=a_([0]+[l_len(p) for p in seg(l1)[:-1]]).cumsum()
-        if a<b[-1]:
-            n=arange(len(b))[b<=a][-1]
-        if n==len(l1)-2:
-            l2=[p0,l1[n+1]]
-        else:
-            l2=[p0]+l1[n+1:]
-        return l2
-    return remove_duplicates(lfpte(l1,timeToReachPoint(pnt,l1,dist=dist)))
+# def lineFromPointTillEnd(l1,pnt,dist=.01):
+#     """
+#     draws line from point 'pnt' till end of line 'l1'
+#     the point with in distance 'dist' will be picked up
+#     deletes the rest of the line
+#     """
+#     def lfpte(l1,t):
+#         """
+#         removes the line till parameter t where 0<=t<=1
+#         keeps the rest of the line
+#         """
+#         t=0.03 if t==1 else t
+#         p0=polp(l1,t)
+#         a=l_lenv_o(l1)*t
+#         b=a_([0]+[l_len(p) for p in seg(l1)[:-1]]).cumsum()
+#         if a<b[-1]:
+#             n=arange(len(b))[b<=a][-1]
+#         if n==len(l1)-2:
+#             l2=[p0,l1[n+1]]
+#         else:
+#             l2=[p0]+l1[n+1:]
+#         return l2
+#     return remove_duplicates(lfpte(l1,timeToReachPoint(pnt,l1,dist=dist)))
 
-def lineFromStartTillPoint(l1,pnt,dist=.01):
+def lineFromPointTillEnd(line,point,dist=0.01):
     """
-    draws line from start till point 'pnt'.
+    draws line from point 'point' till end of line 'line'
     the point with in distance 'dist' will be picked up
     deletes the rest of the line
     """
-    t=timeToReachPoint(pnt,l1,dist)    
-    p0=polp(l1,t)
-    a=l_lenv_o(l1)*t
-    b=a_([0]+[l_len(p) for p in seg(l1)[:-1]]).cumsum()
-    if a<b[-1]:
-        n=arange(len(b))[b<=a][-1]
-    if n==0:
-        l2=[l1[0],p0]
-    else:
-        l2=l1[:n+1]+[p0]
-    return remove_duplicates(l2)
+    n=timeToReachPoint(point,line,dist)
+    l1=[point]+[p  for p in line if timeToReachPoint(p,line,dist)>n]
+    return l1
+
+# def lineFromStartTillPoint(l1,pnt,dist=.01):
+#     """
+#     draws line from start till point 'pnt'.
+#     the point with in distance 'dist' will be picked up
+#     deletes the rest of the line
+#     """
+#     t=timeToReachPoint(pnt,l1,dist)
+#     t=0.03 if t==1 else t
+#     p0=polp(l1,t)
+#     a=l_lenv_o(l1)*t
+#     b=a_([0]+[l_len(p) for p in seg(l1)[:-1]]).cumsum()
+#     if a<b[-1]:
+#         n=arange(len(b))[b<=a][-1]
+#     if n==0:
+#         l2=[l1[0],p0]
+#     else:
+#         l2=l1[:n+1]+[p0]
+#     return remove_duplicates(l2)
+
+def lineFromStartTillPoint(line,point,dist=0.01):
+    """
+    draws line from start till point 'point'.
+    the point with in distance 'dist' will be picked up
+    deletes the rest of the line
+    """
+    point=npol(line,point,dist)
+    n=timeToReachPoint(point,line,dist)
+    # l1=[ p for p in line if timeToReachPoint(p,line,dist)<n ]+[point]
+    l1=[]
+    for p in line:
+        if timeToReachPoint(p,line,dist)<n:
+            l1.append(p)
+        else:
+            break
+    l1=l1+[point]
+    return l1
 
 def vcost(l1,p0,dist=.2):
     """
@@ -8422,27 +8452,49 @@ color("magenta") points({[p0]},1);
     b=[bspline_open(p,2,s) for p in b]
     return b
 
-def lineFromPointToPointOnLine(l1,p0,p1,dist=.01):
+# def lineFromPointToPointOnLine(l1,p0,p1,dist=.01):
+#     """
+#     Draw a line from a defined point to another point on a line.
+#     points with in distance 'dist' will be picked up
+#     Rest of the line will be deleted
+    
+#     """
+#     if p0==l1[0]:
+#         l2=[]
+#     else:
+#         l2=lineFromStartTillPoint(l1,p0,dist)
+#     if p1==l1[-1]:
+#         l3=l1
+#     else:
+#         l3=lineFromStartTillPoint(l1,p1,dist)
+#     if l2!=[]:
+#         l4=[l2[-1]]+exclude_points(l3,l2)
+#     else:
+#         l4=l3
+#     # l4=[l2[-1]]+(exclude_points(l3,l2) if p0!=l1[0] else l3)
+#     return l4
+
+def lineFromPointToPointOnLine(line,point1,point2,dist=0.01):
     """
     Draw a line from a defined point to another point on a line.
     points with in distance 'dist' will be picked up
     Rest of the line will be deleted
-    
     """
-    if p0==l1[0]:
-        l2=[]
-    else:
-        l2=lineFromStartTillPoint(l1,p0,dist)
-    if p1==l1[-1]:
-        l3=l1
-    else:
-        l3=lineFromStartTillPoint(l1,p1,dist)
-    if l2!=[]:
-        l4=[l2[-1]]+exclude_points(l3,l2)
-    else:
-        l4=l3
-    # l4=[l2[-1]]+(exclude_points(l3,l2) if p0!=l1[0] else l3)
-    return l4
+    n1=timeToReachPoint(point1,line,dist)
+    n2=timeToReachPoint(point2,line,dist)
+    p1= point1 if n1<n2 else point2
+    p2= point2 if n1<n2 else point1
+    t1=min([n1,n2])
+    t2=max([n1,n2])
+    # l1=[p1]+[ p for p in line if t1<timeToReachPoint(p,line,dist)<t2]+[p2]
+    l1=[]
+    for p in line:
+        if timeToReachPoint(p,line,dist)>t2:
+            break
+        elif t1<timeToReachPoint(p,line,dist)<t2:
+            l1.append(p)
+    l1=[p1]+l1+[p2]
+    return l1
 
 def distanceOfPointFromLine(p0,l1):
     """
@@ -9219,8 +9271,31 @@ color("blue") p_line3d({l1},.3);
 
 cr3dt=corner_radius3d_with_turtle
 
-def trim_sec_ip(sec,p0,p1,side=0,dist=.1):
-    """
+# def trim_sec_ip(sec,p0,p1,side=0,dist=.1):
+#     """
+# trim any closed loop section given 2 points (p0,p1) on the sec
+# dist: points can be approximately with in a defined distance "dist" from the section 
+# example:
+# c1=circle(10)
+# l1=point_vector([0,0],[15,10])
+# l2=rot2d(100,l1)
+# p0,p1=s_int1([l1,l2]+seg(c1))
+# l3=trim_sec_ip(c1,p0,p1)
+# fo(f'''
+# color("blue") p_line3d({c1},.2);
+# color("cyan") p_line3d({l1},.2);
+# color("grey") p_line3d({l2},.2);
+# color("green") points({[p0,p1]},.5);
+# color("magenta") p_line3d({l3},.3);
+# ''')
+#     """
+#     sec=sec+[sec[0]]
+#     c2=lineFromPointToPointOnLine(sec,p0,p1,dist) if side==0 else lineFromPointToPointOnLine(sec,p1,p0,dist)
+#     c2=lineFromPointTillEnd(sec,c2[0],dist)+lineFromStartTillPoint(sec,c2[1],dist) if len(c2)==2 else c2
+#     return remove_duplicates(c2) if side==0 else flip(remove_duplicates(c2))
+
+def trim_sec_ip(sec,p0,p1,dist=1):
+"""
 trim any closed loop section given 2 points (p0,p1) on the sec
 dist: points can be approximately with in a defined distance "dist" from the section 
 example:
@@ -9237,10 +9312,11 @@ color("green") points({[p0,p1]},.5);
 color("magenta") p_line3d({l3},.3);
 ''')
     """
-    sec=sec+[sec[0]]
-    c2=lineFromPointToPointOnLine(sec,p0,p1,dist) if side==0 else lineFromPointToPointOnLine(sec,p1,p0,dist)
-    c2=lineFromPointTillEnd(sec,c2[0],dist)+lineFromStartTillPoint(sec,c2[1],dist) if len(c2)==2 else c2
-    return remove_duplicates(c2) if side==0 else flip(remove_duplicates(c2))
+    p0=npol(sec,p0,dist)
+    p1=npol(sec,p1,dist)
+    sec=lineFromPointTillEnd(sec,p0,dist)+lineFromStartTillPoint(sec,p0,dist)
+    l2=lineFromStartTillPoint(sec,p1)
+    return l2
 
 def homogenise_points(a=[],pitch=1,closed_loop=0):
     """
@@ -13464,7 +13540,7 @@ color("magenta") for(p={[sol1[-1]]}) points(p,0.2);
 %{swp(sol1)}
 ''')
     """
-    a,b=a+[a[0]],b+[b[0]]
+    a,b=a+[polp(seg(a)[-1],.99)],b+[polp(seg(b)[-1],.99)]
     p0,p1=npol(a,l1[0],d),npol(b,l1[-1],d)
     p2,p3=npol(a,l2[0],d),npol(b,l2[-1],d)
     
@@ -13482,7 +13558,7 @@ color("magenta") for(p={[sol1[-1]]}) points(p,0.2);
     sr1=surface_from_4_lines(s1,s2,l1,l2)
     sr2=surface_from_4_lines(s3,s4,cpo(sr1)[-1],l1)
     
-    sol=cpo(cpo(sr1)[1:-1]+cpo(sr2)[1:-1])
+    sol=cpo(cpo(sr1)[:-1]+cpo(sr2)[1:-1])
     return sol
 
 def solid_from_6_lines(a,b,l1,l2,l3,l4,d=1):
@@ -13500,7 +13576,7 @@ fo(f'''
 {swp(sol)}
 ''')
     """
-    a,b=a+[a[0]],b+[b[0]]
+    a,b=a+[polp(seg(a)[-1],.99)],b+[polp(seg(b)[-1],.99)]
     p0,p1=npol(a,l1[0],d),npol(b,l1[-1],d)
     p2,p3=npol(a,l2[0],d),npol(b,l2[-1],d)
     p4,p5=npol(a,l3[0],d),npol(b,l3[-1],d)
@@ -13527,5 +13603,5 @@ fo(f'''
     sr3=surface_from_4_lines(s5,s6,cpo(sr2)[-1],l4)
     sr4=surface_from_4_lines(s7,s8,cpo(sr3)[-1],l1)
     
-    sol=cpo(cpo(sr1)[1:-1]+cpo(sr2)[1:-1]+cpo(sr3)[1:-1]+cpo(sr4)[1:-1])
+    sol=cpo(cpo(sr1)[:-1]+cpo(sr2)[1:-1]+cpo(sr3)[1:-1]+cpo(sr4)[1:-1])
     return sol
