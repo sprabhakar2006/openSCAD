@@ -13605,3 +13605,59 @@ fo(f'''
     
     sol=cpo(cpo(sr1)[:-1]+cpo(sr2)[1:-1]+cpo(sr3)[1:-1]+cpo(sr4)[1:-1])
     return sol
+
+def solid_from_2_sec_multiple_lines(a,b,lines,d=1):
+    """
+function to create complex surfaces with 2 closed sections 'a' and 'b'
+and multiples lines to define the shape of the surface
+example:
+a=cr3dt([[-50,-50,0,3],[100,0,0,3],[0,70,0,3],[0,0,-8,3],[-35,0,0,3],[-5,5,0,2],[-5,-5,0,3],
+         [-10,0,0,3],[-5,5,0,2],[-5,-5,0,3],[-35,0,0,3],[0,0,8,3]],s=10)
+b=cr3dt([[-20,0,4,3],[40,0,0,3],[0,20,0,2],[0,0,-7,2],[-5,0,0,3],[-5,5,0,2],[-5,-5,0,3],
+         [-10,0,0,3],[-5,5,0,2],[-5,-5,0,3],[-5,0,0,3],[0,0,7,2]],s=10)
+l1=flip(cr3dt([[0,0,4],[0,-50,0,3],[0,0,-4]],s=10))
+l2=flip(cr3dt([[20,20,4],[30,0,0,3],[0,0,-4]],s=10))
+l3=flip(point_vector([20,20,-3],[0,0,-5]))
+l4=flip(point_vector([0,20,-3],[0,0,-5]))
+l5=flip(point_vector([-20,20,-3],[0,0,-5]))
+l6=flip(cr3dt([[-20,20,4],[-30,0,0,3],[0,0,-4]],s=10))
+a,b=[equidistant_pathc(p,200) for p in [a,b]]
+l1=equidistant_path(l1,50)
+
+sol=solid_from_2_sec_multiple_lines(a,b,lines=[l1,l2,l3,l4,l5,l6],d=5)
+fo(f'''
+color("blue") for(p={[a,b]}) p_line3dc(p,0.3,1);
+color("magenta") for(p={[l1,l2,l3,l4,l5,l6]}) p_line3d(p,0.3,1);
+{swp_c(sol)}
+''')
+    """
+    n=len(lines)
+    a,b=a+[polp(seg(a)[-1],.99)],b+[polp(seg(b)[-1],.99)]
+    p0,p1=[],[]
+    for i in range(n):
+        p0.append(npol(a,lines[i][0],d))
+        p1.append(npol(b,lines[i][-1],d))
+    a=lineFromPointTillEnd(a,p0[0])+lineFromStartTillPoint(a,p0[0])
+    b=lineFromPointTillEnd(b,p1[0])+lineFromStartTillPoint(b,p1[0])
+    
+    lines1=[]
+    for i in range(n):
+        lines1.append(fit_pline2line(lines[i],[p0[i],p1[i]]))
+    
+    s1,s2=[lineFromStartTillPoint(a,p0[1])],[lineFromStartTillPoint(b,p1[1])]
+    for i in range(1,n-1):
+        s1.append(lineFromPointToPointOnLine(a,p0[i],p0[i+1]))
+        s2.append(lineFromPointToPointOnLine(b,p1[i],p1[i+1]))
+    s1.append(lineFromPointTillEnd(a,p0[-1]))   
+    s2.append(lineFromPointTillEnd(b,p1[-1]))
+    
+    sr1=[surface_from_4_lines(s1[0],s2[0],lines1[0],lines1[1])]
+    for i in range(1,n-1):
+        sr1.append(surface_from_4_lines(s1[i],s2[i],cpo(sr1[i-1])[-1],lines1[i+1]))
+    sr1.append(surface_from_4_lines(s1[-1],s2[-1],cpo(sr1[-1])[-1],lines1[0]))
+    
+    sol=cpo(sr1[0])[:-1]
+    for i in range(1,len(sr1)):
+        sol=sol+cpo(sr1[i])[1:-1]
+    sol=cpo(sol)
+    return sol
