@@ -13661,3 +13661,15 @@ color("magenta") for(p={[l1,l2,l3,l4,l5,l6]}) p_line3d(p,0.3,1);
         sol=sol+cpo(sr1[i])[1:-1]
     sol=cpo(sol)
     return sol
+
+def moveLineOnSurf(surf,line_number,d=1):
+    n=line_number
+    l1=[movePointOnLine(p,p[n],d) for p in cpo(surf)]
+    if d<0:
+        surf.insert(n,l1)
+    elif d>0:
+        surf.insert(n+1,l1)
+    return surf
+
+def removeLineOnSurf(surf,line_number):
+    return surf.remove(surf[line_number])
