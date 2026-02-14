@@ -13236,14 +13236,14 @@ example:
     v_1=array(surf_1).reshape(-1,3)
     return l_(v_1[f_1])
 
-def track_points(line,text_size=1,text_color="blue"):
+def track_points(line,text_size=1,text_color="blue",h=0.1):
     """
     track the point number in a line
     """
     l1=line
     ts=text_size
     tc=text_color
-    return f"""color("{tc}") for(i=[0:{len(l1)}-1]) translate({l1}[i]) linear_extrude(.1) text(str(i),{ts});"""
+    return f"""color("{tc}") for(i=[0:{len(l1)}-1]) translate({l1}[i]) linear_extrude({h}) text(str(i),{ts});"""
 
 def bezier_closed(pl,n=100):
     """
