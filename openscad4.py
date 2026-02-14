@@ -13673,3 +13673,16 @@ def moveLineOnSurf(surf,line_number,d=1):
 
 def removeLineOnSurf(surf,line_number):
     return surf.remove(surf[line_number])
+
+def track_points_surf(surf,text_size=1,text_color="blue",height=0.5,rotation=[0,0,0]):
+    s1=surf
+    rt=rotation
+    ts=text_size
+    tc=text_color
+    h=height
+    return f"""
+s1={s1};
+for(i=[0:len(s1)-1])
+for(j=[0:len(s1[i])-1])
+color("{tc}")translate(s1[i][j]) rotate({rt})linear_extrude({h}) text(str(i,"-",j),{ts});
+    """
