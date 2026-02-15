@@ -13709,7 +13709,7 @@ for(j=[0:len(s1[i])-1])
 color("{tc}")translate(s1[i][j]) rotate({rt})linear_extrude({h}) text(str(i,"-",j),{ts});
     """
 
-def path_offset_3d_rplane(l1,r):
+def path_offset3d_rplane(l1,r):
     """
     offset a path which is not in a plane.
     This is an approximation
