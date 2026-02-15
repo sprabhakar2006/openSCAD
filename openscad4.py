@@ -7988,15 +7988,48 @@ def cso(sol):
     return b
 
 
-def offset_3d_sec(line1,d=1):
+# def offset_3d_sec(line1,d=1):
+#     l1=line1
+#     s1=sec2surface(l1)
+#     s2=surface_offset(s1,1)
+#     l2=surface2sec(s2)[0]
+#     s3=cpo([l1,l2])
+#     s4=surface_offset(s3,d)
+#     s5=cpo(s4)[0]
+#     return s5
+
+def offset_3d_sec(line1,r=1):
     l1=line1
     s1=sec2surface(l1)
     s2=surface_offset(s1,1)
     l2=surface2sec(s2)[0]
     s3=cpo([l1,l2])
-    s4=surface_offset(s3,d)
+    s4=surface_offset(s3,r)
     s5=cpo(s4)[0]
-    return s5
+    a=s5
+    b=seg(a)
+    l3,l4=b[:-1],b[1:]
+    c=closest_points_between_two_lines(b[-1],b[0])
+    c=[c]+[closest_points_between_two_lines(l3[i],l4[i]) for i in range(len(l3))]
+    c=l_(a_(c)[:,0])
+    d=s_int1_3d(seg(c),0.1)
+    n=s_int1_3d_list(seg(c),0.1).tolist()
+    
+    i=0
+    for (x,y) in n:
+        if (y-x)<(len(c)-y+x):
+            c[x+1:y+1] = [d[i]]*(y-x)
+        elif (y-x)>(len(c)-y+x):
+            c[:x+1]=[d[i]]*(x+1)
+        i=i+1
+    dist=[]
+    for i in range(len(c)):
+        p0=npol(l1,c[i],1e7)
+        dist.append(l_len([c[i],p0]))
+    f=arange(len(c))[a_(dist).round(5)>=abs(r)*.97]
+    g=arange(len(c))
+    c=a_(c)[f[abs(g[:,None]-f).argmin(1)]].tolist()
+    return c
 
 
 def remove_points_within_dist_closed(path,line,dist=1):
