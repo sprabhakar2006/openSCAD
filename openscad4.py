@@ -10045,7 +10045,7 @@ def s_int1_3d_list(segments,d=.01):
     b=a_([closest_points_between_two_lines(x,y) for (x,y) in a])
     c=remove_duplicates(b[norm(b[:,1]-b[:,0],axis=1).round(5)<d].reshape(-1,3))
     e=exclude_points(c,remove_duplicates(a_(sec1).reshape(-1,3)))
-    i=[argwhere((b.round(5)==round(p,5)).all(2).any(1)) for p in e]
+    i=[argwhere((b.round(5)==round(p,5)).all(2).any(1))[0] for p in e]
     return comb_list(n)[i].reshape(-1,2)
 
 def sec_start_pos(sec,n=0):
