@@ -11635,10 +11635,23 @@ color("cyan") points({[l_(q)]},.5);
         q=u*a+v*b+w*c
     return l_(q)
 
-def nmv(sol,dir=0):
+# def nmv(sol,dir=0):
+#     """
+#     estimated normal vectors in 3 directions to the bounding_box of points
+#     direction 'dir' can be '0, 1 or 2'
+#     """
+#     sol=c23(sol)
+#     a=a_(sol).reshape(-1,3)
+#     x,y,z=a[:,0],a[:,1],a[:,2]
+#     b=l_([[cov(x,x)[0,1],cov(x,y)[0,1],cov(x,z)[0,1]],
+#        [cov(y,x)[0,1],cov(y,y)[0,1],cov(y,z)[0,1]],
+#        [cov(z,x)[0,1],cov(z,y)[0,1],cov(z,z)[0,1]]])
+#     c,d=eig(b)[0],eig(b)[1]
+#     return uv(d[:,dir])
+
+def nmv(sol):
     """
-    estimated normal vectors in 3 directions to the bounding_box of points
-    direction 'dir' can be '0, 1 or 2'
+    estimated normal vector to a surface
     """
     sol=c23(sol)
     a=a_(sol).reshape(-1,3)
@@ -11647,7 +11660,16 @@ def nmv(sol,dir=0):
        [cov(y,x)[0,1],cov(y,y)[0,1],cov(y,z)[0,1]],
        [cov(z,x)[0,1],cov(z,y)[0,1],cov(z,z)[0,1]]])
     c,d=eig(b)[0],eig(b)[1]
-    return uv(d[:,dir])
+    n1=uv(d[:,0])
+    n2=uv(d[:,1])
+    n3=uv(d[:,2])
+    n=len(a)
+    cp=a_(a).mean(0)
+    b,c,d=a[0]-cp,a[int(n/3)]-cp,a[int(n*2/3)]-cp
+    nx=a_([n1,n2,n3])[a_([sum([norm(cross(b,n1)),norm(cross(c,n1)),norm(cross(d,n1))]),
+sum([norm(cross(b,n2)),norm(cross(c,n2)),norm(cross(d,n2))]),
+sum([norm(cross(b,n3)),norm(cross(c,n3)),norm(cross(d,n3))])]).argmax()]
+    return nx
 
 def AABB(sol):
     """
@@ -13686,3 +13708,37 @@ for(i=[0:len(s1)-1])
 for(j=[0:len(s1[i])-1])
 color("{tc}")translate(s1[i][j]) rotate({rt})linear_extrude({h}) text(str(i,"-",j),{ts});
     """
+
+def path_offset_3d_rplane(l1,r):
+    """
+    offset a path which is not in a plane.
+    This is an approximation
+    """
+    n1=nmv(l1)
+    l2=vector2line(n1,5,a_(l1).mean(0))
+    s1=[l1,translate(n1,l1)]
+    
+    a=surface_offset(s1,r)[0]
+    b=seg(a)
+    l3,l4=b[:-1],b[1:]
+    c=closest_points_between_two_lines(b[-1],b[0])
+    c=[c]+[closest_points_between_two_lines(l3[i],l4[i]) for i in range(len(l3))]
+    c=l_(a_(c)[:,0])
+    d=s_int1_3d(seg(c),abs(r))
+    n=s_int1_3d_list(seg(c),abs(r)).tolist()
+    
+    i=0
+    for (x,y) in n:
+        if (y-x)<(len(c)-y+x):
+            c[x+1:y+1] = [d[i]]*(y-x)
+        elif (y-x)>(len(c)-y+x):
+            c[:x+1]=[d[i]]*(x+1)
+        i=i+1
+    dist=[]
+    for i in range(len(c)):
+        p0=npol(l1,c[i],1e7)
+        dist.append(l_len([c[i],p0]))
+    f=arange(len(c))[a_(dist).round(5)>=abs(r)*.97]
+    g=arange(len(c))
+    c=a_(c)[f[abs(g[:,None]-f).argmin(1)]].tolist()
+    return c
