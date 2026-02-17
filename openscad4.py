@@ -13775,3 +13775,16 @@ def path_offset3d_rplane(l1,r):
     g=arange(len(c))
     c=a_(c)[f[abs(g[:,None]-f).argmin(1)]].tolist()
     return c
+
+def surface_closed_sec_line(a,b,d=1):
+    p0,p1=b[0],b[-1]
+    p0=npol(a,p0,d)
+    p1=npol(a,p1,d)
+    b=fit_pline2line(b,[p0,p1])
+    a1=trim_sec_ip(a,p0,p1)
+    s1=[fit_pline2line(a1,[b[i],b[-i-1]]) for i in range(int(len(b)/2))]
+    a2=trim_sec_ip(a,p1,p0)
+    b=flip(b)
+    s2=[fit_pline2line(a2,[b[i],b[-i-1]]) for i in range(int(len(b)/2))]
+    s3=[ s1[i]+s2[i][1:-1] for i in range(len(s1))]
+    return s3
