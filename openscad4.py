@@ -13788,3 +13788,10 @@ def surface_closed_sec_line(a,b,d=1):
     s2=[fit_pline2line(a2,[b[i],b[-i-1]]) for i in range(int(len(b)/2))]
     s3=[ s1[i]+s2[i][1:-1] for i in range(len(s1))]
     return s3
+
+def closed_loop_st_pnt(loop,pnt,d=1):
+    l1=loop
+    p0=pnt
+    p1=npol(l1,p0,d)
+    l2=lineFromPointTillEnd(l1,p1)[1:]+lineFromStartTillPoint(l1,p1)[:-1]
+    return l2
