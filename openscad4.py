@@ -7216,13 +7216,13 @@ def timeToReachPoint(p0,l1,dist=.1):
         else:
             return []
 
-def movePointOnLine(l1,p0,d):
+def movePointOnLine(l1,p0,d,gap=.1):
     """
     move a point 'p0' on line 'l1' by a distance 'd'
     """
     if p0!=l1[0]:
         t1=d/l_lenv_o(l1)
-        t2=timeToReachPoint(p0,l1)
+        t2=timeToReachPoint(p0,l1,gap)
         t3=t1+t2
         p1=polp(l1,t3)
         return p1
