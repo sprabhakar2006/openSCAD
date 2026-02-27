@@ -11499,97 +11499,133 @@ color("orange") p_line3d({[p0,p1]},.1);
 
     return l_(e)
 
-def closest_points_between_two_lines(l1,l2):
-    """
-finds the closest points between to lines
-example:
-l1=flip([[0,0,0],[10,2,1]])
-l2=[[0,10,15],[5,-7,4]]
-p3,p4=closest_points_between_two_lines(l1,l2)
-fo(f'''
-color("blue") for(p={[l1,l2]}) p_line3d(p,.2);
-color("magenta") points({[p3,p4]},.5);
-color("cyan") p_line3d({[p3,p4]},.2);
-    ''')
-    """
-    def both_minus_or_plus(p1,q1,p2,q2,d1,d2):
-        x1,x2,x3,x4=(p1-p2)@d2/(d2@d2), (q1-p2)@d2/(d2@d2), (p2-p1)@d1/(d1@d1), (q2-p1)@d1/(d1@d1)
-        if 0<=x1<=1:
-            x5=[p1,p2+x1*d2]
-        else:
-            x5=[]
-        if 0<=x2<=1:
-            x6=[q1,p2+x2*d2]
-        else:
-            x6=[]
-        if 0<=x3<=1:
-            x7=[p1+x3*d1,p2]
-        else:
-            x7=[]
-        if 0<=x4<=1:
-            x8=[p1+x4*d1,q2]
-        else:
-            x8=[]
+# def closest_points_between_two_lines(l1,l2):
+#     """
+# finds the closest points between to lines
+# example:
+# l1=flip([[0,0,0],[10,2,1]])
+# l2=[[0,10,15],[5,-7,4]]
+# p3,p4=closest_points_between_two_lines(l1,l2)
+# fo(f'''
+# color("blue") for(p={[l1,l2]}) p_line3d(p,.2);
+# color("magenta") points({[p3,p4]},.5);
+# color("cyan") p_line3d({[p3,p4]},.2);
+#     ''')
+#     """
+#     def both_minus_or_plus(p1,q1,p2,q2,d1,d2):
+#         x1,x2,x3,x4=(p1-p2)@d2/(d2@d2), (q1-p2)@d2/(d2@d2), (p2-p1)@d1/(d1@d1), (q2-p1)@d1/(d1@d1)
+#         if 0<=x1<=1:
+#             x5=[p1,p2+x1*d2]
+#         else:
+#             x5=[]
+#         if 0<=x2<=1:
+#             x6=[q1,p2+x2*d2]
+#         else:
+#             x6=[]
+#         if 0<=x3<=1:
+#             x7=[p1+x3*d1,p2]
+#         else:
+#             x7=[]
+#         if 0<=x4<=1:
+#             x8=[p1+x4*d1,q2]
+#         else:
+#             x8=[]
         
-        x9=a_([1e7 if p==[] else l_len(p) for p in [x5,x6,x7,x8]])
-        if (x9==1e7).all():
-            x10=[]
-        else:
-            x10=x5 if x9.argmin()==0 else x6 if x9.argmin()==1 else x7 if x9.argmin()==0 else x8
+#         x9=a_([1e7 if p==[] else l_len(p) for p in [x5,x6,x7,x8]])
+#         if (x9==1e7).all():
+#             x10=[]
+#         else:
+#             x10=x5 if x9.argmin()==0 else x6 if x9.argmin()==1 else x7 if x9.argmin()==0 else x8
     
-        return l_(x10)
+#         return l_(x10)
     
-    p1,q1=a_(l1)
-    p2,q2=a_(l2)
-    d1=q1-p1
-    d2=q2-p2
-    # deriving 2 equations
-    # d1@((p1+s*d1)-(p2+t*d2))=0
-    # d2@((p1+s*d1)-(p2+t*d2))=0
-    # d1@p1+d1@d1*s-p2@d1-d1@d2*t=0
-    # d2@p1+d2@d1*s-p2@d2-d2@d2*t=0
-    # d1@d1*s-d1@d2*t=(p2-p1)@d1 - eq1
-    # d1@d2*s-d2@d2*t=(p2-p1)@d2 - eq2
-    # solve above 2 equations for s,t using cramer's rule
-    s,t=two_by_two_equation([d1@d1,-d1@d2,(p2-p1)@d1],[d1@d2,-d2@d2,(p2-p1)@d2])
+#     p1,q1=a_(l1)
+#     p2,q2=a_(l2)
+#     d1=q1-p1
+#     d2=q2-p2
+#     # deriving 2 equations
+#     # d1@((p1+s*d1)-(p2+t*d2))=0
+#     # d2@((p1+s*d1)-(p2+t*d2))=0
+#     # d1@p1+d1@d1*s-p2@d1-d1@d2*t=0
+#     # d2@p1+d2@d1*s-p2@d2-d2@d2*t=0
+#     # d1@d1*s-d1@d2*t=(p2-p1)@d1 - eq1
+#     # d1@d2*s-d2@d2*t=(p2-p1)@d2 - eq2
+#     # solve above 2 equations for s,t using cramer's rule
+#     s,t=two_by_two_equation([d1@d1,-d1@d2,(p2-p1)@d1],[d1@d2,-d2@d2,(p2-p1)@d2])
     
-    if (s>1) & ((t>=0)&(t<=1)):
-        p3=l_(q1)
-        p4=l_(p2) if ((q1-p2)@d2)/(d2@d2)<0 else l_(q2) if ((q1-p2)@d2)/(d2@d2)>1 else l_(p2+((q1-p2)@d2)/(d2@d2)*d2)
-    elif (t>1) & (s>=0) & (s<=1):
-        p4=l_(q2)
-        p3=l_(p1) if ((q2-p1)@d1)/(d1@d1)<0 else l_(q1) if ((q2-p1)@d1)/(d1@d1)>1 else l_(p1+((q2-p1)@d1)/(d1@d1)*d1)
-    elif (s<0) & (t>=0) & (t<=1):
-        p3=l_(p1)
-        p4= l_(p2) if ((p1-p2)@d2)/(d2@d2)<0 else l_(q2) if ((p1-p2)@d2)/(d2@d2)>1 else l_(p2+((p1-p2)@d2)/(d2@d2)*d2)
-    elif (t<0) & (s>=0) & (s<=1):
-        p4=l_(p2)
-        p3= l_(p1) if ((p2-p1)@d1)/(d1@d1)<0 else l_(q1) if ((p2-p1)@d1)/(d1@d1)>1 else l_(p1+((p2-p1)@d1)/(d1@d1)*d1)
-    elif (s>1) & (t>1):
-        x1=both_minus_or_plus(p1,q1,p2,q2,d1,d2)
-        if x1==[]:
-            p3=l_(q1)
-            p4=l_(q2)
-        else:
-            p3,p4=x1
-    elif (s<0) & (t<0):
-        x1=both_minus_or_plus(p1,q1,p2,q2,d1,d2)
-        if x1==[]:
-            p3=l_(p1)
-            p4=l_(p2)
-        else:
-            p3,p4=x1
-    elif (s>1) & (t<0):
-        p3=l_(q1)
-        p4=l_(p2)
-    elif (s<0) & (t>1):
-        p3=l_(p1)
-        p4=l_(q2)
-    else:
-        p3=l_(p1+s*d1)
-        p4=l_(p2+t*d2)
+#     if (s>1) & ((t>=0)&(t<=1)):
+#         p3=l_(q1)
+#         p4=l_(p2) if ((q1-p2)@d2)/(d2@d2)<0 else l_(q2) if ((q1-p2)@d2)/(d2@d2)>1 else l_(p2+((q1-p2)@d2)/(d2@d2)*d2)
+#     elif (t>1) & (s>=0) & (s<=1):
+#         p4=l_(q2)
+#         p3=l_(p1) if ((q2-p1)@d1)/(d1@d1)<0 else l_(q1) if ((q2-p1)@d1)/(d1@d1)>1 else l_(p1+((q2-p1)@d1)/(d1@d1)*d1)
+#     elif (s<0) & (t>=0) & (t<=1):
+#         p3=l_(p1)
+#         p4= l_(p2) if ((p1-p2)@d2)/(d2@d2)<0 else l_(q2) if ((p1-p2)@d2)/(d2@d2)>1 else l_(p2+((p1-p2)@d2)/(d2@d2)*d2)
+#     elif (t<0) & (s>=0) & (s<=1):
+#         p4=l_(p2)
+#         p3= l_(p1) if ((p2-p1)@d1)/(d1@d1)<0 else l_(q1) if ((p2-p1)@d1)/(d1@d1)>1 else l_(p1+((p2-p1)@d1)/(d1@d1)*d1)
+#     elif (s>1) & (t>1):
+#         x1=both_minus_or_plus(p1,q1,p2,q2,d1,d2)
+#         if x1==[]:
+#             p3=l_(q1)
+#             p4=l_(q2)
+#         else:
+#             p3,p4=x1
+#     elif (s<0) & (t<0):
+#         x1=both_minus_or_plus(p1,q1,p2,q2,d1,d2)
+#         if x1==[]:
+#             p3=l_(p1)
+#             p4=l_(p2)
+#         else:
+#             p3,p4=x1
+#     elif (s>1) & (t<0):
+#         p3=l_(q1)
+#         p4=l_(p2)
+#     elif (s<0) & (t>1):
+#         p3=l_(p1)
+#         p4=l_(q2)
+#     else:
+#         p3=l_(p1+s*d1)
+#         p4=l_(p2+t*d2)
 
-    return [p3,p4]
+#     return [p3,p4]
+
+def closest_points_between_two_lines(l1,l2):
+    p0,p1,p2,p3=l_(l1)+l_(l2)
+    v1=a_(p1)-a_(p0)
+    v2=a_(p3)-a_(p2)
+    a,b,c,d,e,f=-v1@v1,v1@v1,(a_(p0)-a_(p2))@v1,v1@v2,-v2@v2,(a_(p2)-a_(p0))@v2
+    t1,t2=(c*e-f*b)/(a*e-d*b),(a*f-d*c)/(a*e-d*b)
+    tb=(a_(p2)-a_(p0))@v1/(v1@v1)
+    tc=(a_(p3)-a_(p0))@v1/(v1@v1)
+    td=(a_(p0)-a_(p2))@v2/(v2@v2)
+    te=(a_(p1)-a_(p2))@v2/(v2@v2)
+    la=a_([p0+v1*t1,p2+v2*t2])
+    lb=a_([p0+v1*tb,p2])
+    lc=a_([p0+v1*tc,p3])
+    ld=a_([p0,p2+v2*td])
+    le=a_([p1,p2+v2*te])
+    x1=a_([[p0,p2],[p0,p3],[p1,p2],[p1,p3]])
+    x2=a_([l_len([p0,p2]),l_len([p0,p3]),l_len([p1,p2]),l_len([p1,p3])])
+    lf=x1[x2.argmin()]
+    x3=[]
+    if (0<=t1<=1) & (0<=t2<=1):
+        x3.append(la)
+    if 0<=tb<=1:
+        x3.append(lb)
+    if 0<=tc<=1:
+        x3.append(lc)
+    if 0<=td<=1:
+        x3.append(ld)
+    if 0<=te<=1:
+        x3.append(le)
+    x3.append(lf)
+    
+    x3=a_(x3)
+    x4=a_([ l_len(p) for p in x3])
+    px,py=x3[x4.argmin()].tolist()
+    return [px,py]
 
 def two_by_two_equation(eq1,eq2):
     """
