@@ -13704,7 +13704,7 @@ specified distance 'dist' from line
         return px if l_len([px,p2])<=dist else []
     l1=line
     p0=point
-    x1=[ppol(p0,p,dist) for p in seg(l1)]
+    x1=[ppol(p0,p,dist) for p in seg(l1)[:-1]]
     x1=a_([ p for p in x1 if l_(p)!=[]])
     p2=x1[norm(p0-x1,axis=1).argmin()].tolist()
     return p2
