@@ -7085,15 +7085,33 @@ def interpolate(p0,s=100):
 #         return l2
 #     return remove_duplicates(lfpte(l1,timeToReachPoint(pnt,l1,dist=dist)))
 
-def lineFromPointTillEnd(line,point,dist=0.01):
+# def lineFromPointTillEnd(line,point,dist=0.01):
+#     """
+#     draws line from point 'point' till end of line 'line'
+#     the point with in distance 'dist' will be picked up
+#     deletes the rest of the line
+#     """
+#     n=timeToReachPoint(point,line,dist)
+#     l1=[point]+[p  for p in line if timeToReachPoint(p,line,dist)>n]
+#     return l1
+
+def lineFromPointTillEnd(line,point,dist=0.1):
     """
     draws line from point 'point' till end of line 'line'
     the point with in distance 'dist' will be picked up
     deletes the rest of the line
     """
-    n=timeToReachPoint(point,line,dist)
-    l1=[point]+[p  for p in line if timeToReachPoint(p,line,dist)>n]
-    return l1
+    a,b=line,point
+    p0=npol(a,b,dist)
+    n=timeToReachPoint(p0,a)
+    d1=l_lenv_o(a)*n
+    d2=a_([l_len(p) for p in seg(a)[:-1]]).cumsum()
+    d3=d2[d2<d1]
+    n1=len(d3)
+    l_len(seg(a)[n1]),
+    d=[l_(a[n1]+a_(line_as_vector(seg(a)[n1]))*
+               (d1-(0 if l_(d3)==[] else d3[-1]))/l_len(seg(a)[n1]))]+a[n1+1:]
+    return d
 
 # def lineFromStartTillPoint(l1,pnt,dist=.01):
 #     """
@@ -7114,23 +7132,41 @@ def lineFromPointTillEnd(line,point,dist=0.01):
 #         l2=l1[:n+1]+[p0]
 #     return remove_duplicates(l2)
 
-def lineFromStartTillPoint(line,point,dist=0.01):
+# def lineFromStartTillPoint(line,point,dist=0.01):
+#     """
+#     draws line from start till point 'point'.
+#     the point with in distance 'dist' will be picked up
+#     deletes the rest of the line
+#     """
+#     point=npol(line,point,dist)
+#     n=timeToReachPoint(point,line,dist)
+#     # l1=[ p for p in line if timeToReachPoint(p,line,dist)<n ]+[point]
+#     l1=[]
+#     for p in line:
+#         if timeToReachPoint(p,line,dist)<n:
+#             l1.append(p)
+#         else:
+#             break
+#     l1=l1+[point]
+#     return l1
+
+def lineFromStartTillPoint(line,point,dist=0.1):
     """
     draws line from start till point 'point'.
     the point with in distance 'dist' will be picked up
     deletes the rest of the line
     """
-    point=npol(line,point,dist)
-    n=timeToReachPoint(point,line,dist)
-    # l1=[ p for p in line if timeToReachPoint(p,line,dist)<n ]+[point]
-    l1=[]
-    for p in line:
-        if timeToReachPoint(p,line,dist)<n:
-            l1.append(p)
-        else:
-            break
-    l1=l1+[point]
-    return l1
+    a,b=line,point
+    p0=npol(a,b,dist)
+    n=timeToReachPoint(p0,a)
+    d1=l_lenv_o(a)*n
+    d2=a_([l_len(p) for p in seg(a)[:-1]]).cumsum()
+    d3=d2[d2<d1]
+    n1=len(d3)
+    l_len(seg(a)[n1]),
+    c=a[:n1+1]+[l_(a[n1]+a_(line_as_vector(seg(a)[n1]))*
+               (d1-(0 if l_(d3)==[] else d3[-1]))/l_len(seg(a)[n1]))]
+    return c
 
 def vcost(l1,p0,dist=.2):
     """
@@ -8507,7 +8543,29 @@ color("magenta") points({[p0]},1);
 #     # l4=[l2[-1]]+(exclude_points(l3,l2) if p0!=l1[0] else l3)
 #     return l4
 
-def lineFromPointToPointOnLine(line,point1,point2,dist=0.01):
+# def lineFromPointToPointOnLine(line,point1,point2,dist=0.01):
+#     """
+#     Draw a line from a defined point to another point on a line.
+#     points with in distance 'dist' will be picked up
+#     Rest of the line will be deleted
+#     """
+#     n1=timeToReachPoint(point1,line,dist)
+#     n2=timeToReachPoint(point2,line,dist)
+#     p1= point1 if n1<n2 else point2
+#     p2= point2 if n1<n2 else point1
+#     t1=min([n1,n2])
+#     t2=max([n1,n2])
+#     # l1=[p1]+[ p for p in line if t1<timeToReachPoint(p,line,dist)<t2]+[p2]
+#     l1=[]
+#     for p in line:
+#         if timeToReachPoint(p,line,dist)>t2:
+#             break
+#         elif t1<timeToReachPoint(p,line,dist)<t2:
+#             l1.append(p)
+#     l1=[p1]+l1+[p2]
+#     return l1
+
+def lineFromPointToPointOnLine(line,point1,point2,dist=0.1):
     """
     Draw a line from a defined point to another point on a line.
     points with in distance 'dist' will be picked up
@@ -8517,16 +8575,7 @@ def lineFromPointToPointOnLine(line,point1,point2,dist=0.01):
     n2=timeToReachPoint(point2,line,dist)
     p1= point1 if n1<n2 else point2
     p2= point2 if n1<n2 else point1
-    t1=min([n1,n2])
-    t2=max([n1,n2])
-    # l1=[p1]+[ p for p in line if t1<timeToReachPoint(p,line,dist)<t2]+[p2]
-    l1=[]
-    for p in line:
-        if timeToReachPoint(p,line,dist)>t2:
-            break
-        elif t1<timeToReachPoint(p,line,dist)<t2:
-            l1.append(p)
-    l1=[p1]+l1+[p2]
+    l1=lineFromStartTillPoint(lineFromPointTillEnd(line,p1,dist),p2,dist)
     return l1
 
 def distanceOfPointFromLine(p0,l1):
