@@ -3647,7 +3647,26 @@ for i in range(12):
 
 
 
-def rationalise_path(path):
+# def rationalise_path(path):
+#     """
+# removes all the points which are in straight line
+# example:
+# a=m_points1_o(square(10),10)
+# b=translate([15,0], rationalise_path(a))
+# fo(f'''
+# color("blue") for(p={[a]}) points(p,.5);
+# color("magenta") points({b},.5);
+# ''')
+#     """
+#     a=seg(path)[:-1]
+#     b=[line_as_unit_vector(p) for p in a]
+#     c=[path[0]]
+#     for i in range(1,len(a)):
+#         if norm(a_(b[i])-a_(b[i-1]))>.001:
+#             c.append(path[i])
+#     return c+[path[-1]]
+
+def rationalise_path(l1):
     """
 removes all the points which are in straight line
 example:
@@ -3658,13 +3677,13 @@ color("blue") for(p={[a]}) points(p,.5);
 color("magenta") points({b},.5);
 ''')
     """
-    a=seg(path)[:-1]
-    b=[line_as_unit_vector(p) for p in a]
-    c=[path[0]]
-    for i in range(1,len(a)):
-        if norm(a_(b[i])-a_(b[i-1]))>.001:
-            c.append(path[i])
-    return c+[path[-1]]
+    c=l_(round(lines2unitvectors(seg(remove_duplicates(round(l1,5)))),4))
+    d,e=[c[0]],[0]
+    for i in range(1,len(c)):
+        if c[i]!=d[-1]:
+            d.append(c[i])
+            e.append(i)
+    return l_(a_(remove_duplicates(round(l1,5)))[a_(e)])
 
 def cir_3p_3d(points,s=20):
     """
@@ -13657,12 +13676,38 @@ def sec_limit_points(sec,vector):
     p1=a_(l1).max(axis=0).tolist()
     return [p0,p1]
 
-def npol(l1,p0,dist=0.1):
+# def npol(l1,p0,dist=0.1):
+#     """
+# nearest projection of the point 'p0' on line 'l1', if the point is with in 
+# specified distance 'dist' from line
+#     """
+#     return polp(l1,timeToReachPoint(p0,l1,dist))
+
+def npol(line,point,dist=0.1):
     """
 nearest projection of the point 'p0' on line 'l1', if the point is with in 
 specified distance 'dist' from line
     """
-    return polp(l1,timeToReachPoint(p0,l1,dist))
+    def ppol(point,line,dist):
+        l1=line
+        p0,p1=a_(line)
+        p2=a_(point)
+        v1=p1-p0
+        v2=p2-p0
+        t1=v2@v1/(v1@v1)
+        if t1<0:
+            px=p0
+        elif t1>1:
+            px=p1
+        else:
+            px=p0+v1*t1
+        return px if l_len([px,p2])<=dist else []
+    l1=line
+    p0=point
+    x1=[ppol(p0,p,dist) for p in seg(l1)]
+    x1=a_([ p for p in x1 if l_(p)!=[]])
+    p2=x1[norm(p0-x1,axis=1).argmin()].tolist()
+    return p2
 
 def solid_from_4_lines(a,b,l1,l2,d=1):
     """
