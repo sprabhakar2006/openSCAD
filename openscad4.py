@@ -13929,7 +13929,7 @@ def closed_loop_st_pnt(loop,pnt,d=1):
 def align_fillet_lines(l1,closed_loop=0):
     lx=[l1[0]]
     for p in l1[1:]:
-        lx.append([npol(p,p1,10) for p1 in lx[-1]])
+        lx.append([npol(p,p1,1e7) for p1 in lx[-1]])
     lx=cpo(lx)
     if closed_loop==0:
         return lx
