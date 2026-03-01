@@ -13925,3 +13925,14 @@ def closed_loop_st_pnt(loop,pnt,d=1):
     p1=npol(l1,p0,d)
     l2=lineFromPointTillEnd(l1,p1)[1:]+lineFromStartTillPoint(l1,p1)[:-1]
     return l2
+
+def align_fillet_lines(l1,closed_loop=0):
+    lx=[l1[0]]
+    for p in l1[1:]:
+        lx.append([npol(p,p1,10) for p1 in lx[-1]])
+    lx=cpo(lx)
+    if closed_loop==0:
+        return lx
+    elif closed_loop==1:
+        lx=lx+[lx[0]]
+        return lx
