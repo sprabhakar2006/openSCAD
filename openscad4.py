@@ -3683,7 +3683,11 @@ color("magenta") points({b},.5);
         if c[i]!=d[-1]:
             d.append(c[i])
             e.append(i)
-    return l_(a_(remove_duplicates(round(l1,5)))[a_(e)])
+    f=l_(a_(remove_duplicates(round(l1,5)))[a_(e)])
+    if pol(f[0],[f[-1],f[1]]):
+        return f[1:]
+    else:
+        return f
 
 def cir_3p_3d(points,s=20):
     """
