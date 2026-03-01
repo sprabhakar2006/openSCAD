@@ -11370,7 +11370,7 @@ color("blue") for(p={[sec1,sec2]}) p_line3dc(p,.1);
 {swp_triangles(s1)}
 ''')
     """
-    n1=array(nv(sec))
+    n1=array(nmv(sec)).round(5)
     a1=cross(n1,[0,0,-1])
     t1=r2d(arccos(n1@[0,0,-1]))
     sec1=translate(-array(sec).mean(0),sec)
