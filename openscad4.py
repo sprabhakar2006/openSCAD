@@ -13940,3 +13940,21 @@ def align_fillet_lines(l1,closed_loop=0):
     elif closed_loop==1:
         lx=lx+[lx[0]]
         return lx
+
+def fillet_from_lines(l1,p0,s=[],closed_loop=0):
+    """
+    when intersection lines for fillets are available this function can be used
+    l1: lines of intersection for creating fillets
+    p0: nearest point from where all the lines should start, so as to avoid artifacts
+    s: number of segments in each line, in case, it gives error, without specifying this
+    closed_loop: set to '0' if the fillet is closed loop, else set to '1'.
+    """
+    if s!=[]:
+        if closed_loop==0:
+            l1= correct_lines_orientation([ equidistant_path( rationalise_path(p), s)  for p in l1])
+        elif closed_loop==1:
+            l1= correct_lines_orientation([ equidistant_pathc( rationalise_path(p), s)  for p in l1])
+    elif s==[]:
+        l1= correct_lines_orientation([ rationalise_path(p)  for p in l1])
+    f1=cpo([ closed_loop_st_pnt(p,p0,d=1e7) for p in l1])
+    return f1 if closed_loop==0 else f1+[f1[0]]
