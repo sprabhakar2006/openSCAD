@@ -13960,3 +13960,76 @@ def fillet_from_lines(l1,p0,s=[],closed_loop=0):
         l1= correct_lines_orientation([ rationalise_path(p)  for p in l1])
     f1=cpo([ closed_loop_st_pnt(p,p0,d=1e7) for p in l1])
     return f1 if closed_loop==0 else f1+[f1[0]]
+
+def npos(surface,point,triangulation_type=0):
+    """
+project any point on a surface at a nearest possible location
+example:
+p0=[25,-10,-3]
+p1=npos(a,p0,2)
+fo(f'''
+{swp_c(a)}
+color("magenta") points({[p0,p1]},0.3);
+''')
+    """
+    if triangulation_type==0:  # example: cylinder with top and bottom triangulated
+        tx=a_(triangulate_solid_open(surface))
+    elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
+        tx=a_(triangulate_solid_openx(surface))
+    elif triangulation_type==2: # example: doughnut type
+        tx=a_(triangulate_solid_closed(surface))
+    elif triangulation_type==3: #example: surface without any closed ends
+        tx=a_(triangulate_surface(surface))
+    elif triangulation_type==4: #example: surface from prism2cpo function
+        tx=a_(triangulate_surfacex(surface))
+    p0,p1,p2=a_(tx)[:,0],a_(tx)[:,1],a_(tx)[:,2]
+    p3=a_(point)
+    v1=p1-p0
+    v2=p2-p0
+    n1=cross(v1,v2)
+    n1=n1/norm(n1,axis=1).reshape(-1,1)
+    v3=p3-p0
+    d1=einsum('ij,ij->i',n1,v3)
+    p4=p3-einsum('ij,i->ij',n1,d1)
+    n2=cross(p2-p4,p0-p4)
+    n2=n2/norm(n2,axis=1).reshape(-1,1)
+    n3=cross(p0-p4,p1-p4)
+    n3=n3/norm(n3,axis=1).reshape(-1,1)
+    
+    t1=einsum('ij,ij->i',p1-p0,p4-p0)/einsum('ij,ij->i',p1-p0,p1-p0)
+    t2=einsum('ij,ij->i',p2-p1,p4-p1)/einsum('ij,ij->i',p2-p1,p2-p1)
+    t3=einsum('ij,ij->i',p0-p2,p4-p2)/einsum('ij,ij->i',p0-p2,p0-p2)
+    n21=cross(p4-p0,p1-p0)
+    n31=cross(p4-p1,p2-p1)
+    n41=cross(p4-p2,p0-p2)
+    
+    x10=arange(len(tx))[(einsum('ij,ij->i',n1,n21)>0)&(t1>=0) & (t1<=1)]
+    x11=arange(len(tx))[(einsum('ij,ij->i',n1,n21)>0)&(t1<0)]
+    x12=arange(len(tx))[(einsum('ij,ij->i',n1,n21)>0)&(t1>1)]
+    
+    x20=arange(len(tx))[(einsum('ij,ij->i',n1,n31)>0)&(t2>=0) & (t2<=1)]
+    x21=arange(len(tx))[(einsum('ij,ij->i',n1,n31)>0)&(t2<0)]
+    x22=arange(len(tx))[(einsum('ij,ij->i',n1,n31)>0)&(t2>1)]
+    
+    x30=arange(len(tx))[(einsum('ij,ij->i',n1,n41)>0)&(t3>=0) & (t3<=1)]
+    x31=arange(len(tx))[(einsum('ij,ij->i',n1,n41)>0)&(t3<0)]
+    x32=arange(len(tx))[(einsum('ij,ij->i',n1,n41)>0)&(t3>1)]
+    
+    d2=zeros(len(tx))
+    d2[x10]=(einsum('ij,ij->i',n21,n21)/einsum('ij,ij->i',p1-p0,p1-p0))[x10]
+    d2[x11]=einsum('ij,ij->i',p0-p4,p0-p4)[x11]
+    d2[x12]=einsum('ij,ij->i',p1-p4,p1-p4)[x12]
+    
+    d2[x20]=(einsum('ij,ij->i',n31,n31)/einsum('ij,ij->i',p2-p1,p2-p1))[x20]
+    d2[x21]=einsum('ij,ij->i',p1-p4,p1-p4)[x21]
+    d2[x22]=einsum('ij,ij->i',p2-p4,p2-p4)[x22]
+    
+    d2[x30]=(einsum('ij,ij->i',n41,n41)/einsum('ij,ij->i',p0-p2,p0-p2))[x30]
+    d2[x31]=einsum('ij,ij->i',p2-p4,p2-p4)[x31]
+    d2[x32]=einsum('ij,ij->i',p0-p4,p0-p4)[x32]
+    
+    d1[isnan(d1)]=1e7
+    n=(d1**2+d2**2).argmin()
+    p5=p4[n].tolist()
+    return p5
+    
