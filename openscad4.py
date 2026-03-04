@@ -14032,4 +14032,117 @@ color("magenta") points({[p0,p1]},0.3);
     n=(d1**2+d2**2).argmin()
     p5=p4[n].tolist()
     return p5
+
+def nlos(surface,line,triangulation_type=0):
+    if triangulation_type==0:  # example: cylinder with top and bottom triangulated
+        tx=a_(triangulate_solid_open(surface))
+    elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
+        tx=a_(triangulate_solid_openx(surface))
+    elif triangulation_type==2: # example: doughnut type
+        tx=a_(triangulate_solid_closed(surface))
+    elif triangulation_type==3: #example: surface without any closed ends
+        tx=a_(triangulate_surface(surface))
+    elif triangulation_type==4: #example: surface from prism2cpo function
+        tx=a_(triangulate_surfacex(surface))
+    p0,p1,p2=a_(tx)[:,0],a_(tx)[:,1],a_(tx)[:,2]
+    p3=a_(line)
+    v1=p1-p0
+    v2=p2-p0
+    n1=cross(v1,v2)
+    n1=n1/norm(n1,axis=1).reshape(-1,1)
+    v3=(p3[:,None]-p0[None,:])
+    n1.shape,v3.shape
+    d1=einsum('jk,ijk->ij',n1,v3)
+    p4=p3[:,None]+einsum('jk,ij->ijk',n1,d1)
+    t1=einsum('jk,ijk->ij',p1-p0,p4-p0[None,:])/einsum('ij,ij->i',p1-p0,p1-p0)[None,:]
+    t2=einsum('jk,ijk->ij',p2-p1,p4-p1[None,:])/einsum('ij,ij->i',p2-p1,p2-p1)[None,:]
+    t3=einsum('jk,ijk->ij',p0-p2,p4-p2[None,:])/einsum('ij,ij->i',p0-p2,p0-p2)[None,:]
+    n2=cross((p4-p0[None,:]),a_([p1-p0]*500))
+    n3=cross((p4-p1[None,:]),a_([p2-p1]*500))
+    n4=cross((p4-p2[None,:]),a_([p0-p2]*500))
+    x10=arange(len(p3)*len(p0)).reshape(t1.shape)[a_((einsum('jk,ijk->ij',n1,n2)>0)&(t1>=0)&(t1<=1))]
+    x11=arange(len(p3)*len(p0)).reshape(t1.shape)[a_((einsum('jk,ijk->ij',n1,n2)>0)&(t1<0))]
+    x12=arange(len(p3)*len(p0)).reshape(t1.shape)[a_((einsum('jk,ijk->ij',n1,n2)>0)&(t1>1))]
     
+    x20=arange(len(p3)*len(p0)).reshape(t2.shape)[a_((einsum('jk,ijk->ij',n1,n3)>0)&(t2>=0)&(t2<=1))]
+    x21=arange(len(p3)*len(p0)).reshape(t2.shape)[a_((einsum('jk,ijk->ij',n1,n3)>0)&(t2<0))]
+    x22=arange(len(p3)*len(p0)).reshape(t2.shape)[a_((einsum('jk,ijk->ij',n1,n3)>0)&(t2>1))]
+    
+    x30=arange(len(p3)*len(p0)).reshape(t3.shape)[a_((einsum('jk,ijk->ij',n1,n4)>0)&(t3>=0)&(t3<=1))]
+    x31=arange(len(p3)*len(p0)).reshape(t3.shape)[a_((einsum('jk,ijk->ij',n1,n4)>0)&(t3<0))]
+    x32=arange(len(p3)*len(p0)).reshape(t3.shape)[a_((einsum('jk,ijk->ij',n1,n4)>0)&(t3>1))]
+    
+    d2=zeros(len(p3)*len(p0))
+    d2[x10]=(einsum('ijk,ijk->ij',n2,n2)/einsum('ij,ij->i',p1-p0,p1-p0)[None,:]).reshape(-1)[x10]
+    d2[x11]=einsum('ijk,ijk->ij',p0[None,:]-p4,p0[None,:]-p4).reshape(-1)[x11]
+    d2[x12]=einsum('ijk,ijk->ij',p1[None,:]-p4,p1[None,:]-p4).reshape(-1)[x12]
+    
+    d2[x20]=(einsum('ijk,ijk->ij',n3,n3)/einsum('ij,ij->i',p2-p1,p2-p1)[None,:]).reshape(-1)[x20]
+    d2[x21]=einsum('ijk,ijk->ij',p1[None,:]-p4,p1[None,:]-p4).reshape(-1)[x21]
+    d2[x22]=einsum('ijk,ijk->ij',p2[None,:]-p4,p2[None,:]-p4).reshape(-1)[x22]
+    
+    d2[x30]=(einsum('ijk,ijk->ij',n4,n4)/einsum('ij,ij->i',p0-p2,p0-p2)[None,:]).reshape(-1)[x30]
+    d2[x31]=einsum('ijk,ijk->ij',p2[None,:]-p4,p2[None,:]-p4).reshape(-1)[x31]
+    d2[x32]=einsum('ijk,ijk->ij',p0[None,:]-p4,p0[None,:]-p4).reshape(-1)[x32]
+    
+    d1[isnan(d1)]=1e7
+    d1=d1.reshape(-1)
+    n=(d1**2+d2**2).reshape(len(p3),len(p0)).argmin(axis=1)
+    return l_(a_([p4[i][n[i]] for i in range(len(p4))]))
+
+def ipt(surface,line,triangulation_type=0):
+    if triangulation_type==0:  # example: cylinder with top and bottom triangulated
+        tx=a_(triangulate_solid_open(surface))
+    elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
+        tx=a_(triangulate_solid_openx(surface))
+    elif triangulation_type==2: # example: doughnut type
+        tx=a_(triangulate_solid_closed(surface))
+    elif triangulation_type==3: #example: surface without any closed ends
+        tx=a_(triangulate_surface(surface))
+    elif triangulation_type==4: #example: surface from prism2cpo function
+        tx=a_(triangulate_surfacex(surface))
+    p0,p1,p2=a_(tx)[:,0],a_(tx)[:,1],a_(tx)[:,2]
+    p3=a_(line)
+    v1=p1-p0
+    v2=p2-p0
+    n1=cross(v1,v2)
+    n1=n1/norm(n1,axis=1).reshape(-1,1)
+    v3=(p3[:,None]-p0[None,:])
+    n1.shape,v3.shape
+    d1=einsum('jk,ijk->ij',n1,v3)
+    p4=p3[:,None]+einsum('jk,ij->ijk',n1,d1)
+    t1=einsum('jk,ijk->ij',p1-p0,p4-p0[None,:])/einsum('ij,ij->i',p1-p0,p1-p0)[None,:]
+    t2=einsum('jk,ijk->ij',p2-p1,p4-p1[None,:])/einsum('ij,ij->i',p2-p1,p2-p1)[None,:]
+    t3=einsum('jk,ijk->ij',p0-p2,p4-p2[None,:])/einsum('ij,ij->i',p0-p2,p0-p2)[None,:]
+    n2=cross((p4-p0[None,:]),a_([p1-p0]*500))
+    n3=cross((p4-p1[None,:]),a_([p2-p1]*500))
+    n4=cross((p4-p2[None,:]),a_([p0-p2]*500))
+    x10=arange(len(p3)*len(p0)).reshape(t1.shape)[a_((einsum('jk,ijk->ij',n1,n2)>0)&(t1>=0)&(t1<=1))]
+    x11=arange(len(p3)*len(p0)).reshape(t1.shape)[a_((einsum('jk,ijk->ij',n1,n2)>0)&(t1<0))]
+    x12=arange(len(p3)*len(p0)).reshape(t1.shape)[a_((einsum('jk,ijk->ij',n1,n2)>0)&(t1>1))]
+    
+    x20=arange(len(p3)*len(p0)).reshape(t2.shape)[a_((einsum('jk,ijk->ij',n1,n3)>0)&(t2>=0)&(t2<=1))]
+    x21=arange(len(p3)*len(p0)).reshape(t2.shape)[a_((einsum('jk,ijk->ij',n1,n3)>0)&(t2<0))]
+    x22=arange(len(p3)*len(p0)).reshape(t2.shape)[a_((einsum('jk,ijk->ij',n1,n3)>0)&(t2>1))]
+    
+    x30=arange(len(p3)*len(p0)).reshape(t3.shape)[a_((einsum('jk,ijk->ij',n1,n4)>0)&(t3>=0)&(t3<=1))]
+    x31=arange(len(p3)*len(p0)).reshape(t3.shape)[a_((einsum('jk,ijk->ij',n1,n4)>0)&(t3<0))]
+    x32=arange(len(p3)*len(p0)).reshape(t3.shape)[a_((einsum('jk,ijk->ij',n1,n4)>0)&(t3>1))]
+    
+    d2=zeros(len(p3)*len(p0))
+    d2[x10]=(einsum('ijk,ijk->ij',n2,n2)/einsum('ij,ij->i',p1-p0,p1-p0)[None,:]).reshape(-1)[x10]
+    d2[x11]=einsum('ijk,ijk->ij',p0[None,:]-p4,p0[None,:]-p4).reshape(-1)[x11]
+    d2[x12]=einsum('ijk,ijk->ij',p1[None,:]-p4,p1[None,:]-p4).reshape(-1)[x12]
+    
+    d2[x20]=(einsum('ijk,ijk->ij',n3,n3)/einsum('ij,ij->i',p2-p1,p2-p1)[None,:]).reshape(-1)[x20]
+    d2[x21]=einsum('ijk,ijk->ij',p1[None,:]-p4,p1[None,:]-p4).reshape(-1)[x21]
+    d2[x22]=einsum('ijk,ijk->ij',p2[None,:]-p4,p2[None,:]-p4).reshape(-1)[x22]
+    
+    d2[x30]=(einsum('ijk,ijk->ij',n4,n4)/einsum('ij,ij->i',p0-p2,p0-p2)[None,:]).reshape(-1)[x30]
+    d2[x31]=einsum('ijk,ijk->ij',p2[None,:]-p4,p2[None,:]-p4).reshape(-1)[x31]
+    d2[x32]=einsum('ijk,ijk->ij',p0[None,:]-p4,p0[None,:]-p4).reshape(-1)[x32]
+    
+    d1[isnan(d1)]=1e7
+    d1=d1.reshape(-1)
+    n=(d1**2+d2**2).reshape(len(p3),len(p0)).argmin(axis=1)
+    return l_(tx[n])
