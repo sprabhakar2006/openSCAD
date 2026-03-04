@@ -1,3 +1,5 @@
+import warnings
+warnings.filterwarnings('ignore', category=RuntimeWarning)
 from numpy import *
 from numpy.linalg import *
 import time
