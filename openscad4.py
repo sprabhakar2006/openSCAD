@@ -4087,14 +4087,14 @@ def edges(l,m):
 
 
 
-def i_p_n(l1,s1,d=1,triangulation_type=0):
-    tx=ip_triangles(l1,s1,d,triangulation_type=triangulation_type)
-    p0,p1,p2=a_(tx)[:,0],a_(tx)[:,1],a_(tx)[:,2]
-    v1=p1-p0
-    v2=p2-p0
-    vx=cross(v1,v2)
-    vy=vx/norm(vx,axis=1).reshape(-1,1)
-    return vy
+# def i_p_n(l1,s1,d=1,triangulation_type=0):
+#     tx=ip_triangles(l1,s1,d,triangulation_type=triangulation_type)
+#     p0,p1,p2=a_(tx)[:,0],a_(tx)[:,1],a_(tx)[:,2]
+#     v1=p1-p0
+#     v2=p2-p0
+#     vx=cross(v1,v2)
+#     vy=vx/norm(vx,axis=1).reshape(-1,1)
+#     return vy
 
 
 def arc_2p_3d(n1,p0,p1,r,cw=1,s=20):
@@ -4373,27 +4373,27 @@ match_points_of_a_path_to_reference_path_closed=path2path1_closed
 #     # i_p1=[p[0] for p in i_p1]
 #     return i_p1
 
-def o_3d(l1,s1,r=1,d=1,triangulation_type=0):
-    """
-    l1: line to offset
-    s1: surface or solid on which the line needs to be offset
-    d: is a factor used to pick the points which are around <=1mm away from the surface
-    triangulation_type==0: # example: cylinder with top and bottom triangulated
-    triangulation_type==1: # example: cylinder with top and bottom without triangulation
-    triangulation_type==2: # example: doughnut type
-    triangulation_type==3: #example: surface without any closed ends
-    triangulation_type==4: #example: surface from prism2cpo function
+# def o_3d(l1,s1,r=1,d=1,triangulation_type=0):
+#     """
+#     l1: line to offset
+#     s1: surface or solid on which the line needs to be offset
+#     d: is a factor used to pick the points which are around <=1mm away from the surface
+#     triangulation_type==0: # example: cylinder with top and bottom triangulated
+#     triangulation_type==1: # example: cylinder with top and bottom without triangulation
+#     triangulation_type==2: # example: doughnut type
+#     triangulation_type==3: #example: surface without any closed ends
+#     triangulation_type==4: #example: surface from prism2cpo function
     
-    """
-    l2=i_p_n(l1,s1,d,triangulation_type=triangulation_type)
-    l3=i_p_t_o(l1)
-    l4=a_(cross(l3,l2))
-    l4=l4/norm(l4,axis=1).reshape(-1,1)
-    l5=l_(a_(l1)+l4*r)
-    l6=plos_v_2(s1,l5,l2,triangulation_type=triangulation_type)
-    return l6
+#     """
+#     l2=i_p_n(l1,s1,d,triangulation_type=triangulation_type)
+#     l3=i_p_t_o(l1)
+#     l4=a_(cross(l3,l2))
+#     l4=l4/norm(l4,axis=1).reshape(-1,1)
+#     l5=l_(a_(l1)+l4*r)
+#     l6=plos_v_2(s1,l5,l2,triangulation_type=triangulation_type)
+#     return l6
 
-offset_intersection_line_on_solid=o_3d
+# offset_intersection_line_on_solid=o_3d
 
 # def o_3d_rev(i_p,sol,r,o=0,closed=0,type=0,dist=0,vx=[],edges_closed=1,cg=0):
 #     """
@@ -6192,7 +6192,7 @@ def exclude_numbers(a,b):
     exclude_numbers(a,b) => array([1, 2, 3])
     """
     a,b=array(a),array(b)
-    return a[~(a[:,None]==b[None,:]).any(1)]
+    return a[~isin(a,b)].tolist()
 
 def subset(b,a):
     """
@@ -13961,17 +13961,79 @@ def fillet_from_lines(l1,p0,s=[],closed_loop=0):
     f1=cpo([ closed_loop_st_pnt(p,p0,d=1e7) for p in l1])
     return f1 if closed_loop==0 else f1+[f1[0]]
 
-def npos(surface,point,triangulation_type=0):
-    """
-project any point on a surface at a nearest possible location
-example:
-p0=[25,-10,-3]
-p1=npos(a,p0,2)
-fo(f'''
-{swp_c(a)}
-color("magenta") points({[p0,p1]},0.3);
-''')
-    """
+# def npos(surface,point,triangulation_type=0):
+#     """
+# project any point on a surface at a nearest possible location
+# example:
+# p0=[25,-10,-3]
+# p1=npos(a,p0,2)
+# fo(f'''
+# {swp_c(a)}
+# color("magenta") points({[p0,p1]},0.3);
+# ''')
+#     """
+#     if triangulation_type==0:  # example: cylinder with top and bottom triangulated
+#         tx=a_(triangulate_solid_open(surface))
+#     elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
+#         tx=a_(triangulate_solid_openx(surface))
+#     elif triangulation_type==2: # example: doughnut type
+#         tx=a_(triangulate_solid_closed(surface))
+#     elif triangulation_type==3: #example: surface without any closed ends
+#         tx=a_(triangulate_surface(surface))
+#     elif triangulation_type==4: #example: surface from prism2cpo function
+#         tx=a_(triangulate_surfacex(surface))
+#     p0,p1,p2=a_(tx)[:,0],a_(tx)[:,1],a_(tx)[:,2]
+#     p3=a_(point)
+#     v1=p1-p0
+#     v2=p2-p0
+#     n1=cross(v1,v2)
+#     n1=n1/norm(n1,axis=1).reshape(-1,1)
+#     v3=p3-p0
+#     d1=einsum('ij,ij->i',n1,v3)
+#     p4=p3-einsum('ij,i->ij',n1,d1)
+#     n2=cross(p2-p4,p0-p4)
+#     n2=n2/norm(n2,axis=1).reshape(-1,1)
+#     n3=cross(p0-p4,p1-p4)
+#     n3=n3/norm(n3,axis=1).reshape(-1,1)
+    
+#     t1=einsum('ij,ij->i',p1-p0,p4-p0)/einsum('ij,ij->i',p1-p0,p1-p0)
+#     t2=einsum('ij,ij->i',p2-p1,p4-p1)/einsum('ij,ij->i',p2-p1,p2-p1)
+#     t3=einsum('ij,ij->i',p0-p2,p4-p2)/einsum('ij,ij->i',p0-p2,p0-p2)
+#     n21=cross(p4-p0,p1-p0)
+#     n31=cross(p4-p1,p2-p1)
+#     n41=cross(p4-p2,p0-p2)
+    
+#     x10=arange(len(tx))[(einsum('ij,ij->i',n1,n21)>0)&(t1>=0) & (t1<=1)]
+#     x11=arange(len(tx))[(einsum('ij,ij->i',n1,n21)>0)&(t1<0)]
+#     x12=arange(len(tx))[(einsum('ij,ij->i',n1,n21)>0)&(t1>1)]
+    
+#     x20=arange(len(tx))[(einsum('ij,ij->i',n1,n31)>0)&(t2>=0) & (t2<=1)]
+#     x21=arange(len(tx))[(einsum('ij,ij->i',n1,n31)>0)&(t2<0)]
+#     x22=arange(len(tx))[(einsum('ij,ij->i',n1,n31)>0)&(t2>1)]
+    
+#     x30=arange(len(tx))[(einsum('ij,ij->i',n1,n41)>0)&(t3>=0) & (t3<=1)]
+#     x31=arange(len(tx))[(einsum('ij,ij->i',n1,n41)>0)&(t3<0)]
+#     x32=arange(len(tx))[(einsum('ij,ij->i',n1,n41)>0)&(t3>1)]
+    
+#     d2=zeros(len(tx))
+#     d2[x10]=(einsum('ij,ij->i',n21,n21)/einsum('ij,ij->i',p1-p0,p1-p0))[x10]
+#     d2[x11]=einsum('ij,ij->i',p0-p4,p0-p4)[x11]
+#     d2[x12]=einsum('ij,ij->i',p1-p4,p1-p4)[x12]
+    
+#     d2[x20]=(einsum('ij,ij->i',n31,n31)/einsum('ij,ij->i',p2-p1,p2-p1))[x20]
+#     d2[x21]=einsum('ij,ij->i',p1-p4,p1-p4)[x21]
+#     d2[x22]=einsum('ij,ij->i',p2-p4,p2-p4)[x22]
+    
+#     d2[x30]=(einsum('ij,ij->i',n41,n41)/einsum('ij,ij->i',p0-p2,p0-p2))[x30]
+#     d2[x31]=einsum('ij,ij->i',p2-p4,p2-p4)[x31]
+#     d2[x32]=einsum('ij,ij->i',p0-p4,p0-p4)[x32]
+    
+#     d1[isnan(d1)]=1e7
+#     n=(d1**2+d2**2).argmin()
+#     p5=p4[n].tolist()
+#     return p5
+
+def npos(surface,point,triangulation_type=0): # nearest point projection on surface
     if triangulation_type==0:  # example: cylinder with top and bottom triangulated
         tx=a_(triangulate_solid_open(surface))
     elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
@@ -13982,58 +14044,95 @@ color("magenta") points({[p0,p1]},0.3);
         tx=a_(triangulate_surface(surface))
     elif triangulation_type==4: #example: surface from prism2cpo function
         tx=a_(triangulate_surfacex(surface))
-    p0,p1,p2=a_(tx)[:,0],a_(tx)[:,1],a_(tx)[:,2]
+    p0,p1,p2=tx[:,0],tx[:,1],tx[:,2]
     p3=a_(point)
-    v1=p1-p0
-    v2=p2-p0
-    n1=cross(v1,v2)
+    n1=cross(p1-p0,p2-p0)
     n1=n1/norm(n1,axis=1).reshape(-1,1)
-    v3=p3-p0
-    d1=einsum('ij,ij->i',n1,v3)
+    d1=einsum('ij,ij->i',n1,(p3-p0))
     p4=p3-einsum('ij,i->ij',n1,d1)
-    n2=cross(p2-p4,p0-p4)
-    n2=n2/norm(n2,axis=1).reshape(-1,1)
-    n3=cross(p0-p4,p1-p4)
-    n3=n3/norm(n3,axis=1).reshape(-1,1)
-    
-    t1=einsum('ij,ij->i',p1-p0,p4-p0)/einsum('ij,ij->i',p1-p0,p1-p0)
-    t2=einsum('ij,ij->i',p2-p1,p4-p1)/einsum('ij,ij->i',p2-p1,p2-p1)
-    t3=einsum('ij,ij->i',p0-p2,p4-p2)/einsum('ij,ij->i',p0-p2,p0-p2)
-    n21=cross(p4-p0,p1-p0)
-    n31=cross(p4-p1,p2-p1)
-    n41=cross(p4-p2,p0-p2)
-    
-    x10=arange(len(tx))[(einsum('ij,ij->i',n1,n21)>0)&(t1>=0) & (t1<=1)]
-    x11=arange(len(tx))[(einsum('ij,ij->i',n1,n21)>0)&(t1<0)]
-    x12=arange(len(tx))[(einsum('ij,ij->i',n1,n21)>0)&(t1>1)]
-    
-    x20=arange(len(tx))[(einsum('ij,ij->i',n1,n31)>0)&(t2>=0) & (t2<=1)]
-    x21=arange(len(tx))[(einsum('ij,ij->i',n1,n31)>0)&(t2<0)]
-    x22=arange(len(tx))[(einsum('ij,ij->i',n1,n31)>0)&(t2>1)]
-    
-    x30=arange(len(tx))[(einsum('ij,ij->i',n1,n41)>0)&(t3>=0) & (t3<=1)]
-    x31=arange(len(tx))[(einsum('ij,ij->i',n1,n41)>0)&(t3<0)]
-    x32=arange(len(tx))[(einsum('ij,ij->i',n1,n41)>0)&(t3>1)]
-    
-    d2=zeros(len(tx))
-    d2[x10]=(einsum('ij,ij->i',n21,n21)/einsum('ij,ij->i',p1-p0,p1-p0))[x10]
-    d2[x11]=einsum('ij,ij->i',p0-p4,p0-p4)[x11]
-    d2[x12]=einsum('ij,ij->i',p1-p4,p1-p4)[x12]
-    
-    d2[x20]=(einsum('ij,ij->i',n31,n31)/einsum('ij,ij->i',p2-p1,p2-p1))[x20]
-    d2[x21]=einsum('ij,ij->i',p1-p4,p1-p4)[x21]
-    d2[x22]=einsum('ij,ij->i',p2-p4,p2-p4)[x22]
-    
-    d2[x30]=(einsum('ij,ij->i',n41,n41)/einsum('ij,ij->i',p0-p2,p0-p2))[x30]
-    d2[x31]=einsum('ij,ij->i',p2-p4,p2-p4)[x31]
-    d2[x32]=einsum('ij,ij->i',p0-p4,p0-p4)[x32]
-    
-    d1[isnan(d1)]=1e7
-    n=(d1**2+d2**2).argmin()
-    p5=p4[n].tolist()
-    return p5
+    n2=cross(p0-p4,p1-p4)
+    n3=cross(p1-p4,p2-p4)
+    n4=cross(p2-p4,p0-p4)
+    t1=einsum('ij,ij->i',p4-p0,p1-p0)/einsum('ij,ij->i',p1-p0,p1-p0)
+    t2=einsum('ij,ij->i',p4-p1,p2-p1)/einsum('ij,ij->i',p2-p1,p2-p1)
+    t3=einsum('ij,ij->i',p4-p2,p0-p2)/einsum('ij,ij->i',p0-p2,p0-p2)
+    px=[]
+    dc1=(einsum('ij,ij->i',n1,n2)>0)&(einsum('ij,ij->i',n1,n3)>0)&(einsum('ij,ij->i',n1,n4)>0)
+    px.append(p4[dc1])
+    dc2=(einsum('ij,ij->i',n1,n2)<0)&(t1>=0)&(t1<=1)
+    px.append((p0+einsum('ij,i->ij',p1-p0,t1))[dc2])
+    dc3=(einsum('ij,ij->i',n1,n2)<0)&(t1<0)
+    px.append(p0[dc3])
+    dc4=(einsum('ij,ij->i',n1,n2)<0)&(t1>1)
+    px.append(p1[dc4])
+    dc5=(einsum('ij,ij->i',n1,n3)<0)&(t2>=0)&(t2<=1)
+    px.append( (p1+einsum('ij,i->ij',p2-p1,t2))[dc5] )
+    dc6=(einsum('ij,ij->i',n1,n3)<0)&(t2<0)
+    px.append(p1[dc6])
+    dc7=(einsum('ij,ij->i',n1,n3)<0)&(t2>1)
+    px.append(p2[dc7])
+    dc8=(einsum('ij,ij->i',n1,n4)<0)&(t3>=0)&(t3<=1)
+    px.append( (p2+einsum('ij,i->ij',p0-p2,t3))[dc8] )
+    dc9=(einsum('ij,ij->i',n1,n4)<0)&(t3<0)
+    px.append(p2[dc9])
+    dc10=(einsum('ij,ij->i',n1,n4)<0)&(t3>1)
+    px.append(p0[dc10])
+    px=concatenate(px)
+    py=px[norm(px-p3,axis=1).argmin()].tolist()
+    return py
 
-def nlos(surface,line,triangulation_type=0):
+def nlos(surface,line,triangulation_type=0): # nearest line projection on surface
+    if triangulation_type==0:  # example: cylinder with top and bottom triangulated
+        tx=a_(triangulate_solid_open(surface))
+    elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
+        tx=a_(triangulate_solid_openx(surface))
+    elif triangulation_type==2: # example: doughnut type
+        tx=a_(triangulate_solid_closed(surface))
+    elif triangulation_type==3: #example: surface without any closed ends
+        tx=a_(triangulate_surface(surface))
+    elif triangulation_type==4: #example: surface from prism2cpo function
+        tx=a_(triangulate_surfacex(surface))
+    p0,p1,p2=tx[:,0],tx[:,1],tx[:,2]
+    pz=[]
+    for p in line:
+        p3=a_(p)
+        n1=cross(p1-p0,p2-p0)
+        n1=n1/norm(n1,axis=1).reshape(-1,1)
+        d1=einsum('ij,ij->i',n1,(p3-p0))
+        p4=p3-einsum('ij,i->ij',n1,d1)
+        n2=cross(p0-p4,p1-p4)
+        n3=cross(p1-p4,p2-p4)
+        n4=cross(p2-p4,p0-p4)
+        t1=einsum('ij,ij->i',p4-p0,p1-p0)/einsum('ij,ij->i',p1-p0,p1-p0)
+        t2=einsum('ij,ij->i',p4-p1,p2-p1)/einsum('ij,ij->i',p2-p1,p2-p1)
+        t3=einsum('ij,ij->i',p4-p2,p0-p2)/einsum('ij,ij->i',p0-p2,p0-p2)
+        px=[]
+        dc1=(einsum('ij,ij->i',n1,n2)>0)&(einsum('ij,ij->i',n1,n3)>0)&(einsum('ij,ij->i',n1,n4)>0)
+        px.append(p4[dc1])
+        dc2=(einsum('ij,ij->i',n1,n2)<0)&(t1>=0)&(t1<=1)
+        px.append((p0+einsum('ij,i->ij',p1-p0,t1))[dc2])
+        dc3=(einsum('ij,ij->i',n1,n2)<0)&(t1<0)
+        px.append(p0[dc3])
+        dc4=(einsum('ij,ij->i',n1,n2)<0)&(t1>1)
+        px.append(p1[dc4])
+        dc5=(einsum('ij,ij->i',n1,n3)<0)&(t2>=0)&(t2<=1)
+        px.append( (p1+einsum('ij,i->ij',p2-p1,t2))[dc5] )
+        dc6=(einsum('ij,ij->i',n1,n3)<0)&(t2<0)
+        px.append(p1[dc6])
+        dc7=(einsum('ij,ij->i',n1,n3)<0)&(t2>1)
+        px.append(p2[dc7])
+        dc8=(einsum('ij,ij->i',n1,n4)<0)&(t3>=0)&(t3<=1)
+        px.append( (p2+einsum('ij,i->ij',p0-p2,t3))[dc8] )
+        dc9=(einsum('ij,ij->i',n1,n4)<0)&(t3<0)
+        px.append(p2[dc9])
+        dc10=(einsum('ij,ij->i',n1,n4)<0)&(t3>1)
+        px.append(p0[dc10])
+        px=concatenate(px)
+        py=px[norm(px-p3,axis=1).argmin()].tolist()
+        pz.append(py)
+    return pz
+
+def ipt(surface,line,triangulation_type=0): # intersection point triangles
     if triangulation_type==0:  # example: cylinder with top and bottom triangulated
         tx=a_(triangulate_solid_open(surface))
     elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
@@ -14057,66 +14156,9 @@ def nlos(surface,line,triangulation_type=0):
     t1=einsum('jk,ijk->ij',p1-p0,p4-p0[None,:])/einsum('ij,ij->i',p1-p0,p1-p0)[None,:]
     t2=einsum('jk,ijk->ij',p2-p1,p4-p1[None,:])/einsum('ij,ij->i',p2-p1,p2-p1)[None,:]
     t3=einsum('jk,ijk->ij',p0-p2,p4-p2[None,:])/einsum('ij,ij->i',p0-p2,p0-p2)[None,:]
-    n2=cross((p4-p0[None,:]),a_([p1-p0]*500))
-    n3=cross((p4-p1[None,:]),a_([p2-p1]*500))
-    n4=cross((p4-p2[None,:]),a_([p0-p2]*500))
-    x10=arange(len(p3)*len(p0)).reshape(t1.shape)[a_((einsum('jk,ijk->ij',n1,n2)>0)&(t1>=0)&(t1<=1))]
-    x11=arange(len(p3)*len(p0)).reshape(t1.shape)[a_((einsum('jk,ijk->ij',n1,n2)>0)&(t1<0))]
-    x12=arange(len(p3)*len(p0)).reshape(t1.shape)[a_((einsum('jk,ijk->ij',n1,n2)>0)&(t1>1))]
-    
-    x20=arange(len(p3)*len(p0)).reshape(t2.shape)[a_((einsum('jk,ijk->ij',n1,n3)>0)&(t2>=0)&(t2<=1))]
-    x21=arange(len(p3)*len(p0)).reshape(t2.shape)[a_((einsum('jk,ijk->ij',n1,n3)>0)&(t2<0))]
-    x22=arange(len(p3)*len(p0)).reshape(t2.shape)[a_((einsum('jk,ijk->ij',n1,n3)>0)&(t2>1))]
-    
-    x30=arange(len(p3)*len(p0)).reshape(t3.shape)[a_((einsum('jk,ijk->ij',n1,n4)>0)&(t3>=0)&(t3<=1))]
-    x31=arange(len(p3)*len(p0)).reshape(t3.shape)[a_((einsum('jk,ijk->ij',n1,n4)>0)&(t3<0))]
-    x32=arange(len(p3)*len(p0)).reshape(t3.shape)[a_((einsum('jk,ijk->ij',n1,n4)>0)&(t3>1))]
-    
-    d2=zeros(len(p3)*len(p0))
-    d2[x10]=(einsum('ijk,ijk->ij',n2,n2)/einsum('ij,ij->i',p1-p0,p1-p0)[None,:]).reshape(-1)[x10]
-    d2[x11]=einsum('ijk,ijk->ij',p0[None,:]-p4,p0[None,:]-p4).reshape(-1)[x11]
-    d2[x12]=einsum('ijk,ijk->ij',p1[None,:]-p4,p1[None,:]-p4).reshape(-1)[x12]
-    
-    d2[x20]=(einsum('ijk,ijk->ij',n3,n3)/einsum('ij,ij->i',p2-p1,p2-p1)[None,:]).reshape(-1)[x20]
-    d2[x21]=einsum('ijk,ijk->ij',p1[None,:]-p4,p1[None,:]-p4).reshape(-1)[x21]
-    d2[x22]=einsum('ijk,ijk->ij',p2[None,:]-p4,p2[None,:]-p4).reshape(-1)[x22]
-    
-    d2[x30]=(einsum('ijk,ijk->ij',n4,n4)/einsum('ij,ij->i',p0-p2,p0-p2)[None,:]).reshape(-1)[x30]
-    d2[x31]=einsum('ijk,ijk->ij',p2[None,:]-p4,p2[None,:]-p4).reshape(-1)[x31]
-    d2[x32]=einsum('ijk,ijk->ij',p0[None,:]-p4,p0[None,:]-p4).reshape(-1)[x32]
-    
-    d1[isnan(d1)]=1e7
-    d1=d1.reshape(-1)
-    n=(d1**2+d2**2).reshape(len(p3),len(p0)).argmin(axis=1)
-    return l_(a_([p4[i][n[i]] for i in range(len(p4))]))
-
-def ipt(surface,line,triangulation_type=0):
-    if triangulation_type==0:  # example: cylinder with top and bottom triangulated
-        tx=a_(triangulate_solid_open(surface))
-    elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
-        tx=a_(triangulate_solid_openx(surface))
-    elif triangulation_type==2: # example: doughnut type
-        tx=a_(triangulate_solid_closed(surface))
-    elif triangulation_type==3: #example: surface without any closed ends
-        tx=a_(triangulate_surface(surface))
-    elif triangulation_type==4: #example: surface from prism2cpo function
-        tx=a_(triangulate_surfacex(surface))
-    p0,p1,p2=a_(tx)[:,0],a_(tx)[:,1],a_(tx)[:,2]
-    p3=a_(line)
-    v1=p1-p0
-    v2=p2-p0
-    n1=cross(v1,v2)
-    n1=n1/norm(n1,axis=1).reshape(-1,1)
-    v3=(p3[:,None]-p0[None,:])
-    n1.shape,v3.shape
-    d1=einsum('jk,ijk->ij',n1,v3)
-    p4=p3[:,None]+einsum('jk,ij->ijk',n1,d1)
-    t1=einsum('jk,ijk->ij',p1-p0,p4-p0[None,:])/einsum('ij,ij->i',p1-p0,p1-p0)[None,:]
-    t2=einsum('jk,ijk->ij',p2-p1,p4-p1[None,:])/einsum('ij,ij->i',p2-p1,p2-p1)[None,:]
-    t3=einsum('jk,ijk->ij',p0-p2,p4-p2[None,:])/einsum('ij,ij->i',p0-p2,p0-p2)[None,:]
-    n2=cross((p4-p0[None,:]),a_([p1-p0]*500))
-    n3=cross((p4-p1[None,:]),a_([p2-p1]*500))
-    n4=cross((p4-p2[None,:]),a_([p0-p2]*500))
+    n2=cross((p4-p0[None,:]),a_([p1-p0]*len(p3)))
+    n3=cross((p4-p1[None,:]),a_([p2-p1]*len(p3)))
+    n4=cross((p4-p2[None,:]),a_([p0-p2]*len(p3)))
     x10=arange(len(p3)*len(p0)).reshape(t1.shape)[a_((einsum('jk,ijk->ij',n1,n2)>0)&(t1>=0)&(t1<=1))]
     x11=arange(len(p3)*len(p0)).reshape(t1.shape)[a_((einsum('jk,ijk->ij',n1,n2)>0)&(t1<0))]
     x12=arange(len(p3)*len(p0)).reshape(t1.shape)[a_((einsum('jk,ijk->ij',n1,n2)>0)&(t1>1))]
@@ -14146,3 +14188,139 @@ def ipt(surface,line,triangulation_type=0):
     d1=d1.reshape(-1)
     n=(d1**2+d2**2).reshape(len(p3),len(p0)).argmin(axis=1)
     return l_(tx[n])
+
+def o_3d(l1,s1,r=1,triangulation_type=0):
+    """
+    l1: line to offset
+    s1: surface or solid on which the line needs to be offset
+    triangulation_type==0: # example: cylinder with top and bottom triangulated
+    triangulation_type==1: # example: cylinder with top and bottom without triangulation
+    triangulation_type==2: # example: doughnut type
+    triangulation_type==3: #example: surface without any closed ends
+    triangulation_type==4: #example: surface from prism2cpo function
+    
+    """
+    l2=ipt(s1,l1,triangulation_type)
+    l2=a_([nv(p) for p in l2])*-1
+    l3=i_p_t_o(l1)
+    l4=a_(cross(l3,l2))
+    l4=l4/norm(l4,axis=1).reshape(-1,1)
+    l5=l_(a_(l1)+l4*r)
+    l6=nlos(s1,l5,triangulation_type)
+    # l6=plos_v_2(s1,l5,l2,triangulation_type=triangulation_type)
+    return l6
+
+def i_p_n(l1,s1,triangulation_type=0): # intersection point normals
+    tx=ipt(s1,l1,triangulation_type=triangulation_type)
+    p0,p1,p2=a_(tx)[:,0],a_(tx)[:,1],a_(tx)[:,2]
+    v1=p1-p0
+    v2=p2-p0
+    vx=cross(v1,v2)
+    vy=vx/norm(vx,axis=1).reshape(-1,1)
+    return vy
+
+def o_3d_tri(l1,s1,r=1):
+    """
+    l1: line to offset
+    s1: surface or solid on which the line needs to be offset
+    
+    """
+    l2=i_p_n_tri(l1,s1)
+    l3=i_p_t_o(l1)
+    l4=a_(cross(l3,l2))
+    l4=l4/norm(l4,axis=1).reshape(-1,1)
+    l5=l_(a_(l1)+l4*r)
+    l6=plos_v_2_tri(s1,l5,l2)
+    return l6
+
+def i_p_n_tri(l1,s1):
+    tx=ipt_tri(s1,l1)
+    p0,p1,p2=a_(tx)[:,0],a_(tx)[:,1],a_(tx)[:,2]
+    v1=p1-p0
+    v2=p2-p0
+    vx=cross(v1,v2)
+    vy=vx/norm(vx,axis=1).reshape(-1,1)
+    return vy
+
+def ipt_tri(surface,line):
+    tx=a_(surface)
+    p0,p1,p2=a_(tx)[:,0],a_(tx)[:,1],a_(tx)[:,2]
+    p3=a_(line)
+    v1=p1-p0
+    v2=p2-p0
+    n1=cross(v1,v2)
+    n1=n1/norm(n1,axis=1).reshape(-1,1)
+    v3=(p3[:,None]-p0[None,:])
+    n1.shape,v3.shape
+    d1=einsum('jk,ijk->ij',n1,v3)
+    p4=p3[:,None]+einsum('jk,ij->ijk',n1,d1)
+    t1=einsum('jk,ijk->ij',p1-p0,p4-p0[None,:])/einsum('ij,ij->i',p1-p0,p1-p0)[None,:]
+    t2=einsum('jk,ijk->ij',p2-p1,p4-p1[None,:])/einsum('ij,ij->i',p2-p1,p2-p1)[None,:]
+    t3=einsum('jk,ijk->ij',p0-p2,p4-p2[None,:])/einsum('ij,ij->i',p0-p2,p0-p2)[None,:]
+    n2=cross((p4-p0[None,:]),a_([p1-p0]*len(p3)))
+    n3=cross((p4-p1[None,:]),a_([p2-p1]*len(p3)))
+    n4=cross((p4-p2[None,:]),a_([p0-p2]*len(p3)))
+    x10=arange(len(p3)*len(p0)).reshape(t1.shape)[a_((einsum('jk,ijk->ij',n1,n2)>0)&(t1>=0)&(t1<=1))]
+    x11=arange(len(p3)*len(p0)).reshape(t1.shape)[a_((einsum('jk,ijk->ij',n1,n2)>0)&(t1<0))]
+    x12=arange(len(p3)*len(p0)).reshape(t1.shape)[a_((einsum('jk,ijk->ij',n1,n2)>0)&(t1>1))]
+    
+    x20=arange(len(p3)*len(p0)).reshape(t2.shape)[a_((einsum('jk,ijk->ij',n1,n3)>0)&(t2>=0)&(t2<=1))]
+    x21=arange(len(p3)*len(p0)).reshape(t2.shape)[a_((einsum('jk,ijk->ij',n1,n3)>0)&(t2<0))]
+    x22=arange(len(p3)*len(p0)).reshape(t2.shape)[a_((einsum('jk,ijk->ij',n1,n3)>0)&(t2>1))]
+    
+    x30=arange(len(p3)*len(p0)).reshape(t3.shape)[a_((einsum('jk,ijk->ij',n1,n4)>0)&(t3>=0)&(t3<=1))]
+    x31=arange(len(p3)*len(p0)).reshape(t3.shape)[a_((einsum('jk,ijk->ij',n1,n4)>0)&(t3<0))]
+    x32=arange(len(p3)*len(p0)).reshape(t3.shape)[a_((einsum('jk,ijk->ij',n1,n4)>0)&(t3>1))]
+    
+    d2=zeros(len(p3)*len(p0))
+    d2[x10]=(einsum('ijk,ijk->ij',n2,n2)/einsum('ij,ij->i',p1-p0,p1-p0)[None,:]).reshape(-1)[x10]
+    d2[x11]=einsum('ijk,ijk->ij',p0[None,:]-p4,p0[None,:]-p4).reshape(-1)[x11]
+    d2[x12]=einsum('ijk,ijk->ij',p1[None,:]-p4,p1[None,:]-p4).reshape(-1)[x12]
+    
+    d2[x20]=(einsum('ijk,ijk->ij',n3,n3)/einsum('ij,ij->i',p2-p1,p2-p1)[None,:]).reshape(-1)[x20]
+    d2[x21]=einsum('ijk,ijk->ij',p1[None,:]-p4,p1[None,:]-p4).reshape(-1)[x21]
+    d2[x22]=einsum('ijk,ijk->ij',p2[None,:]-p4,p2[None,:]-p4).reshape(-1)[x22]
+    
+    d2[x30]=(einsum('ijk,ijk->ij',n4,n4)/einsum('ij,ij->i',p0-p2,p0-p2)[None,:]).reshape(-1)[x30]
+    d2[x31]=einsum('ijk,ijk->ij',p2[None,:]-p4,p2[None,:]-p4).reshape(-1)[x31]
+    d2[x32]=einsum('ijk,ijk->ij',p0[None,:]-p4,p0[None,:]-p4).reshape(-1)[x32]
+    
+    d1[isnan(d1)]=1e7
+    d1=d1.reshape(-1)
+    n=(d1**2+d2**2).reshape(len(p3),len(p0)).argmin(axis=1)
+    return l_(tx[n])
+
+def point_near_triangle(triangle,point):
+    p0,p1,p2=a_(triangle)
+    p3=a_(point)
+    n1=cross(p1-p0,p2-p0)
+    n1=n1/norm(n1)
+    d1=n1@(p3-p0)
+    p4=p3-n1*d1
+    n2=cross(p0-p4,p1-p4)
+    n3=cross(p1-p4,p2-p4)
+    n4=cross(p2-p4,p0-p4)
+    t1=((p4-p0)@(p1-p0))/((p1-p0)@(p1-p0))
+    t2=((p4-p1)@(p2-p1))/((p2-p1)@(p2-p1))
+    t3=((p4-p2)@(p0-p2))/((p0-p2)@(p0-p2))
+    if ((n1@n2)>0)&((n1@n3)>0)&((n1@n4)>0):
+        px=p4
+    elif ((n1@n2)<0)&(0<=t1<=1):
+        px=p0+(p1-p0)*t1
+    elif ((n1@n2)<0)&(t1<0):
+        px=p0
+    elif ((n1@n2)<0)&(t1>1):
+        px=p1
+    elif ((n1@n3)<0)&(0<=t2<=1):
+        px=p1+(p2-p1)*t2
+    elif ((n1@n3)<0)&(t2<0):
+        px=p1
+    elif ((n1@n3)<0)&(t2>1):
+        px=p2
+    elif ((n1@n4)<0)&(0<=t3<=1):
+        px=p2+(p0-p2)*t3
+    elif ((n1@n4)<0)&(t3<0):
+        px=p2
+    elif ((n1@n4)<0)&(t3>1):
+        px=p0
+    return l_(px)
