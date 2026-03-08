@@ -14324,3 +14324,7 @@ def point_near_triangle(triangle,point):
     elif ((n1@n4)<0)&(t3>1):
         px=p0
     return l_(px)
+
+def removePointsFromLine(l1,indices=[]):
+    for i in indices:
+        l1.remove(l1[i])
