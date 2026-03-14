@@ -3368,7 +3368,7 @@ theta=acos(vz*v1/norm(v1))
 
 function sec2vector(v1,sec)=
 let(
-    theta_y=ang((v1[0]^2+v1[1]^2)^.5,v1[2]),
+    theta_y=v1[2]==0?0:ang((v1[0]^2+v1[1]^2)^.5,v1[2]),
     theta_z=ang(v1[0],v1[1])
     )
     q_rot(["x90","z-90",str("y",-theta_y),str("z",theta_z)],sec);
@@ -3674,4 +3674,60 @@ f1=[for(i=[0:len(sec)-1]) i]
 )
 polyhedron(v1,[f1],convexity=10);
 
+}
+
+
+module p_line3da(l1,d=0.1,rec=0,$fn=20){
+l1=c2t3(l1);
+l2=seg(l1);
+for(n=[0:len(l1)-2])
+let(
+p0=l2[n][0],
+p1=l2[n][1],
+l=norm(p1-p0),
+a=l*.05,
+p2=[-a/2,0,0],
+p3=[a/2,0,0],
+p4=[0,sqrt(3)/2*a,0],
+cp1=(p2+p3+p4)/3,
+px=[for (i=[p2,p3,p4]) i-cp1],
+py=sec2vector(p1-p0,px)
+){
+
+p_line3d([p0,p1],d,rec);
+hull(){
+for (i=py)translate(p0+i+(p1-p0)*.9)if(rec==0)sphere(d/2);else cube(d,center=true);
+translate(p1) if(rec==0)sphere(d/2,$fn=20); else cube(d,center=true);
+}
+}
+}
+
+//module to draw a polyline in 3d space (loop closed) with an arrow to show the direction of polyline
+// e.g. try following code:
+// sec=circle(20);
+// p_line3dca(sec,.1);
+
+module p_line3dca(l1,d=0.1,rec=0,$fn=20){
+l1=c2t3(l1);
+l2=seg(l1);
+for(n=[0:len(l1)-1])
+let(
+p0=l2[n][0],
+p1=l2[n][1],
+l=norm(p1-p0),
+a=l*.05,
+p2=[-a/2,0,0],
+p3=[a/2,0,0],
+p4=[0,sqrt(3)/2*a,0],
+cp1=(p2+p3+p4)/3,
+px=[for (i=[p2,p3,p4]) i-cp1],
+py=sec2vector(p1-p0,px)
+){
+
+p_line3d([p0,p1],d,rec);
+hull(){
+for (i=py)translate(p0+i+(p1-p0)*.9)if(rec==0)sphere(d/2);else cube(d,center=true);
+translate(p1) if(rec==0)sphere(d/2,$fn=20); else cube(d,center=true);
+}
+}
 }

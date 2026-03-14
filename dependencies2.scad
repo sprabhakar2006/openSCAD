@@ -193,3 +193,160 @@ f1=[for(i=[0:len(sec)-1]) i]
 polyhedron(v1,[f1],convexity=10);
 
 }
+
+// function to convert a list of points in a section to list of line segments
+
+function seg(sec)=[for(i=[0:len(sec)-1])let(
+ i_plus=i<len(sec)-1?i+1:0,
+ p0=sec[i],
+ p1=sec[i_plus],
+ l=[p0,p1]
+ )l];
+
+ // function to convert a 2d section to 3d
+// example:
+// sec=cr([[0,0,.5],[10,0,2],[7,15,1]],10);
+// path=c2t3(arc(20,0,355,s=72));
+//
+// p_line3d(path,.2);
+//
+// prism=p_extrude(sec,path);
+//
+// swp(prism);
+
+function c2t3(sec)=is_undef(sec.x.x)?[sec.x,sec.y,0]:trns([0,0,0],sec);
+
+function tr1(tm,sec)=[for(p=sec)(len(tm)==2?[tm.x,tm.y,0]:tm) + (len(p)==2?[p.x,p.y,0]:p)];
+    
+function tr2(tm,sec)=[for(i=[0:len(sec)-1])[for(p=sec[i])(len(tm)==2?[tm.x,tm.y,0]:tm) + (len(p)==2?[p.x,p.y,0]:p)]];
+    
+//function to translate a group of points "sl" by "m" distance defined in [x,y,z].e.g. try following code:
+//sec=cr([[0,0,.5],[10,0,2],[7,15,1]],5);
+//p_line3dc(trns([2,5,10],sec),.1);
+ 
+function trns(m,sec)=is_num(sec[0][0])?tr1(m,sec):tr2(m,sec);
+
+//function to calculate angle of a 2d vector starting from origin and end point with x and y co-ordinates
+// example:
+// p1=[3,4];p2=[-3,2];
+// v=p2-p1;
+// p_lineo([p1,p2],.2);
+// ang= ang(v.x,v.y);
+// echo(ang);
+
+function ang(x,y)= x>=0&&y>=0?atan(y/x):x<0&&y>=0?180-abs(atan(y/x)):x<0&&y<0?180+abs(atan(y/x)):360-abs(atan(y/x));
+
+function sec2vector(v1,sec)=
+let(
+    theta_y=v1[2]==0?0:ang((v1[0]^2+v1[1]^2)^.5,v1[2]),
+    theta_z=ang(v1[0],v1[1])
+    )
+    q_rot(["x90","z-90",str("y",-theta_y),str("z",theta_z)],sec);
+    
+    
+   // function is input to another function q_rot
+function qmr1(s,r,pl,n=0)= n==len(s)?pl:
+qmr1(s,r,
+    let(
+    v1=s[n]=="x"?[1,0,0]:s[n]=="y"?[0,1,0]:[0,0,1],
+    r1=r[n]==undef?0:r[n])
+    [for(p=pl)q(v1,p,r1)],n+1);
+//function is input to another function q_rot
+function qmr2(s,r,pl,n=0)= n==len(s)?pl:qmr2(s,r,let(
+    v1=s[n]=="x"?[1,0,0]:s[n]=="y"?[0,1,0]:[0,0,1],
+    r1=r[n]==undef?0:r[n])
+[for(i=[0:len(pl)-1])[for(p=pl[i])q(v1,p,r1)]],n+1);
+  
+//function to rotate a group of points "pl" around a series of axis with defined angles e.g q_rot(s=["z20","x40","y80"],pl=[[2,0],[10,2]])=> will rotate the line first around z axis by 20 deg then around x axis by 40 degrees and then around y axis by 80 degrees.  
+function q_rot(s,pl)= is_num(pl[0][0])?qmr1([for(p=s)cvar(p)[0]],[for(p=s)cvar(p)[1]],pl):qmr2([for(p=s)cvar(p)[0]],[for(p=s)cvar(p)[1]],pl);
+
+//module to draw a polyline in 3d space (loop not closed) with an arrow to show the direction of polyline
+// e.g. try following code:
+// sec=circle(20);
+// p_line3da(sec,.1);
+
+module p_line3da(l1,d=0.1,rec=0,$fn=20){
+l1=c2t3(l1);
+l2=seg(l1);
+for(n=[0:len(l1)-2])
+let(
+p0=l2[n][0],
+p1=l2[n][1],
+l=norm(p1-p0),
+a=l*.05,
+p2=[-a/2,0,0],
+p3=[a/2,0,0],
+p4=[0,sqrt(3)/2*a,0],
+cp1=(p2+p3+p4)/3,
+px=[for (i=[p2,p3,p4]) i-cp1],
+py=sec2vector(p1-p0,px)
+){
+
+p_line3d([p0,p1],d,rec);
+hull(){
+for (i=py)translate(p0+i+(p1-p0)*.9)if(rec==0)sphere(d/2);else cube(d,center=true);
+translate(p1) if(rec==0)sphere(d/2,$fn=20); else cube(d,center=true);
+}
+}
+}
+
+//module to draw a polyline in 3d space (loop closed) with an arrow to show the direction of polyline
+// e.g. try following code:
+// sec=circle(20);
+// p_line3dca(sec,.1);
+
+module p_line3dca(l1,d=0.1,rec=0,$fn=20){
+l1=c2t3(l1);
+l2=seg(l1);
+for(n=[0:len(l1)-1])
+let(
+p0=l2[n][0],
+p1=l2[n][1],
+l=norm(p1-p0),
+a=l*.05,
+p2=[-a/2,0,0],
+p3=[a/2,0,0],
+p4=[0,sqrt(3)/2*a,0],
+cp1=(p2+p3+p4)/3,
+px=[for (i=[p2,p3,p4]) i-cp1],
+py=sec2vector(p1-p0,px)
+){
+
+p_line3d([p0,p1],d,rec);
+hull(){
+for (i=py)translate(p0+i+(p1-p0)*.9)if(rec==0)sphere(d/2);else cube(d,center=true);
+translate(p1) if(rec==0)sphere(d/2,$fn=20); else cube(d,center=true);
+}
+}
+}
+
+function cvar(a)=
+let(
+text=a[0],
+b=search("-",a)!=[]&&search(".",a)!=[]?[for(i=[2:len(a)-1])if(a[i]!=".")a[i]]:
+search("-",a)!=[]&&search(".",a)==[]?[for(i=[2:len(a)-1])a[i]]:
+search("-",a)==[]&&search(".",a)!=[]?[for(i=[1:len(a)-1])if(a[i]!=".")a[i]]:[for(i=[1:len(a)-1])a[i]],
+n=[["0"],["1"],["2"],["3"],["4"],["5"],["6"],["7"],["8"],["9"]],
+l=len(b),
+c=[for(i=[0:l-1])each search(b[i],n)],
+d=[for(i=[0:len(c)-1])10^(l-i-1)],
+e=c*d,
+f=search(".",a)!=[]&&search("-",a)!=[]?e*10^-(l-(search(".",a)[0]-2)):search(".",a)!=[]&&search("-",a)==[]?e*10^-(l-(search(".",a)[0]-1)):e,
+g=search("-",a)!=[]?f*-1:f
+)[text,g];
+
+//function to rotate a point around a vector(axis) with angle theta           
+function q(vector=[1,0,0],point=[0,5,0],theta=0)=
+
+let(t=theta,
+v=vector/norm(vector),
+p=[cos(t/2),v*sin(t/2)],
+p1=[p.x,-p.y],
+q=[0,len(point)==2?[point.x,point.y,0]:point],
+pq=[p.x*q.x-p.y*q.y,p.x*q.y+p.y*q.x+cross(p.y,q.y)],
+pqp1=[pq.x*p1.x-pq.y*p1.y,pq.x*p1.y+pq.y*p1.x+cross(pq.y,p1.y)],
+transformation=pqp1.y
+)
+//assert(!is_undef(transformation),str(v,theta,p.y,q.y))
+transformation
+;
