@@ -3677,10 +3677,17 @@ polyhedron(v1,[f1],convexity=10);
 }
 
 
+//module to draw a polyline in 3d space (loop not closed) with an arrow to show the direction of polyline
+// e.g. try following code:
+// sec=circle(20);
+// p_line3da(sec,.1);
+
 module p_line3da(l1,d=0.1,rec=0,$fn=20){
+p_line3d(l1,d,rec);
 l1=c2t3(l1);
 l2=seg(l1);
 for(n=[0:len(l1)-2])
+if (l2[n][0]!=l2[n][1])
 let(
 p0=l2[n][0],
 p1=l2[n][1],
@@ -3694,7 +3701,6 @@ px=[for (i=[p2,p3,p4]) i-cp1],
 py=sec2vector(p1-p0,px)
 ){
 
-p_line3d([p0,p1],d,rec);
 hull(){
 for (i=py)translate(p0+i+(p1-p0)*.9)if(rec==0)sphere(d/2);else cube(d,center=true);
 translate(p1) if(rec==0)sphere(d/2,$fn=20); else cube(d,center=true);
@@ -3708,9 +3714,11 @@ translate(p1) if(rec==0)sphere(d/2,$fn=20); else cube(d,center=true);
 // p_line3dca(sec,.1);
 
 module p_line3dca(l1,d=0.1,rec=0,$fn=20){
+p_line3dc(l1,d,rec);
 l1=c2t3(l1);
 l2=seg(l1);
 for(n=[0:len(l1)-1])
+if (l2[n][0]!=l2[n][1])
 let(
 p0=l2[n][0],
 p1=l2[n][1],
@@ -3724,7 +3732,6 @@ px=[for (i=[p2,p3,p4]) i-cp1],
 py=sec2vector(p1-p0,px)
 ){
 
-p_line3d([p0,p1],d,rec);
 hull(){
 for (i=py)translate(p0+i+(p1-p0)*.9)if(rec==0)sphere(d/2);else cube(d,center=true);
 translate(p1) if(rec==0)sphere(d/2,$fn=20); else cube(d,center=true);
