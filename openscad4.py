@@ -6624,38 +6624,38 @@ def pol(p1,l1):
 
 
 
-def i_p_p(surf_1,i_p_l,d=1.):
-    """
-function to project the intersection point on the cutting lines based on the distance 'r'
-example:
-a=cylinder(r=10,h=50,s=100)
-b=plane([-1,0,1],[100,100],[0,0,15])
-l1=ip_sol2sol(b,a)
-l2=i_p_p(a,l1,5)
-fo(f'''
-%{swp_surf(b)}
-%{swp(a)}
-color("blue") p_line3dc({l1},.3);
-color("magenta") p_line3dc({l2},.3);
-''')
-    """
-    surf_1=cpo(surf_1) if d>0. else(cpo(flip(surf_1)))
-    r_ipl=[]
-    for j in range(len(surf_1)):
-        for i in range(len(i_p_l)):
-            if pol(i_p_l[i],surf_1[j]):
-                a=cKDTree(surf_1[j]).query(i_p_l[i],2)[1]
-                if pol(i_p_l[i],a_(surf_1[j])[a]) and a[0]<a[1]:
-                    p1=equidistant_path([i_p_l[i]]+surf_1[j][a[1]:],pitch=abs(d))[1]
-                elif pol(i_p_l[i],a_(surf_1[j])[a]) and a[1]<a[0]:
-                    p1=equidistant_path([i_p_l[i]]+surf_1[j][a[0]:],pitch=abs(d))[1]
-                elif pol(i_p_l[i],a_(surf_1[j])[[a[0],a[0]+1]]):
-                    p1=equidistant_path([i_p_l[i]]+surf_1[j][a[0]+1:],pitch=abs(d))[1]
-                elif pol(i_p_l[i],a_(surf_1[j])[[a[0],a[0]-1]]):
-                    p1=equidistant_path([i_p_l[i]]+surf_1[j][a[0]:],pitch=abs(d))[1]
+# def i_p_p(surf_1,i_p_l,d=1.):
+#     """
+# function to project the intersection point on the cutting lines based on the distance 'r'
+# example:
+# a=cylinder(r=10,h=50,s=100)
+# b=plane([-1,0,1],[100,100],[0,0,15])
+# l1=ip_sol2sol(b,a)
+# l2=i_p_p(a,l1,5)
+# fo(f'''
+# %{swp_surf(b)}
+# %{swp(a)}
+# color("blue") p_line3dc({l1},.3);
+# color("magenta") p_line3dc({l2},.3);
+# ''')
+#     """
+#     surf_1=cpo(surf_1) if d>0. else(cpo(flip(surf_1)))
+#     r_ipl=[]
+#     for j in range(len(surf_1)):
+#         for i in range(len(i_p_l)):
+#             if pol(i_p_l[i],surf_1[j]):
+#                 a=cKDTree(surf_1[j]).query(i_p_l[i],2)[1]
+#                 if pol(i_p_l[i],a_(surf_1[j])[a]) and a[0]<a[1]:
+#                     p1=equidistant_path([i_p_l[i]]+surf_1[j][a[1]:],pitch=abs(d))[1]
+#                 elif pol(i_p_l[i],a_(surf_1[j])[a]) and a[1]<a[0]:
+#                     p1=equidistant_path([i_p_l[i]]+surf_1[j][a[0]:],pitch=abs(d))[1]
+#                 elif pol(i_p_l[i],a_(surf_1[j])[[a[0],a[0]+1]]):
+#                     p1=equidistant_path([i_p_l[i]]+surf_1[j][a[0]+1:],pitch=abs(d))[1]
+#                 elif pol(i_p_l[i],a_(surf_1[j])[[a[0],a[0]-1]]):
+#                     p1=equidistant_path([i_p_l[i]]+surf_1[j][a[0]:],pitch=abs(d))[1]
         
-                r_ipl.append(p1)
-    return path2path1(i_p_l,r_ipl) if len(r_ipl)!=len(i_p_l) else r_ipl
+#                 r_ipl.append(p1)
+#     return path2path1(i_p_l,r_ipl) if len(r_ipl)!=len(i_p_l) else r_ipl
 
 
 def best_fit_plane(pnts):
@@ -14550,3 +14550,63 @@ def point_near_triangle(triangle,point):
 def removePointsFromLine(l1,indices=[]):
     for i in indices:
         l1.remove(l1[i])
+
+def i_p_p(surf,line,d=1):
+    """
+function to project the intersection point on the cutting lines based on the distance 'd'
+example:
+a=cylinder(r=10,h=50,s=100)
+b=plane([-1,0,1],[100,100],[0,0,15])
+l1=ip_sol2sol(b,a)
+l2=i_p_p(a,l1,5)
+fo(f'''
+%{swp_surf(b)}
+%{swp(a)}
+color("blue") p_line3dc({l1},.3);
+color("magenta") p_line3dc({l2},.3);
+''')
+    """
+    l1=[ fnpol(p,line) for p in cpo(surf)]
+    l2=[ movePointOnLine(cpo(surf)[i],l1[i],d) for i in range(len(l1))]
+    return l2
+
+def fnpol(line,points):
+    """
+find the nearest point from a list of points from a line
+example:
+a=path_extrude_closed(circle(5),c23(circle(20,s=100)))
+b=rot('x90',a)
+lx=two_solids_intersection(a,b)
+l0=equidistant_pathc(contiguous_chains(lx)[0],100)
+l1=[fnpol(p,l0) for p in cpo(b)] # <-- See the application here, check the len(l0),len(l1)
+# len(l1) should be equal to the len(cpo(b))
+l2=i_p_p(b,l1,3)
+l3=o_3d(l1,a,-3,2)
+f1=convert_3lines2fillet(l3,l2,l1,closed_loop=1)
+fo(f'''
+//color("blue") for(p={[l1,l2,l3]}) p_line3d(p,0.1);
+{swp_c(a)}
+{swp_c(b)}
+{swp_c(f1)}
+''')
+    """
+    p0=a_(line)
+    pa=a_(p0[:-1])
+    pb=a_(p0[1:])
+    p1=a_(points)
+    v1=pb-pa
+    v2=p1[None,:]-pa[:,None]
+    v2.shape
+    v12=einsum('ik,ijk->ij',v1,v2)
+    v11=einsum('ij,ij->i',v1,v1)
+    t1=v12/v11[:,None]
+    d1=(t1>=0)&(t1<=1)
+    n=arange(len(pa)*len(p1)).reshape(len(pa),len(p1))[d1]
+    v1s=a_(len(p1)*[v1]).transpose(1,0,2)
+    v1xv2=cross(v1s,v2)
+    v1xv2.shape
+    t2=einsum('ijk,ijk->ij',v1xv2,v1xv2)/einsum('ijk,ijk->ij',v1s,v1s)
+    n1=n[t2[d1].argmin()]
+    n2=int(n1/len(p1))
+    n3=n1%len(p1)
+    return l_(pa[n2]+v1[n2]*t1[n2][n3])
