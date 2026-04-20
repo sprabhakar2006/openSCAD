@@ -14610,3 +14610,24 @@ fo(f'''
     n2=int(n1/len(p1))
     n3=n1%len(p1)
     return l_(pa[n2]+v1[n2]*t1[n2][n3])
+
+def sec3d2vector(vector, sec3d):
+    s1=[[1,0],[0,1],[-1,0],[0,-1]]
+    v1=vector
+    s2=sec2vector(v1,s1)
+    xp,yp,zp=a_([s2[0],s2[1],uv(v1)])
+    s3=sec3d
+    s4=(einsum('i,j->ij',a_(s3)[:,0],xp)+ \
+    einsum('i,j->ij',a_(s3)[:,1],yp)+ \
+    einsum('i,j->ij',a_(s3)[:,2],zp)).tolist()
+    return s4
+
+def sweep_sec3d2path(sec3d,path3d,closed_loop=0):
+    p1=a_(path3d)
+    if closed_loop==0:
+        l1=i_p_t_o(path3d)
+        return [ translate(p1[i],sec3d2vector(l1[i],sec3d)) for i in range(len(l1))]
+    elif closed_loop==1:
+        l1=i_p_t(path3d)
+        s1=[ translate(p1[i],sec3d2vector(l1[i],sec3d)) for i in range(len(l1))]
+        return s1+[s1[0]]
