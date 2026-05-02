@@ -8269,38 +8269,38 @@ def smoothening_by_subdivison(sec,iterations=4,closed=0):
 
 
 
-# def smoothening_by_subdivison_surf(sol,iterations=4,o=[0,0]):
-#     """
-#     smoothen a solid with sub-divison method
-#     iterations: number of iterations
-#     o: if o[0]==0 (means loop remains open for the 1st orientation, and '1' means the loop remains closed for the 1st orientation of the shape) 
-#     similarly o[1]==0 (means loop remains open for the 2nd orientation, and '1' means the loop remains closed for the 2n orientation of the shape)
-#     an example can make this more clear
-#     """
-#     sol=[smoothening_by_subdivison(p,iterations,o[0]) for p in sol]
-#     sol=cpo([smoothening_by_subdivison(p,iterations,o[1]) for p in cpo(sol)])
-#     return sol
-
-def smoothening_by_subdivison_surf(sol,iterations=4,o=[0,0],s=[100,100],r=[.001,.001]):
+def smoothening_by_subdivison_surf(sol,iterations=4,o=[0,0]):
     """
     smoothen a solid with sub-divison method
     iterations: number of iterations
     o: if o[0]==0 (means loop remains open for the 1st orientation, and '1' means the loop remains closed for the 1st orientation of the shape) 
     similarly o[1]==0 (means loop remains open for the 2nd orientation, and '1' means the loop remains closed for the 2n orientation of the shape)
-    s[0] means number of segments in orientation1 and s[1] is the number of segments in orientation2
-    r[0] is the radius in orientation1 and r[1] is the radius in orientation2
     an example can make this more clear
     """
-    if o[0]==0:
-        sol=[equidistant_path(smoothening_by_subdivison(min_d_points(p,r[0]),iterations,o[0]),s[0]) for p in sol]
-    elif o[0]==1:
-        sol=[equidistant_pathc(smoothening_by_subdivison(min_d_points(p,r[0]),iterations,o[0]),s[0]) for p in sol]
-    if o[1]==0:  
-        sol=cpo([equidistant_path(smoothening_by_subdivison(min_d_points(p,r[1]),iterations,o[1]),s[1]) for p in cpo(sol)])
-    elif o[1]==1:
-        sol=cpo([equidistant_pathc(smoothening_by_subdivison(min_d_points(p,r[1]),iterations,o[1]),s[1]) for p in cpo(sol)])
-        
+    sol=[smoothening_by_subdivison(p,iterations,o[0]) for p in sol]
+    sol=cpo([smoothening_by_subdivison(p,iterations,o[1]) for p in cpo(sol)])
     return sol
+
+# def smoothening_by_subdivison_surf(sol,iterations=4,o=[0,0],s=[100,100],r=[.001,.001]):
+#     """
+#     smoothen a solid with sub-divison method
+#     iterations: number of iterations
+#     o: if o[0]==0 (means loop remains open for the 1st orientation, and '1' means the loop remains closed for the 1st orientation of the shape) 
+#     similarly o[1]==0 (means loop remains open for the 2nd orientation, and '1' means the loop remains closed for the 2n orientation of the shape)
+#     s[0] means number of segments in orientation1 and s[1] is the number of segments in orientation2
+#     r[0] is the radius in orientation1 and r[1] is the radius in orientation2
+#     an example can make this more clear
+#     """
+#     if o[0]==0:
+#         sol=[equidistant_path(smoothening_by_subdivison(min_d_points(p,r[0]),iterations,o[0]),s[0]) for p in sol]
+#     elif o[0]==1:
+#         sol=[equidistant_pathc(smoothening_by_subdivison(min_d_points(p,r[0]),iterations,o[0]),s[0]) for p in sol]
+#     if o[1]==0:  
+#         sol=cpo([equidistant_path(smoothening_by_subdivison(min_d_points(p,r[1]),iterations,o[1]),s[1]) for p in cpo(sol)])
+#     elif o[1]==1:
+#         sol=cpo([equidistant_pathc(smoothening_by_subdivison(min_d_points(p,r[1]),iterations,o[1]),s[1]) for p in cpo(sol)])
+        
+#     return sol
 
 def wrap_x(l1,path):
     """
@@ -11824,41 +11824,88 @@ color("orange") p_line3d({[p0,p1]},.1);
 
 #     return [p3,p4]
 
-def closest_points_between_two_lines(l1,l2):
-    p0,p1,p2,p3=l_(l1)+l_(l2)
-    v1=a_(p1)-a_(p0)
-    v2=a_(p3)-a_(p2)
-    a,b,c,d,e,f=-v1@v1,v1@v1,(a_(p0)-a_(p2))@v1,v1@v2,-v2@v2,(a_(p2)-a_(p0))@v2
-    t1,t2=(c*e-f*b)/(a*e-d*b),(a*f-d*c)/(a*e-d*b)
-    tb=(a_(p2)-a_(p0))@v1/(v1@v1)
-    tc=(a_(p3)-a_(p0))@v1/(v1@v1)
-    td=(a_(p0)-a_(p2))@v2/(v2@v2)
-    te=(a_(p1)-a_(p2))@v2/(v2@v2)
-    la=a_([p0+v1*t1,p2+v2*t2])
-    lb=a_([p0+v1*tb,p2])
-    lc=a_([p0+v1*tc,p3])
-    ld=a_([p0,p2+v2*td])
-    le=a_([p1,p2+v2*te])
-    x1=a_([[p0,p2],[p0,p3],[p1,p2],[p1,p3]])
-    x2=a_([l_len([p0,p2]),l_len([p0,p3]),l_len([p1,p2]),l_len([p1,p3])])
-    lf=x1[x2.argmin()]
-    x3=[]
-    if (0<=t1<=1) & (0<=t2<=1):
-        x3.append(la)
-    if 0<=tb<=1:
-        x3.append(lb)
-    if 0<=tc<=1:
-        x3.append(lc)
-    if 0<=td<=1:
-        x3.append(ld)
-    if 0<=te<=1:
-        x3.append(le)
-    x3.append(lf)
+# def closest_points_between_two_lines(l1,l2):
+#     p0,p1,p2,p3=l_(l1)+l_(l2)
+#     v1=a_(p1)-a_(p0)
+#     v2=a_(p3)-a_(p2)
+#     a,b,c,d,e,f=-v1@v1,v1@v1,(a_(p0)-a_(p2))@v1,v1@v2,-v2@v2,(a_(p2)-a_(p0))@v2
+#     t1,t2=(c*e-f*b)/(a*e-d*b),(a*f-d*c)/(a*e-d*b)
+#     tb=(a_(p2)-a_(p0))@v1/(v1@v1)
+#     tc=(a_(p3)-a_(p0))@v1/(v1@v1)
+#     td=(a_(p0)-a_(p2))@v2/(v2@v2)
+#     te=(a_(p1)-a_(p2))@v2/(v2@v2)
+#     la=a_([p0+v1*t1,p2+v2*t2])
+#     lb=a_([p0+v1*tb,p2])
+#     lc=a_([p0+v1*tc,p3])
+#     ld=a_([p0,p2+v2*td])
+#     le=a_([p1,p2+v2*te])
+#     x1=a_([[p0,p2],[p0,p3],[p1,p2],[p1,p3]])
+#     x2=a_([l_len([p0,p2]),l_len([p0,p3]),l_len([p1,p2]),l_len([p1,p3])])
+#     lf=x1[x2.argmin()]
+#     x3=[]
+#     if (0<=t1<=1) & (0<=t2<=1):
+#         x3.append(la)
+#     if 0<=tb<=1:
+#         x3.append(lb)
+#     if 0<=tc<=1:
+#         x3.append(lc)
+#     if 0<=td<=1:
+#         x3.append(ld)
+#     if 0<=te<=1:
+#         x3.append(le)
+#     x3.append(lf)
     
-    x3=a_(x3)
-    x4=a_([ l_len(p) for p in x3])
-    px,py=x3[x4.argmin()].tolist()
-    return [px,py]
+#     x3=a_(x3)
+#     x4=a_([ l_len(p) for p in x3])
+#     px,py=x3[x4.argmin()].tolist()
+#     return [px,py]
+
+def closest_points_between_two_lines(l1,l2):
+    p0,p1=a_(l1)
+    p2,p3=a_(l2)
+    u=p1-p0
+    v=p3-p2
+    t=(-((p2-p0)@u)*(v@v)+((p2-p0)@v)*(v@u))/((u@v)**2-(u@u)*(v@v))
+    s=((u@u)*((p2-p0)@v)-(u@v)*((p2-p0)@u))/((u@v)**2-(u@u)*(v@v))
+   
+    if isnan(t)& isnan(s):
+        imin=a_([norm(p0-p2),norm(p1-p3),norm(p1-p2),norm(p0-p3)]).argmin()
+        p4,p5=l_([[p0,p2],[p1,p3],[p1,p2],[p0,p3]][imin])
+    else:
+        cond=arange(9)[a_([(0<=t<=1)&(0<=s<=1),(0<=t<=1)&(s<0),(0<=t<=1)&(s>1), \
+    (t<0)&(0<=s<=1),(t>1)&(0<=s<=1),(t<0)&(s<0),(t>1)&(s>1), \
+    (t<0)&(s>1),(t>1)&(s<0)])]
+        match cond:
+            case 0:
+                p4=l_(p0+u*t)
+                p5=l_(p2+v*s)
+            case 5|6|7|8:
+                a,b,c,d=a_([npol(l1,p2,1e7),npol(l1,p3,1e7),npol(l2,p0,1e7),npol(l2,p1,1e7)])
+                imin=a_([norm(p0-p2),norm(p1-p3),norm(p1-p2),norm(p0-p3), \
+                        norm(a-p2),norm(b-p3),norm(p0-c),norm(p1-d)]).argmin()
+                p4,p5=l_([[p0,p2],[p1,p3],[p1,p2],[p0,p3],[a,p2],[b,p3],[p0,c],[p1,d]][imin])
+            case 1:
+                p4=p0+u*t
+                p5=a_(npol(l1,p2,1e7))
+                imin=a_([norm(p0-p2),norm(p1-p2),norm(p4-p2),norm(p5-p2)]).argmin()
+                p4,p5=l_([[p0,p2],[p1,p2],[p4,p2],[p5,p2]][imin])
+            case 2:
+                p4=p0+u*t
+                p5=a_(npol(l1,p3,1e7))
+                imin=a_([norm(p0-p3),norm(p1-p3),norm(p4-p3),norm(p5-p3)]).argmin()
+                p4,p5=l_([[p0,p3],[p1,p3],[p4,p3],[p5,p3]][imin])
+            case 3:
+                p5=p2+v*s
+                p4=a_(npol(l2,p0,1e7))
+                imin=a_([norm(p0-p2),norm(p0-p3),norm(p0-p5),norm(p0-p4)]).argmin()
+                p4,p5=l_([[p0,p2],[p0,p3],[p0,p5],[p0,p4]][imin])
+            case 4:
+                p5=p2+v*s
+                p4=a_(npol(l2,p1,1e7))
+                imin=a_([norm(p1-p2),norm(p1-p3),norm(p1-p5),norm(p1-p4)]).argmin()
+                p4,p5=l_([[p1,p2],[p1,p3],[p1,p5],[p1,p4]][imin])
+    
+    return [p4,p5]
 
 def two_by_two_equation(eq1,eq2):
     """
@@ -14631,3 +14678,43 @@ def sweep_sec3d2path(sec3d,path3d,closed_loop=0):
         l1=i_p_t(path3d)
         s1=[ translate(p1[i],sec3d2vector(l1[i],sec3d)) for i in range(len(l1))]
         return s1+[s1[0]]
+
+def o_3dc(l1,s1,r=1,o=0.02,triangulation_type=0):
+    """
+    offset 3d of a line 'l1' on surface 's1' 
+    offset distance is 'r'
+    factor 'o' can vary from 0 - around 1/1000th of the maximum dim of the bounding box of the line 'l1'
+    triangulation_type are defined as:
+    0- cylinder type model with top and bottom triangulated
+    1- cylinder type with top and bottom open
+    2- doughnut type closed end solid
+    3 - surface without any closed ends
+    4 - special surface created from function prism2cpo
+    """
+    a=l1
+    b=s1
+    c=o_3d(a,b,r,3)
+    c1=seg(c)
+    d=s_int1_3d(c1,o)
+    n=s_int1_3d_list(c1,o).tolist()
+    i=0
+    for (x,y) in n:
+        if (y-x)<(len(c)-y+x):
+            c[x+1:y+1] = [d[i]]*(y-x)
+        elif (y-x)>(len(c)-y+x):
+            c[:x+1]=[d[i]]*(x+1)
+        i=i+1
+    
+    dist=[]
+    for i in range(len(c)):
+        try:
+            p0=vcost2(a,c[i])
+            p1=a[cKDTree(a).query(c[i])[1]]
+            dist.append(min([l_len([p0,c[i]]),l_len([p1,c[i]])]))
+        except:
+            p0=a[cKDTree(a).query(c[i])[1]]
+            dist.append(l_len([p0,c[i]]))
+    f=arange(len(c))[a_(dist).round(5)>=abs(r)*.95]
+    g=arange(len(c))
+    c=a_(c)[f[abs(g[:,None]-f).argmin(1)]].tolist()
+    return c
