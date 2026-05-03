@@ -10153,7 +10153,7 @@ def s_int1_3d_list(segments,d=.01):
     c=remove_duplicates(b[norm(b[:,1]-b[:,0],axis=1).round(5)<d].reshape(-1,3))
     e=exclude_points(c,remove_duplicates(a_(sec1).reshape(-1,3)))
     i=[argwhere((b.round(5)==round(p,5)).all(2).any(1))[0] for p in e]
-    return comb_list(n)[i].reshape(-1,2)
+    return unique(comb_list(n)[i].reshape(-1,2),axis=0)
 
 def sec_start_pos(sec,n=0):
     """
@@ -14718,3 +14718,53 @@ def o_3dc(l1,s1,r=1,o=0.02,triangulation_type=0):
     g=arange(len(c))
     c=a_(c)[f[abs(g[:,None]-f).argmin(1)]].tolist()
     return c
+
+def s_int1_3d_with_list(segments,o=.01):
+    c1=segments
+    n=comb_list(len(c1))
+    n=n[abs(n[:,1]-n[:,0])>1]
+    n=n[~(n==a_([n[:,0].min(),n[:,1].max()])).all(1)]
+    d=[ closest_points_between_two_lines(c1[x],c1[y]) for (x,y) in n]
+    ix=a_(d)[norm(a_(d)[:,1]-a_(d)[:,0],axis=1)<o][:,0].tolist()
+    idx=n[norm(a_(d)[:,1]-a_(d)[:,0],axis=1)<o]
+    return [ix, idx]
+
+def unwrinkle_line(line,o=.05):
+    c=line
+    c1=seg(c)
+    x1=s_int1_3d_with_list(c1,o)
+    if x1[0]==[]:
+        return line
+    else:
+        d=x1[0]
+        idx=x1[1]
+        # x2=idx[idx[:,1]==(len(c)-1)]
+        idx1=[]
+        k=0
+        for (x,y) in idx:
+            if (y-x)>x:
+                idx1.append(idx[k])
+            k=k+1
+        idx1=a_(idx1)
+        idx1=idx[idx[:,0]<=idx1[:,0].max()]
+        dec=(idx[:,None]==idx1[None,:]).all(2).any(1)
+        d1=a_(d)[dec]
+        idx2=idx[~dec]
+        d2=a_(d)[~dec]
+        srt=lexsort([-idx2[:,0],idx2[:,1]])
+        idx2=idx2[srt]
+        d2=d2[srt]
+        idx3=concatenate([idx1,idx2])
+        d3=concatenate([d1,d2]).tolist()
+        
+        k=0
+        for (x,y) in idx3:
+            i=y-x
+            j=len(c)-y+x
+            if i<j:
+                c[x+1:y+1]=[d3[k]]*i
+            else:
+                c[y+1:]=[d3[k]]*(len(c)-y-1)
+                c[:x+1]=[d3[k]]*(x+1)
+            k=k+1
+        return c
