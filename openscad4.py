@@ -14693,30 +14693,9 @@ def o_3dc(l1,s1,r=1,o=0.02,triangulation_type=0):
     """
     a=l1
     b=s1
-    c=o_3d(a,b,r,3)
-    c1=seg(c)
-    d=s_int1_3d(c1,o)
-    n=s_int1_3d_list(c1,o).tolist()
-    i=0
-    for (x,y) in n:
-        if (y-x)<(len(c)-y+x):
-            c[x+1:y+1] = [d[i]]*(y-x)
-        elif (y-x)>(len(c)-y+x):
-            c[:x+1]=[d[i]]*(x+1)
-        i=i+1
+    c=o_3d(a,b,r,triangulation_type)
+    c=unwrinkle_line(c,o)
     
-    dist=[]
-    for i in range(len(c)):
-        try:
-            p0=vcost2(a,c[i])
-            p1=a[cKDTree(a).query(c[i])[1]]
-            dist.append(min([l_len([p0,c[i]]),l_len([p1,c[i]])]))
-        except:
-            p0=a[cKDTree(a).query(c[i])[1]]
-            dist.append(l_len([p0,c[i]]))
-    f=arange(len(c))[a_(dist).round(5)>=abs(r)*.95]
-    g=arange(len(c))
-    c=a_(c)[f[abs(g[:,None]-f).argmin(1)]].tolist()
     return c
 
 def s_int1_3d_with_list(segments,o=.01):
