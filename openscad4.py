@@ -721,7 +721,7 @@ function to make a prism with combination of 2d section and 2d path.
 use prism function instead of this
     """
     s1=flip(sec) if cw(sec)==1 else sec
-    return [translate([0,0,y],oset(s1,x)) for (x,y) in path]
+    return [translate([0,0,y],offset_f(s1,x)) for (x,y) in path]
 
 
 
@@ -14745,5 +14745,93 @@ def unwrinkle_line(line,o=.05):
             else:
                 c[y+1:]=[d3[k]]*(len(c)-y-1)
                 c[:x+1]=[d3[k]]*(x+1)
+            k=k+1
+        return c
+
+def offset_f(sec,r):
+    c=intersections(offset_segv(sec,r))
+    c1=seg(c)
+    d=s_int1(c1)
+    if d==[]:
+        return c
+    else:
+        idx=s_int1_list(c1)
+        idx1=[]
+        k=0
+        for (x,y) in idx:
+            if (y-x)>len(c)-y+x:
+                idx1.append(idx[k])
+            k=k+1
+        idx1=a_(idx1)
+        if l_(idx1)==[]:
+            srt=lexsort([-idx[:,0],idx[:,1]])
+            idx3=idx[srt]
+            d3=a_(d)[srt].tolist()
+        else:
+            idx1=idx[idx[:,0]<=idx1[:,0].max()]
+            dec=(idx[:,None]==idx1[None,:]).all(2).any(1)
+            d1=a_(d)[dec]
+            idx2=idx[~dec]
+            d2=a_(d)[~dec]
+            srt=lexsort([-idx2[:,0],idx2[:,1]])
+            idx2=idx2[srt]
+            d2=d2[srt]
+            idx3=concatenate([idx1,idx2])
+            d3=concatenate([d1,d2]).tolist()
+        
+        k=0
+        for (x,y) in idx3:
+            i=y-x
+            j=len(c)-y+x
+            if i<j:
+                c[x+1:y+1]=[d3[k]]*i
+            else:
+                c[y+1:]=[d3[k]]*(len(c)-y-1)
+                c[:x+1]=[d3[k]]*(x+1)
+            k=k+1
+    return c
+
+def vcost2c(path,pnt):
+    """
+    perpendicular projection of a point on a closed loop polyline
+    projection will be returned if it lies within the line
+    """
+    pr=[]
+    pr1=[]
+    for l in seg(path):
+        p0=vcost_within(l,pnt)
+        if p0!=[]:
+            pr.append(l_len([p0,pnt]))
+            pr1.append(p0)
+    return pr1[a_(pr).argmin()]
+
+def f_offset(sec,r):
+    b=intersections(offset_segv(sec,r))
+    c=intersections(offset_segv(sec,r))
+    c1=seg(c)
+    d=s_int1(c1)
+    if d==[]:
+        return c
+    else:
+        idx=s_int1_list(c1)
+        dist=norm(a_([vcost2c(sec,p) for p in d])-d,axis=1)
+        idx=a_(idx)[~(dist<abs(r)*.9)]
+        d=l_(a_(d)[~(dist<abs(r)*.9)])
+        idx1=[]
+        for (x,y) in l_(idx):
+            if (y-x)<len(c)-y+x:
+                idx1.append([x,y])
+            else:
+                idx1.append([y,x])
+          
+        idx2=l_(a_(idx1)[lexsort([-a_(idx1)[:,0],a_(idx1)[:,1]])])
+        d2=l_(a_(d)[cKDTree(idx1).query(idx2)[1]])
+        k=0
+        for (x,y) in idx2:
+            if x<y:
+                c[x+1:y+1]=[d2[k]]*(y-x)
+            else:
+                c[x+1:]=[d2[k]]*(len(c)-x-1)
+                c[:y+1]=[d2[k]]*(y+1)
             k=k+1
         return c
