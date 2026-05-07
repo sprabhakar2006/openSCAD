@@ -721,7 +721,7 @@ function to make a prism with combination of 2d section and 2d path.
 use prism function instead of this
     """
     s1=flip(sec) if cw(sec)==1 else sec
-    return [translate([0,0,y],offset_f(s1,x)) for (x,y) in path]
+    return [translate([0,0,y],f_offset(s1,x)) for (x,y) in path]
 
 
 
@@ -14814,24 +14814,36 @@ def f_offset(sec,r):
         return c
     else:
         idx=s_int1_list(c1)
-        dist=norm(a_([vcost2c(sec,p) for p in d])-d,axis=1)
-        idx=a_(idx)[~(dist<abs(r)*.9)]
-        d=l_(a_(d)[~(dist<abs(r)*.9)])
+        try:
+            dist=norm(a_([vcost2c(sec,p) for p in d])-d,axis=1)
+            idx=a_(idx)[~(dist<abs(r)*.9)]
+            d=l_(a_(d)[~(dist<abs(r)*.9)])
+        except:
+            idx=idx
+            d=d
+        try:
+            idx=a_(idx)[~(norm(a_(d)[:,None]-a_(sec)[None,:],axis=2)<(abs(r)*.98)).any(1)].tolist()
+            d=a_(d)[~(norm(a_(d)[:,None]-a_(sec)[None,:],axis=2)<(abs(r)*.98)).any(1)].tolist()
+        except:
+            idx=idx
+            d=d
         idx1=[]
         for (x,y) in l_(idx):
             if (y-x)<len(c)-y+x:
                 idx1.append([x,y])
             else:
                 idx1.append([y,x])
-          
-        idx2=l_(a_(idx1)[lexsort([-a_(idx1)[:,0],a_(idx1)[:,1]])])
-        d2=l_(a_(d)[cKDTree(idx1).query(idx2)[1]])
-        k=0
-        for (x,y) in idx2:
-            if x<y:
-                c[x+1:y+1]=[d2[k]]*(y-x)
-            else:
-                c[x+1:]=[d2[k]]*(len(c)-x-1)
-                c[:y+1]=[d2[k]]*(y+1)
-            k=k+1
+        try:
+            idx2=l_(a_(idx1)[lexsort([-a_(idx1)[:,0],a_(idx1)[:,1]])])
+            d2=l_(a_(d)[cKDTree(idx1).query(idx2)[1]])
+            k=0
+            for (x,y) in idx2:
+                if x<y:
+                    c[x+1:y+1]=[d2[k]]*(y-x)
+                else:
+                    c[x+1:]=[d2[k]]*(len(c)-x-1)
+                    c[:y+1]=[d2[k]]*(y+1)
+                k=k+1
+        except:
+            c=c
         return c
