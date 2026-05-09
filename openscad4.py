@@ -14862,3 +14862,44 @@ def intersectionso(segments):
     p0.shape,v1.shape,t.shape
     points=(p0+einsum('ij,i->ij',v1,t)).tolist()
     return [segments[0][0]]+points+[segments[-1][1]]
+
+def a_lines_sec(sec,n=10,theta=30,o=.1):
+    """
+angled lines are drawn covering the closed loop secton
+example:
+l1=circle(5)
+l2=a_lines_sec(l1,n=10,theta=45)
+fo(f'''
+color("blue") p_line3d({l1},.3);
+color("magenta") for(p={l2}) p_line3d(p,.1);
+''')
+    """
+    sec=rot2d(-theta,sec)
+    d=rot2d(.001,h_lines(sec,n,o))
+    e=l_(a_(s_int1(d+seg(sec))).round(4))
+    g=seg(lexicographic_sort_yx(e))
+    g=l_(a_(g)[(a_([line_as_unit_vector(p) for p in g]).round(4)[:,0]>0)])
+    m_p=[mid_point(p) for p in g]
+    m_p1=pies1(sec,m_p)
+    la,lb=array(m_p).round(5),array(m_p1).round(5)
+    h=a_(g)[(lb==la[:,None]).all(2).any(1)].tolist()
+    return rot2d(theta,h)
+
+def a_lines(sec,n=10,theta=30,o=.1):
+    """
+angled lines are drawn covering the bounding box of a sketch
+example:
+l1=circle(5)
+l2=a_lines(l1,n=10,theta=30)
+fo(f'''
+color("blue") p_line3d({l1},.3);
+color("magenta") for(p={l2}) p_line3d(p,.1);
+''')
+    """
+    sec=rot2d(-theta,sec)
+    m1=a_(sec).min(axis=0)+[-o,o]
+    m2=a_(sec).max(axis=0)+[o,-o]
+    x0,y0=l_(m1)
+    x1,y1=l_(m2)
+    b=equidistant_path([[[x0,y0],[x1,y0]],[[x0,y1],[x1,y1]]],n-1)
+    return rot2d(theta,b)
