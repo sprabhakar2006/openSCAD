@@ -14847,3 +14847,20 @@ def f_offset(sec,r):
         except:
             c=c
         return c
+
+def intersectionso(segments):
+    """
+    calculates the intersections of adjacent line segments only for an open path
+    """
+    a=segments[:-1]
+    b=segments[1:]
+    a,b=array([a,b])
+    p0,p1,p2,p3=a[:,0],a[:,1],b[:,0],b[:,1]
+    v1,v2=p1-p0,p3-p2+.00001
+    #     v1t1-v2t2=p2-p0
+    im=inv(array([v1,-v2]).transpose(1,0,2).transpose(0,2,1))
+    p=p2-p0  
+    t=einsum('ijk,ik->ij',im,p)[:,0]
+    p0.shape,v1.shape,t.shape
+    points=(p0+einsum('ij,i->ij',v1,t)).tolist()
+    return [segments[0][0]]+points+[segments[-1][1]]
