@@ -14874,7 +14874,7 @@ color("blue") p_line3d({l1},.3);
 color("magenta") for(p={l2}) p_line3d(p,.1);
 ''')
     """
-    sec=rot2d(-theta,sec)
+    sec=rot2d(-theta,remove_duplicates(sec))
     d=rot2d(.001,h_lines(sec,n,o))
     e=l_(a_(s_int1(d+seg(sec))).round(4))
     g=seg(lexicographic_sort_yx(e))
@@ -14896,7 +14896,7 @@ color("blue") p_line3d({l1},.3);
 color("magenta") for(p={l2}) p_line3d(p,.1);
 ''')
     """
-    sec=rot2d(-theta,sec)
+    sec=rot2d(-theta,remove_duplicates(sec))
     m1=a_(sec).min(axis=0)+[-o,o]
     m2=a_(sec).max(axis=0)+[o,-o]
     x0,y0=l_(m1)
@@ -14918,7 +14918,7 @@ def a_lines_sec_3d(sec,n=10,theta=30,o=0.01,nx=[]):
         sec2=c3t2(axis_rot(a1,sec1,t1))
     l1=len(sec2)
     p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
-    pnts=a_lines_sec(sec2,n,theta,o)
+    pnts=a_lines_sec(remove_duplicates(sec2),n,theta,o)
     if (l_(n1)==[0,0,1]) or (l_(n1)==[0,0,-1]):
         pnts=translate(array(sec).mean(0),pnts) if pnts!=[] else []
     else:
@@ -14939,7 +14939,7 @@ def a_lines_3d(sec,n=10,theta=30,o=0.01,nx=[]):
         sec2=c3t2(axis_rot(a1,sec1,t1))
     l1=len(sec2)
     p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
-    pnts=a_lines(sec2,n,theta,o)
+    pnts=a_lines(remove_duplicates(sec2),n,theta,o)
     if (l_(n1)==[0,0,1]) or (l_(n1)==[0,0,-1]):
         pnts=translate(array(sec).mean(0),pnts) if pnts!=[] else []
     else:
