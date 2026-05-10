@@ -14473,8 +14473,10 @@ def o_3d(l1,s1,r=1,triangulation_type=0):
     l4=a_(cross(l3,l2))
     l4=l4/norm(l4,axis=1).reshape(-1,1)
     l5=l_(a_(l1)+l4*r)
-    l6=nlos(s1,l5,triangulation_type)
-    # l6=plos_v_2(s1,l5,l2,triangulation_type=triangulation_type)
+    try:
+        l6=nlos(s1,l5,triangulation_type)
+    except:
+        l6=plos_v_2(s1,l5,l2,triangulation_type=triangulation_type)
     return l6
 
 def i_p_n(l1,s1,triangulation_type=0): # intersection point normals
