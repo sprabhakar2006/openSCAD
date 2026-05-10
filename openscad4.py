@@ -5584,12 +5584,12 @@ def boundary_edges_surf(surf):
     a=array(f_4).tolist()
     return flip(array(a)[:,1]).tolist()
 
-def extend_arc2d(a,theta1=0, theta2=0,s=20):
+def extend_arc2d(a,theta=0,s=20,both=0):
     """
 extend a 2d arc by theta degrees
 example:
 l1=arc_2p([0,0],[10,0],5)
-l2=extend_arc2d(l1,90,20,s=50)
+l2=extend_arc2d(l1,90,s=50)
 fo(f'''
 color("blue",.2) p_line3d({l1},.3);
 color("magenta") p_line3d({l2},.28);
@@ -5601,15 +5601,17 @@ color("magenta") p_line3d({l2},.28);
     v1,v2=p1-cp,p2-cp
     a1,a2=ang(v1[0],v1[1]),ang(v2[0],v2[1])
     a3= (a2+360 if a2<a1 else a2) if cw(a)==-1 else (a2 if a2<a1 else a2-360)
-    return arc(r,a1-theta2,a3+theta1,cp,s) if cw(a)==-1 else arc(r,a1+theta2,a3-theta1,cp,s)
+    if both==0:
+        return arc(r,a1,a3+theta,cp,s) if cw(a)==-1 else arc(r,a1,a3-theta,cp,s)
+    elif both==1:
+        return arc(r,a1-theta,a3+theta,cp,s) if cw(a)==-1 else arc(r,a1+theta,a3-theta,cp,s)
 
-
-def extend_arc3d(a,theta1=0,theta2=0,s=20):
+def extend_arc3d(a,theta=0,s=20,both=0):
     """
 extend a 3d arc by theta degrees
 example:
 l1=arc_2p_3d([0,1,-.3],[0,0,0],[10,0,0],5)
-l2=extend_arc3d(l1,90,20,s=50)
+l2=extend_arc3d(l1,90,s=50)
 fo(f'''
 color("blue",.2) p_line3d({l1},.3);
 color("magenta") p_line3d({l2},.28);
@@ -5627,7 +5629,7 @@ color("magenta") p_line3d({l2},.28);
     
     pa,pb=sec2
     arc1=arc_2p(pa,pb,r,cw(sec3),s=s)
-    arc1=extend_arc2d(arc1,theta1,theta2,s)
+    arc1=extend_arc2d(arc1,theta,s,both)
     arc1=translate(array([p0,p1]).mean(0),axis_rot(a1,arc1,-t1))
     return arc1
 
@@ -11866,7 +11868,7 @@ def closest_points_between_two_lines(l1,l2):
     t=(-((p2-p0)@u)*(v@v)+((p2-p0)@v)*(v@u))/((u@v)**2-(u@u)*(v@v))
     s=((u@u)*((p2-p0)@v)-(u@v)*((p2-p0)@u))/((u@v)**2-(u@u)*(v@v))
    
-    if (isnan(t)& isnan(s))|(isnan(t)& isinf(s))|(isinf(t)& isnan(s))|(isinf(t)& isinf(s)):
+    if isnan(t)& isnan(s):
         imin=a_([norm(p0-p2),norm(p1-p3),norm(p1-p2),norm(p0-p3)]).argmin()
         p4,p5=l_([[p0,p2],[p1,p3],[p1,p2],[p0,p3]][imin])
     else:
@@ -14473,10 +14475,8 @@ def o_3d(l1,s1,r=1,triangulation_type=0):
     l4=a_(cross(l3,l2))
     l4=l4/norm(l4,axis=1).reshape(-1,1)
     l5=l_(a_(l1)+l4*r)
-    try:
-        l6=nlos(s1,l5,triangulation_type)
-    except:
-        l6=plos_v_2(s1,l5,l2,triangulation_type=triangulation_type)
+    l6=nlos(s1,l5,triangulation_type)
+    # l6=plos_v_2(s1,l5,l2,triangulation_type=triangulation_type)
     return l6
 
 def i_p_n(l1,s1,triangulation_type=0): # intersection point normals
@@ -14703,6 +14703,11 @@ def s_int1_3d_with_list(segments,o=.01):
     n=comb_list(len(c1))
     n=n[abs(n[:,1]-n[:,0])>1]
     n=n[~(n==a_([n[:,0].min(),n[:,1].max()])).all(1)]
+    a=a_(c1)[n][:,0].min(1)
+    b=a_(c1)[n][:,0].max(1)
+    c=a_(c1)[n][:,1].min(1)
+    d=a_(c1)[n][:,1].max(1)
+    n=n[~((b<c)|(a>d)).all(1)]
     d=[ closest_points_between_two_lines(c1[x],c1[y]) for (x,y) in n]
     ix=a_(d)[norm(a_(d)[:,1]-a_(d)[:,0],axis=1)<o][:,0].tolist()
     idx=n[norm(a_(d)[:,1]-a_(d)[:,0],axis=1)<o]
@@ -14864,86 +14869,3 @@ def intersectionso(segments):
     p0.shape,v1.shape,t.shape
     points=(p0+einsum('ij,i->ij',v1,t)).tolist()
     return [segments[0][0]]+points+[segments[-1][1]]
-
-def a_lines_sec(sec,n=10,theta=30,o=.1):
-    """
-angled lines are drawn covering the closed loop secton
-example:
-l1=circle(5)
-l2=a_lines_sec(l1,n=10,theta=45)
-fo(f'''
-color("blue") p_line3d({l1},.3);
-color("magenta") for(p={l2}) p_line3d(p,.1);
-''')
-    """
-    sec=rot2d(-theta,remove_duplicates(sec))
-    d=rot2d(.001,h_lines(sec,n,o))
-    e=l_(a_(s_int1(d+seg(sec))).round(4))
-    g=seg(lexicographic_sort_yx(e))
-    g=l_(a_(g)[(a_([line_as_unit_vector(p) for p in g]).round(4)[:,0]>0)])
-    m_p=[mid_point(p) for p in g]
-    m_p1=pies1(sec,m_p)
-    la,lb=array(m_p).round(5),array(m_p1).round(5)
-    h=a_(g)[(lb==la[:,None]).all(2).any(1)].tolist()
-    return rot2d(theta,h)
-
-def a_lines(sec,n=10,theta=30,o=.1):
-    """
-angled lines are drawn covering the bounding box of a sketch
-example:
-l1=circle(5)
-l2=a_lines(l1,n=10,theta=30)
-fo(f'''
-color("blue") p_line3d({l1},.3);
-color("magenta") for(p={l2}) p_line3d(p,.1);
-''')
-    """
-    sec=rot2d(-theta,remove_duplicates(sec))
-    m1=a_(sec).min(axis=0)+[-o,o]
-    m2=a_(sec).max(axis=0)+[o,-o]
-    x0,y0=l_(m1)
-    x1,y1=l_(m2)
-    b=equidistant_path([[[x0,y0],[x1,y0]],[[x0,y1],[x1,y1]]],n-1)
-    return rot2d(theta,b)
-
-def a_lines_sec_3d(sec,n=10,theta=30,o=0.01,nx=[]):
-    """
-    same as a_lines_sec in 2d plane
-    """
-    n1=array(nv(sec)) if l_(nx)==[] else nx
-    a1=cross(n1,[0,0,-1])
-    t1=r2d(arccos(n1@[0,0,-1]))
-    sec1=translate(-array(sec).mean(0),sec)
-    if (l_(n1)==[0,0,1]) or (l_(n1)==[0,0,-1]):
-        sec2=c32(sec1)
-    else:
-        sec2=c3t2(axis_rot(a1,sec1,t1))
-    l1=len(sec2)
-    p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
-    pnts=a_lines_sec(remove_duplicates(sec2),n,theta,o)
-    if (l_(n1)==[0,0,1]) or (l_(n1)==[0,0,-1]):
-        pnts=translate(array(sec).mean(0),pnts) if pnts!=[] else []
-    else:
-        pnts=translate(array(sec).mean(0),axis_rot(a1,pnts,-t1)) if pnts!=[] else []
-    return pnts
-
-def a_lines_3d(sec,n=10,theta=30,o=0.01,nx=[]):
-    """
-    same as a_lines in 2d plane
-    """
-    n1=array(nv(sec)) if l_(nx)==[] else nx
-    a1=cross(n1,[0,0,-1])
-    t1=r2d(arccos(n1@[0,0,-1]))
-    sec1=translate(-array(sec).mean(0),sec)
-    if (l_(n1)==[0,0,1]) or (l_(n1)==[0,0,-1]):
-        sec2=c32(sec1)
-    else:
-        sec2=c3t2(axis_rot(a1,sec1,t1))
-    l1=len(sec2)
-    p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
-    pnts=a_lines(remove_duplicates(sec2),n,theta,o)
-    if (l_(n1)==[0,0,1]) or (l_(n1)==[0,0,-1]):
-        pnts=translate(array(sec).mean(0),pnts) if pnts!=[] else []
-    else:
-        pnts=translate(array(sec).mean(0),axis_rot(a1,pnts,-t1)) if pnts!=[] else []
-    return pnts
