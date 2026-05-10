@@ -11866,7 +11866,7 @@ def closest_points_between_two_lines(l1,l2):
     t=(-((p2-p0)@u)*(v@v)+((p2-p0)@v)*(v@u))/((u@v)**2-(u@u)*(v@v))
     s=((u@u)*((p2-p0)@v)-(u@v)*((p2-p0)@u))/((u@v)**2-(u@u)*(v@v))
    
-    if isnan(t)& isnan(s):
+    if (isnan(t)& isnan(s))|(isnan(t)& isinf(s))|(isinf(t)& isnan(s))|(isinf(t)& isinf(s)):
         imin=a_([norm(p0-p2),norm(p1-p3),norm(p1-p2),norm(p0-p3)]).argmin()
         p4,p5=l_([[p0,p2],[p1,p3],[p1,p2],[p0,p3]][imin])
     else:
