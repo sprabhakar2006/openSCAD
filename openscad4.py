@@ -11868,7 +11868,7 @@ def closest_points_between_two_lines(l1,l2):
     t=(-((p2-p0)@u)*(v@v)+((p2-p0)@v)*(v@u))/((u@v)**2-(u@u)*(v@v))
     s=((u@u)*((p2-p0)@v)-(u@v)*((p2-p0)@u))/((u@v)**2-(u@u)*(v@v))
    
-    if isnan(t)& isnan(s):
+    if (isnan(t)& isnan(s))|(isinf(t)& isnan(s))|(isnan(t)& isinf(s))|(isinf(t)& isinf(s)):
         imin=a_([norm(p0-p2),norm(p1-p3),norm(p1-p2),norm(p0-p3)]).argmin()
         p4,p5=l_([[p0,p2],[p1,p3],[p1,p2],[p0,p3]][imin])
     else:
@@ -14515,6 +14515,69 @@ def nlos(surface,line,triangulation_type=0): # nearest line projection on surfac
 #     n=(d1**2+d2**2).reshape(len(p3),len(p0)).argmin(axis=1)
 #     return l_(tx[n])
 
+# def ipt(surface,line,triangulation_type=0): # intersection points triangles on surface
+#     if triangulation_type==0:  # example: cylinder with top and bottom triangulated
+#         tx=a_(triangulate_solid_open(surface))
+#     elif triangulation_type==1: # example: cylinder with top and bottom without triangulation
+#         tx=a_(triangulate_solid_openx(surface))
+#     elif triangulation_type==2: # example: doughnut type
+#         tx=a_(triangulate_solid_closed(surface))
+#     elif triangulation_type==3: #example: surface without any closed ends
+#         tx=a_(triangulate_surface(surface))
+#     elif triangulation_type==4: #example: surface from prism2cpo function
+#         tx=a_(triangulate_surfacex(surface))
+#     p0,p1,p2=tx[:,0],tx[:,1],tx[:,2]
+#     pz=[]
+#     for p in line:
+#         p3=a_(p)
+#         n1=cross(p1-p0,p2-p0)
+#         n1=n1/norm(n1,axis=1).reshape(-1,1)
+#         d1=einsum('ij,ij->i',n1,(p3-p0))
+#         p4=p3-einsum('ij,i->ij',n1,d1)
+#         n2=cross(p0-p4,p1-p4)
+#         n3=cross(p1-p4,p2-p4)
+#         n4=cross(p2-p4,p0-p4)
+#         t1=einsum('ij,ij->i',p4-p0,p1-p0)/einsum('ij,ij->i',p1-p0,p1-p0)
+#         t2=einsum('ij,ij->i',p4-p1,p2-p1)/einsum('ij,ij->i',p2-p1,p2-p1)
+#         t3=einsum('ij,ij->i',p4-p2,p0-p2)/einsum('ij,ij->i',p0-p2,p0-p2)
+#         px=[]
+#         pxp=[]
+#         dc1=(einsum('ij,ij->i',n1,n2)>0)&(einsum('ij,ij->i',n1,n3)>0)&(einsum('ij,ij->i',n1,n4)>0)
+#         px.append(p4[dc1])
+#         pxp.append(tx[dc1])
+#         dc2=(einsum('ij,ij->i',n1,n2)<0)&(t1>=0)&(t1<=1)
+#         px.append((p0+einsum('ij,i->ij',p1-p0,t1))[dc2])
+#         pxp.append(tx[dc2])
+#         dc3=(einsum('ij,ij->i',n1,n2)<0)&(t1<0)
+#         px.append(p0[dc3])
+#         pxp.append(tx[dc3])
+#         dc4=(einsum('ij,ij->i',n1,n2)<0)&(t1>1)
+#         px.append(p1[dc4])
+#         pxp.append(tx[dc4])
+#         dc5=(einsum('ij,ij->i',n1,n3)<0)&(t2>=0)&(t2<=1)
+#         px.append( (p1+einsum('ij,i->ij',p2-p1,t2))[dc5] )
+#         pxp.append(tx[dc5])
+#         dc6=(einsum('ij,ij->i',n1,n3)<0)&(t2<0)
+#         px.append(p1[dc6])
+#         pxp.append(tx[dc6])
+#         dc7=(einsum('ij,ij->i',n1,n3)<0)&(t2>1)
+#         px.append(p2[dc7])
+#         pxp.append(tx[dc7])
+#         dc8=(einsum('ij,ij->i',n1,n4)<0)&(t3>=0)&(t3<=1)
+#         px.append( (p2+einsum('ij,i->ij',p0-p2,t3))[dc8] )
+#         pxp.append(tx[dc8])
+#         dc9=(einsum('ij,ij->i',n1,n4)<0)&(t3<0)
+#         px.append(p2[dc9])
+#         pxp.append(tx[dc9])
+#         dc10=(einsum('ij,ij->i',n1,n4)<0)&(t3>1)
+#         px.append(p0[dc10])
+#         pxp.append(tx[dc10])
+#         px=concatenate(px)
+#         pxp=concatenate(pxp)
+#         py=pxp[norm(px-p3,axis=1).argmin()].tolist()
+#         pz.append(py)
+#     return pz
+
 def ipt(surface,line,triangulation_type=0): # intersection points triangles on surface
     if triangulation_type==0:  # example: cylinder with top and bottom triangulated
         tx=a_(triangulate_solid_open(surface))
@@ -14526,57 +14589,32 @@ def ipt(surface,line,triangulation_type=0): # intersection points triangles on s
         tx=a_(triangulate_surface(surface))
     elif triangulation_type==4: #example: surface from prism2cpo function
         tx=a_(triangulate_surfacex(surface))
-    p0,p1,p2=tx[:,0],tx[:,1],tx[:,2]
-    pz=[]
-    for p in line:
-        p3=a_(p)
-        n1=cross(p1-p0,p2-p0)
-        n1=n1/norm(n1,axis=1).reshape(-1,1)
-        d1=einsum('ij,ij->i',n1,(p3-p0))
-        p4=p3-einsum('ij,i->ij',n1,d1)
-        n2=cross(p0-p4,p1-p4)
-        n3=cross(p1-p4,p2-p4)
-        n4=cross(p2-p4,p0-p4)
-        t1=einsum('ij,ij->i',p4-p0,p1-p0)/einsum('ij,ij->i',p1-p0,p1-p0)
-        t2=einsum('ij,ij->i',p4-p1,p2-p1)/einsum('ij,ij->i',p2-p1,p2-p1)
-        t3=einsum('ij,ij->i',p4-p2,p0-p2)/einsum('ij,ij->i',p0-p2,p0-p2)
-        px=[]
-        pxp=[]
-        dc1=(einsum('ij,ij->i',n1,n2)>0)&(einsum('ij,ij->i',n1,n3)>0)&(einsum('ij,ij->i',n1,n4)>0)
-        px.append(p4[dc1])
-        pxp.append(tx[dc1])
-        dc2=(einsum('ij,ij->i',n1,n2)<0)&(t1>=0)&(t1<=1)
-        px.append((p0+einsum('ij,i->ij',p1-p0,t1))[dc2])
-        pxp.append(tx[dc2])
-        dc3=(einsum('ij,ij->i',n1,n2)<0)&(t1<0)
-        px.append(p0[dc3])
-        pxp.append(tx[dc3])
-        dc4=(einsum('ij,ij->i',n1,n2)<0)&(t1>1)
-        px.append(p1[dc4])
-        pxp.append(tx[dc4])
-        dc5=(einsum('ij,ij->i',n1,n3)<0)&(t2>=0)&(t2<=1)
-        px.append( (p1+einsum('ij,i->ij',p2-p1,t2))[dc5] )
-        pxp.append(tx[dc5])
-        dc6=(einsum('ij,ij->i',n1,n3)<0)&(t2<0)
-        px.append(p1[dc6])
-        pxp.append(tx[dc6])
-        dc7=(einsum('ij,ij->i',n1,n3)<0)&(t2>1)
-        px.append(p2[dc7])
-        pxp.append(tx[dc7])
-        dc8=(einsum('ij,ij->i',n1,n4)<0)&(t3>=0)&(t3<=1)
-        px.append( (p2+einsum('ij,i->ij',p0-p2,t3))[dc8] )
-        pxp.append(tx[dc8])
-        dc9=(einsum('ij,ij->i',n1,n4)<0)&(t3<0)
-        px.append(p2[dc9])
-        pxp.append(tx[dc9])
-        dc10=(einsum('ij,ij->i',n1,n4)<0)&(t3>1)
-        px.append(p0[dc10])
-        pxp.append(tx[dc10])
-        px=concatenate(px)
-        pxp=concatenate(pxp)
-        py=pxp[norm(px-p3,axis=1).argmin()].tolist()
-        pz.append(py)
-    return pz
+    a1=a_(line)
+    b1=tx
+    a,b=a1,a1
+    c,d=a_(b1).min(1),a_(b1).max(1)
+    lx=[]
+    for i in range(len(a1)):
+        e=b1[~((a1[i]>d).any(1)|(a1[i]<c).any(1))]
+        if l_(e)==[]:
+            a1[i]=a_(npos(surface,a1[i],triangulation_type))
+            e=b1[~((a1[i]>d).any(1)|(a1[i]<c).any(1))]
+            lx.append(e)
+        else:
+            lx.append(e)
+    ly,lz=[],[]
+    for i in range(len(lx)):
+            for j in range(len(lx[i])):
+                px=ppos([lx[i][j]],a1[i],nv(lx[i][j]),0,1)
+                x1=point_in_triangle(a_(px),a_(lx[i][j]))
+                if x1==1:
+                    ly.append(l_(lx[i][j]))
+                    lz.append(i)
+                    break
+    dec=arange(len(lx))[~(arange(len(lx))[:,None]==a_(lz)[None,:]).any(1)]
+    for i in dec:
+        ly.insert(i,l_(lx[i][0]))
+    return ly
 
 def o_3d(l1,s1,r=1,triangulation_type=0):
     """
