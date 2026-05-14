@@ -14616,7 +14616,7 @@ def ipt(surface,line,triangulation_type=0): # intersection points triangles on s
         ly.insert(i,l_(lx[i][0]))
     return ly
 
-def o_3d(l1,s1,r=1,triangulation_type=0):
+def o_3d(l1,s1,r=1,triangulation_type=0,outside=0):
     """
     l1: line to offset
     s1: surface or solid on which the line needs to be offset
@@ -14633,7 +14633,10 @@ def o_3d(l1,s1,r=1,triangulation_type=0):
     l4=a_(cross(l3,l2))
     l4=l4/norm(l4,axis=1).reshape(-1,1)
     l5=l_(a_(l1)+l4*r)
-    l6=nlos(s1,l5,triangulation_type)
+    if outside==0:
+        l6=nlos(s1,l5,triangulation_type)
+    elif outside==1:
+        l6=l5
     # l6=plos_v_2(s1,l5,l2,triangulation_type=triangulation_type)
     return l6
 
