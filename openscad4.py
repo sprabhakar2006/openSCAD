@@ -6508,7 +6508,7 @@ def sort_random_points(l_1,n_1,k=3):
 function to arrange random points in order
 l_1: list of random points in space
 n_1: is the normal vector to a plane from which all the points can be distinctly seen
-k: is a factor which can have values >2 , default is 2, if the result is not satisfactory the values can be changed to see if the result is better. It has to be an integer
+k: is a factor which can have values >2 , default is 3, if the result is not satisfactory the values can be changed to see if the result is better. It has to be an integer
     
     """
     avg_1=array(l_1).mean(0).tolist()
@@ -14015,7 +14015,7 @@ def sec_limit_points(sec,vector):
 #     """
 #     return polp(l1,timeToReachPoint(p0,l1,dist))
 
-def npol(line,point,dist=0.1):
+def npol(line,point,dist=0.1,closed_loop=0):
     """
 nearest projection of the point 'p0' on line 'l1', if the point is with in 
 specified distance 'dist' from line
@@ -14034,7 +14034,11 @@ specified distance 'dist' from line
         else:
             px=p0+v1*t1
         return px if l_len([px,p2])<=dist else []
-    l1=line
+    if closed_loop==0:
+        l1=line
+    elif closed_loop==1:
+        l1=line+[line[0]]
+    # l1=line if closed_loop==0 else line+[line[0]]
     p0=point
     x1=[ppol(p0,p,dist) for p in seg(l1)[:-1]]
     x1=a_([ p for p in x1 if l_(p)!=[]])
