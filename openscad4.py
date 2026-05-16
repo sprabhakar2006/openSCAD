@@ -14975,7 +14975,7 @@ def vcost2c(path,pnt):
             pr1.append(p0)
     return pr1[a_(pr).argmin()]
 
-def f_offset(sec,r):
+def f_offset(sec,r,option=0):
     b=intersections(offset_segv(sec,r))
     c=intersections(offset_segv(sec,r))
     c1=seg(c)
@@ -14997,15 +14997,21 @@ def f_offset(sec,r):
         except:
             idx=idx
             d=d
-        idx1=[]
-        for (x,y) in l_(idx):
-            if (y-x)<len(c)-y+x:
-                idx1.append([x,y])
-            else:
-                idx1.append([y,x])
+        if option==1:
+            x,y=idx[0]
+            if (y-x)>(len(b)-y+x):
+                idx[0]=[y,x]
+        elif option==0:
+            k=0
+            for (x,y) in idx:
+                if (y-x)>(len(b)-y+x):
+                    idx[k]=[y,x]
+                else:
+                    idx[k]=[x,y]
+                k=k+1
         try:
-            idx2=l_(a_(idx1)[lexsort([-a_(idx1)[:,0],a_(idx1)[:,1]])])
-            d2=l_(a_(d)[cKDTree(idx1).query(idx2)[1]])
+            idx2=l_(a_(idx)[lexsort([-a_(idx)[:,0],a_(idx)[:,1]])])
+            d2=l_(a_(d)[cKDTree(idx).query(idx2)[1]])
             k=0
             for (x,y) in idx2:
                 if x<y:
