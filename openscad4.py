@@ -11609,7 +11609,7 @@ difference(){{
         pnt=pnt+b
     return pnt
 
-def triangulate_solid_openx(sol,ear1=0,ear2=0):
+def triangulate_solid_openx(sol,bottom=0,top=0):
     """
 function to triangulate a solid with open ends like cylinder completely
 example:
@@ -11633,11 +11633,11 @@ difference(){{
     n=n2
     pnt=array(sol).reshape(-1,3)
     pnt=l_(pnt[n])
-    if ear1==1:
+    if bottom==1:
         if ~(a_(sol[0]).round(4)==a_(sol[0][0]).round(4)).all():
             a=earclip_3d(sol[0])
             pnt=a+pnt
-    if ear2==1:
+    if top==1:
         if ~(a_(sol[-1]).round(4)==a_(sol[-1][0]).round(4)).all():
             b=earclip_3d(sol[-1])
             b=[flip(p) for p in b]
@@ -15040,3 +15040,12 @@ def intersectionso(segments):
     p0.shape,v1.shape,t.shape
     points=(p0+einsum('ij,i->ij',v1,t)).tolist()
     return [segments[0][0]]+points+[segments[-1][1]]
+
+def rt(theta):
+    """
+    rotation matrix to rotate objects around z-axis
+    follows right hand thumb rule for rotation
+    """
+    return array([[cos(d2r(theta)),sin(d2r(theta)),0],
+                 [-sin(d2r(theta)),cos(d2r(theta)),0],
+                 [0,0,1]])
