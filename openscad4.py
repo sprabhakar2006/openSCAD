@@ -14844,7 +14844,7 @@ def sweep_sec3d2path(sec3d,path3d,closed_loop=0):
         s1=[ translate(p1[i],sec3d2vector(l1[i],sec3d)) for i in range(len(l1))]
         return s1+[s1[0]]
 
-def o_3dc(l1,s1,r=1,o=0.02,triangulation_type=0):
+def o_3dc(l1,s1,r=1,o=0.02,triangulation_type=0,option=0):
     """
     offset 3d of a line 'l1' on surface 's1' 
     offset distance is 'r'
@@ -14855,11 +14855,57 @@ def o_3dc(l1,s1,r=1,o=0.02,triangulation_type=0):
     2- doughnut type closed end solid
     3 - surface without any closed ends
     4 - special surface created from function prism2cpo
+    parameter, 'option' in most of the cases should be set to '0', in few cases it can be '1'
     """
     a=l1
     b=s1
     c=o_3d(a,b,r,triangulation_type)
-    c=unwrinkle_line(c,o)
+    # c=l12
+    c1=seg(c)
+    x1=s_int1_3d_with_list(c1,o)
+    d=x1[0]
+    if d==[]:
+        return c
+    else:
+        idx=x1[1]
+        try:
+            dist=norm(a_([vcost2c(a,p) for p in d])-d,axis=1)
+            idx=a_(idx)[~(dist<abs(r)*.9)]
+            d=l_(a_(d)[~(dist<abs(r)*.9)])
+        except:
+            idx=idx
+            d=d
+        try:
+            idx=a_(idx)[~(norm(a_(d)[:,None]-a_(a)[None,:],axis=2)<(abs(r)*.9)).any(1)].tolist()
+            d=a_(d)[~(norm(a_(d)[:,None]-a_(a)[None,:],axis=2)<(abs(r)*.9)).any(1)].tolist()
+        except:
+            idx=idx
+            d=d
+        if option==1:
+            x,y=idx[0]
+            if (y-x)>(len(c)-y+x):
+                idx[0]=[y,x]
+        elif option==0:
+            k=0
+            for (x,y) in idx:
+                if (y-x)>(len(c)-y+x):
+                    idx[k]=[y,x]
+                else:
+                    idx[k]=[x,y]
+                k=k+1
+        try:
+            idx2=l_(a_(idx)[lexsort([-a_(idx)[:,0],a_(idx)[:,1]])])
+            d2=l_(a_(d)[cKDTree(idx).query(idx2)[1]])
+            k=0
+            for (x,y) in idx2:
+                if x<y:
+                    c[x+1:y+1]=[d2[k]]*(y-x)
+                else:
+                    c[x+1:]=[d2[k]]*(len(c)-x-1)
+                    c[:y+1]=[d2[k]]*(y+1)
+                k=k+1
+        except:
+            c=c
     
     return c
 
@@ -15049,3 +15095,86 @@ def rt(theta):
     return array([[cos(d2r(theta)),sin(d2r(theta)),0],
                  [-sin(d2r(theta)),cos(d2r(theta)),0],
                  [0,0,1]])
+
+def a_lines_sec(sec,n=10,theta=30,o=.1):
+    """
+angled lines are drawn covering the closed loop secton
+example:
+l1=circle(5)
+l2=a_lines_sec(l1,n=10,theta=45)
+fo(f'''
+color("blue") p_line3d({l1},.3);
+color("magenta") for(p={l2}) p_line3d(p,.1);
+''')
+    """
+    sec=rot2d(-theta,remove_duplicates(sec))
+    d=rot2d(.001,h_lines(sec,n,o))
+    e=l_(a_(s_int1(d+seg(sec))).round(4))
+    g=seg(lexicographic_sort_yx(e))
+    g=l_(a_(g)[(a_([line_as_unit_vector(p) for p in g]).round(4)[:,0]>0)])
+    m_p=[mid_point(p) for p in g]
+    m_p1=pies1(sec,m_p)
+    la,lb=array(m_p).round(5),array(m_p1).round(5)
+    h=a_(g)[(lb==la[:,None]).all(2).any(1)].tolist()
+    return rot2d(theta,h)
+
+def a_lines(sec,n=10,theta=30,o=.1):
+    """
+angled lines are drawn covering the bounding box of a sketch
+example:
+l1=circle(5)
+l2=a_lines(l1,n=10,theta=30)
+fo(f'''
+color("blue") p_line3d({l1},.3);
+color("magenta") for(p={l2}) p_line3d(p,.1);
+''')
+    """
+    sec=rot2d(-theta,remove_duplicates(sec))
+    m1=a_(sec).min(axis=0)+[-o,o]
+    m2=a_(sec).max(axis=0)+[o,-o]
+    x0,y0=l_(m1)
+    x1,y1=l_(m2)
+    b=equidistant_path([[[x0,y0],[x1,y0]],[[x0,y1],[x1,y1]]],n-1)
+    return rot2d(theta,b)
+
+def a_lines_sec_3d(sec,n=10,theta=30,o=0.01,nx=[]):
+    """
+    same as a_lines_sec in 2d plane
+    """
+    n1=array(nv(sec)) if l_(nx)==[] else nx
+    a1=cross(n1,[0,0,-1])
+    t1=r2d(arccos(n1@[0,0,-1]))
+    sec1=translate(-array(sec).mean(0),sec)
+    if (l_(n1)==[0,0,1]) or (l_(n1)==[0,0,-1]):
+        sec2=c32(sec1)
+    else:
+        sec2=c3t2(axis_rot(a1,sec1,t1))
+    l1=len(sec2)
+    p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
+    pnts=a_lines_sec(remove_duplicates(sec2),n,theta,o)
+    if (l_(n1)==[0,0,1]) or (l_(n1)==[0,0,-1]):
+        pnts=translate(array(sec).mean(0),pnts) if pnts!=[] else []
+    else:
+        pnts=translate(array(sec).mean(0),axis_rot(a1,pnts,-t1)) if pnts!=[] else []
+    return pnts
+
+def a_lines_3d(sec,n=10,theta=30,o=0.01,nx=[]):
+    """
+    same as a_lines in 2d plane
+    """
+    n1=array(nv(sec)) if l_(nx)==[] else nx
+    a1=cross(n1,[0,0,-1])
+    t1=r2d(arccos(n1@[0,0,-1]))
+    sec1=translate(-array(sec).mean(0),sec)
+    if (l_(n1)==[0,0,1]) or (l_(n1)==[0,0,-1]):
+        sec2=c32(sec1)
+    else:
+        sec2=c3t2(axis_rot(a1,sec1,t1))
+    l1=len(sec2)
+    p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
+    pnts=a_lines(remove_duplicates(sec2),n,theta,o)
+    if (l_(n1)==[0,0,1]) or (l_(n1)==[0,0,-1]):
+        pnts=translate(array(sec).mean(0),pnts) if pnts!=[] else []
+    else:
+        pnts=translate(array(sec).mean(0),axis_rot(a1,pnts,-t1)) if pnts!=[] else []
+    return pnts
