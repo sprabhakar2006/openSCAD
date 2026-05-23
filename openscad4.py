@@ -14844,7 +14844,7 @@ def sweep_sec3d2path(sec3d,path3d,closed_loop=0):
         s1=[ translate(p1[i],sec3d2vector(l1[i],sec3d)) for i in range(len(l1))]
         return s1+[s1[0]]
 
-def o_3dc(l1,s1,r=1,o=0.02,triangulation_type=0,option=0):
+def o_3dc(l1,s1,r=1,o=0.02,triangulation_type=0,outside=0,option=0):
     """
     offset 3d of a line 'l1' on surface 's1' 
     offset distance is 'r'
@@ -14859,7 +14859,7 @@ def o_3dc(l1,s1,r=1,o=0.02,triangulation_type=0,option=0):
     """
     a=l1
     b=s1
-    c=o_3d(a,b,r,triangulation_type)
+    c=o_3d(a,b,r,triangulation_type,outside)
     # c=l12
     c1=seg(c)
     x1=s_int1_3d_with_list(c1,o)
@@ -14924,45 +14924,102 @@ def s_int1_3d_with_list(segments,o=.01):
     idx=n[norm(a_(d)[:,1]-a_(d)[:,0],axis=1)<o]
     return [ix, idx]
 
-def unwrinkle_line(line,o=.05):
-    c=line
+# def unwrinkle_line(line,o=.05):
+#     c=line
+#     c1=seg(c)
+#     x1=s_int1_3d_with_list(c1,o)
+#     if x1[0]==[]:
+#         return line
+#     else:
+#         d=x1[0]
+#         idx=x1[1]
+#         # x2=idx[idx[:,1]==(len(c)-1)]
+#         idx1=[]
+#         k=0
+#         for (x,y) in idx:
+#             if (y-x)>x:
+#                 idx1.append(idx[k])
+#             k=k+1
+#         idx1=a_(idx1)
+#         idx1=idx[idx[:,0]<=idx1[:,0].max()]
+#         dec=(idx[:,None]==idx1[None,:]).all(2).any(1)
+#         d1=a_(d)[dec]
+#         idx2=idx[~dec]
+#         d2=a_(d)[~dec]
+#         srt=lexsort([-idx2[:,0],idx2[:,1]])
+#         idx2=idx2[srt]
+#         d2=d2[srt]
+#         idx3=concatenate([idx1,idx2])
+#         d3=concatenate([d1,d2]).tolist()
+        
+#         k=0
+#         for (x,y) in idx3:
+#             i=y-x
+#             j=len(c)-y+x
+#             if i<j:
+#                 c[x+1:y+1]=[d3[k]]*i
+#             else:
+#                 c[y+1:]=[d3[k]]*(len(c)-y-1)
+#                 c[:x+1]=[d3[k]]*(x+1)
+#             k=k+1
+#         return c
+
+def unwrinkle(l1,original_line,r=1,o=0.02,option=0):
+    """
+    unwrinkle a line 'l1' w.r.t the original line after offset by distance 'r' 
+    factor 'o' can vary from 0 - around 1/1000th of the maximum dim of the bounding box of the line 'l1'
+    parameter, 'option' in most of the cases should be set to '0', in few cases it can be '1'
+    """
+    a=original_line
+    c=l1
+    # c=l12
     c1=seg(c)
     x1=s_int1_3d_with_list(c1,o)
-    if x1[0]==[]:
-        return line
-    else:
-        d=x1[0]
-        idx=x1[1]
-        # x2=idx[idx[:,1]==(len(c)-1)]
-        idx1=[]
-        k=0
-        for (x,y) in idx:
-            if (y-x)>x:
-                idx1.append(idx[k])
-            k=k+1
-        idx1=a_(idx1)
-        idx1=idx[idx[:,0]<=idx1[:,0].max()]
-        dec=(idx[:,None]==idx1[None,:]).all(2).any(1)
-        d1=a_(d)[dec]
-        idx2=idx[~dec]
-        d2=a_(d)[~dec]
-        srt=lexsort([-idx2[:,0],idx2[:,1]])
-        idx2=idx2[srt]
-        d2=d2[srt]
-        idx3=concatenate([idx1,idx2])
-        d3=concatenate([d1,d2]).tolist()
-        
-        k=0
-        for (x,y) in idx3:
-            i=y-x
-            j=len(c)-y+x
-            if i<j:
-                c[x+1:y+1]=[d3[k]]*i
-            else:
-                c[y+1:]=[d3[k]]*(len(c)-y-1)
-                c[:x+1]=[d3[k]]*(x+1)
-            k=k+1
+    d=x1[0]
+    if d==[]:
         return c
+    else:
+        idx=x1[1]
+        try:
+            dist=norm(a_([vcost2c(a,p) for p in d])-d,axis=1)
+            idx=a_(idx)[~(dist<abs(r)*.9)]
+            d=l_(a_(d)[~(dist<abs(r)*.9)])
+        except:
+            idx=idx
+            d=d
+        try:
+            idx=a_(idx)[~(norm(a_(d)[:,None]-a_(a)[None,:],axis=2)<(abs(r)*.9)).any(1)].tolist()
+            d=a_(d)[~(norm(a_(d)[:,None]-a_(a)[None,:],axis=2)<(abs(r)*.9)).any(1)].tolist()
+        except:
+            idx=idx
+            d=d
+        if option==1:
+            x,y=idx[0]
+            if (y-x)>(len(c)-y+x):
+                idx[0]=[y,x]
+        elif option==0:
+            k=0
+            for (x,y) in idx:
+                if (y-x)>(len(c)-y+x):
+                    idx[k]=[y,x]
+                else:
+                    idx[k]=[x,y]
+                k=k+1
+        try:
+            idx2=l_(a_(idx)[lexsort([-a_(idx)[:,0],a_(idx)[:,1]])])
+            d2=l_(a_(d)[cKDTree(idx).query(idx2)[1]])
+            k=0
+            for (x,y) in idx2:
+                if x<y:
+                    c[x+1:y+1]=[d2[k]]*(y-x)
+                else:
+                    c[x+1:]=[d2[k]]*(len(c)-x-1)
+                    c[:y+1]=[d2[k]]*(y+1)
+                k=k+1
+        except:
+            c=c
+    
+    return c
 
 def offset_f(sec,r):
     c=intersections(offset_segv(sec,r))
