@@ -14855,7 +14855,6 @@ def o_3dc(l1,s1,r=1,o=0.02,triangulation_type=0,outside=1,option=0):
     2- doughnut type closed end solid
     3 - surface without any closed ends
     4 - special surface created from function prism2cpo
-    There is no need to change the parameter 'outside', default value of '1' should be ok for most of the cases
     parameter, 'option' in most of the cases should be set to '0', in few cases it can be '1'
     """
     a=l1
@@ -15236,3 +15235,23 @@ def a_lines_3d(sec,n=10,theta=30,o=0.01,nx=[]):
     else:
         pnts=translate(array(sec).mean(0),axis_rot(a1,pnts,-t1)) if pnts!=[] else []
     return pnts
+
+def extend_4_arcs_surface(s1,theta):
+    """
+    if the surface is made of 4 arcs, it can be extended with this function
+    """
+    l1=extend_arc3d(s1[0],theta,both=1)
+    l2=extend_arc3d(s1[-1],theta,both=1)
+    l3=extend_arc3d(cpo(s1)[0],theta,both=1)
+    l4=extend_arc3d(cpo(s1)[-1],theta,both=1)
+    p0,p1,p2,p3=s1[0][0],s1[0][-1],s1[-1][0],s1[-1][-1]
+    pa=l_(p0+a_(line_as_vector([p0,l1[0]]))+a_(line_as_vector([p0,l3[0]])))
+    pb=l_(p1+a_(line_as_vector([p1,l1[-1]]))+a_(line_as_vector([p1,l4[0]])))
+    pc=l_(p2+a_(line_as_vector([p2,l2[0]]))+a_(line_as_vector([p2,l3[-1]])))
+    pd=l_(p3+a_(line_as_vector([p3,l2[-1]]))+a_(line_as_vector([p3,l4[-1]])))
+    l1p=fit_pline2line(l1,[pa,pb])
+    l2p=fit_pline2line(l2,[pc,pd])
+    l3p=fit_pline2line(l3,[pa,pc])
+    l4p=fit_pline2line(l4,[pb,pd])
+    s2=surface_from_4_lines(l1p,l2p,l3p,l4p)
+    return s2
