@@ -6917,14 +6917,24 @@ def fillet3points(sec,r=1,s=20):
     a1=arc_2p(px1,px2,r,cw(sec),s)
     return a1
 
+# def surface2sec(surf):
+#     """
+# reverse of sec2surface_1 function
+#     """
+#     a,b,c=array(surf).transpose(1,0,2).shape
+#     d=l_(array(surf).transpose(1,0,2))
+#     e=[d[i]+flip(d[-i-1]) for i in range(int(a/2))]
+#     return e
+
 def surface2sec(surf):
     """
-reverse of sec2surface_1 function
+    convert a surface of parallel lines type to an enclosed section closed loop type
     """
-    a,b,c=array(surf).transpose(1,0,2).shape
-    d=l_(array(surf).transpose(1,0,2))
-    e=[d[i]+flip(d[-i-1]) for i in range(int(a/2))]
-    return e
+    a=surf[0]
+    b=cpo(surf)[-1]
+    c=flip(surf[-1])
+    d=flip(cpo(surf)[0])
+    return remove_duplicates(a+b+c+d)
 
 
 def bspline_open(pl,deg=3,s=100):
@@ -14620,7 +14630,7 @@ def ipt(surface,line,triangulation_type=0): # intersection points triangles on s
 #         ly.insert(i,l_(lx[i][0]))
 #     return ly
 
-def o_3d(l1,s1,r=1,triangulation_type=0,outside=0):
+def o_3d(l1,s1,r=1,triangulation_type=0,outside=1):
     """
     l1: line to offset
     s1: surface or solid on which the line needs to be offset
@@ -15153,7 +15163,7 @@ def rt(theta):
                  [-sin(d2r(theta)),cos(d2r(theta)),0],
                  [0,0,1]])
 
-def a_lines_sec(sec,n=10,theta=30,o=.1):
+def a_lines_sec(sec,n=10,theta=30,o=.1,s=1):
     """
 angled lines are drawn covering the closed loop secton
 example:
@@ -15173,6 +15183,7 @@ color("magenta") for(p={l2}) p_line3d(p,.1);
     m_p1=pies1(sec,m_p)
     la,lb=array(m_p).round(5),array(m_p1).round(5)
     h=a_(g)[(lb==la[:,None]).all(2).any(1)].tolist()
+    h=[equidistant_path(p,s) for p in h]
     return rot2d(theta,h)
 
 def a_lines(sec,n=10,theta=30,o=.1):
@@ -15194,7 +15205,7 @@ color("magenta") for(p={l2}) p_line3d(p,.1);
     b=equidistant_path([[[x0,y0],[x1,y0]],[[x0,y1],[x1,y1]]],n-1)
     return rot2d(theta,b)
 
-def a_lines_sec_3d(sec,n=10,theta=30,o=0.01,nx=[]):
+def a_lines_sec_3d(sec,n=10,theta=30,o=0.01,s=1,nx=[]):
     """
     same as a_lines_sec in 2d plane
     """
@@ -15208,7 +15219,7 @@ def a_lines_sec_3d(sec,n=10,theta=30,o=0.01,nx=[]):
         sec2=c3t2(axis_rot(a1,sec1,t1))
     l1=len(sec2)
     p0,p1,p2=[sec2[0],sec2[int(l1/3)],sec2[int(l1*2/3)]]
-    pnts=a_lines_sec(remove_duplicates(sec2),n,theta,o)
+    pnts=a_lines_sec(remove_duplicates(sec2),n,theta,o,s)
     if (l_(n1)==[0,0,1]) or (l_(n1)==[0,0,-1]):
         pnts=translate(array(sec).mean(0),pnts) if pnts!=[] else []
     else:
@@ -15254,4 +15265,15 @@ def extend_4_arcs_surface(s1,theta):
     l3p=fit_pline2line(l3,[pa,pc])
     l4p=fit_pline2line(l4,[pb,pd])
     s2=surface_from_4_lines(l1p,l2p,l3p,l4p)
+    return s2
+
+def slice_surface(s1,pitch=1):
+    """
+    slice the surface 's1' in equal distances.
+    It is roughly equal in case the surface is not divisible exactly
+    May not work in all the cases
+    """
+    a=[equidistant_path(p,pitch=pitch) for p in cpo(s1)]
+    n=a_([ len(p) for p in a]).min()
+    s2=cpo([equidistant_path(p,n-1) for p in cpo(s1)])
     return s2
