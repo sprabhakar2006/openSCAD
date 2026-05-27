@@ -15277,3 +15277,15 @@ def slice_surface(s1,pitch=1):
     n=a_([ len(p) for p in a]).min()
     s2=cpo([equidistant_path(p,n-1) for p in cpo(s1)])
     return s2
+
+def bezier_closed(sec,n=100):
+    """
+    This approximates the bezier for closed loop
+    """
+    n1=int(round(n*0.25,0))
+    n2=int(round(n*0.75,0))
+    
+    s10=bezier(sec,n)
+    s11=bezier(sec_start_pos(sec,int(len(sec)/2)),n)
+    s12=equidistant_pathc(s10[n1:n2]+s11[n1:n2],n)
+    return s12
