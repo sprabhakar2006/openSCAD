@@ -15230,7 +15230,7 @@ def a_lines_3d(sec,n=10,theta=30,o=0.01,nx=[]):
     """
     same as a_lines in 2d plane
     """
-    n1=array(nv(sec)) if l_(nx)==[] else nx
+    n1=array(nv(sec)) if l_(nx)==[] else a_(nx)
     a1=cross(n1,[0,0,-1])
     t1=r2d(arccos(n1@[0,0,-1]))
     sec1=translate(-array(sec).mean(0),sec)
@@ -15247,24 +15247,12 @@ def a_lines_3d(sec,n=10,theta=30,o=0.01,nx=[]):
         pnts=translate(array(sec).mean(0),axis_rot(a1,pnts,-t1)) if pnts!=[] else []
     return pnts
 
-def extend_4_arcs_surface(s1,theta):
+def extend_4_arcs_surface(s1, theta=10):
     """
     if the surface is made of 4 arcs, it can be extended with this function
     """
-    l1=extend_arc3d(s1[0],theta,both=1)
-    l2=extend_arc3d(s1[-1],theta,both=1)
-    l3=extend_arc3d(cpo(s1)[0],theta,both=1)
-    l4=extend_arc3d(cpo(s1)[-1],theta,both=1)
-    p0,p1,p2,p3=s1[0][0],s1[0][-1],s1[-1][0],s1[-1][-1]
-    pa=l_(p0+a_(line_as_vector([p0,l1[0]]))+a_(line_as_vector([p0,l3[0]])))
-    pb=l_(p1+a_(line_as_vector([p1,l1[-1]]))+a_(line_as_vector([p1,l4[0]])))
-    pc=l_(p2+a_(line_as_vector([p2,l2[0]]))+a_(line_as_vector([p2,l3[-1]])))
-    pd=l_(p3+a_(line_as_vector([p3,l2[-1]]))+a_(line_as_vector([p3,l4[-1]])))
-    l1p=fit_pline2line(l1,[pa,pb])
-    l2p=fit_pline2line(l2,[pc,pd])
-    l3p=fit_pline2line(l3,[pa,pc])
-    l4p=fit_pline2line(l4,[pb,pd])
-    s2=surface_from_4_lines(l1p,l2p,l3p,l4p)
+    s2=[extend_arc3d(p,theta,both=1) for p in s1]
+    s2=cpo([extend_arc3d(p,theta,both=1) for p in cpo(s2)])
     return s2
 
 def slice_surface(s1,pitch=1):
@@ -15289,3 +15277,16 @@ def bezier_closed(sec,n=100):
     s11=bezier(sec_start_pos(sec,int(len(sec)/2)),n)
     s12=equidistant_pathc(s10[n1:n2]+s11[n1:n2],n)
     return s12
+
+def move(pl,loc,df_pt=[]):
+    """
+    move a surface, solid or line to a defined location
+    """
+    if df_pt==[]:
+        a=a_(c23(pl))
+        b=a.reshape(-1,3)[0]
+    else:
+        b=a_(df_pt)
+    c=a_(loc)
+    tr=c-b
+    return translate(tr,pl)
