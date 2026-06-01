@@ -15290,3 +15290,22 @@ def move(pl,loc,df_pt=[]):
     c=a_(loc)
     tr=c-b
     return translate(tr,pl)
+
+def surface_orientation_1(s1,n=100):
+    sa=s1
+    s2=[]
+    n1,n2,n3=a_(s1).shape
+    while ((n1>2)|(n2>2)):
+        a=surface2sec(sa)
+        b=exclude_points(a_(sa).reshape(-1,3),a)
+        n1=n1-2
+        n2=n2-2
+        sa=a_(b).reshape(n1,n2,3).tolist()
+        s2.append(equidistant_pathc(a,n))
+    #another good quality but inefficient method
+    # s3=[s2[0]]
+    # for i in range(1,len(s2)):
+    #     a=s3[-1]
+    #     b=s2[i]
+    #     s3.append([npol(b,p,1e7,1) for p in a])
+    return s2
