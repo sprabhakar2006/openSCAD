@@ -15309,3 +15309,10 @@ def surface_orientation_1(s1,n=100):
     #     b=s2[i]
     #     s3.append([npol(b,p,1e7,1) for p in a])
     return s2
+
+def mPointOnLine(line,point_number,dist):
+    if dist<0:
+        line.insert(point_number,movePointOnLine(line,line[point_number],dist))
+    elif dist>0:
+        line.insert(point_number+1,movePointOnLine(line,line[point_number],dist))
+    return line
