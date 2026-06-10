@@ -14854,7 +14854,7 @@ def sweep_sec3d2path(sec3d,path3d,closed_loop=0):
         s1=[ translate(p1[i],sec3d2vector(l1[i],sec3d)) for i in range(len(l1))]
         return s1+[s1[0]]
 
-def o_3dc(l1,s1,r=1,o=0.02,triangulation_type=0,outside=1,option=0):
+def o_3dc(l1,s1,r=1,o=0.02,triangulation_type=0,outside=0,option=0):
     """
     offset 3d of a line 'l1' on surface 's1' 
     offset distance is 'r'
